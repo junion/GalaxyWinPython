@@ -1,0 +1,24 @@
+
+domain_functions.c and server_functions.c
+ are used at compile time to create appropriate
+ headers for the instantiations of particular servers.
+
+The former only applies for the domain servers,
+  which run off of ".dctl" files in the System directory.
+
+server_functions.c creates a file .../src/{server}/server.h
+ that specifies the operations handled by the particular
+ server in the hub program.
+
+Makefile.head, domain_functions.make and server_functions.make 
+  are used to compile these two programs into the ../../bin/ directory.
+
+To make any particular server, go to its directory and type:
+
+   gmake [debug]
+
+
+
+
+
+

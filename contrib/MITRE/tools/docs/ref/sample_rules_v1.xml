@@ -1,0 +1,151 @@
+<RULES>
+<GC_LOG_VERSION>travel, version 2.0 cfone</GC_LOG_VERSION>
+
+<RULE occurrences="first">
+  <GC_OPERATION name="speak_output"
+		new:type_start_task="total"/>
+</RULE>
+  
+<RULE occurrences="first">  
+  <GC_OPERATION name="nop"
+		new:type_start_task="task">
+    <GC_DATA key=":listening_has_begun"/>
+  </GC_OPERATION>
+</RULE>
+
+<RULE occurrences="last">  
+  <GC_OPERATION name="nop"
+		new:type_end_task="true">
+    <GC_DATA key=":playing_has_ended"/>
+  </GC_OPERATION>
+</RULE>
+
+<RULE>
+  <GC_OPERATION name="paraphrase_reply"
+                new:type_new_turn="system"/>
+</RULE>
+
+<RULE>  
+  <GC_OPERATION name="nop"
+		new:type_new_turn="user">
+    <GC_DATA key=":listening_has_begun"/>
+  </GC_OPERATION>
+</RULE>
+
+<RULE>
+  <GC_OPERATION name="speak_output">
+    <GC_DATA key=":reply_string" dtype="string"
+             new:type_utt_text="system"/>
+  </GC_OPERATION>
+</RULE>
+
+<RULE>
+  <GC_OPERATION name="gather">
+    <GC_DATA key=":parse_frame">
+      <GC_FRAME>
+        <GC_DATA key=":input_string" dtype="string"
+	         new:type_utt_text="asr"/>
+      </GC_FRAME>
+    </GC_DATA>
+  </GC_OPERATION>
+</RULE>
+
+<RULE>
+  <GC_OPERATION name="nop" new:type_end_utt="user">
+    <GC_DATA key=":recording_has_ended"/>
+  </GC_OPERATION>
+</RULE>
+
+<RULE>
+  <GC_OPERATION name="nop" new:type_start_utt="user">
+    <GC_DATA key=":recording_has_begun"/>
+  </GC_OPERATION>
+</RULE>
+
+<RULE>
+  <GC_OPERATION name="nop" new:type_start_utt="system">
+    <GC_DATA key=":playing_has_begun"/>
+  </GC_OPERATION>
+</RULE>
+
+<RULE>
+  <GC_OPERATION name="nop" new:type_end_utt="system">
+    <GC_DATA key=":playing_has_ended"/>
+  </GC_OPERATION>
+</RULE>
+
+<RULE>
+  <GC_OPERATION name="paraphrase_reply" new:type_prompt="time">
+    <GC_DATA key=":reply_string">
+      Can you provide the approximate departure or arrival time[?]
+    </GC_DATA>
+  </GC_OPERATION>
+</RULE>
+
+<RULE>
+  <GC_OPERATION name="paraphrase_reply" new:type_prompt="departure_city">
+    <GC_DATA key=":reply_string">
+      What city does the flight depart from[?]
+    </GC_DATA>
+  </GC_OPERATION>
+</RULE>
+
+<!-- These are optional rules, over and above the DMAs. -->
+
+<RULE>
+  <GC_MESSAGE name="filelog">
+    <GC_DATA key=":synth_log_filename"
+             dtype="string" 
+             new:type_audio_file="system"/>
+  </GC_MESSAGE>
+</RULE>
+
+<RULE>
+  <GC_MESSAGE name="filelog">
+    <GC_DATA key=":utt_log_filename"
+             dtype="string"
+             new:type_audio_file="user"/>
+  </GC_MESSAGE>
+</RULE>
+
+<!-- I don't want to do these yet.
+
+<RULE>
+  <GC_OPERATION name="create_frame">
+    <GC_DATA key=":input_string" direction="in"
+             new:type_utt_text="failed_sr"/>
+    <GC_DATA key=":parse_status" direction="out">
+      NO_PARSE
+    </GC_DATA>
+  </GC_OPERATION>
+</RULE>
+
+<RULE>
+  <GC_OPERATION name="create_frame">
+    <GC_DATA key=":parse_status" direction="out">
+      FULL_PARSE|ROBUST_PARSE
+    </GC_DATA>
+    <GC_DATA key=":input_string" direction="in"
+             new:type_utt_text="successful_sr"/>
+  </GC_OPERATION>
+</RULE>
+
+-->
+
+<RULE>
+  <GC_OPERATION name="paraphrase_request">
+    <GC_DATA key=":paraphrase_string"
+             direction="out"
+             new:type_utt_text="input_paraphrase"/>
+  </GC_OPERATION>
+</RULE>
+
+<RULE>
+  <GC_OPERATION name="transduce">
+    <GC_DATA key=":eform"
+             direction="out"
+             new:type_utt_concept="user"/>
+  </GC_OPERATION>
+</RULE>
+
+</RULES>

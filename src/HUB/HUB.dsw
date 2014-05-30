@@ -1,0 +1,59 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "HUB"=.\HUB.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libGalaxyHubControl
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "libGalaxy"=..\libgalaxy\libgalaxy.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libGalaxyHubControl"=..\..\contrib\MIT\galaxy\src\libGalaxyHubControl\libGalaxyHubControl.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+

@@ -1,0 +1,10 @@
+(
+{c DoDialogue
+   :frame {c flight
+             :destination "LOS ANGELES"
+             :origin "BOSTON" } }
+{c DoDialogue
+   :frame {c flight
+             :destination "SAN FRANCISCO"
+             :origin "BOSTON" } }
+)

@@ -1,0 +1,262 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.78 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: New Features in Version 3.x</title>
+     <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+  
+<center> 
+<h1> Galaxy Communicator Documentation:<br>
+ <br>
+ New Features in Version 3.x</h1>
+</center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="release_notes.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="3point3upgrade.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+   
+<hr width="100%"> 
+<h2> Version 3.3</h2>
+ The major purpose of this distribution is to clean up the installation process
+and move servers over to the new open source toolkit. 
+<h3> Improved installation process</h3>
+ We have moved the entire <a href="install.html#config">configuration process</a>
+over to GNU configure, a migration which began in version 2.0. As an added
+benefit, we've been able to compile and test the infrastructure easily on
+three <a href="install.html#supported">additional platforms</a>: SGI IRIX,
+Intel FreeBSD, and MacOS X/Darwin. 
+<h3> Hub continuations</h3>
+ We have introduced <a
+ href="../advanced/synch_vs_asynch.html#Hub/server_expectation_mismatches">Hub 
+continuations</a>, which allow the programmer capture new messages from servers
+and treat them as replies to previous messages, in order to reconcile conflicting
+(asynchronous vs. synchronous) programming models. 
+<h3> Open Source Toolkit</h3>
+ Version 3.3 marks the debut of the Open Source Toolkit (OSTK), which we
+hope will become a must-have collection of servers and wrappers for dialogue
+system development. We have initially populated the Open Source Toolkit with
+our own servers and wrappers, including some previously unreleased software.
+The OSTK is available from <a href="http://communicator.sourceforge.net">http://communicator.sourceforge.net</a>. 
+<h3> Experimental Hub visualization support</h3>
+ In this version, we're releasing experimental work in progress to support
+message streams which report Hub state to separate servers, for visualization
+or other monitoring. See the <a href="../reference/hub.html#The_Hub"><tt>-gui</tt> 
+command line argument of the Hub executable</a>. A corresponding experimental
+Hub visualization tool can be found in the Open Source Toolkit. 
+<p> </p>
+<hr width="100%"> 
+<h2> Version 3.2</h2>
+ The major purpose of this distribution is to add a new, improved tutorial
+to the reorganized documentation. 
+<h3> New tutorial</h3>
+ In the past, MITRE has held training courses on the Galaxy Communicator
+architecture, and provided a self-guided version of the training materials
+for download. These materials had fallen out of date, and were no longer
+being distributed. In this new version, we've completely updated the tutorial,
+integrated it into the main documentation, and&nbsp; redesigned it to be
+more consistent, easier to run, and easier to understand. 
+<h3> Improved unit tester</h3>
+ In support of the new tutorial, the <a
+ href="../../../contrib/MITRE/tools/docs/unit_tester_ref.html">unit tester</a>
+has been completely redesigned and reimplemented. It now allows you to connect
+to a Hub pretending to be a server, or to a server pretending to be a Hub.
+It also provides a graphical interface to allow you to respond to incoming
+messages and to send new messages of your own, and keeps a mouseable history
+of frames for you to select from if you choose. 
+<p> </p>
+<hr width="100%"> 
+<h2> Version 3.1</h2>
+ This version is mostly a bug fix distribution, but there is also some new
+functionality provided. For details, see the <a
+ href="release_notes_v3.html">release notes</a>. 
+<h3> New Builtin server functions</h3>
+ The <a href="../../servers/builtin.html">Builtin server</a> now has functions
+to list the available servers and to call subprograms so that they return
+values. 
+<h3> Cross-compilation support</h3>
+ This version includes experiment support for <a
+ href="install.html#Cross_compilation">cross-compiling</a> executables for
+other platforms, such as the StrongARM. 
+<h3> Embedding support</h3>
+ This version provides a new abstraction for the event-driven programming
+model used to <a href="../advanced/special_mainloop.html">embed Communicator
+servers in external main loops</a>. 
+<h3> Hub scripting improvements</h3>
+ The <a href="../reference/pgm.html">Hub scripting language</a> has a new
+directive (IGNORE:), a new comparison (IN), and better write-locking for
+the global namespace. 
+<p> </p>
+<hr width="100%"> 
+<h2> Version 3.0</h2>
+  
+<h3> Session management</h3>
+ In versions 2.1 and previous, there was poor support for session management.
+For instance, if you wanted to send a new message to the Hub in the current
+session, you were required to add the session ID to the outgoing message
+by hand. This requirement was even more onerous in the case of sending messages
+from timed tasks and broker callbacks. Also, the Hub created sessions for
+new session IDs in an odd, inconsistent set of circumstances. These problems
+have been fixed. The Hub now always creates a session if it doesn't know
+about it, and we've implemented far more robust <a
+ href="../advanced/session.html">session management
+support</a>. 
+<h3> Continuations</h3>
+ In versions 2.1 and previous, once the Hub sent a message to a server, the
+server was busy, as far as that Hub was concerned, and it could send no more
+messages to it until the server responded. This sometimes led to deadlock
+situations. In version 3.0, you can use <a
+ href="../advanced/synch_vs_asynch.html#Continuations">continuations</a> to
+tell the Hub that you'll send an answer later. 
+<h3> Server location files</h3>
+ In versions 2.1 and previous, it was hard to reassign ports and host locations
+for a configuration of servers. The <tt>-locations</tt> command line Hub
+argument helped, as did the <tt>-port</tt> and <tt>-contact_hub</tt> command
+line server arguments. However, there was no way to change who contacts whom 
+without editing the program file, and the command line arguments were quite 
+unwieldy. In 3.0, you can define a <a
+ href="../advanced/server_locations.html">server locations file</a> which
+the Hub and all servers can refer to via the <tt>-server_locations_file</tt> 
+command line argument, which specifies the location of all listeners and who
+contacts whom. These settings override the Hub program file, so no program
+file needs to be edited. 
+<h3> GC_VERSION declaration</h3>
+ Before version 2.0, there was no support for distinguishing between Communicator
+releases. This was a potential problem in source code which needed to be
+compiled against multiple releases. The GC_VERSION C declaration was introduced
+in version 2.0, but it was not documented, and there was no corresponding
+support for Python, Allegro and Java. In 3.0, we've <a
+ href="../reference/adding.html#Conditionalize_your_server_for_multiple_Communicator_versions">documented 
+this feature</a> and <a
+ href="release_notes_v3.html#3.0_MITRE_contributions">made it available</a>
+in Allegro (compile/read time feature) and Python (run-time variable). Java
+is a compiled language which has no compile-time conditionalizations that
+we can find, so this feature is unfortunately unavailable in Java. 
+<h3> Multiple events in C timed tasks</h3>
+ In versions 2.1 and previous, the implementation of timed tasks in C did
+not allow you to associate a single task with multiple events (input available,
+error input available, etc.). In version 3.0, the functions <a
+ href="../advanced/timed_tasks.html#Gal_AddTaskExtended">Gal_AddTaskExtended</a> 
+and <a href="../advanced/timed_tasks.html#Gal_TaskPkgRunReasons">Gal_TaskPkgRunReasons</a> 
+support this functionality correctly. 
+<h3> C frame library improvements</h3>
+ Version 3.0 features three major improvements to the frame library. First,
+you can now create dynamically expandable lists and binary data objects (see
+the functions <a href="../reference/frame.html#Gal_CreateListObject">Gal_CreateListObject</a> 
+and <a href="../reference/frame.html#Gal_CreateBinaryObject">Gal_CreateBinaryObject</a>, 
+for example). Second, we've defined a parallel API which gives you better 
+memory management control over objects (see the Gal_Create... family of functions).
+Finally, there are no longer any restrictions on the types of objects you
+can insert into frames; all array types can now be sent, in addition to binary
+data (see the function <a
+ href="../reference/frame.html#Gal_CreateInt16Object">Gal_CreateInt16Object</a>, 
+for instance). 
+<h3> Improved event-driven programming model</h3>
+ In version 2.1 and previous, there were functions which allowed you to register
+"callback" behavior (for instance, when a broker was destroyed), but there
+was no consistent event-driven model underlying these functions, and the
+implementation was quite incomplete. In version 3.0, we've defined an <a
+ href="../reference/server_structure.html#Event-driven_programming">event-driven 
+model</a> which we use for the default Communicator main loop, for event registration
+in external main loops, and for embedding the C library in the Python and
+Allegro bindings. See the <a
+ href="3point0upgrade.html#Upgrade_your_own_main_loop_(advanced,_optional)">upgrade 
+notes</a> for more details. 
+<h3> Improvements in the Hub syntax and conceptual model</h3>
+ In a number of circumstances, it's important to be able to exert control
+over how and when particular servers are used by a given Hub. In order to
+support this degree of control, we've reorganized the Hub model of its resources.
+The Hub now groups servers (known to the Hub as "<a
+ href="../reference/pgm.html#Service_providers">service providers</a>") into
+equivalence classes of <a href="../reference/pgm.html#Service_types">service 
+types</a>. These providers can have properties associated with them, and the
+Hub programmer can impose conditions on the choice of provider, based on
+the service provider's properties and the properties of the current session
+and token. 
+<p>These improvements are accompanied by a new <a
+ href="../reference/pgm.html#Extended_syntax_mode">extended syntax mode</a>,
+which broadens the range of expressive possibilities and eliminates some
+of the idiosyncracies of the default Hub syntax. The primary improvement in
+extended syntax mode is the ability to refer transparently to session variables,
+global Hub state, server properties, etc. </p>
+<p>Finally, the Hub now has greater debugging and error-handling support,
+including expanded functionality for the <tt>-debug</tt><a
+ href="../reference/hub.html#The_Hub">Hub command line argument</a>, introduction
+of the <a href="../reference/pgm.html#ERROR:">ERROR:</a> Hub program directive,
+and the new Builtin server dispatch functions <a
+ href="../../servers/builtin.html#hub_break">hub_break</a>, <a
+ href="../../servers/builtin.html#hub_exit">hub_exit</a> and <a
+ href="../../servers/builtin.html#hub_print">hub_print</a>. </p>
+<h3> Brokering improvements</h3>
+ In version 2.1 and previous, the set of types which could be brokered and
+the set of types which could be included in frames overlapped, but were not
+identical. In 3.0, thanks to the new unified XDR encoding, there is finally
+no distinction between these sets. Also, outgoing brokers now accept multiple
+subscribers by default. 
+<h3> Protocol improvements</h3>
+ The interaction between Hub and servers has been made more robust in a number
+of ways. First, the new XDR encoding has eliminated a number of nagging bugs,
+such as the inability to send arrays of floats from one platform to another.
+Second, both Hub and server indicate in their messages whether a response
+is expected or not, and the Hub and bindings either eliminate responses or
+add pacifier responses to guarantee that the expectations are fulfilled.
+As a result, the Hub will no longer deadlock waiting for a response from
+a server which isn't configured to provide one. Third, the infrastructure-specific
+data is now encapsulated in a single frame key, which will make upward compability
+much simpler in the future. And finally, the initial protocol handshake now
+contains a version number. 
+<p> </p>
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="release_notes.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="3point3upgrade.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated January 4, 2002</center>
+  <br>
+</body>
+</html>

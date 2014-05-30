@@ -1,0 +1,2285 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Upgrading from 2.1 to 3.0</title>
+     <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+  
+<center> 
+<h1> Galaxy Communicator Documentation:<br>
+ <br>
+ Upgrading from 2.1 to 3.0</h1>
+</center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "3point1upgrade.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "release_notes_v3.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+  
+<hr width="100%"> 
+<p>The 3.0 Galaxy Communicator distribution contains major improvements to
+outgoing brokering. There are obligatory upgrades associated with these improvements;
+in particular, APIs have unavoidably changed. In almost all other ways, the
+3.0 upgrade should be transparent for C programmers; except for outgoing
+brokering, the programmer will probably not have exploited the functionality
+which needs to be changed.&nbsp; For Java programmers, a significant internal
+reorganization of the Java bindings was required to bring its functionality
+in line with the C library, and there are a number of unavoidable API changes
+which are required. For Python and Allegro programmers, the changes are much
+more modest, but in many cases still necessary. </p>
+<p>This document describes only the steps required or recommended to upgrade
+existing features of Galaxy Communicator. You can find a list of new features
+<a href="new_features.html">here</a>. You can find the complete release notes
+<a href="release_notes.html">here</a>. <br>
+&nbsp; <br>
+&nbsp; 
+<table border="1" cols="3" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td><b>Step</b></td>
+  <td><b>Who's affected</b></td>
+  <td><b>Status</b></td>
+ </tr>
+  <tr>
+ <td><a href="#Configuring_your_system">Step 1: Configuring your system</a></td>
+  <td>Users of the Python and Allegro bindings, users of the MITRE PostGres
+DB wrapper server</td>
+  <td>Required</td>
+ </tr>
+  <tr>
+ <td><a href="#Updating_outgoing_brokering">Step 2a: Upgrading outgoing
+brokering</a></td>
+  <td>All server developers</td>
+  <td>Required</td>
+ </tr>
+  <tr>
+ <td><a href="#Upgrading_references_to_the_call_environment">Step 
+2b: </a><a
+ href="#Upgrading_memory_management_in_broker_callbacks">Upgrading 
+memory management in broker callbacks</a></td>
+  <td>Users of incoming brokering in the libGalaxy C library</td>
+  <td>Optional, but highly recommended for efficient performance</td>
+ </tr>
+  <tr>
+ <td><a href="#Upgrading_session_management">Step 2c: </a><a
+ href="#Upgrading_incoming_brokering_(optional)">Upgrading incoming 
+brokering</a></td>
+  <td>Users of incoming brokering in the libGalaxy C library</td>
+  <td>Optional</td>
+ </tr>
+  <tr>
+ <td><a
+ href="#Using_broker_callbacks_for_completion_and_aborting">Step 
+2d: Using broker callbacks for completion and aborting</a></td>
+  <td>Users of brokering</td>
+  <td>Optional</td>
+ </tr>
+  <tr>
+ <td><a href="#Upgrading_Python_bindings">Step 3: Upgrading Python bindings</a></td>
+  <td>Users of the Python bindings</td>
+  <td>Required</td>
+ </tr>
+  <tr>
+ <td><a href="#Upgrading_Java_bindings">Step 4: Upgrading Java bindings</a></td>
+  <td>Users of the Java bindings</td>
+  <td>Required</td>
+ </tr>
+  <tr>
+ <td><a href="#Upgrading_Python_bindings">Step 5: </a><a
+ href="#Upgrading_server_listen_status">Upgrading server listen status</a></td>
+  <td>Users of the&nbsp; <a
+ href="../reference/server_structure.html#Listener-in-Hub_support">server 
+listen status</a> functionality in the libGalaxy C library (introduced in
+2.1)</td>
+  <td>Required</td>
+ </tr>
+  <tr>
+ <td><a href="#Upgrading_server_listen_status">Step 6: </a><a
+ href="#Upgrading_references_to_the_call_environment">Upgrading 
+references to the call environment</a></td>
+  <td>Users of the libGalaxy C library who inadvisedly exploited the odd
+return properties&nbsp; in 2.1 of <a
+ href="../reference/adding.html#GalSS_EnvError">GalSS_EnvError</a> and <a
+ href="../reference/adding.html#GalSS_EnvDestroyToken">GalSS_EnvDestroyToken</a></td>
+  <td>Required</td>
+ </tr>
+  <tr>
+ <td><a
+ href="#Upgrading_references_to_the_Communicator_main_loop_(optional)">Step 
+7: </a><a href="#Upgrading_calls_to_GalIO_SetServerData">Upgrading
+calls to GalIO_SetServerData</a></td>
+  <td>Users of the libGalaxy C library who use either use <a
+ href="../reference/server_structure.html#GalIO_SetServerData">GalIO_SetServerData</a> 
+to store arbitrary data in the server, or returned values from <a
+ href="../reference/adding.html#_GalSS_init_server">_GalSS_init_server </a>for 
+storage</td>
+  <td>Required (GalIO_SetServerData), recommended (_GalSS_init_server)</td>
+ </tr>
+  <tr>
+ <td><a href="#Upgrading_incoming_brokering_(optional)">Step 8a:
+      </a><a
+ href="#Upgrading_references_to_the_Communicator_main_loop_(optional)">Upgrading 
+references to the Communicator main loop</a></td>
+  <td>Users of the libGalaxy C library who have written servers with their
+own main()</td>
+  <td>Optional</td>
+ </tr>
+  <tr>
+ <td><a
+ href="#Upgrade_your_own_main_loop_(advanced,_optional)">Step 
+8b: Upgrade your own main loop</a></td>
+  <td>Users of the libGalaxy C library who have written servers with their
+own event loops (embedded in Tcl/Tk or CORBA, for instance)</td>
+  <td>Optional but highly recommended</td>
+ </tr>
+  <tr>
+ <td><a
+ href="#Upgrade_timed_task_invocation_(advanced,_optional)">Step 
+9: Upgrade timed task invocation</a></td>
+  <td>Users of the libGalaxy C library who set up their own <a
+ href="../advanced/timed_tasks.html">timed tasks</a></td>
+  <td>Optional</td>
+ </tr>
+  <tr>
+ <td><a href="#Upgrading_session_management">Step 10: Upgrading session
+management</a></td>
+  <td>Users of the libGalaxy C library</td>
+  <td>Optional but highly recommended, especially for those who intend to
+run multiple parallel sessions</td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>Even though a number of these steps are optional, we strongly encourage
+you to consider them. The functionality they replace has not been deprecated,
+but in many cases, future upgrades will not extend the older functionality.
+In addition, steps 8-10 feature radically improved strategies for embedding
+Communicator servers in external main loops, and for session handling; while
+these upgrades are optional, these improvements are so dramatic that we strongly
+recommend that everyone adopt them. </p>
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="Configuring_your_system"></a>Step 1: Configuring your system</h2>
+ The only obligatory change in configuring your system comes in the section
+where Python is enabled. Because we're now implementing the Python bindings
+on top of the core C library, the Python bindings require the Python header
+files. In order to compile Python, you must have PYINCLUDE in <tt>templates/&lt;ARCHOS&gt;/config.make</tt> 
+set to the location of Python.h (typically <tt>include/python1.5</tt> parallel
+to <tt>bin/</tt>). On Linux, you may have to install the python-devel RPM. 
+<p>In addition, the 3.0 Galaxy Communicator distribution requires Allegro
+5.0. </p>
+<p>Finally, we have added the PostGres DB server to the default compilation.
+If you want to enable this server, uncomment the POSTGRES_INCLUDE and POSTGRES_LIB
+variables in your config file and set them to the appropriate values. </p>
+<p> </p>
+<hr width="100%"> 
+<h2> Step 2a:&nbsp;<a name="Updating_outgoing_brokering"></a>Updating outgoing
+brokering</h2>
+ <a href="../reference/brokering.html">Brokering</a> has been improved in
+two major ways. First, outgoing brokers now share a listener port with the
+main server, which reduces the number of open ports and also fixes a bug
+involving port reuse inside processes. Second, outgoing brokers can now provide
+data to an arbitrary number of broker clients. This second improvement now
+makes timeout management of outgoing brokers considerably more important,
+since outgoing brokers now cache their data, and memory bloat can result
+if they're not destroyed promptly. 
+<p>Here's the old way of doing outgoing brokering: </p>
+<blockquote><tt>static Gal_Frame prepare_audio_frame(char *filename)</tt> 
+  <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; Gal_Frame f = Gal_MakeFrame("main", GAL_CLAUSE);</tt> <br>
+  <tt>&nbsp; int total;</tt> <br>
+  <tt>&nbsp; char *buf;</tt> <br>
+  <tt>&nbsp; GalIO_BrokerStruct *b;</tt> <br>
+  <tt>&nbsp; char host_pid[1024];</tt> 
+  <p><tt>&nbsp; /* In the code omitted here, the data from the named file 
+is</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; read into buf, and total is the number of
+bytes in buf */</tt> </p>
+  <p><tt>&nbsp; /* .... */</tt> </p>
+  <p><tt>&nbsp; /* Now that we have the audio, we add a binary element. */</tt> 
+  <br>
+  <tt>&nbsp; /* These must be added to the broker frame BEFORE the</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; broker object is initialized. */</tt> <br>
+  <tt>&nbsp; <b>sprintf(host_pid, "%s:%d", GalIO_IPAddress(), (int) getpid());</b></tt> 
+  <br>
+  <b><tt>&nbsp; GalIO_FrameSetBrokerCallID(f, Gal_StringObject(host_pid));</tt></b> 
+  <br>
+  <b><tt>&nbsp; b = GalIO_BrokerDataOutInit(3900, f, 0, 0);</tt></b> <br>
+  <b><tt>&nbsp; if (b &amp;&amp; (GalIO_FrameGetBrokerPort(f) &gt; 0)) {</tt></b> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; Gal_SetProp(f, ":binary_host", Gal_StringObject(GalIO_IPAddress()));</tt></b> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; Gal_SetProp(f, ":binary_port",</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+Gal_IntObject(GalIO_FrameGetBrokerPort(f)));</tt></b> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalIO_BrokerWriteBinary(b, buf, total);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalIO_BrokerDataOutDone(b);</tt> <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>&nbsp; return f;</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ Here's the new way 
+<blockquote><tt>static Gal_Frame prepare_audio_frame(GalIO_CommStruct *gcomm, 
+char *filename)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; Gal_Frame f = Gal_MakeFrame("main", GAL_CLAUSE);</tt> <br>
+  <tt>&nbsp; int total;</tt> <br>
+  <tt>&nbsp; char *buf;</tt> <br>
+  <tt>&nbsp; GalIO_BrokerStruct *b;</tt> <br>
+  <tt>&nbsp; char host_pid[1024];</tt> 
+  <p><tt>&nbsp; /* In the code omitted here, the data from the named file 
+is</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; read into buf, and total is the number of
+bytes in buf */</tt> </p>
+  <p><tt>&nbsp; /* .... */</tt> </p>
+  <p><tt>&nbsp; /* Now that we have the audio, we write the binary data</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; through the broker. */</tt> </p>
+  <p><tt>&nbsp; <b>b = GalIO_BrokerDataOutInit(gcomm, 0, 10);</b></tt> <br>
+  <b><tt>&nbsp; if (b &amp;&amp; (GalIO_GetBrokerListenPort(b) &gt; 0)) {</tt></b> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; GalIO_BrokerPopulateFrame(b, f, ":binary_host", 
+":binary_port");</tt></b> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalIO_BrokerWriteBinary(b, buf, total);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalIO_BrokerDataOutDone(b);</tt> <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>&nbsp; free(buf);</tt> <br>
+  <tt>&nbsp; return f;</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ Note the following contrasts: 
+<ul>
+ <li> It is no longer necessary to create the unique call ID; the broker
+does this for you.</li>
+  <li> <a href="../reference/brokering.html#GalIO_BrokerDataOutInit">GalIO_BrokerDataOutInit</a> 
+no longer takes a port number as its first argument; instead, it takes a
+connection object, through which it can associate itself with an existing 
+server listener (or start up a listener for the server).</li>
+  <li> The third argument to <a
+ href="../reference/brokering.html#GalIO_BrokerDataOutInit">GalIO_BrokerDataOutInit</a> 
+is still a timeout, but it is much more important to set this timeout appropriately, 
+because the semantics of the timeout have changed. Previously, when brokers 
+accepted only a single connection, the broker would destroy itself after it
+received and satisfied that single connection, and the timeout was only activated
+if no connection was ever received. Now, since brokers can accept multiple
+connections, the broker will not be destroyed until the timeout is reached
+and all currently connected broker clients have received all their data.
+A broker which never expires will never be freed, and all the data it is
+intended to send will also remain unfreed, since the broker must cache its
+data for subsequent connections.</li>
+  <li> The host and port for the broker connection are now inserted by <a
+ href="../reference/brokering.html#GalIO_BrokerPopulateFrame">GalIO_BrokerPopulateFrame</a>.</li>
+ 
+</ul>
+ All these changes are mandatory. Before 3.0, setting the broker properties
+(host, port, call ID) exhibited some complicated and unnecessary ordering
+dependencies which have now been eliminated; in addition, the outgoing broker
+didn't need the connection, because it created its own server listener. 
+<p>Corresponding modifications are required in Allegro, Java and Python. </p>
+<p> </p>
+<hr width="100%"> 
+<h2> Step 2b:&nbsp;<a
+ name="Upgrading_memory_management_in_broker_callbacks"></a>Upgrading memory
+management in broker callbacks</h2>
+ As part of general memory management cleanup, we have observed that before
+version 3.0, we had failed to document appropriately the fact that data passed
+to broker handlers used by <a
+ href="../reference/brokering.html#GalIO_CommBrokerDataInInit">GalIO_CommBrokerDataInInit</a> 
+is not freed by the Galaxy Communicator library. Therefore, all broker handlers
+should take responsibility for freeing the data they're passed. We made this
+mistake in the 2.1 version of one of our audio examples; here's the comparison: 
+<p><b>Version 2.1</b> </p>
+<blockquote><tt>static void audio_handler(GalIO_BrokerStruct *broker_struct,</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+void *data, Gal_ObjectType data_type,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+int n_samples)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) GalIO_GetBrokerCallerData(broker_struct);</tt> 
+  <p><tt>&nbsp; switch (data_type) {</tt> <br>
+  <tt>&nbsp; case GAL_BINARY:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; if (d-&gt;data_buf)</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; d-&gt;data_buf = (char *) realloc(d-&gt;data_buf, 
+n_samples + d-&gt;size);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; else</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; d-&gt;data_buf = (char *) malloc(n_samples 
++ d-&gt;size);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; bcopy(data, d-&gt;data_buf + d-&gt;size, n_samples);</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; d-&gt;size += n_samples;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; break;</tt> <br>
+  <tt>&nbsp; default:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalUtil_Warn("Unknown data type %s\n", Gal_ObjectTypeString(data_type));</tt> 
+  <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ <b>Version 3.0</b> 
+<blockquote><tt>static void audio_handler(GalIO_BrokerStruct *broker_struct,</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+void *data, Gal_ObjectType data_type,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+int n_samples)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) GalIO_GetBrokerCallerData(broker_struct);</tt> 
+  <p><tt>&nbsp; switch (data_type) {</tt> <br>
+  <tt>&nbsp; case GAL_BINARY:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; if (d-&gt;data_buf)</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; d-&gt;data_buf = (char *) realloc(d-&gt;data_buf, 
+n_samples + d-&gt;size);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; else</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; d-&gt;data_buf = (char *) malloc(n_samples 
++ d-&gt;size);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; bcopy(data, d-&gt;data_buf + d-&gt;size, n_samples);</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; d-&gt;size += n_samples;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; <b>free(data);</b></tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; break;</tt> <br>
+  <tt>&nbsp; default:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalUtil_Warn("Unknown data type %s\n", Gal_ObjectTypeString(data_type));</tt> 
+  <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+  
+<hr width="100%"> 
+<h2> Step 2c:&nbsp;<a name="Upgrading_incoming_brokering_(optional)"></a>Upgrading 
+incoming brokering (optional)</h2>
+ As part of cleaning up our data storage and callback models, we've made
+some modifications to the preferred way that incoming brokers are set up.
+First, to support the new event-driven programming paradigm more reliably,
+we recommend that everyone change their incoming broker setup function from
+<a href="../reference/brokering.html#GalIO_BrokerDataInInit">GalIO_BrokerDataInInit</a> 
+to <a href="../reference/brokering.html#GalIO_CommBrokerDataInInit">GalIO_CommBrokerDataInInit</a>, 
+as follows: 
+<p><b>Version 2.x</b> </p>
+<blockquote><tt>Gal_Frame receive_audio(Gal_Frame f, void *server_data)</tt> 
+  <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) malloc(sizeof(DataHandler));</tt> 
+  <br>
+  <tt>&nbsp; GalIO_BrokerStruct *b;</tt> <br>
+  <tt>&nbsp; char *host = Gal_GetString(f, ":binary_host");</tt> <br>
+  <tt>&nbsp; int port = Gal_GetInt(f, ":binary_port");</tt> 
+  <p><tt>&nbsp; d-&gt;data_buf = (char *) NULL;</tt> <br>
+  <tt>&nbsp; d-&gt;size = 0;</tt> </p>
+  <p><tt>&nbsp; if (host &amp;&amp; port) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; b = <b>GalIO_BrokerDataInInit(host, port, f, audio_handler,
+d, 0);</b></tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; if (b) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_SetBrokerActive(b);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; }</tt> <br>
+  <tt>&nbsp; } else {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; free(d);</tt> <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>&nbsp; return (Gal_Frame) NULL;</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ <b>Version 3.0</b> 
+<blockquote><tt>Gal_Frame receive_audio(Gal_Frame f, void *server_data)</tt> 
+  <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) malloc(sizeof(DataHandler));</tt> 
+  <br>
+  <tt>&nbsp; GalIO_BrokerStruct *b;</tt> <br>
+  <tt>&nbsp; char *host = Gal_GetString(f, ":binary_host");</tt> <br>
+  <tt>&nbsp; int port = Gal_GetInt(f, ":binary_port");</tt> 
+  <p><tt>&nbsp; d-&gt;data_buf = (char *) NULL;</tt> <br>
+  <tt>&nbsp; d-&gt;size = 0;</tt> <br>
+  <tt>&nbsp; <b>d-&gt;gcomm = GalSS_EnvComm((GalSS_Environment *) server_data);</b></tt> 
+  </p>
+  <p><tt>&nbsp; if (host &amp;&amp; port) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; b = <b>GalIO_CommBrokerDataInInit(d-&gt;gcomm, 
+host, port, f, audio_handler,</b></tt> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+0, d, __FreeDataHandler);</tt></b> <br>
+  <tt>&nbsp;&nbsp;&nbsp; if (b) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_SetBrokerActive(b);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; }</tt> <br>
+  <tt>&nbsp; } else {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; free(d);</tt> <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>&nbsp; return (Gal_Frame) NULL;</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ Actually, our best recommendation is to use <a
+ href="../reference/brokering.html#GalSS_EnvBrokerDataInInit">GalSS_EnvBrokerDataInInit</a>, 
+as shown in this <a
+ href="#Upgrading_references_to_the_call_environment">upgrade step</a>,
+but if you choose not to, we recommend the upgrade here. 
+<p>Second, we now discourage the user of GalIO_BrokerSetFinalizer, which
+has been superseded by the <a
+ href="../reference/server_structure.html#Event-driven_programming">event-driven 
+programming model</a>: Note that this example also illustrates the upgrade 
+to GalSS_EnvBrokerDataInInit, but we won't highlight that contrast here: </p>
+<p><b>Version 2.x</b> </p>
+<blockquote><tt>void __AudioSupport_RetrieveAudio(char *host, int port,</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+int sample_rate,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+Gal_Frame f,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ <b>GalIO_BrokerDataFinalizer</b> finalizer,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+void *callback_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalIO_BrokerStruct *b;</tt> 
+  <p><tt>&nbsp; if (host &amp;&amp; port &amp;&amp; (sample_rate &gt; 0))
+{</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; DataContainer *c = (DataContainer *) calloc(1, sizeof(DataContainer));</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; c-&gt;data_buf = (char *) NULL;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; c-&gt;size = 0;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; c-&gt;callback_data = callback_data;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; b = GalIO_BrokerDataInInit(host, port, f, __AudioCallback, 
+c, 0);</tt> </p>
+  <p><tt>&nbsp;&nbsp;&nbsp; if (b) {</tt> </p>
+  <p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>/* Set the broker finalizer. */</b></tt> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_BrokerSetFinalizer(b, finalizer);</tt></b> 
+  </p>
+  <p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Make the broker active. Without 
+this step, nothing will happen.</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This utility can arguably
+be used to manage multiple incoming</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; audio signals, but
+it's probably inadequate. */</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_SetBrokerActive(b);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; }</tt> <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ <b>Version 3.0</b> 
+<blockquote><tt>void __AudioSupport_RetrieveAudio(GalSS_Environment *env,</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+char *host, int port,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+int sample_rate,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+Gal_Frame f,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ <b>GalIO_BrokerCallbackFn</b> finalizer,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+void *callback_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalIO_BrokerStruct *b;</tt> 
+  <p><tt>&nbsp; if (host &amp;&amp; port &amp;&amp; (sample_rate &gt; 0))
+{</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; DataContainer *c = (DataContainer *) calloc(1, sizeof(DataContainer));</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; c-&gt;data_buf = (char *) NULL;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; c-&gt;size = 0;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; c-&gt;callback_data = callback_data;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; b = GalSS_EnvBrokerDataInInit(env, host, port, f,
+__AudioCallback,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+0, (void *) c, NULL);</tt> </p>
+  <p><tt>&nbsp;&nbsp;&nbsp; if (b) {</tt> </p>
+  <p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>GalIO_AddBrokerCallback(b, GAL_BROKER_DATA_DONE_EVENT,</b></tt> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+finalizer, (void *) NULL);</tt></b> </p>
+  <p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Make the broker active. Without 
+this step, nothing will happen.</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This utility can arguably
+be used to manage multiple incoming</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; audio signals, but
+it's probably inadequate. */</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_SetBrokerActive(b);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; }</tt> <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ The special finalizer has been replaced by a more general callback, and
+in this case the event the callback is associated with is when the broker
+is done with its data. 
+<p> </p>
+<hr width="100%"> 
+<h2> Step 2d:&nbsp;<a
+ name="Using_broker_callbacks_for_completion_and_aborting"></a>Using broker
+callbacks for completion and aborting</h2>
+ In version 2.1 and previous, there was no way of marking completion of a
+broker connection or a termination before completion without sending string
+semaphores through the broker connection. In version 3.0, you can use broker
+callbacks to implement this behavior. 
+<p><b>With semaphores</b> </p>
+<blockquote><b><tt>#define AUDIO_END "end"</tt></b> <br>
+  <b><tt>#define AUDIO_ABORT "abort"</tt></b> 
+  <p><tt>static void audio_handler(GalIO_BrokerStruct *broker_struct,</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+void *data, Gal_ObjectType data_type,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+int n_samples)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) GalIO_GetBrokerData(broker_struct);</tt> 
+  </p>
+  <p><tt>&nbsp; switch (data_type) {</tt> <br>
+  <tt>&nbsp; <b>case GAL_STRING:</b></tt> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; if (!strcmp((char *) data, AUDIO_END)) {</tt></b> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_BrokerDataDone(broker_struct);</tt></b> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; __report_done(broker_struct, (void
+*) NULL);</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; } else if (!strcmp((char *) data, AUDIO_ABORT) 
+{</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; __report_abort(broker_struct, (void
+*) NULL);</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; } else {</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalUtil_Warn("Unknown message %s\n",
+(char *) data);</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; }</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; free(data);</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; break;</tt></b> <br>
+  <tt>&nbsp; case GAL_BINARY:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; if (d-&gt;data_buf)</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; d-&gt;data_buf = (char *) realloc(d-&gt;data_buf, 
+n_samples + d-&gt;size);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; else</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; d-&gt;data_buf = (char *) malloc(n_samples 
++ d-&gt;size);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; bcopy(data, d-&gt;data_buf + d-&gt;size, n_samples);</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; d-&gt;size += n_samples;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; free(data);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; break;</tt> <br>
+  <tt>&nbsp; default:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalUtil_Warn("Unknown data type %s\n", Gal_ObjectTypeString(data_type));</tt> 
+  <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>void __FreeDataHandler(void *data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) data;</tt> <br>
+  <tt>&nbsp; free(d-&gt;data_buf);</tt> <br>
+  <tt>&nbsp; free(d);</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>void __report_abort(GalIO_BrokerStruct *b, void *data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) GalIO_GetBrokerData(b);</tt> 
+  <br>
+  <tt>&nbsp; Gal_Frame f;</tt> </p>
+  <p><tt>&nbsp; f = Gal_MakeFrame("notify", GAL_CLAUSE);</tt> <br>
+  <tt>&nbsp; Gal_SetProp(f, ":notification", Gal_StringObject("Audio aborted."));</tt> 
+  <br>
+  <tt>&nbsp; GalIO_CommWriteFrame(d-&gt;gcomm, f, 0);</tt> <br>
+  <tt>&nbsp; Gal_FreeFrame(f);</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>void __report_done(GalIO_BrokerStruct *b, void *data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) GalIO_GetBrokerData(b);</tt> 
+  <br>
+  <tt>&nbsp; Gal_Frame f;</tt> <br>
+  <tt>&nbsp; FILE *fp = fopen("/dev/audio", "w");</tt> </p>
+  <p><tt>&nbsp; if (!fp) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalUtil_Warn("Couldn't open /dev/audio");</tt> <br>
+  <tt>&nbsp; } else {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; fwrite(d-&gt;data_buf, sizeof(char), d-&gt;size,
+fp);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; fflush(fp);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; fclose(fp);</tt> <br>
+  <tt>&nbsp; }</tt> </p>
+  <p><tt>&nbsp; f = Gal_MakeFrame("notify", GAL_CLAUSE);</tt> <br>
+  <tt>&nbsp; Gal_SetProp(f, ":notification", Gal_StringObject("Audio received."));</tt> 
+  <br>
+  <tt>&nbsp; GalIO_CommWriteFrame(d-&gt;gcomm, f, 0);</tt> <br>
+  <tt>&nbsp; Gal_FreeFrame(f);</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>Gal_Frame receive_audio(Gal_Frame f, void *server_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) malloc(sizeof(DataHandler));</tt> 
+  <br>
+  <tt>&nbsp; GalIO_BrokerStruct *b;</tt> <br>
+  <tt>&nbsp; char *host = Gal_GetString(f, ":binary_host");</tt> <br>
+  <tt>&nbsp; int port = Gal_GetInt(f, ":binary_port");</tt> </p>
+  <p><tt>&nbsp; d-&gt;data_buf = (char *) NULL;</tt> <br>
+  <tt>&nbsp; d-&gt;size = 0;</tt> <br>
+  <tt>&nbsp; d-&gt;gcomm = GalSS_EnvComm((GalSS_Environment *) server_data);</tt> 
+  </p>
+  <p><tt>&nbsp; if (host &amp;&amp; port) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; b = GalIO_CommBrokerDataInInit(d-&gt;gcomm, 
+host, port, f, audio_handler,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+0, d, __FreeDataHandler);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; if (b) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_SetBrokerActive(b);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; }</tt> <br>
+  <tt>&nbsp; } else {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; free(d);</tt> <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>&nbsp; return (Gal_Frame) NULL;</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+  
+<p><br>
+<b>Without semaphores</b> </p>
+<blockquote><tt>static void audio_handler(GalIO_BrokerStruct *broker_struct,</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+void *data, Gal_ObjectType data_type,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+int n_samples)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) GalIO_GetBrokerData(broker_struct);</tt> 
+  <p><tt>&nbsp; switch (data_type) {</tt> <br>
+  <tt>&nbsp; case GAL_BINARY:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; if (d-&gt;data_buf)</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; d-&gt;data_buf = (char *) realloc(d-&gt;data_buf, 
+n_samples + d-&gt;size);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; else</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; d-&gt;data_buf = (char *) malloc(n_samples 
++ d-&gt;size);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; bcopy(data, d-&gt;data_buf + d-&gt;size, n_samples);</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; d-&gt;size += n_samples;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; free(data);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; break;</tt> <br>
+  <tt>&nbsp; default:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalUtil_Warn("Unknown data type %s\n", Gal_ObjectTypeString(data_type));</tt> 
+  <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>void __FreeDataHandler(void *data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) data;</tt> <br>
+  <tt>&nbsp; free(d-&gt;data_buf);</tt> <br>
+  <tt>&nbsp; free(d);</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>void __report_abort(GalIO_BrokerStruct *b, void *data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) GalIO_GetBrokerData(b);</tt> 
+  <br>
+  <tt>&nbsp; Gal_Frame f;</tt> </p>
+  <p><tt>&nbsp; f = Gal_MakeFrame("notify", GAL_CLAUSE);</tt> <br>
+  <tt>&nbsp; Gal_SetProp(f, ":notification", Gal_StringObject("Audio aborted."));</tt> 
+  <br>
+  <tt>&nbsp; GalIO_CommWriteFrame(d-&gt;gcomm, f, 0);</tt> <br>
+  <tt>&nbsp; Gal_FreeFrame(f);</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>void __report_done(GalIO_BrokerStruct *b, void *data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) GalIO_GetBrokerData(b);</tt> 
+  <br>
+  <tt>&nbsp; Gal_Frame f;</tt> <br>
+  <tt>&nbsp; FILE *fp = fopen("/dev/audio", "w");</tt> </p>
+  <p><tt>&nbsp; if (!fp) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalUtil_Warn("Couldn't open /dev/audio");</tt> <br>
+  <tt>&nbsp; } else {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; fwrite(d-&gt;data_buf, sizeof(char), d-&gt;size,
+fp);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; fflush(fp);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; fclose(fp);</tt> <br>
+  <tt>&nbsp; }</tt> </p>
+  <p><tt>&nbsp; f = Gal_MakeFrame("notify", GAL_CLAUSE);</tt> <br>
+  <tt>&nbsp; Gal_SetProp(f, ":notification", Gal_StringObject("Audio received."));</tt> 
+  <br>
+  <tt>&nbsp; GalIO_CommWriteFrame(d-&gt;gcomm, f, 0);</tt> <br>
+  <tt>&nbsp; Gal_FreeFrame(f);</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>Gal_Frame receive_audio(Gal_Frame f, void *server_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) malloc(sizeof(DataHandler));</tt> 
+  <br>
+  <tt>&nbsp; GalIO_BrokerStruct *b;</tt> <br>
+  <tt>&nbsp; char *host = Gal_GetString(f, ":binary_host");</tt> <br>
+  <tt>&nbsp; int port = Gal_GetInt(f, ":binary_port");</tt> </p>
+  <p><tt>&nbsp; d-&gt;data_buf = (char *) NULL;</tt> <br>
+  <tt>&nbsp; d-&gt;size = 0;</tt> <br>
+  <tt>&nbsp; d-&gt;gcomm = GalSS_EnvComm((GalSS_Environment *) server_data);</tt> 
+  </p>
+  <p><tt>&nbsp; if (host &amp;&amp; port) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; b = GalIO_CommBrokerDataInInit(d-&gt;gcomm, 
+host, port, f, audio_handler,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+0, d, __FreeDataHandler);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; if (b) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_SetBrokerActive(b);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>GalIO_AddBrokerCallback(b, GAL_BROKER_ABORT_EVENT,</b></tt> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; __report_abort, 
+(void *) NULL);</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_AddBrokerCallback(b, GAL_BROKER_DATA_DONE_EVENT,</tt></b> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; __report_done, (void
+*) NULL);</tt></b> <br>
+  <tt>&nbsp;&nbsp;&nbsp; }</tt> <br>
+  <tt>&nbsp; } else {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; free(d);</tt> <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>&nbsp; return (Gal_Frame) NULL;</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ We believe that the version without semaphores is considerably more reliable
+than the version with semaphores; in addition to the sender and receiver
+not having to agree on the semaphores themselves, the detection of an incomplete
+connection covers all the cases where the sending server died unexpectedly
+and could not have sent an abort semaphore. We have upgraded all MITRE examples
+to use the callback-driven approach. 
+<p> </p>
+<hr width="100%"> 
+<h2> Step 3:&nbsp;<a name="Upgrading_Python_bindings"></a>Upgrading Python
+bindings</h2>
+ If you write Python servers, you'll need to make a few tiny modifications
+for 3.0. 
+<p>First, because Python now uses the C library, a number of the elements
+you could set and access via instance attributes now require you to call
+a method. In particular: </p>
+<ul>
+ <li> the <tt>port</tt> attribute of the <tt>GalaxyIO.Server</tt> class is
+now the <tt>ListenPort()</tt> method</li>
+  <li> the <tt>validate</tt> attribute of the <tt>GalaxyIO.Server</tt> class
+is now the <tt>Validating() </tt>and <tt>EnableValidation()</tt> methods</li>
+  <li> the <tt>server_name</tt> attribute of the <tt>GalaxyIO.Server</tt> 
+class is now the <tt>ServerName() </tt>method</li>
+  <li> the <tt>max_connections</tt> attribute of the <tt>GalaxyIO.Server</tt> 
+class is now the <tt>MaxConnections()</tt> method</li>
+ 
+</ul>
+ So for example, you should now set the maximum number of connections as
+follows: 
+<p><b>Version 2.x</b> </p>
+<blockquote><tt>s.max_connections = 5</tt></blockquote>
+ <b>Version 3.0</b> 
+<blockquote><tt>s.MaxConnections(5)</tt></blockquote>
+ See the source code for more details. 
+<p>Also, because Python now uses the C library: </p>
+<ul>
+ <li> The method <tt>ReadFrameFromString()</tt> of the <tt>Galaxy.Frame</tt>
+class has been removed.</li>
+  <li> The <tt>Galaxy.OPr()</tt> function no longer accepts the <tt>indent</tt> 
+keyword.</li>
+ 
+</ul>
+ Next, with an eye on simplifying server startup under Windows NT, we've
+revised the "preamble" which tells the server how to locate the Python libraries: 
+<p><b>Version 2.x</b> </p>
+<blockquote><tt>import os, sys</tt> 
+  <p><tt>sys.path.insert(0, os.environ["LIBDIR"])</tt> </p>
+  <p><tt>import Galaxy, GalaxyIO</tt></p>
+</blockquote>
+ <b>Version 3.0</b> 
+<blockquote><tt>import os, sys</tt> 
+  <p><tt>sys.path.insert(0, os.path.join(os.environ["GC_HOME"],</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+"contrib", "MITRE", "templates"))</tt> </p>
+  <p><tt>import GC_py_init</tt> </p>
+  <p><tt>import Galaxy, GalaxyIO</tt></p>
+</blockquote>
+ In this new method, the only thing the environment needs to provide is the
+identity of GC_HOME; all the other path functionality,&nbsp; etc., is provided
+in the <tt>GC_py_init</tt> module. 
+<p>Finally, the Python bindings now fully embrace the new call environments
+(see the documentation on <a href="../reference/adding.html">adding a server</a>
+and <a href="../advanced/session.html">session management</a>). The <tt>GalaxyIO.Connection</tt>
+class, which was "secretly" a call environment in 2.x, has now been renamed 
+<tt>GalaxyIO.CallEnvironment.</tt>The impact of this change is minimal in
+non-class-based servers. We use a simplified version of the multiply server
+from the double example to illustrate: </p>
+<p><b>Version 2.x</b> </p>
+<blockquote><tt>def Multiply(<b>conn</b>, dict):</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; return {":int": dict[":int"] * Factor}</tt> 
+  <p><tt>def Welcome(<b>conn</b>, dict):</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; global Factor</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; try:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Factor = dict[":factor"]</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; except: pass</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; return None</tt> </p>
+  <p><tt>def main():</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; s = GalaxyIO.Server(sys.argv, "multiply", default_port 
+= 2900,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  <b>conn_class 
+= GalaxyIO.Connection</b>)</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; s.AddDispatchFunction("multiply", Multiply)</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; s.AddDispatchFunction("reinitialize", Welcome)</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; s.RunServer()</tt> </p>
+  <p><tt>main()</tt></p>
+</blockquote>
+ <b>Version 3.0</b> 
+<blockquote><tt>def Multiply(<b>env</b>, dict):</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; return {":int": dict[":int"] * Factor}</tt> 
+  <p><tt>def Welcome(<b>env</b>, dict):</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; global Factor</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; try:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Factor = dict[":factor"]</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; except: pass</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; return None</tt> </p>
+  <p><tt>def main():</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; s = GalaxyIO.Server(sys.argv, "multiply", default_port 
+= 2900)</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; s.AddDispatchFunction("multiply", Multiply)</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; s.AddDispatchFunction("reinitialize", Welcome)</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; s.RunServer()</tt> </p>
+  <p><tt>main()</tt></p>
+</blockquote>
+ For mnemonic reasons, we've changed the name of the first argument of dispatch
+functions from <tt>conn</tt> to <tt>env</tt> in this example; this of course
+has no functional import. However, observe also that the conn_class keyword
+to the creation method for <tt>GalaxyIO.Server</tt> has been removed, because
+it is no longer recognized, and in this case it was superfluous anyway. The
+real differences emerge when we compare class-based versions of the same
+example: 
+<p><b>Version 2.x</b> </p>
+<blockquote><tt>class <b>MultiplyConnection</b>(<b>GalaxyIO.Connection</b>):</tt> 
+  <p><tt>&nbsp;&nbsp;&nbsp; def Multiply(self, dict):</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return {":int": dict[":int"] 
+* self.conn.Factor}</tt> </p>
+  <p><tt>&nbsp;&nbsp;&nbsp; def Welcome(self, dict):</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; self.conn.Factor
+= dict[":factor"]</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; except: self.conn.Factor 
+= 1</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return None</tt> </p>
+  <p><tt>def main():</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; s = GalaxyIO.Server(sys.argv, "multiply", default_port 
+= 2900,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ <b>conn_class = MultiplyConnection</b>)</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; s.AddDispatchFunction("multiply", <b>MultiplyConnection</b>.Multiply)</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; s.AddDispatchFunction("reinitialize", <b>MultiplyConnection</b>.Welcome)</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; s.RunServer()</tt> </p>
+  <p><tt>main()</tt></p>
+</blockquote>
+ <b>Version 3.0</b> 
+<blockquote><tt>class <b>MultiplyEnvironment</b>(<b>GalaxyIO.CallEnvironment</b>):</tt> 
+  <p><tt>&nbsp;&nbsp;&nbsp; def Multiply(self, dict):</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return {":int": dict[":int"] 
+* self.conn.Factor}</tt> </p>
+  <p><tt>&nbsp;&nbsp;&nbsp; def Welcome(self, dict):</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; self.conn.Factor
+= dict[":factor"]</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; except: self.conn.Factor 
+= 1</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return None</tt> </p>
+  <p><tt>def main():</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; s = GalaxyIO.Server(sys.argv, "multiply", default_port 
+= 2900,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ <b>env_class = MultiplyEnvironment</b>)</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; s.AddDispatchFunction("multiply", <b>MultiplyEnvironment</b>.Multiply)</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; s.AddDispatchFunction("reinitialize", <b>MultiplyEnvironment</b>.Welcome)</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; s.RunServer()</tt> </p>
+  <p><tt>main()</tt></p>
+</blockquote>
+ Notice that because the call environment is an "ephemeral" object, permanent
+data (such as the value of Factor) must be stored on the underlying connection.
+This is true in both 2.x and 3.0, but it's clearer in 3.0 why this is necessary.
+The <tt>conn_class</tt> keyword has been replaced by the <tt>env_class</tt> 
+keyword, etc. <br>
+&nbsp; 
+<p> </p>
+<hr width="100%"> 
+<h2> Step 4:&nbsp;<a name="Upgrading_Java_bindings"></a>Upgrading Java bindings</h2>
+ If you write Java servers, you'll need to make some modifications for 3.0. 
+<h3>Brokering </h3>
+<p>Java broker classes have been modified. First, the <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html">galaxy.server.DataOutBroker</a></tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html#DataOutBroker(galaxy.server.Server, int, int)">constructor</a> 
+has changed: </p>
+<p><b>Version 2.x</b> </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp; <tt>public 
+DataOutBroker(Server server, int port, GFrame frame) throws Exception</tt> 
+</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp; <tt>public 
+DataOutBroker(Server server, int port, GFrame frame, boolean rport) throws 
+Exception</tt> </p>
+<p><b>Version 3.0</b> </p>
+<p>&nbsp;&nbsp;&nbsp; <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html#DataOutBroker(galaxy.server.Server, int, int)">public 
+DataOutBroker(Server server, int pollMilliseconds, int timeoutSeconds) throws
+Exception</a></tt> </p>
+<p>Java outgoing brokers now rely on the listener in the main server to handle
+broker client connection requests, so the broker no longer needs its own
+listener (i.e., port). Also, the <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GFrame.html">GFrame</a></tt> 
+is no longer needed (it provided the broker's call ID) since <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html">DataOutBroker</a></tt> 
+now generates its own call ID (accessible via <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html#getCallId()">DataOutBroker.getCallId</a></tt>). 
+The new constructor's arguments include a reference to the <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html">galaxy.server.Server</a></tt> 
+that started the broker, a polling time in milliseconds, and a timeout in
+seconds. The polling time controls how often the broker checks for new data
+to send to its clients (it also checks for new clients, to which it sends
+any cached data it has). The timeout determines when (if ever) the broker
+stops accepting new client connections. Once a timeout expires, no new connections
+are accepted, and the broker will exit once it has been instructed to disconnect
+from its clients (via <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html#close()">DataOutBroker.close</a>)</tt>. 
+The old 
+constructors are still available but have been deprecated. They now only
+use the <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html">Server</a></tt> 
+parameter (default polling time and timeout values are used internally). </p>
+<p>When sending messages from a server to a Hub, informing the Hub that brokered
+data is available, use&nbsp; <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html#populateFrame(galaxy.lang.GFrame, java.lang.String, java.lang.String)">DataOutBroker.populateFrame</a></tt> 
+to add the broker contact information automatically to the frame. </p>
+<p>The codes segments below illustrate how code for creating an outgoing
+broker and creating a notification frame differs between Galaxy Communicator
+2.x and 3.0. </p>
+<p><b>Version 2.x</b> </p>
+<p><tt>public class TestAudio extends galaxy.server.Server {</tt> <br>
+<tt>{</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; ...</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp; Clause fr = new Clause("main");</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; fr.setProperty(":call_id", this.getCallId());</tt> 
+<br>
+<tt>&nbsp;&nbsp;&nbsp; DataOutBroker broker=null;</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; try {</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; broker = new DataOutBroker(this, 
+3900, fr);</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; } catch (Exception ex) {</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; logAndSendError("Error 
+opening broker connection: " + ex.toString());</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return;</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; }</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp; ... // prepare brokered data</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp; GFrame result = new Clause("main");</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; result.setProperty(":binary_port", broker.getPort());</tt> 
+<br>
+<tt>&nbsp;&nbsp;&nbsp; result.setProperty(":call_id", this.getCallId());</tt> 
+<br>
+<tt>&nbsp;&nbsp;&nbsp; result.setProperty(":binary_host", this.getHostAddress());</tt> 
+</p>
+<p><tt>&nbsp;&nbsp;&nbsp; ... // send the frame</tt> </p>
+<p><b>Version 3.0</b> </p>
+<p><tt>public class AudioOut extends galaxy.server.Server</tt> <br>
+<tt>{</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; ...</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp; DataOutBroker broker;</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; int pollMs = 50;</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; int timeoutSecs = 50;</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; try {</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; broker = new DataOutBroker(this, 
+pollMs, timeoutSecs);</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; } catch (Exception e) {</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; logAndSendError("Error 
+opening broker connection: " + e.toString());</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return;</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; }</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp; ... // prepare brokered data</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp; GFrame result = new Clause("main");</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; broker.populateFrame(result, ":binary_host", ":binary_port");</tt> 
+</p>
+<p><tt>&nbsp;&nbsp;&nbsp; ... // send the frame</tt> </p>
+<p>The manner in which an incoming broker detects and processes the end of
+a brokered data stream has also changed. Subclasses of <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html">galaxy.server.DataInBroker</a></tt> 
+should implement the <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#disconnectReceived()">disconnectReceived</a></tt> 
+method. This method is called automatically when the incoming broker receives 
+a disconnect message from the outgoing broker, indicating that no more brokered
+data will be sent. Incoming brokers can also choose to implement <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#abortReceived()">abortReceived</a></tt>, 
+which is called when the broker receives an unexpected exception while receiving
+brokered data. </p>
+<p><b>Version 2.x</b> </p>
+<p><tt>// Outgoing broker code segment</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp; DataOutBroker broker;</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp; ... // create broker</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp; broker.write("start");</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp; // write brokered data here</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp; broker.write("end");</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; broker.close();</tt> <br>
+&nbsp; <br>
+&nbsp; </p>
+<p><tt>// Incoming broker code segment</tt> </p>
+<p><tt>public&nbsp; void receivedString(String str)</tt> <br>
+<tt>{</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp; if (str.equals("start")) {</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; System.out.println("About 
+to start receiving data");</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp; } else if (str.equals("end")) {</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp; ... // process data</tt> </p>
+<p><b>Version 3.0</b> </p>
+<p><tt>// Outgoing broker code segment</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp; DataOutBroker broker;</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp; ... // create broker</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp; // write brokered data here</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp; broker.close();</tt> </p>
+<p>Note that the outgoing broker no longer has to send explicit markers for
+the beginning and end of the brokered data. </p>
+<p><tt>// Incoming broker code segment</tt> </p>
+<p><tt>protected void disconnectReceived()</tt> <br>
+<tt>{</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp; ... // process data</tt> <br>
+&nbsp; </p>
+<p>As a result of these and other changes to brokering, there are a number
+of incompatabilities between 2.x and 3.0 code: <br>
+&nbsp; </p>
+<blockquote> <li> <a name="Starting_galaxy.server.DataInBroker"></a>The <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html">galaxy.server.DataInBroker</a></tt> 
+thread is no longer started in the <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html">DataInBroker</a></tt> 
+constructor. Instead, <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#start()">DataInBroker.start</a></tt> 
+must be called explicitly (e.g., at the end of a <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html">DataInBroker</a></tt> 
+subclass constructor). This is required in order to ensure that a <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html">DataInBroker</a></tt> 
+does not attempt to retrieve and process any brokered data until all custom 
+initialization has taken place:</li>
+ </blockquote>
+ <b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Version 3.0</b> 
+<p><tt>&nbsp;&nbsp;&nbsp; public class AudioInBroker extends galaxy.server.DataInBroker</tt> 
+<br>
+<tt>&nbsp;&nbsp;&nbsp; {</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; private GBinary bdata;</tt> 
+</p>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; public AudioInBroker(Server 
+server, InetAddress ip, int port, GFrame frame)</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; throws
+Exception</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+super(server,ip,port,frame);</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+bdata = new GBinary();</tt> </p>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+// You must explicitly call start() once your broker is initialized.</tt> 
+<br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+// For example, you can call it at the end of the constructor, as is</tt> 
+<br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+// done here.</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+start();</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; .</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; .</tt> <br>
+<tt>&nbsp;&nbsp;&nbsp; .</tt> <br>
+&nbsp; </p>
+<blockquote> <li> <a name="New_galaxy.server.DataInBroker_methods"></a>In 
+order to enable all Galaxy data types to be available via brokering, a <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html">DataInBroker</a></tt> 
+must implement four additional methods: <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#receivedList(galaxy.lang.GVector)">receivedList</a></tt>, 
+    <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#receivedInteger(java.lang.Integer)">receivedInteger</a></tt>, 
+    <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#receivedFloat(java.lang.Float)">receivedFloat</a></tt>, 
+and <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#receivedSymbol(galaxy.lang.Symbol)">receivedSymbol</a></tt>.</li>
+  <br>
+&nbsp; 
+  <p>&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; </p>
+  <li> <a name="Methods_removed_from_galaxy.server.DataOutBroker"></a>Since 
+out brokers now rely on the main server listener to receive client connection 
+requests, the following <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html">DataOutBroker</a></tt> 
+methods have been removed:</li>
+  
+  <blockquote> <li> <tt>setPort</tt></li>
+  <li> <tt>getPort</tt></li>
+  <li> <tt>startListening</tt></li>
+  <li> <tt>init</tt></li>
+  <li> <tt>flush</tt></li>
+  <li> <tt>stopListening</tt></li>
+ </blockquote>
+ In addition, <tt>galaxy.server.Server.getCallID</tt> has been removed. Use
+  <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html#getCallId()">DataOutBroker.getCallId</a></tt> 
+instead.</blockquote>
+  
+<h3><br>
+<a name="Threads_in_Java_bindings"></a>Threads </h3>
+<p>Thread management has been redesigned in the Java bindings, especially
+with regards to stopping various threads. As a result, the following methods
+have been removed: </p>
+<ul>
+ <li> <tt>galaxy.server.DataInBroker.close</tt> (use <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#stop()">DataInBroker.stop</a></tt> 
+to stop the broker)</li>
+  <li> <tt>galaxy.server.MainServer.prepareToStop</tt> (use <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#stop()">MainServer.stop</a></tt> 
+to stop the main server thread)</li>
+  <li> <tt>galaxy.server.Server.start</tt> (this did not do anything in 2.1,
+and it is not needed in 3.0)</li>
+ 
+</ul>
+ Also, <tt>Server.prepareStop</tt> is now private. Use <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#stop()">Server.stop</a></tt> 
+to stop the server. Finally, these <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html">MainServer</a></tt> 
+methods have been removed and reimplemented elsewhere: 
+<ul>
+ <li> <tt>startListener</tt> (by default the listener thread, now encapsulated
+in <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/ListenerThread.html">galaxy.server.ListenerThread</a></tt>, 
+is managed internally, but <tt>galaxy.server.MainServer.startListenerThread</tt> 
+can be used to start the listener if it is not already running)</li>
+  <li> <tt>connectToHubs </tt>(should not impact Galaxy Communicator developers)</li>
+  <li> <tt>createServer </tt>(should not impact Galaxy Communicator developers)</li>
+  <li> <tt>startServer </tt>(should not impact Galaxy Communicator developers)</li>
+ 
+</ul>
+ 
+<h3><a name="Changes_to_Java_command_line_arguments"></a>Command Line Arguments</h3>
+ 
+<p>The syntax of command line arguments has changed in the Java bindings.
+Equal signs (=) are no longer needed when assigning values (e.g., <tt>-port=123</tt> 
+is now <tt>-port 123</tt>). Also, double quotes (") are now needed when listing
+multiple values for one argument (e.g., <tt>-contact_hub=localhost:123,localhost:456 
+</tt>is now <tt>-contact_hub "localhost:123 localhost:456"</tt>). </p>
+<p>The <tt>-noui</tt> argument has been replaced with <tt>-ui</tt> (i.e.,
+graphical user interfaces based on <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/ui/ServerUI.html">ServerUI</a></tt>, 
+if present, are now off by default; use <tt>-ui</tt> to turn them on). </p>
+<p>Finally, the arguments <tt>appendLog</tt> and <tt>-mainServerClass</tt>
+have been renamed to <tt>-append_log</tt> and <tt>-main_server_class</tt>
+respectively. </p>
+<p>See the <a href="../../../contrib/MITRE/bindings/java/index.html">Java 
+binding documentation</a> for details on <a
+ href="../../../contrib/MITRE/bindings/java/index.html#Command_Line_Arguments">new 
+command line arguments</a>. </p>
+<h3><a name="Miscellaneous_changes_to_Java_bindings"></a>Miscellaneous </h3>
+<p>This section contains information on other potential 2.x/3.0 incompatibilities
+in addition to those discussed above. </p>
+<p>These classes have been removed from 3.0: </p>
+<blockquote> <li> <tt>galaxy.server.WrongTypeInDispatch</tt> (should not
+impact Galaxy Communicator developers)</li>
+  <li> <tt>galaxy.io.GalaxyStreamable</tt> (should not impact Galaxy Communicator
+developers)</li>
+  <li> <tt>galaxy.io.GalaxyStream</tt> (should not impact Galaxy Communicator
+developers)</li>
+  <li> <tt>galaxy.util.HostPort</tt> (should not impact Galaxy Communicator
+developers)</li>
+  <li> <tt>galaxy.lang.Symbols</tt> (symbol definitions are now <tt>public
+static</tt> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Symbol.html#field_detail">members</a> 
+of <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Symbol.html">galaxy.lang.Symbol</a></tt>)</li>
+  <li> <tt>galaxy.lang.NullFrameException</tt> (should not impact Galaxy
+Communicator developers)</li>
+ </blockquote>
+ These methods have been removed from 3.0 or renamed: 
+<blockquote> <li> <tt>galaxy.server.MainServer.getAllowMultipleConnections</tt></li>
+  <li> <tt>galaxy.server.MainServer.setAllowMultipleConnections</tt> (use
+the new <tt>-maxconns</tt> <a
+ href="../../../contrib/MITRE/bindings/java/index.html#Command_Line_Arguments">command 
+line argument</a> or <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#getMaxConnections()">MainServer.getMaxConnections</a></tt> 
+and <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#setMaxConnections(int)">setMaxConnections</a></tt> 
+to configure the number of maximum connections)</li>
+  <li> <tt>galaxy.server.MainServer.setHostPortCollection </tt>(this functionality
+has been replaced by <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#setHubContactInfoCollection(java.util.List)">MainServer.setHubContactInfoCollection</a></tt>, 
+and there should not be any impact Galaxy Communicator developers)</li>
+  <li> <tt>galaxy.lang.Symbol.setOrdinal</tt></li>
+  <li> <tt>galaxy.lang.Symbol.getOrdinal</tt></li>
+  <li> <tt>galaxy.util.ArgParser.getArgCollections </tt>(should not impact
+Galaxy Communicator developers)</li>
+  <li> <tt>galaxy.io.GalaxyInputStream.write(ObjectStorage)</tt>(should not
+impact Galaxy Communicator developers)</li>
+ </blockquote>
+ The signatures of these methods have changed in 3.0: 
+<blockquote> <li> <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#readBinary()">galaxy.io.GalaxyInputStream.readBinary</a></tt> 
+now returns <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GBinary.html">galaxy.lang.GBinary</a></tt> 
+instead of <tt>galaxy.lang.BinaryObject</tt> 
+(which has been deprecated as of 3.0)</li>
+  <li> The <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/util/ArgParser.html#getArg(java.lang.String)">galaxy.util.ArgParser.getArg</a></tt> 
+methods now return <tt>java.util.List</tt> (was <tt>java.lang.String</tt>)
+since one command line argument can have a list of associated values (e.g.,
+    <tt>-contact_hub</tt>). In a related change, the version of <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/util/ArgParser.html#getArg(java.lang.String, java.util.List)">getArg</a></tt> 
+that takes a default argument value now expects a <tt>java.util.List</tt> 
+(was <tt>java.lang.String</tt>).</li>
+  <li> The <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GFrame.html#GFrame(galaxy.lang.Symbol, int)"><tt>galaxy.lang.Gframe</tt>constructor</a> 
+has been changed. It takes a <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Symbol.html">galaxy.lang.Symbol</a></tt> 
+and an integer that represents the frame type (types are now defined in <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GFrame.html">galaxy.lang.GFrame</a></tt>: 
+see&nbsp; <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GFrame.html#GAL_NULLFRAME">GAL_NULLFRAME</a></tt>, 
+    <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GFrame.html#GAL_TOPIC">GAL_TOPIC</a></tt>, 
+    <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GFrame.html#GAL_CLAUSE">GAL_CLAUSE</a></tt>, 
+    <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GFrame.html#GAL_PRED">GAL_PRED</a></tt>).</li>
+ </blockquote>
+ The default constructors for the array objects (<tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float32.html">galaxy.lang.Float32</a></tt>, 
+<tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float64.html">galaxy.lang.Float64</a>,<a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int16.html">galaxy.lang.Int16</a></tt>, 
+<tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int32.html">galaxy.lang.Int32</a></tt>, 
+and <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int64.html">galaxy.lang.Int64</a></tt>) 
+now initialize numerical arrays (e.g., the default Int16 constructor creates 
+an empty array of shorts). In 2.1, the default constructors created empty 
+byte arrays, but using the array objects to hold byte arrays has been deprecated 
+in 3.0. 
+<p>Finally, the Java method <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#serverOpReinitialize(galaxy.lang.GFrame)">galaxy.server.Server.serverOpReinitialize</a></tt> 
+is now public since the reinitialize method is treated like any other dispatch 
+function in 3.0. </p>
+<p>See the <a href="release_notes.html">Galaxy Communicator release notes</a>
+for additional information on changes and <a
+ href="release_notes_v3.html#3.0_Java_deprecations">deprecations</a> in
+the Java bindings. </p>
+<p> </p>
+<hr width="100%"> 
+<h2> Step 5:&nbsp;<a name="Upgrading_server_listen_status"></a>Upgrading server
+listen status</h2>
+ In 2.1, we began to develop a more complex model of determining the <a
+ href="../reference/server_structure.html#Listener-in-Hub_support">server 
+listen status</a>, since the listener-in-Hub functionality raised the possibility 
+that servers might not have listeners associated with them. In 3.0, the situation
+is even more complex, since outgoing brokers share a listener with the main
+server. So the server listener may be listening for normal connections, for
+broker connections, for both, or for neither. As a result, the flags which
+help determine this have changed, and the most common queries have been implemented
+as API calls. For instance, the ways to determine if a server has Hub client
+connections or if it has an active listener have changed: 
+<p><b>Version 2.1</b> </p>
+<blockquote><tt>if ((GalIO_ServerListenStatus(scomm) &amp; GAL_SERVER_TYPE_MASK) 
+== GAL_HUB_CLIENT))</tt> <br>
+  <tt>&nbsp; ...</tt> 
+  <p><tt>if ((GalIO_ServerListenStatus(scomm) &amp; GAL_SERVER_TYPE_MASK) 
+== GAL_LISTENING_SERVER)</tt> <br>
+  <tt>&nbsp; ...</tt></p>
+</blockquote>
+ <b>Version 3.0</b> 
+<blockquote><tt>if (GalIO_ServerIsClient(scomm))</tt> <br>
+  <tt>&nbsp; ...</tt> 
+  <p><tt>if (GalIO_ServerIsListener(scomm))</tt> <br>
+  <tt>&nbsp; ...</tt></p>
+</blockquote>
+ Also, in 3.0, it's possible for servers to be both clients and listeners;
+in 2.1, servers were one or the other. See also the functions <a
+ href="../reference/libgalaxy_io.html#GalIO_ServerListensForConnections">GalIO_ServerListensForConnections</a> 
+and <a
+ href="../reference/libgalaxy_io.html#GalIO_ServerListensForBrokers">GalIO_ServerListensForBrokers</a>. 
+<p> </p>
+<hr width="100%"> 
+<h2> Step 6:&nbsp;<a name="Upgrading_references_to_the_call_environment"></a>Upgrading 
+references to the call environment</h2>
+ The semantics of call environments have been significantly clarified in
+version 3.0. This clarification has a small but possibly significant impact
+on users of the functions <a
+ href="../reference/adding.html#GalSS_EnvError">GalSS_EnvError</a> and <a
+ href="../reference/adding.html#GalSS_EnvDestroyToken">GalSS_EnvDestroyToken</a>. 
+<p>In version 2.1, the call environment could "force a reply", which would
+cause a message to be sent to the Hub which counted as the reply to the Hub
+message which caused the dispatch function to fire. All subsequent messages
+which were written through the call environment, <b>including the return
+value from the dispatch function</b>, counted as new messages to the Hub.
+This functionality supported some idiosyncratic properties of the <a
+ href="../reference/adding.html#reinitialize">reinitialize</a> dispatch function.
+We strongly discouraged people from exploiting this functionality in other
+cases. So for instance, while we also used this reply forcing technique to
+provide error and destroy replies to Hub messages, we advised programmers
+not to send any further "replies" through that call environment, since they
+would be treated as new messages. So the recommended use of GalSS_EnvError,
+for instance, was as follows: </p>
+<p><b>Version 2.1</b> </p>
+<blockquote><tt>Gal_Frame dispatch_fn(Gal_Frame f, void *server_data)</tt> 
+  <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalSS_Environment *env = (GalSS_Environment *) server _data;</tt> 
+  <p><tt>&nbsp; ...</tt> </p>
+  <p><tt>&nbsp; if (something_bad_happened) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalSS_EnvError(env, "Something bad happened");</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; return (Gal_Frame) NULL;</tt> <br>
+  <tt>&nbsp; }</tt> </p>
+  <p><tt>&nbsp; ...</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ If the programmer had sent additional messages through the call environment
+(including dispatch function replies), all the additional messages would
+have been treated by the Hub as new messages: 
+<p><b>Version 2.1</b> </p>
+<blockquote><tt>Gal_Frame dispatch_fn(Gal_Frame f, void *server_data)</tt> 
+  <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalSS_Environment *env = (GalSS_Environment *) server _data;</tt> 
+  <p><tt>&nbsp; ...</tt> </p>
+  <p><tt>&nbsp; if (something_bad_happened) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalSS_EnvError(env, "Something bad happened");</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; <b>GalSS_EnvError(env, "It was really bad");</b></tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalSS_SetProp(f, ":details", Gal_StringObject("Really, 
+really bad"));</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; <b>return f;</b></tt> <br>
+  <tt>&nbsp; }</tt> </p>
+  <p><tt>&nbsp; ...</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ Although this was documented functionality, programmers were strongly discouraged
+from exploiting it. 
+<p>This behavior was incoherent and difficult to understand, and it has been
+changed in 3.0, as part of a general clarification and extension of call
+environments. In 3.0, a call environment will never send more than one return
+message to the Hub. Only four things count as return messages: a return value
+from a dispatch function, a call to GalSS_EnvError, a call to GalSS_EnvDestroyToken,
+or a call to GalSS_EnvReply. After the first reply is sent, all subsequent
+replies are <b>ignored</b>. So in the second example here, the second call
+to GalSS_EnvError will have no effect, and the frame returned from the dispatch
+function will be ignored. </p>
+<p> </p>
+<hr width="100%"> 
+<h2> Step 7:&nbsp;<a name="Upgrading_calls_to_GalIO_SetServerData"></a>Upgrading 
+calls to GalIO_SetServerData</h2>
+ In three cases (brokers, connections, and servers), it is possible to store
+caller data for later retrieval and use inside the context of these objects.
+It is important that functions to free this data be provided (for when the
+object itself is freed, among other things), but in some cases, this was
+not happening. The function <a
+ href="../reference/server_structure.html#GalIO_SetServerData">GalIO_SetServerData</a> 
+was changed to accommodate this requirement. 
+<p>As a consequence of this observation, we recommend that users now avoid
+returning data from <a
+ href="../reference/adding.html#_GalSS_init_server">_GalSS_init_server</a>, 
+as shown in this pre-3.0 example: </p>
+<blockquote><tt>void *_GalSS_init_server(GalIO_ServerStruct *s, int argc, 
+char **argv)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; int i, increment = 1;</tt> 
+  <p><tt>&nbsp; if (!GalUtil_OACheckUsage(argc, argv, oas, &amp;i))</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; exit(1);</tt> <br>
+  <tt>&nbsp; GalUtil_OAExtract(argc, argv, oas, "-increment", GAL_OA_INT, 
+&amp;increment);</tt> <br>
+  <tt>&nbsp; signal(SIGINT, exit_gracefully);</tt> <br>
+  <tt>&nbsp; /* Return value is server data. */</tt> <br>
+  <tt>&nbsp; return (void *) increment;</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ The effect of this code is to store the return value as data via GalIO_SetServerData;
+but in addition to this being counterintuitive, it also doesn't allow the
+user the opportunity to provide a data freeing function. As of now, we recommend
+that users call GalIO_SetServerData explicitly in their server initialization
+functions, as shown here: 
+<blockquote><tt>void *_GalSS_init_server(GalIO_ServerStruct *s, int argc, 
+char **argv)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; int i, increment = 1;</tt> 
+  <p><tt>&nbsp; if (!GalUtil_OACheckUsage(argc, argv, oas, &amp;i))</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; exit(1);</tt> <br>
+  <tt>&nbsp; GalUtil_OAExtract(argc, argv, oas, "-increment", GAL_OA_INT, 
+&amp;increment);</tt> <br>
+  <tt>&nbsp; signal(SIGINT, exit_gracefully);</tt> <br>
+  <tt>&nbsp; <b>GalIO_SetServerData(s, (void *) increment, NULL);</b></tt> 
+  <br>
+  <b><tt>&nbsp; return (void *) NULL;</tt></b> <br>
+  <tt>}</tt></p>
+</blockquote>
+ The server library has been rewritten so that a NULL return value does not
+overwrite the existing value. The original version still works, but it is
+strongly discouraged. 
+<p> </p>
+<hr width="100%"> 
+<h2> Step 8a:&nbsp;<a
+ name="Upgrading_references_to_the_Communicator_main_loop_(optional)"></a>Upgrading 
+references to the Communicator main loop (optional)</h2>
+ In 2.1 and previous releases, the preferred way of writing a <tt>main()</tt>
+which used the Communicator main loop looked like this: 
+<blockquote><tt>int main(int argc, char **argv)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalIO_ServerStruct *server;</tt> 
+  <p><tt>&nbsp; <b>server = GalSS_CmdlineInitializeServer(argc, argv);</b></tt> 
+  <br>
+  <tt>&nbsp; if (!server) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalUtil_Fatal("Failed to initialize server!\n");</tt> 
+  <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>&nbsp; <b>GalSS_RunServer(server);</b></tt> <br>
+  <tt>&nbsp; exit(0);</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ However, the function <a
+ href="../reference/server_structure.html#GalSS_CmdlineInitializeServer">GalSS_CmdlineInitializeServer</a> 
+actually starts up the server listener, which doesn't allow us to reconfigure 
+a number of features on an instantiated server which is not yet running. As
+a result, we now recommend a different way of writing <tt>main()</tt> for
+servers in version 3.0 and later: 
+<blockquote><tt>int main(int argc, char **argv)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalIO_ServerStruct *server;</tt> 
+  <p><tt>&nbsp; <b>server = GalSS_CmdlineSetupServer(argc, argv);</b></tt> 
+  <br>
+  <tt>&nbsp; if (!server) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalUtil_Fatal("Failed to set up server!\n");</tt> 
+  <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>&nbsp; <b>GalSS_StartAndRunServer(server);</b></tt> <br>
+  <tt>&nbsp; exit(0);</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ The old way still works (and will continue to work for the foreseeable future),
+but it is dispreferred. 
+<p> </p>
+<hr width="100%"> 
+<h2> Step 8b:&nbsp;<a
+ name="Upgrade_your_own_main_loop_(advanced,_optional)"></a>Upgrade your
+own main loop (advanced, optional)</h2>
+ For those of you who are working with main loops other than the Communicator
+main loop, we've repeatedly worked to improve the embedding properties of
+the Galaxy Communicator API. In 3.0, as a byproduct of embedding the API
+in the Python and Allegro bindings, we provide another round of recommended
+improvements. This is an <b>optional upgrade</b>; however, it is such a clear
+improvement that we recommend that everyone do it. The current strategy is
+discussed in detail in the <a href="../advanced/special_mainloop.html">external 
+mainloop</a> documentation; here, we focus on the contrasts with version 2.1. 
+<h3> The main loop</h3>
+ In the main loop, we provide a cleaner set of callbacks, with the following
+changes: 
+<ul>
+ <li> The main loop now sets up <a
+ href="../reference/server_structure.html#Event-driven_programming">event 
+callbacks</a> which will set up the local callbacks, instead of doing it directly.
+This is because the server startup can happen in a number of different places.</li>
+  <li> The server now has a connection event callback which handles the loop-specific
+initializations when a server accepts a connection.</li>
+  <li> The new strategy reflects the fact that servers can now simultaneously
+be listeners and Hub clients.</li>
+  <li> The server now sets up the server and later runs it explicitly, rather
+than initializing it (setting it up and running it), as discussed in this
+    <a
+ href="#Upgrading_references_to_the_Communicator_main_loop_(optional)">upgrade 
+step</a>. The new strategy gives us uniform access to the event callbacks.</li>
+ 
+</ul>
+ Note that it is not possible to embed the Communicator API with file descriptor
+callbacks alone, since sometimes extra data can be read into a connection's
+inbound queue which is not immediately processed. Therefore, at a minimum,
+timer callbacks must be used to handle broker and connection readers, although
+file descriptor based callbacks can also be used for efficiency. 
+<p><b>Version 2.1</b> </p>
+<blockquote><tt>int main(int argc, char **argv)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) NULL;</tt> 
+  <br>
+  <tt>&nbsp; int new_argc;</tt> <br>
+  <tt>&nbsp; char **new_argv;</tt> <br>
+  <tt>&nbsp; GalSS_ServerArgs *arg_pkg;</tt> 
+  <p><tt>&nbsp; gcr = (GalaxyCallbackRecord *) malloc(sizeof(GalaxyCallbackRecord));</tt> 
+  <br>
+  <tt>&nbsp; gcr-&gt;timer_cb = (TimerCallback *) NULL;</tt> <br>
+  <tt>&nbsp; gcr-&gt;l = SM_NewLooper();</tt> </p>
+  <p><tt>&nbsp; /* If you want to use the built-in server arguments, you</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; can use GalSS_ExtractServerArgs. Otherwise, 
+you can just</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; call GalSS_InitializeServerToplevel(). */</tt> 
+  </p>
+  <p><tt>&nbsp; arg_pkg = GalSS_DefaultServerArgs();</tt> </p>
+  <p><tt>&nbsp; /* Make sure it knows that we're using our own main loop. 
+*/</tt> <br>
+  <tt>&nbsp; GalSS_SAFixLoopType(arg_pkg, GAL_LOOP_EXTERNAL);</tt> <br>
+  <tt>&nbsp; arg_pkg = GalSS_ExtractServerArgs(arg_pkg, argc, argv,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+&amp;new_argc, &amp;new_argv);</tt> </p>
+  <p><tt>&nbsp; if (!arg_pkg) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; /* Something bad happened, or -help was passed. */</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; exit(1);</tt> <br>
+  <tt>&nbsp; }</tt> </p>
+  <p><tt>&nbsp; gcr-&gt;gcomm = <b>GalSS_InitializeServerFromServerArgs(arg_pkg,</b></tt> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+new_argc,</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+new_argv);</tt></b> <br>
+  <tt>&nbsp; GalSS_FreeArgPkg(arg_pkg);</tt> </p>
+  <p><tt>&nbsp; if (!gcr-&gt;gcomm) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; fprintf(stderr, "Couldn't create a server\n");</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; fflush(stderr);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; exit(1);</tt> <br>
+  <tt>&nbsp; }</tt> </p>
+  <p><tt>&nbsp; <b>/* If the server is acting as a client, we'll want to</b></tt> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp; set up callbacks for the connections; if
+it has its own</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp; listener, we'll want to set up a callback 
+for the server,</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp; which will set up the listeners for the
+connections as</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp; they're received. */</tt></b> </p>
+  <p><b><tt>&nbsp; if ((GalIO_ServerListenStatus(gcr-&gt;gcomm) &amp; GAL_SERVER_TYPE_MASK) 
+==</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GAL_LISTENING_SERVER) {</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; gcr-&gt;server_sock = GalIO_GetServerListenSocket(gcr-&gt;gcomm);</tt></b> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; SM_AddFDCallback(gcr-&gt;l, gcr-&gt;server_sock, 
+DoubleServerHandler,</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+(void *) gcr);</tt></b> <br>
+  <b><tt>&nbsp; } else {</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; GalIO_ServerCheckHubContacts(gcr-&gt;gcomm);</tt></b> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; if (GalIO_GetServerNumConnections(gcr-&gt;gcomm) 
+== 0) {</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; fprintf(stderr, "Couldn't contact 
+any Hubs\n");</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; fflush(stderr);</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; exit(1);</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; }</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; /* Add a callback for the connections. */</tt></b> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; GalIO_OperateOnConnections(gcr-&gt;gcomm, (void 
+*) gcr,</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+__AddConnectionCallback);</tt></b> <br>
+  <b><tt>&nbsp; }</tt></b> <br>
+  <tt>&nbsp; SM_Mainloop(gcr-&gt;l);</tt> <br>
+  <tt>&nbsp; exit(0);</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ <b>Version 3.0</b> 
+<blockquote><tt>int main(int argc, char **argv)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) NULL;</tt> 
+  <br>
+  <tt>&nbsp; int new_argc;</tt> <br>
+  <tt>&nbsp; char **new_argv;</tt> <br>
+  <tt>&nbsp; GalSS_ServerArgs *arg_pkg;</tt> 
+  <p><tt>&nbsp; gcr = (GalaxyCallbackRecord *) malloc(sizeof(GalaxyCallbackRecord));</tt> 
+  <br>
+  <tt>&nbsp; gcr-&gt;timer_cb = (TimerCallback *) NULL;</tt> <br>
+  <tt>&nbsp; gcr-&gt;l = SM_NewLooper();</tt> </p>
+  <p><tt>&nbsp; /* If you want to use the built-in server arguments, you</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; can use GalSS_ExtractCmdlineServerArgs. Otherwise,
+you can just</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; call GalSS_InitializeServerToplevel(). */</tt> 
+  </p>
+  <p><tt>&nbsp; arg_pkg = GalSS_DefaultServerArgs();</tt> </p>
+  <p><tt>&nbsp; /* Make sure it knows that we're using our own main loop. 
+We set this</tt> <br>
+  <tt>&nbsp;&nbsp; before we ever parse the server arguments, because we
+don't even want</tt> <br>
+  <tt>&nbsp;&nbsp; the arguments pertaining to the loop type enabled for
+the user. */</tt> </p>
+  <p><tt>&nbsp; GalSS_SAFixLoopType(arg_pkg, GAL_LOOP_EXTERNAL);</tt> <br>
+  <tt>&nbsp; arg_pkg = GalSS_ExtractCmdlineServerArgs(arg_pkg, argc, argv,</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+&amp;new_argc, &amp;new_argv);</tt> </p>
+  <p><tt>&nbsp; if (!arg_pkg) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; /* Something bad happened, or -help was passed. */</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; exit(1);</tt> <br>
+  <tt>&nbsp; }</tt> </p>
+  <p><tt>&nbsp; /* Now, we call GalSS_InitializeServerFromServerArgs, and 
+we don't have</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; to worry about the signature of GalSS_InitializeServerToplevel. 
+*/</tt> </p>
+  <p><tt>&nbsp; gcr-&gt;scomm = <b>GalSS_SetupServer(arg_pkg, new_argc, new_argv);</b></tt> 
+  <br>
+  <tt>&nbsp; GalSS_FreeArgPkg(arg_pkg);</tt> </p>
+  <p><tt>&nbsp; if (!gcr-&gt;scomm) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; fprintf(stderr, "Couldn't create a server\n");</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; fflush(stderr);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; exit(1);</tt> <br>
+  <tt>&nbsp; }</tt> </p>
+  <p><b><tt>&nbsp; /* Set the connect callback for the server. This gets called</tt></b> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp; whenever a new connection is established. 
+*/</tt></b> </p>
+  <p><b><tt>&nbsp; GalIO_AddServerConnectCallback(gcr-&gt;scomm,</tt></b> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GCRAddConnectionCallback, (void *) gcr);</tt></b> <br>
+  <b><tt>&nbsp; /* The server can be a listener when it starts out, or</tt></b> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp; it can become a listener when an outgoing 
+broker starts up. So</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp; we set a callback to handle whenever this
+happens. */</tt></b> <br>
+  <b><tt>&nbsp; GalIO_AddServerCallback(gcr-&gt;scomm,</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GAL_SERVER_LISTENER_STARTUP_EVENT,</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GCRSetupServerListener, (void *) gcr);</tt></b> <br>
+  <b><tt>&nbsp; /* Similarly, if someone calls GalIO_ContactHub, it may lead
+to</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp; a new poller starting up. So we should deal
+with that</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp; as a callback too. */</tt></b> <br>
+  <b><tt>&nbsp; GalIO_AddServerCallback(gcr-&gt;scomm,</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GAL_SERVER_CLIENT_POLL_STARTUP_EVENT,</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GCRSetupServerClient, (void *) gcr);</tt></b> <br>
+  <b><tt>&nbsp; /* And now, something that will shut down the loop when</tt></b> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp; the server is destroyed. */</tt></b> <br>
+  <b><tt>&nbsp; GalIO_AddServerCallback(gcr-&gt;scomm,</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GAL_SERVER_DESTRUCTION_EVENT,</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GCRDestroyServer, (void *) gcr);</tt></b> </p>
+  <p><b><tt>&nbsp; /* Now, start the server, and then the main loop. */</tt></b> 
+  <br>
+  <b><tt>&nbsp; if (!GalIO_ServerStart(gcr-&gt;scomm)) {</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; fprintf(stderr, "Couldn't start the server\n");</tt></b> 
+  <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; fflush(stderr);</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp; exit(1);</tt></b> <br>
+  <b><tt>&nbsp; }</tt></b> <br>
+  <tt>&nbsp; SM_Mainloop(gcr-&gt;l);</tt> <br>
+  <tt>&nbsp; exit(0);</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+  
+<h3> The server callbacks</h3>
+ Besides the fact that we've generalized this mainloop example and changed
+the names of the callbacks as a result, the following substantive changes
+can be found. We can't illustrate the changes in boldface, since they're
+so extensive. 
+<ul>
+ <li> The startups for both client and listener are handled in parallel ways,
+using the event callbacks to set up local main loop callbacks as well as
+subsequent event callbacks (such as destruction callbacks).</li>
+  <li> There's a more general callback handler (GalIO_ServerCallbackHandler) 
+which calls the connect callback for the server. Therefore, our server callback
+handler doesn't need to set up the connection.</li>
+  <li> GalIO_ServerCallbackHandler also takes care of destroying the server
+in the appropriate circumstances.</li>
+  <li> Because the main loop requires both timer and file descriptor callbacks,
+both need to be cleared when the server dies.</li>
+  <li> There's now a distinction between the server shutting down and the
+server being destroyed, which is reflected in an addition possible value
+returned from GalIO_ServerCallbackHandler. This is also reflected in the
+different event callbacks that are set up.</li>
+ 
+</ul>
+ <b>Version 2.1</b> 
+<blockquote><tt>/* This function is only used when the server is running its</tt> 
+  <br>
+  <tt>&nbsp;&nbsp; own listener. */</tt> 
+  <p><tt>static void DoubleServerHandler(void *client_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; int status;</tt> <br>
+  <tt>&nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) client_data;</tt> 
+  <br>
+  <tt>&nbsp; GalIO_CommStruct *new_conn = (GalIO_CommStruct *) NULL;</tt> 
+  </p>
+  <p><tt>&nbsp; status = GalIO_ServerHandler(gcr-&gt;gcomm, &amp;new_conn);</tt> 
+  </p>
+  <p><tt>&nbsp; switch (status) {</tt> <br>
+  <tt>&nbsp; case 1:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; /* We've got a connection. */</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; __AddConnectionCallback(new_conn, (void *) gcr);</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; break;</tt> <br>
+  <tt>&nbsp; case -1:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; /* An error has occurred. */</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalUtil_Warn("The server has failed.\n");</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; SM_RemoveAllFDCallbacks(gcr-&gt;l);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalIO_SetServerDone(gcr-&gt;gcomm);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalIO_DestroyServerStruct(gcr-&gt;gcomm);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; break;</tt> <br>
+  <tt>&nbsp; default:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; break;</tt> <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ <b>Version 3.0</b> 
+<blockquote><tt>static void GCRServerListenerHandler(void *client_data)</tt> 
+  <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) client_data;</tt> 
+  <p><tt>&nbsp; GalIO_ServerCallbackHandler(gcr-&gt;scomm, 0,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+(GalIO_CommStruct **) NULL);</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>static void GCRShutdownServerListener(GalIO_ServerStruct *scomm,</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+void *callback_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) callback_data;</tt> 
+  </p>
+  <p><tt>&nbsp; GalUtil_Warn("The server has failed.\n");</tt> <br>
+  <tt>&nbsp; SM_RemoveAllFDCallbacks(gcr-&gt;l);</tt> <br>
+  <tt>&nbsp; SM_RemoveAllTimerCallbacks(gcr-&gt;l);</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>static void GCRSetupServerListener(GalIO_ServerStruct *scomm,</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+void *callback_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) callback_data;</tt> 
+  <br>
+  <tt>&nbsp; /* You only need a file descriptor callback here, since</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; there will be no connection requests in any
+internal queue. */</tt> <br>
+  <tt>&nbsp; SM_AddFDCallback(gcr-&gt;l, GalIO_GetServerListenSocket(scomm),</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GCRServerListenerHandler,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+(void *) gcr);</tt> <br>
+  <tt>&nbsp; GalIO_AddServerCallback(scomm,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GAL_SERVER_LISTENER_SHUTDOWN_EVENT,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GCRShutdownServerListener,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+(void *) gcr);</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>/* This function is used when the server is subscribing to</tt> <br>
+  <tt>&nbsp;&nbsp; Hub listeners. */</tt> </p>
+  <p><tt>static void GCRServerClientHandler(void *client_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) client_data;</tt> 
+  </p>
+  <p><tt>&nbsp; GalIO_ServerCheckHubContacts(gcr-&gt;scomm);</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>static void GCRShutdownServerClient(GalIO_ServerStruct *scomm,</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+void *callback_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; TimerCallback *cb = (TimerCallback *) callback_data;</tt> </p>
+  <p><tt>&nbsp; SM_RemoveTimerCallback(cb);</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>static void GCRSetupServerClient(GalIO_ServerStruct *scomm,</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+void *callback_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) callback_data;</tt> 
+  <br>
+  <tt>&nbsp; TimerCallback *cb;</tt> </p>
+  <p><tt>&nbsp; /* Set up a periodic task to check the hub contacts. */</tt> 
+  <br>
+  <tt>&nbsp; cb = SM_AddTimerCallback(gcr-&gt;l, 10, GCRServerClientHandler, 
+(void *) gcr);</tt> <br>
+  <tt>&nbsp; /* Add a shutdown callback now. */</tt> <br>
+  <tt>&nbsp; GalIO_AddServerCallback(scomm,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GAL_SERVER_DESTRUCTION_EVENT,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GCRShutdownServerClient,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+(void *) cb);</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>static void GCRDestroyServer(GalIO_ServerStruct *scomm,</tt></p>
+</blockquote>
+  
+<blockquote><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+void *callback_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) callback_data;</tt> 
+  <p><tt>&nbsp; GalUtil_Warn("The server has been destroyed.\n");</tt> <br>
+  <tt>&nbsp; SM_LooperExit(gcr-&gt;l);</tt> <br>
+  <tt>}</tt> <br>
+&nbsp;</p>
+</blockquote>
+  
+<h3> The connection callbacks</h3>
+ The differences here are considerable, and the structure is so different
+that highlighting the contrasts is impossible. The differences are: 
+<ul>
+ <li> In 2.1, we called GalIO_ConnectionPoll, while in 3.0, we call the more
+general GalIO_ConnectionCallbackHandler.</li>
+  <li> In 2.1, we shut down the server in the listener-in-Hub case when the
+last connection died, while we leave the client contact timer callback running
+in 3.0.</li>
+  <li> In 2.1, we only used a file descriptor callback for connections, while
+we've clarified in 3.0 that a timer callback is also needed. This addresses
+the kludge reflected in the comment in 2.1 beginning "Sometimes, God help
+us, there's already data".</li>
+  <li> In 3.0, we make use of the disconnect callback to shut down the file
+descriptor and timer callbacks for the connection, while in 2.1, we did it
+explicitly in the connection callback.</li>
+  <li> In 3.0, we can also control broker startup with event callbacks, while
+that option was not available in 2.1.</li>
+ 
+</ul>
+ <b>Version 2.1</b> 
+<blockquote><tt>static void DoubleConnectionHandler(void *client_data)</tt> 
+  <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalIO_CommStruct *new_conn = (GalIO_CommStruct *) client_data;</tt> 
+  <br>
+  <tt>&nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) GalIO_GetCommData(new_conn);</tt> 
+  <br>
+  <tt>&nbsp; int fd = GalIO_GetCommSocket(new_conn);</tt> 
+  <p><tt>&nbsp; /* GalIO_ConnectionPoll returns 1 or -1 when the client</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; should be terminated. */</tt> <br>
+  <tt>&nbsp; switch (GalIO_ConnectionPoll(new_conn)) {</tt> <br>
+  <tt>&nbsp; case 1:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; /* Done, stop polling. */</tt> <br>
+  <tt>&nbsp; case -1:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; /* Error, stop polling. */</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; SM_RemoveFDCallback(gcr-&gt;l, fd);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; /* If this is the last connection, and the server</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; is acting as a client, exit. */</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; if (((GalIO_ServerListenStatus(gcr-&gt;gcomm) &amp; 
+GAL_SERVER_TYPE_MASK) ==</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GAL_HUB_CLIENT) &amp;&amp;</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ((GalIO_ServerListenStatus(gcr-&gt;gcomm) 
+&amp; GAL_HUB_CLIENT_DISCONNECT_MASK) ==</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GAL_HUB_CLIENT_DISCONNECT_SHUTDOWN) 
+&amp;&amp;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (SM_NumFDCallbacks(gcr-&gt;l) 
+== 0)) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SM_LooperExit(gcr-&gt;l);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; }</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; break;</tt> <br>
+  <tt>&nbsp; default:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; break;</tt> <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>static void __AddConnectionCallback(GalIO_CommStruct *gcomm, void 
+*arg)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) arg;</tt> 
+  <br>
+  <tt>&nbsp; int client_sock = GalIO_GetCommSocket(gcomm);</tt> </p>
+  <p><tt>&nbsp; GalIO_SetCommData(gcomm, gcr, NULL);</tt> <br>
+  <tt>&nbsp; SM_AddFDCallback(gcr-&gt;l, client_sock, DoubleConnectionHandler,</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+(void *) gcomm);</tt> </p>
+  <p><tt>&nbsp; /* Sometimes, God help us, there's already data coming in.</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; Particularly if this is being called when the
+listener</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; is in the Hub. */</tt> <br>
+  <tt>&nbsp; DoubleConnectionHandler((void *) gcomm);</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ <b>Version 3.0</b> 
+<blockquote><tt>typedef struct __connection_container {</tt> <br>
+  <tt>&nbsp; GalIO_CommStruct *gcomm;</tt> <br>
+  <tt>&nbsp; GalaxyCallbackRecord *gcr;</tt> <br>
+  <tt>&nbsp; TimerCallback *t;</tt> <br>
+  <tt>&nbsp; GAL_SOCKET fd;</tt> <br>
+  <tt>} ConnectionContainer;</tt> 
+  <p><tt>typedef struct __connection_container {</tt> <br>
+  <tt>&nbsp; GalIO_CommStruct *gcomm;</tt> <br>
+  <tt>&nbsp; GalaxyCallbackRecord *gcr;</tt> <br>
+  <tt>&nbsp; TimerCallback *t;</tt> <br>
+  <tt>&nbsp; GAL_SOCKET fd;</tt> <br>
+  <tt>} ConnectionContainer;</tt> </p>
+  <p><tt>/* GalIO_ConnectionCallbackHandler():</tt> <br>
+  <tt>&nbsp;&nbsp; -1 means an error was encountered and the connection has
+been destroyed.</tt> <br>
+  <tt>&nbsp;&nbsp; 0 means we're in the midst of things.</tt> <br>
+  <tt>&nbsp;&nbsp; 1 means we're done and the connection has been destroyed. 
+*/</tt> </p>
+  <p><tt>static void GCRConnectionDisconnect(GalIO_CommStruct *gcomm, void 
+*caller_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; ConnectionContainer *c = (ConnectionContainer *) caller_data;</tt> 
+  <br>
+  <tt>&nbsp; GalaxyCallbackRecord *gcr = c-&gt;gcr;</tt> </p>
+  <p><tt>&nbsp; SM_RemoveFDCallback(gcr-&gt;l, c-&gt;fd);</tt> <br>
+  <tt>&nbsp; SM_RemoveTimerCallback(c-&gt;t);</tt> <br>
+  <tt>&nbsp; free(c);</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>/* The loop cleanup is handled in the disconnect callback. */</tt> 
+  </p>
+  <p><tt>static void GCRConnectionHandler(void *client_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; ConnectionContainer *c = (ConnectionContainer *) client_data;</tt> 
+  <br>
+  <tt>&nbsp; GalIO_CommStruct *gcomm = c-&gt;gcomm;</tt> </p>
+  <p><tt>&nbsp; GalIO_ConnectionCallbackHandler(gcomm, 0);</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>static void GCRConnectionTimerHandler(void *client_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; /* This is called from the timer. We could go ahead and</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; just call the normal connection handler, which
+would</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; try to read from the file descriptor, but
+since there's</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; already a file descriptor callback which triggers
+that</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; handler, we'll only do something if there's 
+stuff</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; in the internal queues. */</tt> <br>
+  <tt>&nbsp; ConnectionContainer *c = (ConnectionContainer *) client_data;</tt> 
+  <br>
+  <tt>&nbsp; GalIO_CommStruct *gcomm = c-&gt;gcomm;</tt> </p>
+  <p><tt>&nbsp; if (GalIO_CommReadReady(gcomm) || GalIO_CommWriteReady(gcomm)) 
+{</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GCRConnectionHandler(client_data);</tt> <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>static void GCRAddConnectionCallback(GalIO_ServerStruct *scomm,</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GalIO_CommStruct *gcomm,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+void *callback_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) callback_data;</tt> 
+  <br>
+  <tt>&nbsp; ConnectionContainer *c = (ConnectionContainer *) calloc(1, sizeof(ConnectionContainer));</tt> 
+  </p>
+  <p><tt>&nbsp; c-&gt;gcr = gcr;</tt> <br>
+  <tt>&nbsp; c-&gt;gcomm = gcomm;</tt> <br>
+  <tt>&nbsp; c-&gt;fd = GalIO_GetCommSocket(gcomm);</tt> </p>
+  <p><tt>&nbsp; /* We'll use the file descriptor callback to check the file</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; descriptor, and the timer callback to check
+the internal queue. */</tt> <br>
+  <tt>&nbsp; SM_AddFDCallback(gcr-&gt;l, c-&gt;fd,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GCRConnectionHandler,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+(void *) c);</tt> <br>
+  <tt>&nbsp; c-&gt;t = SM_AddTimerCallback(gcr-&gt;l, 5, GCRConnectionTimerHandler,</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+(void *) c);</tt> <br>
+  <tt>&nbsp; /* Finally, to support brokers, and to deal with</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; disconnections, we need to use the</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; data slot for the connection. */</tt> <br>
+  <tt>&nbsp; /* Make sure you stop polling when the connection dies. */</tt> 
+  <br>
+  <tt>&nbsp; GalIO_AddConnectionCallback(gcomm,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GAL_CONNECTION_SHUTDOWN_EVENT,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GCRConnectionDisconnect,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+(void *) c);</tt> <br>
+  <tt>&nbsp; /* And now, add the callbacks for the broker setups. */</tt> 
+  <br>
+  <tt>&nbsp; GalIO_AddConnectionBrokerCallback(gcomm,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GAL_CONNECTION_BROKER_OUT_STARTUP_EVENT,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GCRSetupBrokerOut,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+(void *) gcr);</tt> <br>
+  <tt>&nbsp; GalIO_AddConnectionBrokerCallback(gcomm,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GAL_CONNECTION_BROKER_IN_STARTUP_EVENT,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GCRSetupBrokerIn,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+(void *) gcr);</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ Finally, we provide explicit <a
+ href="../../../contrib/MITRE/examples/simple_mainloop/main.html">examples</a> 
+of how to embed brokering in 3.0, while in 2.1 it was unclear. For more details,
+consult the <a href="../advanced/special_mainloop.html">external mainloop
+documentation</a>. 
+<p> </p>
+<hr width="100%"> 
+<h2> Step 9:&nbsp;<a
+ name="Upgrade_timed_task_invocation_(advanced,_optional)"></a>Upgrade timed
+task invocation (advanced, optional)</h2>
+ In version 2.1, the basic timed task was a simple function which took a
+<tt>void *</tt> argument. This task was set up using the functions <a
+ href="../advanced/timed_tasks.html#Gal_AddTimedTask">Gal_AddTimedTask</a>, 
+<a href="../advanced/timed_tasks.html#Gal_AddTimedTaskWithFileIO">Gal_AddTimedTaskWithFileIO</a>, 
+etc. There was a more complex version, represented by <a
+ href="../advanced/timed_tasks.html#Gal_AddTask">Gal_AddTask</a>, etc., which
+manipulated a structure called a <tt>Gal_TaskPkg</tt>; this set of functions
+was used internally throughout the Galaxy Communicator library, but was built
+on top of the simpler functions, and there was no particular reason for application
+programmers to use them for setting up timed tasks. 
+<p>However, the timed task mechanism had a glaring shortcoming in version
+2.1: while it was possible to associate both read and write sockets or both
+read or write file pointers with a timed task, it was not possible to tell
+which one led the task to be fired. Using the simpler tasks as an underlying
+representation, it was impossible to address this shortcoming; however, we
+were able to address it by "inverting" the implementation, making the complex
+tasks basic and implementing the simple tasks on top of them. Users of <a
+ href="../advanced/timed_tasks.html#Gal_AddTask">Gal_AddTask</a>, etc., can
+now determine why a task was fired using the function <a
+ href="../advanced/timed_tasks.html#Gal_TaskPkgRunReasons">Gal_TaskPkgRunReasons</a>. 
+</p>
+<p>In version 3.0, we recommend that everyone upgrade to complex tasks. See
+the <a href="../advanced/timed_tasks.html">timed tasks documentation</a>
+for full details on the functions. Here's the sort of change we recommend
+making (from the&nbsp; MITRE stdin polling utility): </p>
+<h4> Version 2.1</h4>
+  
+<blockquote><tt>static void stdin_poll(void *server_data);</tt> 
+  <p><tt>Gal_AddTimedTaskWithFileIO(stdin_poll,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+(void *) poll_struct,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+poll_struct-&gt;ms,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+stdin, (FILE *) NULL);</tt></p>
+</blockquote>
+ <b>Version 3.0</b> 
+<blockquote><tt>static void stdin_poll(Gal_TaskPkg *p);</tt> 
+  <p><tt>Gal_AddTaskWithFileIO(stdin_poll,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+(void *) poll_struct,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+poll_struct-&gt;ms, 1,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+stdin, (FILE *) NULL, NULL);</tt></p>
+</blockquote>
+ Note also that when you reset this task, you should call <a
+ href="../advanced/timed_tasks.html#Gal_ReAddTask">Gal_ReAddTask</a>, etc.,
+on the existing task rather than create a new task. This makes a considerable
+difference if you ever use the threaded toplevel loop. 
+<h4> Version 2.1</h4>
+  
+<blockquote><tt>static void stdin_poll(void *server_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; ...</tt> <br>
+  <tt>&nbsp; Gal_AddTimedTaskWithFileIO(stdin_poll,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+(void *) poll_struct,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+poll_struct-&gt;ms,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+stdin, (FILE *) NULL);</tt> <br>
+  <tt>&nbsp; ...</tt> <br>
+  <tt>}</tt></blockquote>
+ <b>Version 3.0</b> 
+<blockquote><tt>static void stdin_poll(Gal_TaskPkg *p)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; ...</tt> <br>
+  <tt>&nbsp; Gal_ReAddTaskWithFileIO(p,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+(void *) poll_struct,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+poll_struct-&gt;ms, 1,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+stdin, (FILE *) NULL, NULL);</tt> <br>
+  <tt>&nbsp; ...</tt> <br>
+  <tt>}</tt></blockquote>
+  
+<hr width="100%"> 
+<h2> Step 10:&nbsp;<a name="Upgrading_session_management"></a>Upgrading session
+management (advanced, optional)</h2>
+ As discussed in detail in the new <a href="../advanced/session.html">session 
+management</a> documentation, it's very important to keep sessions separate, 
+especially if you expect multiple users to interact with your system simultaneously. 
+If all your dispatch functions do is return values, and they never set up
+other callbacks, like timed tasks or broker callbacks, and they never write
+new messages to the Hub, you don't need to worry about anything, since the
+server wrappers have always handled that case cleanly. However, all the other
+cases have been poorly supported up to this point. 
+<ul>
+ <li> While call environments embodied the dispatch function invocation context
+(including the session information), they couldn't be saved outside the context
+of their dispatch function (such as in broker callbacks or timed tasks).</li>
+  <li> In order to forward the session information appropriately, the programmer
+needed to store away the session ID and add it to any new messages which
+were sent from broker callbacks or timed tasks.</li>
+  <li> The behavior of call environments was idiosyncratic in other ways
+(see, for instance, the section on <a
+ href="#Upgrading_references_to_the_call_environment">upgrading 
+call environments for version 3.0</a>).</li>
+ 
+</ul>
+ All these problems have been fixed in version 3.0, as far as we know, and
+we strongly encourage people to take advantage of the improvements. For instance,
+the function <a
+ href="../reference/brokering.html#GalSS_EnvBrokerDataInInit">GalSS_EnvBrokerDataInInit</a> 
+allows the programmer to set up an environment-aware broker callback. 
+<p><b>Without environments</b> </p>
+<blockquote><tt>static void audio_handler(GalIO_BrokerStruct *broker_struct,</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+void *data, Gal_ObjectType data_type,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+int n_samples)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) GalIO_GetBrokerCallerData(broker_struct);</tt> 
+  <br>
+  <tt>&nbsp; Gal_Frame f;</tt> 
+  <p><tt>&nbsp; ...</tt> </p>
+  <p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; f = Gal_MakeFrame("notify", GAL_CLAUSE);</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Gal_SetProp(f, ":notification", Gal_StringObject("Audio
+received."));</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>GalIO_CommWriteFrame(d-&gt;gcomm, 
+f, 0);</b></tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Gal_FreeFrame(f);</tt> </p>
+  <p><tt>&nbsp; ...</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>void __FreeDataHandler(GalIO_BrokerStruct *b, void *data);</tt> </p>
+  <p><tt>Gal_Frame receive_audio(Gal_Frame f, void *server_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) malloc(sizeof(DataHandler));</tt> 
+  <br>
+  <tt>&nbsp; GalIO_BrokerStruct *b;</tt> <br>
+  <tt>&nbsp; char *host = Gal_GetString(f, ":binary_host");</tt> <br>
+  <tt>&nbsp; int port = Gal_GetInt(f, ":binary_port");</tt> </p>
+  <p><tt>&nbsp; d-&gt;data_buf = (char *) NULL;</tt> <br>
+  <tt>&nbsp; d-&gt;size = 0;</tt> <br>
+  <tt>&nbsp; d-&gt;gcomm = GalSS_EnvComm((GalSS_Environment *) server_data);</tt> 
+  </p>
+  <p><tt>&nbsp; if (host &amp;&amp; port) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; b = <b>GalIO_CommBrokerDataInInit(d-&gt;gcomm, 
+host, port, f, audio_handler,</b></tt> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+0, d, __FreeDataHandler);</tt></b> <br>
+  <tt>&nbsp;&nbsp;&nbsp; if (b) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_SetBrokerActive(b);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; }</tt> <br>
+  <tt>&nbsp; } else {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; free(d);</tt> <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>&nbsp; return (Gal_Frame) NULL;</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ <b>With environments</b> 
+<blockquote><tt>static void env_audio_handler(GalIO_BrokerStruct *broker_struct,</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+void *data, Gal_ObjectType data_type,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+int n_samples)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) GalIO_GetBrokerCallerData(broker_struct);</tt> 
+  <br>
+  <tt>&nbsp; Gal_Frame f;</tt> <br>
+  <tt>&nbsp; <b>GalSS_Environment *env = GalSS_BrokerGetEnvironment(broker_struct);</b></tt> 
+  <p><tt>&nbsp; ...</tt> </p>
+  <p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; f = Gal_MakeFrame("notify", GAL_CLAUSE);</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Gal_SetProp(f, ":notification", Gal_StringObject("Audio
+received."));</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>GalSS_EnvWriteFrame(env, f, 0);</b></tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Gal_FreeFrame(f);</tt> </p>
+  <p><tt>&nbsp; ...</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>void __FreeDataHandler(GalIO_BrokerStruct *b, void *data);</tt> </p>
+  <p><tt>Gal_Frame receive_audio(Gal_Frame f, void *server_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; DataHandler *d = (DataHandler *) malloc(sizeof(DataHandler));</tt> 
+  <br>
+  <tt>&nbsp; GalIO_BrokerStruct *b;</tt> <br>
+  <tt>&nbsp; char *host = Gal_GetString(f, ":binary_host");</tt> <br>
+  <tt>&nbsp; int port = Gal_GetInt(f, ":binary_port");</tt> </p>
+  <p><tt>&nbsp; d-&gt;data_buf = (char *) NULL;</tt> <br>
+  <tt>&nbsp; d-&gt;size = 0;</tt> </p>
+  <p><tt>&nbsp; if (host &amp;&amp; port) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; b = <b>GalSS_EnvBrokerDataInInit((GalSS_Environment 
+*) server_data,</b></tt> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+host, port, f,</tt></b> <br>
+  <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+env_audio_handler, 0, d, __FreeDataHandler);</tt></b> <br>
+  <tt>&nbsp;&nbsp;&nbsp; if (b) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_SetBrokerActive(b);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; }</tt> <br>
+  <tt>&nbsp; } else {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; free(d);</tt> <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>&nbsp; return (Gal_Frame) NULL;</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ At this point, we know of no reason for the programmer to use <a
+ href="../reference/server_structure.html#GalIO_CommWriteFrame">GalIO_CommWriteFrame</a> 
+and <a href="../reference/server_structure.html#GalIO_DispatchViaHub">GalIO_DispatchViaHub</a>. 
+, and we strongly encourage everyone to replace all calls to these functions 
+with calls to <a href="../reference/adding.html#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame</a> 
+and <a href="../reference/adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a>. 
+We've provided support for the following contexts: 
+<ul>
+ <li> <a href="../advanced/timed_tasks.html#Gal_AddTask">Gal_AddTask</a> can
+be replaced with <a href="../advanced/environment.html#GalSS_EnvAddTask">GalSS_EnvAddTask</a>, 
+for those cases where environments are needed for writing in timed tasks.</li>
+  <li> The stdin polling function <a
+ href="../../../contrib/MITRE/utilities/docs/stdin_poll.html#MGalIO_CreateStdinPoll">MGalIO_CreateStdinPoll</a> 
+should be replaced with <a
+ href="../../../contrib/MITRE/utilities/docs/stdin_poll.html#MGalSS_EnvCreateStdinPoll">MGalSS_EnvCreateStdinPoll</a> 
+in all cases where the stdin callback returns a frame, because that frame 
+will be written as a new message to the Hub.</li>
+ 
+</ul>
+ If you discover a circumstance in which it is not possible to use an environment
+for writing, please notify us. 
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "3point1upgrade.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "release_notes_v3.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated January 17, 2001</center>
+  
+<p><br>
+ </p>
+<br>
+</body>
+</html>

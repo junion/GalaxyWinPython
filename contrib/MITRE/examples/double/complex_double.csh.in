@@ -1,0 +1,16 @@
+#!/bin/csh -f
+
+# This file (c) Copyright 1998 - 2002 The MITRE Corporation
+# 
+# This file is part of the Galaxy Communicator system. It is licensed
+# under the conditions described in the file LICENSE in the root 
+# directory of the Galaxy Communicator system.
+
+
+setenv GC_HOME MF_GC_HOME
+
+setenv MITRE_ROOT $GC_HOME/contrib/MITRE
+
+setenv DEMO_ROOT $MITRE_ROOT/examples/double
+
+$MITRE_ROOT/tools/bin/process_monitor $DEMO_ROOT/double.config 2

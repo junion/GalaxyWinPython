@@ -1,0 +1,44 @@
+<RULES>
+<GC_LOG_VERSION>toy travel, version 1</GC_LOG_VERSION>
+
+<RULE>
+  <GC_OPERATION name="new_session" new:type_start_task="true"/>
+</RULE>
+
+<RULE>
+  <GC_OPERATION name="end_session" new:type_end_task="true"/>
+</RULE>
+
+<RULE>
+  <GC_MESSAGE name="FromDialogue" new:type_new_turn="system"/>
+</RULE>
+
+<RULE>
+  <GC_MESSAGE name="FromAudio" new:type_new_turn="user"
+              new:type_start_utt="user" new:type_end_utt="user"/>
+</RULE>
+
+<RULE>
+  <GC_MESSAGE name="FromUI" new:type_new_turn="user"/>
+</RULE>
+
+<RULE>
+  <GC_OPERATION name="Play" new:type_start_utt="system" 
+                            new:type_end_utt="system"/>
+</RULE>
+
+<RULE>
+  <GC_OPERATION name="Parse">
+    <GC_DATA key=":input_string" direction="in"
+             new:type_utt_text="asr"/>
+  </GC_OPERATION>
+</RULE>
+
+<RULE>
+  <GC_OPERATION name="Generate">
+    <GC_DATA key=":output_string" direction="out"
+             new:type_utt_text="system"/>
+  </GC_OPERATION>
+</RULE>
+
+</RULES>

@@ -1,0 +1,27 @@
+How to add functions to the compat/ directory
+---------------------------------------------
+
+The compatibility functions here are intended to provide functionality
+which may be used by SLS or GalaxyCommunicator which is missing from
+the OS (e.g., usleep() in Solaris). Since it's necessary to be able to
+link both against the core GalaxyCommunicator library and the SLS
+utilities library, we have to set up these compatibility functions so
+that the symbols don't clash. We've chosen to do this by putting a
+single function in each file and relying on the properties of the C
+linker, which will not load a file in an archive if no functions from
+it are needed. 
+
+If you need to add a compatibility function, create a file for it and
+add the file to the appropriate Makefile (either
+src/libGalaxy/Makefile for the GalaxyCommunicator core, or
+sls/src/lib/util/Makefile for SLS utilities). Make sure you
+conditionalize the inclusion of the file using the appropriate $(ARCH)
+and $(OS) Makefile variables. 
+
+Setting things up this way allows the two archives to get out of synch
+without causing linking problems; however, in principle, the compat/
+subdirectories in the two systems ought to remain identical. 
+
+Sam Bayer (MITRE)
+Lee Heatherington (MIT)
+

@@ -1,0 +1,30 @@
+;; This file (c) Copyright 1998 - 2002 The MITRE Corporation
+;; 
+;; This file is part of the Galaxy Communicator system. It is licensed
+;; under the conditions described in the file LICENSE in the root 
+;; directory of the Galaxy Communicator system.
+
+SERVER: double
+PORT: 2800
+HOST: localhost
+OPERATIONS: continuation_complex_twice complex_twice reinitialize echo_frame
+
+PROGRAM: main
+
+;; Note that this rule requires a response.
+;; If you change this to complex_twice, you'll
+;; get a deadlock, because it's invoking the multiply
+;; program via a server-to-server subdialogue, and
+;; the Hub can't contact the server to process echo_frame
+;; when the server is already processing the complex_twice
+;; message. The continuation_complex_twice message
+;; sets up a continuation and tells the hub that it's free.
+
+RULE: :int --> continuation_complex_twice
+IN: :int
+OUT: 
+
+PROGRAM: multiply
+RULE: :int --> echo_frame
+IN: :int
+OUT: :int

@@ -1,0 +1,77 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>MITRE Utilities Documentation: Frame Tools</title>
+</head>
+<body style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#3333FF" vlink="#993399" alink="#FF0000">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:
+<br><br>
+MITRE Utilities: Frame Tools</h1></center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "install.html"><img src="../../../../docs/arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../../LICENSE">License</a> / <a href = "../../../../docs/manual/index.html">Documentation home</a> / <a href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "binary_data.html"><img src="../../../../docs/arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+
+<hr WIDTH="100%">
+<p>It is sometimes convenient for the user
+to create a frame for sending a message, or for some other purpose, in
+a single call, rather than creating the empty frame and adding values one
+by one. This tool provides that functionality.
+<p>Gal_Frame&nbsp;<a NAME="MGal_CreateFullFrame"></a><b><big>MGal_CreateFullFrame</big></b>(char
+*<i>name</i>, int <i>type</i>, int <i>num_pairs</i>, ... )
+<br>The name and type are as they are for
+<a href="../../../../docs/manual/reference/frame.html#Gal_MakeFrame">Gal_MakeFrame</a>.
+The <i>num_pairs</i> is the number of key-value pairs which follow; the
+first element of each pair must be a string, and the second a Gal_Object.
+Here's an example:
+<blockquote><tt>MGal_CreateFullFrame("main", GAL_CLAUSE, 4,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+":input_string", Gal_StringObject(str),</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+":utterance_id", Gal_IntObject(UttIdx),</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+":hyp_id", Gal_IntObject(0),</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+":mode", Gal_StringObject("typed"));</tt></blockquote>
+The frame which is created is a garden-variety
+Gal_Frame, and subsequent calls to <a href="../../../../docs/manual/reference/frame.html#Gal_SetProp">Gal_SetProp</a>,
+etc., work as expected.
+<p>See the page on <a href="install.html">compiling
+and accessing</a> these utilities.
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "install.html"><img src="../../../../docs/arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../../LICENSE">License</a> / <a href = "../../../../docs/manual/index.html">Documentation home</a> / <a href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "binary_data.html"><img src="../../../../docs/arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated February 8, 2000</center>
+
+</body>
+</html>

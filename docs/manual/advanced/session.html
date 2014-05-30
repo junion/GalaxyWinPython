@@ -1,0 +1,150 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+        
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Managing Session Information</title>
+         <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+    
+<center>  
+<h1> Galaxy Communicator Documentation:<br>
+  <br>
+  Managing Session Information</h1>
+ </center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="timed_tasks.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="hub_properties.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+     
+<hr width="100%">  
+<ul>
+  <li> <a href="#What_is_a_session?">What is a session?</a></li>
+   <li> <a href="#Starting_and_ending_sessions">Starting and ending sessions</a></li>
+      <li> <a href="#Administrative_functions">Administrative functions</a></li>
+   
+</ul>
+    
+<hr width="100%">  
+<h2> <a name="What_is_a_session?"></a>What is a session?</h2>
+  The Galaxy Communicator infrastructure is designed to support multiple
+simultaneous <b>sessions</b>. By <b>session</b> we mean an individual conversation
+with a Communicator system, such as the sequence of exchanges between the
+time the system answers the phone and greets an individual user and the time
+the system or user hangs up. A single Communicator system might support a
+large number of phone lines, and thus a large number of simultaneous sessions.
+ 
+<p>Although some servers connected to the Hub might be dedicated to a particular 
+session (such as when they connect using <a
+ href="hub_listener.html#Setting_up_the_server">-contact_hub and -session_id</a>), 
+most servers support multiple sessions through the same connection to the 
+Hub. So, for instance, a single parser may be responsible for parsing all 
+the user utterance strings for all the sessions currently connected to the 
+Hub. </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Starting_and_ending_sessions"></a>Starting and ending sessions</h2>
+  The Hub will start a session whenever it receives a session ID it does
+not recognize. If logging is enabled in the Hub program file, the Hub will
+open a log for that session as well. The Builtin server function <a
+ href="../../servers/builtin.html#new_session">new_session</a> (somewhat misnamed,
+at this point) can be called to reset the session's utterance counter and
+open a new log. <b>Reusing session IDs in this way is not recommended</b>, 
+however, it is supported for convenience. The most common case of reuse is 
+when no session ID is actually declared, and the Hub uses the <tt>Default</tt> 
+session ID as a result.  
+<p>If new_session opened a new log every time it was called, any program which
+calls it would end up writing a very short log which covered the time from
+when the session was created (essentially, when the Hub first saw the session
+ID) to when new_session was called. Since this behavior would be unavoidable
+when new_session is used correctly, new_session has been implemented <b>not
+to open a new log the first time it is called on a given session</b>.  </p>
+ 
+<p>If you want to end a session explicitly, you can call the Builtin server 
+function <a href="../../servers/builtin.html#end_session">end_session</a>.
+ </p>
+ 
+<p>If you want to control the memory state of a given session, you can <a
+ href="hub_properties.html#Session_properties">do that from the server</a> 
+as well. </p>
+ 
+<p> </p>
+   
+<p>  </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Administrative_functions"></a>Administrative functions</h2>
+  These are the functions the infrastructure uses to manage session information
+in call environments. You will seldom need to use these functions directly.
+  
+<p>void&nbsp;<a name="GalSS_EnvUpdateSessionID"></a><b><big>GalSS_EnvUpdateSessionID</big></b>(GalSS_Environment
+ *<i>env</i>, const char *<i>session_id</i>) <br>
+ Sets the <i>session_id</i> as the session for this environment. The <i>session_id</i> 
+is copied. This function can safely be called repeatedly on the same call 
+environment to change the session context. </p>
+ 
+<p>char *<a name="GalSS_EnvGetSessionID"></a><b><big>GalSS_EnvGetSessionID</big></b>(GalSS_Environment
+ *<i>env</i>) <br>
+ Returns the <i>session_id</i>&nbsp; for this environment. The <i>session_id</i> 
+is not copied. It may be NULL. </p>
+  
+<p> </p>
+ 
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="timed_tasks.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="hub_properties.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated July 29, 2002</center>
+   <br>
+ <br>
+</body>
+</html>

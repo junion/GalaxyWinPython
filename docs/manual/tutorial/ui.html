@@ -1,0 +1,296 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Tutorial: Creating a UI Server</title>
+     <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+  
+<center> 
+<h1> Galaxy Communicator Tutorial:</h1>
+</center>
+  
+<center> 
+<h1> Creating a UI Server</h1>
+</center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="broker_tutorial.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="logging_tutorial.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+   
+<hr width="100%"> 
+<p>Up to this point, we haven't talked much about the engineering model behind
+the Galaxy Communicator infrastructure, and we haven't needed to. However,
+in order to learn how to integrate UI elements into a Communicator-compliant
+system, it's important to understand how things happen in the infrastructure,
+and how to control how things happen. This lesson is more about computer
+science than anything else, and we won't look at any code; but at its end,
+you should understand enough about how the Communicator infrastructure works
+to integrate a UI aspects into a Communicator-compliant server. </p>
+<ul>
+ <li> <a href="#The_Communicator_object_model">The Communicator object model</a></li>
+  <li> <a href="#Event-driven_programming">Event-driven programming</a></li>
+  <li> <a href="#The_event_monitor">The event monitor</a></li>
+  <li> <a href="#Adding_UI_elements">Adding UI elements</a></li>
+  <li> <a href="#Summary">Summary</a></li>
+ 
+</ul>
+  
+<hr width="100%"> 
+<h2> <a name="The_Communicator_object_model"></a>The Communicator object
+model</h2>
+ There are several object types involved in flow of control in the Galaxy
+Communicator infrastructure. The first Galaxy Communicator object we came
+across in looking at server code was the call environment. In the last lesson,
+on <a href="broker_tutorial.html">brokering</a>, we encountered the broker
+object. We briefly encountered the server object when discussing the <a
+ href="basic_server.html#Step_3:_Write_your_server_initialization_function">server 
+initialization function</a>. The one object we haven't encountered yet is
+the connection object, which underlies both ends of Hub-server connections
+and broker connections. (Broker proxies aren't on this list because they're
+just object wrappers around brokers.) Here's the complete object model: <br>
+<img src="../../images/ObjectModel.jpg" nosave="" height="503"
+ width="863">
+ <br>
+The reason this object model is important is because the server, connection,
+and broker objects are all associated with separate communications channels,
+and these channels are monitored by the Galaxy Communicator infrastructure
+using an <b>event-driven</b> programming model. This model is at the heart
+of the flexibility of the Galaxy Communicator infrastructure, and it's worth
+spending some time understanding it better. 
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="Event-driven_programming"></a>Event-driven programming</h2>
+ There are three major components to an event-driven programming model: 
+<ul>
+ <li> events;</li>
+  <li> callbacks, which are instructions about what to do when an event occurs;</li>
+  <li> and an event monitor, which observes the events and invokes the callbacks.</li>
+ 
+</ul>
+ In a communications system like Galaxy Communicator, some of the events
+are typically the availability of data to read from or write to a communications
+channel; we'll call these events <b>data events</b>. Another type of event
+is a <b>timer event</b>, which marks the conclusion of a previously-determined
+time interval. These events can be used to schedule activities (for example,
+inspect the state of a connection every 10 milliseconds). 
+<p>For each type of object in the Galaxy Communicator object model, there's
+a corresponding callback. The server object can establish a new connection
+when it has a request to do so; the connection object can invoke a dispatch
+function when it has message data; the outbound broker can feed data to its
+connected clients; and the inbound broker can read typed data when it's available. 
+</p>
+<p>So we can see now that the <a
+ href="broker_tutorial.html#Target_server:_set_up_broker_client,_establish_callback">data 
+callbacks for the broker clients</a> we learned about in the last lesson are
+actually part of this larger model. They're not exactly the low-level data
+callbacks we're talking about here, since the data has been read and digested
+long before the broker callback sees it; rather, it's one of a set of higher-level
+callbacks based on what we'll call <b>logical events</b> that the Galaxy
+Communicator infrastructure supports. In general, it's these logical events
+which are visible to the average developer, rather than the lower-level data
+and timer events. Not surprisingly, dispatch functions also count as a type
+of logical callback: </p>
+<p><img src="../../images/EventHierarchy.jpg" nosave="" height="335"
+ width="695">
+ </p>
+<p>There are a number of other logical events which the various objects support,
+some of which are a direct result of communications events (for instance,
+when a server creates a new connection object), and some of which are under
+programmer control (for instance, when an outbound or inbound broker is created).
+The full set of logical events can be shown as follows: <br>
+<img src="../../images/EventModel.jpg" nosave="" height="407"
+ width="791">
+ </p>
+<p>The programmer can associate callbacks with any of these logical events;
+in fact, we saw a brief <a
+ href="broker_tutorial.html#Target_server:_set_up_broker_client,_establish_callback">example</a> 
+of this behavior when our target server associated a data completion callback 
+with its broker client. </p>
+<p>The power of the event-driven programming model is embodied in its extremely
+conservative assumptions about ordering and scheduling. Because events can
+occur randomly, the appropriate behavior in response to any event must be
+carefully encapsulated. This means that the resulting system is maximally
+embeddable in other software, because all the required behavior is completely
+separate from the scheduling and flow of control. </p>
+<p>In other words, the event monitor is the least important dimension of
+the model; you can replace it with another event monitor without any sacrifice
+in functionality. In fact, we provide an <a
+ href="../../../contrib/MITRE/examples/simple_mainloop/description.html">example</a> 
+in the distribution which substitutes a different event monitor for the default
+Galaxy Communicator event monitor. Furthermore, the Python and Allegro Common
+Lisp programming language bindings use their own event monitors, but invoke
+the same underlying C callbacks as the default C implementation. So even
+before we look at UI programming, we can derive some significant benefits
+from this model. </p>
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="The_event_monitor"></a>The event monitor</h2>
+ There are two strategies for implementing event monitors we'll look at:
+threads and event loops. We're only going to talk about threads in passing,
+but it's a valuable conceptual step to the event loop. 
+<p>In the abstract, a system like this has a number of parallel threads of
+execution going on. Some of these events are events which happen at particular
+intervals, and others are events which happen when data is available on a
+particular communications channel. These threads are conceptually separate.
+You could think of a callback which is fired every 10 milliseconds as one
+which is governed by an infinite loop which fires the callback, sleeps for
+10 milliseconds, and repeats. Similarly, you could think of each data callback
+as governed by an infinite loop which constantly tries to read data from
+the communications channel, and succeeds only when data is available (a so-called
+<b>blocking read</b>). </p>
+<center> 
+<p><img src="../../images/ThreadMonitor.jpg" nosave="" height="287"
+ width="647">
+</p>
+</center>
+  
+<p>In a multithreaded programming situation, this is exactly what happens.
+Each logical monitor is assigned to a programming thread. Examples of this
+are when a Communicator C server is run in threaded mode (which we won't
+talk about in this tutorial), or in the Java or Allegro Common Lisp programming
+language bindings. In these latter cases, the threaded model is the conceptually
+natural model for the language. </p>
+<p>If you don't use threads (and the default C server doesn't), life is a
+little more complicated. Since you can only have one infinite loop, these
+conceptually independent threads of execution have to be collapsed into one: 
+</p>
+<center> 
+<p><img src="../../images/EventLoop.jpg" nosave="" height="119"
+ width="647">
+</p>
+</center>
+ Obviously, in this case we can't sleep or do blocking reads; if we block
+on one channel, we'll miss events on another channel. So we have to use an
+<b>event loop</b>. Periodically, the event loop checks the communications
+channels it's been told to monitor, and checks the expiration time of the
+timers it's been told to monitor. When it discovers that data is available,
+or that a timer has expired, it fires the appropriate callback. When the
+callback finishes, the event loop continues. The default Galaxy Communicator
+main loop is an event loop. 
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="Adding_UI_elements"></a>Adding UI elements</h2>
+ When you add a UI element, what you're doing, essentially, is adding another
+type of event to monitor. You may be monitoring standard input, or perhaps
+input from audio: 
+<center><img src="../../images/AddEvents.jpg" nosave="" height="215"
+ width="647">
+</center>
+ In cases like this, the appropriate thing to do is to add these events to
+the Galaxy Communicator main loop: 
+<center> 
+<p><img src="../../images/EventsAddedToLoop.jpg" nosave="" height="119"
+ width="647">
+</p>
+</center>
+ A well-designed main loop will allow the programmer to add and remove callbacks
+for timer and data events at will; the <a
+ href="../advanced/timed_tasks.html">Galaxy Communicator event loop</a> provides
+these capabilities. In fact, there's even a <a
+ href="../../../contrib/MITRE/utilities/docs/stdin_poll.html">utility</a> 
+in the Galaxy Communicator distribution which allows you to add a standard 
+input monitor to the Galaxy Communicator main loop fairly easily. This is
+the utility which monitors the carriage returns in the Audio server. 
+<p>However, the reason this is simple to do is that monitoring standard input,
+or an audio device, usually doesn't come with its own main loop. There are
+many other common tools, such as CORBA and windowing systems, which have
+their own main loop. For instance, you'd encounter this problem if you wanted
+to build a Communicator-compliant Motif or Tcl/Tk server: </p>
+<center><img src="../../images/AddGui.jpg" nosave="" height="215"
+ width="647">
+</center>
+ This is exactly the same problem we faced with multiple parallel threads
+of execution: unless you're actually using threads, you can't have more than
+one main loop running. So in these cases, either the Galaxy Communicator
+main loop has to go, or the windowing main loop has to go. 
+<p>Fortunately, almost all of these main loops are well-designed, in that
+they support the ability to add and remove timer and data event callbacks.
+And since we know that Galaxy Communicator is designed so that all the work
+is done in the callbacks, and we have no idea whether the same is true for
+these other systems, the appropriate thing to do is to toss out the Galaxy
+Communicator main loop and monitor all the appropriate events in the other
+main loop: </p>
+<center> 
+<p><img src="../../images/EventsInGui.jpg" nosave="" height="119"
+ width="647">
+</p>
+</center>
+ This is how the unit tester works, actually; it monitors the Communicator
+events in the Python/Tk main window loop. 
+<p>For external main loops implemented in C, there's a well-defined way of
+doing this embedding of the Galaxy Communicator callbacks, called <a
+ href="../advanced/special_mainloop.html#External_loop_records">external loop
+records</a>. The <a
+ href="../../../contrib/MITRE/examples/simple_mainloop/description.html">example</a> 
+in the distribution which substitutes a different main loop for the Galaxy 
+Communicator main loop shows how this mechanism works. </p>
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="Summary"></a>Summary</h2>
+ This lesson has been fairly abstract, out of necessity; an appropriately
+detailed examination of relevant code examples is far beyond the scope of
+this tutorial. We believe, though, that the Galaxy Communicator distribution
+contains enough examples and documentation to allow you to learn the details
+on your own. 
+<p>This brings us to the end of our discussion of the structure of servers.
+We still have three more lessons to go. These lessons will address more details
+in the Hub which will finally allow you to assemble an entire end-to-end
+system. </p>
+<p><b>Next</b>: <a href="logging_tutorial.html">Setting up the Hub to log
+your interactions</a> </p>
+<p> </p>
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="broker_tutorial.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="logging_tutorial.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated September 28, 2001</center>
+  <br>
+</body>
+</html>

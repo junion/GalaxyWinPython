@@ -1,0 +1,78 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.73 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>Galaxy Communicator Documentation: Signal Handling</title>
+<!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+<body style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#3333FF" vlink="#993399" alink="#FF0000">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:
+<br><br>Signal Handling</h1></center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "external_makefile.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "binary_data.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+
+<hr WIDTH="100%">
+<p>Signal handling is complicated by threads.
+In order to enforce the proper signal handling across threaded and non-threaded
+applications, we provide a simple interface to signal handling which hides
+the appropriate details. It is <b>strongly recommended</b> that you use
+this interface to install signal handlers.
+<p>void&nbsp;<a NAME="Gal_InitializeSignals"></a><b><big>Gal_InitializeSignals</big></b>()
+<br>This function is called by <a href="../reference/server_structure.html#GalSS_CmdlineInitializeServer">GalSS_CmdlineInitializeServer</a>
+and <a href="../reference/server_structure.html#GalSS_InitializeServerToplevel">GalSS_InitializeServerToplevel</a>.
+In the non-threaded environment, it does nothing; if threads are enabled,
+it sets up a separate thread for signal handling and enables a few default
+handlers.
+<p>int&nbsp;<a NAME="Gal_SignalsInitialized"></a><b><big>Gal_SignalsInitialized</big></b>()
+<br>Returns 1 if signals have been initialized.
+In the non-threaded case, always returns 1.
+<p>void&nbsp;<a NAME="Gal_AddSignalHandler"></a><b><big>Gal_AddSignalHandler</big></b>(int
+<i>sig</i>,
+void (<i>handler</i>)(int ))
+<br>This function is like calling signal(),
+except it handles signals appropriately in threaded contexts. It supports
+the System V interpretation of signal(), whereby the signal handler is
+cleared after the signal is caught. If you want the signal to be caught
+again, you must call Gal_AddSignalHandler() inside your signal handler.
+This function will do the right thing inside <a href="../reference/adding.html#_GalSS_init_server">_GalSS_init_server</a>
+and <a href="../reference/adding.html#_GalSS_InitializeDefaults">_GalSS_InitializeDefaults</a>.
+(although in the threaded case, no signals can be counted on to be handled
+appropriately until immediately before _GalSS_init_server is called).
+<br>&nbsp;
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "external_makefile.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "binary_data.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated August 3, 2000</center>
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.73 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>MITRE Utilities Documentation: API Index</title>
+</head>
+<body style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#3333FF" vlink="#993399" alink="#FF0000">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:
+<br><br>MITRE Utilities: Alphabetical
+Index of API Calls</h1></center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "stdin_poll.html"><img src="../../../../docs/arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../../LICENSE">License</a> / <a href = "../../../../docs/manual/index.html">Documentation home</a> / <a href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "../../tools/docs/index.html"><img src="../../../../docs/arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+
+<hr WIDTH="100%">
+<br>MGal_StdinPoll *<b><big><a href="stdin_poll.html#MGalIO_CreateStdinPoll">MGalIO_CreateStdinPoll</a></big></b>(char
+*<i>prompt</i>, GalIO_CommStruct *<i>comm</i>, MGal_StdinFrameCreator <i>fn</i>,
+int <i>ms</i>, int <i>activate</i>)
+<p>MGal_StdinPoll *<b><big><a href="stdin_poll.html#MGalSS_EnvCreateStdinPoll">MGalSS_EnvCreateStdinPoll</a></big></b>(char
+*<i>prompt</i>, GalSS_Environment *<i>env</i>, MGal_StdinFrameCreator <i>fn</i>,
+int <i>ms</i>, int <i>activate</i>)
+<p>void <b><big><a href="stdin_poll.html#MGal_ActivateStdinPoll">MGal_ActivateStdinPoll</a></big></b>(MGal_StdinPoll
+*<i>poll_struct</i>)
+<p>void <b><big><a href="binary_data.html#MGal_AddBinaryDataType">MGal_AddBinaryDataType</a></big></b>(int
+<i>data_type</i>, MGal_BinaryDataEncoder <i>encoder</i>, MGal_BinaryDataDecoder
+<i>decoder</i>)
+<p>void <b><big><a href="brokering.html#MGal_AddBrokerDTHandler">MGal_AddBrokerDTHandler</a></big></b>(Gal_ObjectType
+<i>dt</i>, void *<i>val</i>, MGal_BrokerDTHandler <i>h</i>)
+<p>GalIO_BrokerStruct *<b><big><a href="brokering.html#MGal_AddIncomingBrokering">MGal_AddIncomingBrokering</a></big></b>(Gal_Frame
+<i>fr</i>, int <i>poll_ms</i>, void *<i>caller_data</i>, int <i>activate</i>)
+<p>GalIO_BrokerStruct *<b><big><a href="brokering.html#MGal_AddOutgoingBrokering">MGal_AddOutgoingBrokering</a></big></b>(GalIO_CommStruct
+*<i>gcomm</i>, Gal_Frame <i>fr</i>, int <i>poll_ms</i>, int <i>timeout_ms</i>)
+<p>Gal_Frame <b><big><a href="frame.html#MGal_CreateFullFrame">MGal_CreateFullFrame</a></big></b>(char
+*<i>name</i>, int <i>type</i>, int <i>num_pairs</i>, ... )
+<p>void <b><big><a href="stdin_poll.html#MGal_FreeStdinPoll">MGal_FreeStdinPoll</a></big></b>(MGal_StdinPoll
+*<i>poll_struct</i>)
+<p>void *<b><big><a href="binary_data.html#MGal_GetOpaque">MGal_GetOpaque</a></big></b>(Gal_Frame
+<i>fr</i>, char *<i>key</i>, int *<i>data_type</i>)
+<p>void *<b><big><a href="binary_data.html#MGal_GetOpaqueWarn">MGal_GetOpaqueWarn</a></big></b>(Gal_Frame
+<i>fr</i>, char *<i>key</i>, int <i>data_type</i>)
+<p>void *<b><big><a href="stdin_poll.html#MGal_GetStdinPollData">MGal_GetStdinPollData</a></big></b>(MGal_StdinPoll
+*<i>poll_struct</i>)
+<p>void <b><big><a href="install.html#MGal_InitializeStatics">MGal_InitializeStatics</a></big></b>(void
+)
+<p>Gal_Object <b><big><a href="binary_data.html#MGal_OpaqueObject">MGal_OpaqueObject</a></big></b>(void
+*<i>obj</i>, int <i>data_type</i>)
+<p>int <b><big><a href="stdin_poll.html#MGal_PollStdin">MGal_PollStdin</a></big></b>(MGal_StdinPoll
+*<i>poll_struct</i>)
+<p>void <b><big><a href="stdin_poll.html#MGal_SetStdinPollData">MGal_SetStdinPollData</a></big></b>(MGal_StdinPoll
+*<i>poll_struct</i>, void *<i>data</i>)
+<p>void <b><big><a href="stdin_poll.html#MGal_SetStdinPollPrompt">MGal_SetStdinPollPrompt</a></big></b>(MGal_StdinPoll
+*<i>poll_struct</i>, char *<i>prompt</i>)
+<br>&nbsp;
+<p><br>
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "stdin_poll.html"><img src="../../../../docs/arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../../LICENSE">License</a> / <a href = "../../../../docs/manual/index.html">Documentation home</a> / <a href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "../../tools/docs/index.html"><img src="../../../../docs/arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated October 16, 2000</center>
+
+</body>
+</html>

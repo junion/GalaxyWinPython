@@ -1,0 +1,470 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+        
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Tutorial: How to Use the Unit Tester</title>
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+    
+<center>  
+<h1> Galaxy Communicator Tutorial:<br>
+  <br>
+  How to Use the Unit Tester</h1>
+ </center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="../../../../docs/manual/tutorial/basic_server.html"><img
+ src="../../../../docs/arrow_left.gif" alt="" width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../../LICENSE">License</a> / <a
+ href="../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a> 
+       </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="../../../../docs/manual/tutorial/pgm_intro.html"><img
+ src="../../../../docs/arrow_right.gif" alt="" width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+     
+<hr width="100%">  
+<p>The unit tester is a GUI tool which simulates either a server or a Hub. 
+As a Hub, it connects to a server and allows the user to send messages to 
+the server and monitor responses just as the Hub would. As a server, it connects 
+to a listener in the Hub and gives the user the appropriate facilities to 
+interact with the Hub as a server would. In both case, the unit tester can 
+send new messages, or respond to new messages it receives. </p>
+ 
+<ul>
+  <li> <a href="#Starting_the_unit_tester_as_a_Hub">Starting the unit tester
+as a Hub</a></li>
+   <li> <a href="#Interacting_with_the_Parser_server">Interacting with the
+Parser server</a></li>
+   <li> <a href="#Starting_the_unit_tester_as_a_server">Starting  the unit
+tester as a server</a></li>
+   <li> <a href="#Interacting_with_the_Parser_server_via_the_Hub">Interacting
+ with the Parser server via the Hub</a></li>
+   <li> <a href="#Summary">Summary</a></li>
+   
+</ul>
+  Once you feel comfortable with the unit tester, you can also consult the 
+<a href="unit_tester_ref.html">unit tester reference</a>.  
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Starting_the_unit_tester_as_a_Hub"></a>Starting the unit tester 
+as a Hub</h2>
+  In order to demonstrate the functionality of the unit tester, we'll perform 
+a simple interaction with the Parser server from the toy travel demo, which 
+we explored in detail in our <a
+ href="../../../../docs/manual/tutorial/basic_server.html">server basics lesson</a>.
+We'll start with the simplest case: starting the unit tester as a Hub. We'll
+use the process monitor to control the interaction.  
+<blockquote><b><tt>[Unit tester exercise 1]<br>
+  <br>
+Unix:<br>
+  </tt></b>    
+  <p><tt>% process_monitor $GC_HOME/tutorial/servers/parse-hub.config &amp;<br>
+  </tt></p>
+  <p><tt><b>Windows:</b><br>
+  </tt></p>
+  <p><tt>c:\&gt; python %PM_DIR%\process_monitor.py %GC_HOME%\tutorial\servers\parse-hub.config</tt><br>
+   </p>
+     </blockquote>
+  You'll see a process monitor window with two panes, one of which starts 
+the Parser and the other of which starts the unit tester. The command line 
+for the unit tester looks like this:  
+<blockquote><b><tt>[Unit tester Hub command line]</tt></b>    
+  <p><tt>$PYTHONBIN $UNIT_TEST/unit_tester.py --as_hub --frames $GC_HOME/tutorial/servers/parse.frames
+ localhost 10000</tt></p>
+ </blockquote>
+  The <tt>--as_hub</tt> argument configures the unit tester to pretend to 
+be a Hub; the <tt>--frames</tt> argument provides a file containing a list 
+of frames which the unit tester will be able to use as new messages; and the
+final two arguments are the host and port of the server to contact.  
+<p>Start the Parser server and then the unit tester. You'll get a window like
+this: </p>
+ 
+<center>  
+<p><img src="../../../../docs/images/UnitTester1.jpg" nosave=""
+ height="263" width="407">
+ </p>
+ </center>
+    
+<p>As the unit tester sends and receives messages, it will update its scrollable 
+output history. </p>
+ 
+<p>Press the "Send new message" button. You'll get a second window: </p>
+ 
+<center><img src="../../../../docs/images/UnitTester2.jpg" nosave=""
+ height="551" width="551">
+ </center>
+    
+<p>This window allows you to enter a new message to send to the server. You 
+can either type in the new message in the new message typein window using 
+the <a
+ href="../../../../docs/manual/tutorial/frame_intro.html#What's_in_a_frame">printed
+ representation of frames</a>, or you can select a frame from the mouseable
+ frame history using the left mouse button. This frame will be entered in
+the new message typein window, and you can edit the frame or use it as is.
+</p>
+ 
+<p>The "Reply required" radio button allows you to control whether the message 
+you're sending requires a reply or not. You'll learn more about how to control 
+this aspect of the message later. We'll ignore the "Session ID" typein window 
+and the "Lock Session"&nbsp;radio button for the moment. </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Interacting_with_the_Parser_server"></a>Interacting with the 
+Parser server</h2>
+  To start your first interaction, select the frame named <tt>Parser.Parse</tt> 
+with the left mouse button in the mouseable frame history, press the Reply 
+Required button, and then press OK. You'll see a couple of things happen.
+ 
+<p>First, the scrollable output history will now have the following contents:
+ </p>
+ 
+<blockquote><b><tt>[Scrollable output history]</tt></b>    
+  <p><tt>[Sending: new message]</tt> <br>
+   <tt>{c Parser.Parse</tt> <br>
+   <tt>&nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"
+ }</tt> <br>
+   <tt>[Received: reply message]</tt> <br>
+   <tt>{c Parser.Parse</tt> <br>
+   <tt>&nbsp;&nbsp; :frame {c flight</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ :origin "BOSTON"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ :destination "LOS ANGELES" } }</tt></p>
+ </blockquote>
+  This history indicates that the unit tester sent the message described, 
+and received a reply containing the <tt>:frame</tt> key which contains the 
+parse. We can see the same thing if we look at the process monitor pane for 
+the Parser:  
+<blockquote><tt><b>[Parser process monitor pane]</b><br>
+  <br>
+ Received new message from 127.0.0.1 <br>
+ {c Parser.Parse <br>
+ &nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON TO LOS ANGELES" <br>
+ &nbsp;&nbsp; :hub_opaque_data {c admin_info ... } } <br>
+ Invoking dispatch function: Parse <br>
+ Returning result frame to 127.0.0.1 <br>
+ {c Parser.Parse <br>
+ &nbsp;&nbsp; :frame {c flight ... } <br>
+ &nbsp;&nbsp; :hub_opaque_data {c admin_info ... } }</tt></blockquote>
+  We've seen this sort of output before, in the <a
+ href="../../demos/docs/toy-travel-tut.html#Understanding_what_you_see:_server_processing">server
+ processing</a> for the toy travel demo. In both cases, we can see that the 
+input and output correspond to the <a
+ href="../../demos/docs/Parser.html">documentation for the Parser server</a>.
+ 
+<p>Next, press the "Send new message" button again. Notice that the mouseable 
+frame history now has the message reply in its history, along with the message 
+it sent. Select the first <tt>Parser.Parse</tt> frame again, and delete <tt>Parser.</tt>
+ from the frame name in the new message typein window (you can do this by
+selecting the text and pressing the <tt>&lt;Del&gt;</tt> key on your keyboard).
+The contents of the new message typein window should now look like this:
+</p>
+ 
+<blockquote><b><tt>[New message typein window]</tt></b>    
+  <p><tt>{c Parse</tt> <br>
+   <tt>&nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"
+ }</tt></p>
+ </blockquote>
+  Now press the Reply Required button and then OK. The result is the identical, 
+except that the frames are named <tt>Parse</tt> instead of <tt>Parser.Parse</tt>. 
+This interaction demonstrates how the server ignores the prefixes.  
+<p>Finally, press the "Send new message" button again, and select the frame 
+named <tt>UserInput</tt> (you may have to scroll back to the top of the mouseable 
+frame history). You may recognize this name as the name of the program which 
+<a
+ href="../../demos/docs/toy-travel-tut.html#Step_2:_Reroute_to_handle_general_input">handles
+ general input</a> in the toy travel demo. Press the Reply Required button
+ and then OK. The result this time is very different. The message history
+now contains a different type of response: </p>
+ 
+<blockquote><b><tt>[Scrollable output history]</tt></b>    
+  <p><tt>[Sending: new message]</tt> <br>
+   <tt>{c UserInput</tt> <br>
+   <tt>&nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"
+ }</tt> <br>
+   <tt>[Received: error message]</tt> <br>
+   <tt>{c system_error</tt> <br>
+   <tt>&nbsp;&nbsp; :err_description "Function UserInput does not exist"</tt>
+   <br>
+   <tt>&nbsp;&nbsp; :errno 1 }</tt></p>
+ </blockquote>
+  So instead of providing a normal response, the server responded with an 
+error, because the name of the message the server received doesn't correspond 
+to any dispatch function it knows about. (We'll learn more about error handling 
+later.)  
+<p>Select "File --&gt; Quit" in the process monitor to end this exercise.
+ </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Starting_the_unit_tester_as_a_server"></a>Starting the unit 
+tester as a server</h2>
+  As we said earlier, the unit tester can function as a server or as a Hub. 
+When it functions as a server, it contacts the Hub, rather than setting up 
+a listener for the Hub to contact. In this second exercise, we'll use the 
+unit tester as a server to interact with the Parser server via the Hub.  
+<blockquote><b><tt>[Unit tester exercise 2]<br>
+  <br>
+Unix:<br>
+  </tt></b>    
+  <p><tt>% process_monitor $GC_HOME/tutorial/servers/parse-server.config
+&amp;<br>
+  </tt></p>
+  <p><tt><b>Windows:</b><br>
+  </tt></p>
+  <p><tt>C:\&gt; python %PM_DIR%\process_monitor.py %GC_HOME%\tutorial\servers\parse-server.config</tt><br>
+  </p>
+ </blockquote>
+  You'll see a process monitor with three panes: one for the Parser server, 
+as before; one for the Hub; and third for the unit tester, acting as a server. 
+The command line for the unit tester should look like this:  
+<blockquote><b><tt>[Unit tester server command line]</tt></b>    
+  <p><tt>$PYTHONBIN $UNIT_TEST/unit_tester.py --as_server --service_type
+UI --frames $GC_HOME/tutorial/servers/parse.frames  localhost 14500</tt></p>
+ </blockquote>
+  The <tt>--as_server</tt> argument instructs the unit tester to act as a 
+server; the <tt>--service_type</tt> argument tells the unit tester which service
+type the Hub has set up the listener for; the rest of the arguments are as
+before. Start the Parser, then the Hub, and finally the unit tester.  
+<p>When you start the unit tester, you'll get the toplevel window containing 
+the scrollable output history, as before, but you'll also get a second window, 
+which looks like this: </p>
+ 
+<center><img src="../../../../docs/images/UnitTester3.jpg" nosave=""
+ height="383" width="527">
+ </center>
+  This window is the dialogue which allows you to respond to new messages 
+which the unit tester receives. The reason the unit tester is receiving a 
+new message, of course, is because it's just contacted the Hub, and the Hub 
+has sent it a <a
+ href="../../../../docs/manual/tutorial/how_it_works.html#Hub_and_servers_contact_each_other"><tt>reinitialize</tt>
+ message</a>. This window contains a pane which displays the incoming message, 
+an option to send a new message to the Hub, and a set of buttons to allow 
+you to select the type of reply to send to this dispatch function. Since the
+response to the <tt>reinitialize</tt> message is ignored, select the "Dummy
+reply" button and press OK. You're now connected to the Hub.  
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Interacting_with_the_Parser_server_via_the_Hub"></a>Interacting
+ with the Parser server via the Hub</h2>
+  We're going to try our three interactions again, but in a slightly different 
+order.  
+<p>Press the "Send new message" button and select the frame named <tt>UserInput</tt>.
+ Although we won't look at it in detail until the next lesson, there's a
+Hub program named <tt>UserInput</tt> defined in the Hub script we're currently 
+running, and this program calls the <tt>Parser.Parse</tt> operation. Press 
+"Reply Required" and then OK. The Hub pane in the process monitor should look
+something like this: </p>
+ 
+<blockquote><b><tt>[Hub pane]</tt></b>    
+  <p><tt>Got new message from provider for UI (id 2) <br>
+ Provider for UI (id 2) requested a reply<br>
+ Created token 1</tt> </p>
+   
+  <p><tt>----------------[&nbsp; 1]----------------------</tt> <br>
+   <tt>{c UserInput</tt> <br>
+   <tt>&nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"</tt>
+   <br>
+   <tt>&nbsp;&nbsp; :session_id "Default"</tt> <br>
+   <tt>&nbsp;&nbsp; :tidx 1 }</tt> <br>
+   <tt>----------------------------------------</tt> <br>
+ &nbsp; </p>
+   
+  <p><tt>----------------[&nbsp; 1]----------------------</tt>&nbsp; <br>
+   <tt>{c UserInput</tt> <br>
+   <tt>&nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"</tt>
+   <br>
+   <tt>&nbsp;&nbsp; :session_id "Default"</tt> <br>
+   <tt>&nbsp;&nbsp; :tidx 1 }</tt> <br>
+   <tt>--------------------------------------------</tt> </p>
+   
+  <p><tt>Found operation for token 1: Parser.Parse<br>
+ Serving message with token index 1 to provider for Parser @ localhost:10000<br>
+ ---- Serve(Parser@localhost:10000, token 1 op_name Parse) <br>
+   </tt> </p>
+   
+  <p><tt>Got reply from provider for Parser @ localhost:10000 : token 1</tt>
+   </p>
+   
+  <p><tt>----------------[&nbsp; 1]----------------------</tt> <br>
+   <tt>{c UserInput</tt> <br>
+   <tt>&nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"</tt>
+   <br>
+   <tt>&nbsp;&nbsp; :session_id "Default"</tt> <br>
+   <tt>&nbsp;&nbsp; :tidx 1</tt> <br>
+   <tt>&nbsp;&nbsp; :frame {c flight ... } }</tt> <br>
+   <tt>----------------------------------------</tt> </p>
+   
+  <p><tt>Done with token 1 --&gt; returning to owner UI@&lt;remote&gt;:-1
+   <br>
+ Destroying token 1</tt></p>
+ </blockquote>
+  We should already be familiar with a number of aspects of this interaction. 
+We see that the Hub received a new message, which it used to instantiate a
+token with index 1. It found a program named <tt>UserInput</tt> (although 
+this isn't obvious from the printout), found the <tt>Parser.Parse</tt> operation, 
+dispatched the message, updated the token with the <tt>:frame</tt> key which 
+was returned, and, after the program was complete, returned the result to 
+the unit tester (which had contacted the listener for the UI service type). 
+This is a <b>scripted</b> interaction.  
+<p>The scrollable output history in the unit tester shows the other side of
+this interaction: </p>
+ 
+<blockquote><b><tt>[Scrollable output history]</tt></b>    
+  <p><tt>[Sending: new message]</tt> <br>
+   <tt>{c UserInput</tt> <br>
+   <tt>&nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"
+ }</tt> <br>
+   <tt>[Received: reply message]</tt> <br>
+   <tt>{c UserInput</tt> <br>
+   <tt>&nbsp;&nbsp; :frame {c flight</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ :origin "BOSTON"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ :destination "LOS ANGELES" }</tt> <br>
+   <tt>&nbsp;&nbsp; :session_id "Default"</tt> <br>
+   <tt>&nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"
+ }</tt></p>
+ </blockquote>
+  Notice that the response here is a little different than in the case where 
+the unit tester is pretending to be the Hub. In this case, we get the entire 
+contents of the token back, which contains both the original <tt>:input_string</tt>
+ key and also the <tt>:frame</tt> response.  
+<p>Next, press "Send new message", and select the frame named <tt>Parser.Parse</tt>.
+ In this case, there isn't going to be a program named <tt>Parser.Parse</tt>,
+ but there is a server named <tt>Parser</tt> which supports the <tt>Parse</tt> 
+message. So in this case, we'll have a <b>scriptless</b> interaction. Press 
+"Reply Required" and then OK. In this case, we'll have a slightly different 
+output. First, the Hub pane: </p>
+ 
+<blockquote><b><tt>[Hub pane]</tt></b>    
+  <p><tt>Got new message from provider for UI (id 2) <br>
+ Provider for UI (id 2) requested a reply<br>
+ Created token 2</tt> </p>
+   
+  <p><tt>----------------[&nbsp; 2]----------------------</tt> <br>
+   <tt>{c Parser.Parse</tt> <br>
+   <tt>&nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"</tt>
+   <br>
+   <tt>&nbsp;&nbsp; :session_id "Default"</tt> <br>
+   <tt>&nbsp;&nbsp; :tidx 2 }</tt> <br>
+   <tt>----------------------------------------</tt> </p>
+   
+  <p><tt>Serving message with token index 2 to provider for Parser @ localhost:10000<br>
+ ---- Serve(Parser@localhost:10000, token 2 op_name Parse)<br>
+ Got reply from provider for Parser @ localhost:10000 : token 2</tt> </p>
+   
+  <p><tt>----------------[&nbsp; 2]----------------------</tt> <br>
+   <tt>{c Parser.Parse</tt> <br>
+   <tt>&nbsp;&nbsp; :frame {c flight ... }</tt> <br>
+   <tt>&nbsp;&nbsp; :session_id "Default"</tt> <br>
+   <tt>&nbsp;&nbsp; :tidx 2 }</tt> <br>
+   <tt>----------------------------------------</tt> </p>
+   
+  <p><tt>Done with token 2 --&gt; returning to owner UI@&lt;remote&gt;:-1
+   <br>
+ Destroying token 2</tt></p>
+ </blockquote>
+  The interaction is a little simpler. Notably, there's no accumulated token 
+state, because there's no program matched. The state of the token is simply 
+the response from the dispatch function, which contains <tt>:frame</tt> but
+ not <tt>:input_string</tt>, as we saw in the first exercise. Again, the
+scrollable output pane confirms this:  
+<blockquote><b><tt>[Scrollable output pane]</tt></b>    
+  <p><tt>[Sending: new message]</tt> <br>
+   <tt>{c Parser.Parse</tt> <br>
+   <tt>&nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"
+ }</tt> <br>
+   <tt>[Received: reply message]</tt> <br>
+   <tt>{c Parser.Parse</tt> <br>
+   <tt>&nbsp;&nbsp; :frame {c flight</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ :origin "BOSTON"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ :destination "LOS ANGELES" }</tt> <br>
+   <tt>&nbsp;&nbsp; :session_id "Default" }</tt></p>
+ </blockquote>
+  The response received by the unit tester contains only the <tt>:frame</tt> 
+key.  
+<p>Finally, press "Send new message", and select the first <tt>Parser.Parse</tt>
+ frame again, and delete <tt>Parser.</tt> from the frame name as you did
+in exercise 1. Press "Reply Required" and then OK. The result should be exactly 
+the same as if you hadn't removed the <tt>Parser.</tt> from the frame name. 
+The reason for this, you may recall, is that server name "addresses" are optional,
+and the Hub will try to find a server which supports the named message. In
+this case, there's only one (Parser), and the Hub uses it. </p>
+ 
+<p>Now, select "File --&gt; Quit" in the process monitor to end this exercise.
+ </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Summary"></a>Summary</h2>
+  In this lesson, you've learned about the unit tester, a powerful and flexible 
+tool which allows us to interact with the Hub and servers in very controlled 
+ways. In the next lesson, we'll start learning a little bit about how Hub 
+program files are constructed.  
+<p><b>Next</b>: <a
+ href="../../../../docs/manual/tutorial/pgm_intro.html">Writing a basic Hub 
+program file</a> </p>
+ 
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="../../../../docs/manual/tutorial/basic_server.html"><img
+ src="../../../../docs/arrow_left.gif" alt="" width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../../LICENSE">License</a> / <a
+ href="../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a> 
+       </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="../../../../docs/manual/tutorial/pgm_intro.html"><img
+ src="../../../../docs/arrow_right.gif" alt="" width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated August 8, 2002</center>
+    
+<p><br>
+  </p>
+ <br>
+ <br>
+</body>
+</html>

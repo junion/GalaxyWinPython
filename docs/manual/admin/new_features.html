@@ -1,0 +1,144 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+            
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+            
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: New Features</title>
+             <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+      
+<center>   
+<h1> Galaxy Communicator Documentation:<br>
+   <br>
+   New Features in the Current Distribution</h1>
+  </center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="install.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="4point0upgrade.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+       
+<hr width="100%">   
+<h2> Version 4.0</h2>
+   The major purpose of this distribution is to add timestamp support for 
+multimodal interaction, complete and document a number of new features, and 
+tie up loose ends.<br>
+   
+<h3>Broker proxies</h3>
+  In 4.0, we've introduced a powerful additional API for brokering which
+has  significant advantages over the old one. It relies on an <a
+ href="../reference/brokering.html#The_types_of_broker_proxies">encapsulation
+ of broker contact information</a> called a <b>broker proxy</b>. <br>
+   
+<ul>
+    <li>This new encapsulation is a distinguished data type, so brokers can
+ be reliably recognized in frames, unlike the old API, where the contact
+information  was scattered throughout the frame. This makes it possible for
+code to identify  brokers reliably, which means that it's now possible to
+write general-purpose  firewall bridges.</li>
+    <li>The distinguished <tt>:call_id</tt> key for uniquely identifying
+the  broker data is encapsulated in the proxy, so that it's now possible
+to insert  multiple broker references in the same message.</li>
+    <li>The new API supports writing objects to and reading objects from
+broker  proxies without callbacks if you prefer.</li>
+    <li>The new broker proxies include type information, so that the receiver
+ can reliably distinguish between, say, an array which is a portion of a
+larger  array and an array which is intended to be self-contained.</li>
+    <li>The new broker API supports either immediate or delayed invocation
+ of the data handler callbacks on the receiving end, and in the delayed case
+ accumulates the data for you.</li>
+   
+</ul>
+  We recommend that everyone upgrade to this new broker API.<br>
+  <br>
+  The old broker API remains unchanged, and will continue to be supported;
+ in fact, the new broker API is implemented entirely in terms of the old
+one.<br>
+   
+<h3>Timestamps</h3>
+  To support the synchronization of multimodal input, we've introduced <a
+ href="../advanced/timestamps.html">timestamps</a> into the Hub.<br>
+  <br>
+     
+<h3> Provider names</h3>
+   In 4.0, we have expanded and rationalized the way the Hub can refer to 
+specific service providers. Most significantly, we have introduced a system 
+of <a href="../advanced/provider_id.html">provider names</a> in the Hub, which
+can be specified, retrieved, passed around, and targeted for messages. We
+have also made this expanded syntax available in a wide range of Hub program
+ directives.   
+<h3> Hub GUI</h3>
+   In 4.0, we have finally completed the <a
+ href="../../servers/hub_gui.html">Hub GUI message set</a> and implemented
+ a simple reference which is included in the distribution. The Hub can establish
+ contact with this server using the <a
+ href="../reference/hub.html#The_Hub"><tt>-gui</tt> command line argument</a>,
+ after which all status messages which would have been routed to standard
+output or standard error are sent as message frames to the specified server.
+This server can use this information for profiling or visualization.<br>
+ 
+<h3>Listener-in-Hub API</h3>
+ In 4.0, we've constructed a new <a
+ href="../reference/server_structure.html#Listener-in-Hub_support">server-side 
+API</a> which provides a structured method for contacting the Hub when that's 
+all you really want to do.<br>
+<h3>Windows support</h3>
+In 4.0, all executables, examples and demos are compiled for Windows, and
+the tutorial runs on Windows as well.<br>
+    
+<p> </p>
+   
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="install.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="4point0upgrade.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated August 6, 2002</center>
+    <br>
+  <br>
+ <br>
+</body>
+</html>

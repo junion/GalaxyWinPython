@@ -1,0 +1,24 @@
+;; This file (c) Copyright 1998 - 2002 The MITRE Corporation
+;; 
+;; This file is part of the Galaxy Communicator system. It is licensed
+;; under the conditions described in the file LICENSE in the root 
+;; directory of the Galaxy Communicator system.
+
+;; This program file exemplifies scriptless interaction. There
+;; are no programs here. The double server is instructed to
+;; send messages named "complex_twice", and the multiply 
+;; program is omitted (conveniently, the multiply program invokes
+;; the multiply dispatch function, so the Hub simply finds
+;; the operation instead of the program).
+
+SERVER: double-server
+PORT: 2800
+HOST: localhost
+OPERATIONS: complex_twice reinitialize
+INIT: :program "complex_twice"
+
+SERVER: multiply-server
+PORT: 2900
+HOST: localhost
+OPERATIONS: multiply reinitialize
+INIT: :factor 4

@@ -1,0 +1,162 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+            
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+            
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Tutorial: Getting Started</title>
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ee" vlink="#551a8b" alink="#ff0000">
+      
+<center>   
+<h1> Galaxy Communicator Tutorial:<br>
+   <br>
+   Getting Started</h1>
+  </center>
+   
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+     <tbody>
+       <tr>
+         <td valign="middle" align="left" width="10%"><a
+ href="../overview.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+       </a></td>
+         <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>    
+   </td>
+         <td valign="middle" align="right" width="10%"><a
+ href="how_it_works.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+       </a></td>
+       </tr>
+          
+  </tbody>   
+</table>
+       
+<center>   
+<hr width="100%"></center>
+      
+<p>The tutorial portion of the Galaxy Communicator documentation makes a
+few assumptions about you, your Galaxy Communicator installation, and your
+computing environment.&nbsp;   We've already noted that there are special
+instructions for installing the distribution so that the tutorial can be
+run, on <a href="../admin/install.html#Setting_up_the_tutorial_Unix">Unix</a>
+and<a href="../admin/install.html#Setting_up_the_tutorial_Windows"> Windows</a>.
+     In the remainder of this document, we'll describe what else you need 
+to do to get yourself started.  </p>
+ 
+<p> </p>
+   
+<hr width="100%">   
+<h2> Reference environment</h2>
+   We believe that the training course should work on any Unix environment
+ on which the Galaxy Communicator installation can be installed. However,
+for reference purposes, here is the configuration of our primary development 
+environment for the tutorial:<br>
+ 
+<h4>Unix&nbsp;</h4>
+ 
+<ul>
+   <li>Hardware: Sparc Ultra 10</li>
+    <li> OS: Solaris 2.7</li>
+    <li> X implementation: /usr/openwin</li>
+    <li> Window manager: fvwm</li>
+    <li> Shell: tcsh</li>
+    <li> Editor: emacs 20.4.1</li>
+    <li> Python version: 1.5</li>
+     
+</ul>
+ 
+<h4>Windows</h4>
+ 
+<ul>
+   <li>Hardware: Dell Dimension desktop</li>
+   <li>OS: Windows NT 4.0</li>
+   <li>Python version: 2.1<br>
+   </li>
+ 
+</ul>
+   If your behavior differs from ours, it may be due to a difference in environment. 
+  
+<p> </p>
+   
+<hr width="100%">   
+<h2> Start up X windows (Unix)</h2>
+   The Unix version of the&nbsp; tutorial assumes that you're running X.
+Since you're reading this documentation, you're almost certainly in X already
+if you're on a Unix machine.   
+<p> </p>
+   
+<hr width="100%">   
+<h2> Set up your shell environment</h2>
+ You'll need to modify your shell environment to reflect the location of
+the root of the Galaxy Communicator installation, as well as some of the
+executables you'll be using. On all platforms, the tutorial is started up
+from a shell. Note that in all cases, you must run the tutorial from a writeable
+directory, since some of the logging exercises will try to write logs to
+the current working directory.   
+<blockquote>   
+  <h4>Unix csh/tcsh</h4>
+        
+  <p><tt>% setenv GC_HOME &lt;root_of_GC_distro&gt;</tt><tt><br>
+ % setenv PATH $GC_HOME/contrib/MITRE/tools/bin:$PATH<br>
+% cd &lt;some_writeable_directory&gt;<br>
+  </tt></p>
+           
+  <h4>Unix sh/bash</h4>
+   <tt>$ GC_HOME=</tt><tt>&lt;root_of_GC_distro&gt;</tt><tt>; export GC_HOME<br>
+   </tt><tt>$ PATH=$GC_HOME/contrib/MITRE/tools/bin:$PATH; export  PATH<br>
+$ cd &lt;some_writeable_directory&gt;</tt> <br>
+   
+  <h4>Windows MS-DOS<br>
+   </h4>
+   <tt>C:\&gt; set GC_HOME=</tt><tt>&lt;root_of_GC_distro&gt;</tt><br>
+   <tt>C:\&gt; set PATH=&lt;location_of_Python.exe&gt;;%PATH%<br>
+ C:\&gt; set PM_DIR=%GC_HOME%\contrib\MITRE\tools\src\process_monitor<br>
+C:\&gt; chdir &lt;some_writeable_directory&gt;<br>
+   </tt>    </blockquote>
+     
+<p>If you add these settings to your shell startup file, you can run the examples
+from any shell. Otherwise, you will only be able to run the examples in the
+shelll in which you make these settings, because the PATH value you'll set
+in the next step is usually overwritten when you start up a new shell. </p>
+   
+<p> </p>
+   
+<p> </p>
+   
+<p><b>Next</b>: <a href="how_it_works.html">The basics: how the Hub and server
+ communicate, and what they say</a> </p>
+   
+<hr> 
+<center>  
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+     <tbody>
+       <tr>
+         <td valign="middle" align="left" width="10%"><a
+ href="../overview.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+       </a></td>
+         <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>    
+   </td>
+         <td valign="middle" align="right" width="10%"><a
+ href="how_it_works.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+       </a></td>
+       </tr>
+          
+  </tbody>   
+</table>
+   Last updated August 16, 2002</center>
+    <br>
+  <br>
+ <br>
+</body>
+</html>

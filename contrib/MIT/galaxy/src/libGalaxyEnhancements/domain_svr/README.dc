@@ -1,0 +1,11 @@
+
+ This directory contains the source files for a
+ generic server library to be used by d-servers and i-servers, 
+ and possibly in the future by the discourse module as well.
+ It includes a dialogue-control top as specified by a script file
+ (see ../../System/pegasus.dctl)
+
+
+  
+
+

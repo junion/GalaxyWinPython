@@ -1,0 +1,203 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+        
+  <meta name="GENERATOR"
+ content="Mozilla/4.78 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Thread Notes</title>
+         <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+    
+<center>  
+<h1> Galaxy Communicator Documentation:<br>
+  <br>
+  Thread Notes</h1>
+ </center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "ntport.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"></td>
+     </tr>   
+  </tbody> 
+</table>
+
+    
+<hr width="100%" size="2" noshade=""><br>
+<ul>
+  <li><a href="#Overview">Overview</a></li>
+  <li><a href="#Whats_protected_and_whats_not">What's protected and what's
+not</a></li>
+  <li><a href="#Threads_and_taskbrokerproxy_creation">Threads and task/broker/proxy
+creation</a></li>
+  <li><a href="#Signals">Signals</a></li>
+  <li><a href="#Status">Status</a></li>
+  <li><a href="#Platform_notes"> Platform notes</a><br>
+  </li>
+</ul>
+<hr width="100%" size="2"><br>
+<h2><a name="Overview"></a>Overview<br>
+</h2>
+<p>The core Galaxy Communicator library is believed to be thread-safe on
+a number of platforms, which are listed in <a
+ href="install.html#Preliminaries">the table in the installation documentation</a>.&nbsp;The
+thread implementation in Communicator uses POSIX threads on Unix, and native
+NT threads on NT.  </p>
+<p>On Unix, if you wish to have the option of compiling a threaded version 
+of a library or executable, insert the line </p>
+ 
+<blockquote><tt>THREAD_SAFE = 1</tt></blockquote>
+  into the MIT Makefile before rules.make is loaded. This will enable the 
+<a href="install.html#compilation">compilation targets</a> <tt>thread</tt>, 
+<tt>thread-debug</tt>, <tt>thread-profile</tt>,<tt> thread-purify</tt> and 
+<tt>thread-insure</tt>. If THREAD_SAFE has not been set, these targets will 
+be equivalent to the non-threaded versions. MITRE has provided an (experimental) 
+option for toplevel server operation which uses <a
+ href="../advanced/timed_tasks.html#Threads">threads instead of timed tasks</a> 
+for server and connection management. As of version 3.0, this option works 
+on Windows as well as Unix.  
+<p>If you use non-MIT&nbsp;makefiles, including project files on Win32,&nbsp; 
+make sure that <tt>-DGAL_THREADS -D_REENTRANT</tt> are among your compilation 
+flags. </p>
+ 
+<p>Due to some backward compatibility issues, we have let remain a situation 
+in the output code where the variable which controls verbosity levels may 
+be initialized (harmlessly) more than once. </p>
+ 
+<p>The Hub is not completely thread-safe, due to calls to rand() and localtime(). 
+These will be fixed in a subsequent distribution.<br>
+</p>
+<h2><a name="Whats_protected_and_whats_not"></a>What's protected and what's
+not</h2>
+Many of the basic elements in the core library are mutex-protected at various
+points, but some are not. Here's a quick guide. The Communicator library
+has a <a href="../reference/libutil.html#Threads">set of undocumented calls</a>
+which manage mutexes on multiple platforms, the usage of which is fairly
+transparent. You can use these, or native calls to POSIX or Win32 threads.<br>
+<ul>
+  <li><b>Frames and objects</b>. The internal memory store is mutex-protected,
+but the individual frames and objects are not. The core library does not
+share objects internally, so this isn't a problem for the library, but if
+you have individual frames or objects which may be modified by more than
+one thread, you must set up a mutex.&nbsp;</li>
+  <li><b>Connections and servers</b>. Connections and servers are fully mutex-protected.
+The core library supports multiple threads reading from or writing to the
+same connection.</li>
+  <li><b>Environments</b>. Environments are not mutex-protected in any way.</li>
+  <li><b>Brokers</b>. Because brokers use standard connection objects for
+communication, they inherit the mutex-protection benefits associated with
+connections and servers. However, other access to brokers (for instance,
+multiple threads attempting to update broker callbacks simultaneously) is
+not protected, since it doesn't happen in the core library.</li>
+</ul>
+<h2><a name="Threads_and_taskbrokerproxy_creation"></a>Threads and task/broker/proxy
+creation</h2>
+The functions which create <a href="../advanced/timed_tasks.html">timed tasks</a>,
+<a href="../reference/brokering.html">brokers and proxies</a> all accept
+an argument which specifies the polling interval for the task associated
+with the entity. Until release 4.0, it was not possible to create these elements
+without starting them, and this turned out to be a serious problem for thread
+support, because it was at times necessary to set callbacks and other properties
+of these objects before their polling began. In 4.0, it is now possible to
+create these elements with a polling interval of -1, and start them later.
+If you intend to use tasks as threads (the <tt>-thread</tt> command line
+argument), and you need to set additional callbacks or properties of these
+elements before the threads begin, you must be careful to start the polling
+only after everything has been set up.<br>
+ 
+<h2><a name="Signals"></a> Signals</h2>
+  The Communicator library provides <a href="../advanced/signal.html">two
+functions for signal handling</a>, which are guaranteed to do the right things
+in both threaded and non-threaded cases. Please use these functions to install
+signal handlers (and to initialize signal handling, if you're writing your
+own toplevel loop).<br>
+ 
+<h2><a name="Status"></a>Status<br>
+ </h2>
+ The core library consistently passes our tests for thread safety on a range
+of platforms, but these tests are incomplete. In version 4.0, we corrected
+a number of lurking bugs having to do with not having protected a range of
+potential thread cancellation points. This fix seems to have allowed the
+core library to work in some very sophisticated threading situations. However,
+we're still aware of an intermittent threading bug which seems to manifest
+itself with outgoing brokers with multiple connections. We do not know what
+the nature of this bug is yet.<br>
+   
+<h2><a name="Platform_notes"></a> Platform notes</h2>
+    
+<h3> Sparc Solaris</h3>
+  The Communicator library uses the following reentrant versions of functions:
+ 
+<ul>
+  <li> gethostbyname_r()</li>
+   <li> strtok_r()</li>
+   
+</ul>
+  The library also uses a homemade version of inet_ntoa() due to some unfortunate 
+interactions with Tcl observed by the MIT folks. inet_ntoa_r() is available 
+in Solaris, but is not documented.  
+<h3> RedHat Linux</h3>
+  The Communicator library uses the following reentrant versions of functions:
+ 
+<ul>
+  <li> gethostbyname_r()</li>
+   <li> strtok_r()</li>
+   
+</ul>
+  The library also uses a homemade version of inet_ntoa() due to some unfortunate 
+interactions with Tcl observed by the MIT folks. The library also provides 
+a thread-safe version of strerror(), which appears not to be thread-safe in
+this version of Linux.  
+<p>It appears that RedHat 5.2 might also support a thread-safe compilation 
+of the core library. RedHat 4.2 is pre-glibc and may not have the appropriate 
+thread support. </p>
+ 
+<h3> Windows NT</h3>
+  The Windows NT functions gethostbyname(), inet_ntoa() and strtok() are
+thread-safe. The NT documentation does not make it clear whether strerror()
+is thread-safe.  
+<h3> Other platforms</h3>
+  If you enable threads for the core Communicator compilation and your compilation 
+fails because any of these functions are missing, the chances are you will 
+not be able to enable threads. Even if you write a wrapper function with the
+appropriate mutex protection, you will not be able to protect the calls in
+the core Communicator library and the results will be unsafe behavior. If
+you need support enabling threads on a platform not described here, please 
+contact us.  
+<p> </p>
+ 
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "ntport.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated July 9, 2002</center>
+    
+<p><br>
+  </p>
+ <br>
+ <br>
+</body>
+</html>

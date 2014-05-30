@@ -1,0 +1,464 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Tutorial: Creating an End-to-End System</title>
+                 <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+        
+<center>    
+<h1> Galaxy Communicator Tutorial:<br>
+    <br>
+    Creating an End-to-End System</h1>
+   </center>
+   
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+     <tbody>
+       <tr>
+         <td valign="middle" align="left" width="10%"><a
+ href="session_tutorial.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+       </a></td>
+         <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>    
+   </td>
+         <td valign="middle" align="right" width="10%"><a
+ href="../advanced/environment.html"><img src="../../arrow_right.gif"
+ alt="" width="30" height="30">
+       </a></td>
+       </tr>
+          
+  </tbody>   
+</table>
+         
+<hr width="100%">    
+<p>We're almost there. We can build servers, write Hub program files, handle 
+ errors, set up broker backchannels, understand the design of UI elements, 
+ log our activity, and keep track of multiple users over multiple interactions. 
+ In this last lesson, we'll address a number of remaining details. </p>
+     
+<ul>
+    <li> <a href="#Selecting_your_servers">Selecting your servers</a></li>
+     <li> <a href="#Contacting_the_Hub">Contacting the Hub</a></li>
+     <li> <a href="#Guidelines_for_writing_servers_and_Hub_programs">Guidelines
+  for writing servers and Hub programs</a></li>
+     <li> <a href="#The_Builtin_server">The Builtin server</a></li>
+     <li> <a href="#Debugging_strategies">Debugging strategies</a></li>
+     <li> <a href="#Avoiding_trouble">Avoiding trouble</a></li>
+     <li> <a href="#Summary">Summary</a></li>
+       
+</ul>
+        
+<hr width="100%">    
+<h2> <a name="Selecting_your_servers"></a>Selecting your servers</h2>
+    The toy travel demo illustrated a representative set of servers you might 
+ need in your end-to-end system:    
+<ul>
+    <li> An audio server which supports some sort of telephony hardware,
+such  as ComputerFone or Dialogic;</li>
+     <li> A recognition server which maps audio samples into text strings;</li>
+     <li> A parsing server which maps text strings into semantic frames;</li>
+     <li> A dialogue manager server which incorporates each incoming semantic 
+ frame into the current context and decides how to act on the resulting context;</li>
+     <li> An information server, such as a relational database;</li>
+     <li> A language generation server which maps outgoing frames into text 
+ strings;</li>
+     <li> A speech synthesis server which maps text strings into audio samples.</li>
+       
+</ul>
+    There are a wide range of variations on this configuration. For instance:
+    
+<ul>
+    <li> In some cases, you may choose to "federate" audio, recognition and 
+ synthesis in the same server. You might do this, for instance, because your 
+ recognizer can only read input from the audio device (this is the case with 
+ JSAPI-compliant recognizers in Java 1.2, due to limitations of Javasound 
+in that version of Java).</li>
+     <li> You may have a separate server for mapping dialogue representations 
+ into representations the information server can understand (an SQL generation 
+ server, for instance).</li>
+     <li> You may have a different information server, such as a script which 
+ harvests information from Web pages, or you may have multiple information 
+ servers, either for cacheing, redundancy, or to cover multiple domains.</li>
+     <li> Your recognizer may return more structured output, such as n-best 
+ lists or word lattices, or provide confidence measures along with its recognition 
+ results.</li>
+     <li> You may choose to separate the dialogue server's function of incorporation 
+ into context from its function of choosing what to do with the resulting 
+context.</li>
+     <li> You may choose to provide a user profile server, either for security 
+ or user modeling or both, which might register a user by voice or by touchtone 
+ input.</li>
+     <li> You may choose to have multiple UI elements, such as a Web browser 
+ and a telephone connection working in tandem.</li>
+       
+</ul>
+    The Galaxy Communicator architecture places no restrictions on any of 
+these  configurations (although in its current form, it may accidently or 
+intentionally  make some configurations easier than others).    
+<p>We have released an initial version of an open source toolkit which contains 
+ a number of available Communicator-compliant wrappers which are free and 
+available to use. In addition, a number of Communicator developers are also 
+distributing such software. </p>
+     
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="Contacting_the_Hub"></a>Contacting the Hub</h2>
+    One thing we haven't talked about in detail is how to set up servers
+which  contact the Hub. It's actually trivial. There's a command line argument 
+<tt>-contact_hub</tt>  which is available by default to all Communicator-compliant 
+servers which  allows you to specify <tt>host:port</tt> where a Hub has set 
+up the appropriate  listener. You can find detailed documentation about this 
+in the <a href="../advanced/hub_listener.html">Hub listener documentation</a>. 
+The  short version is that there are two steps.    
+<p>First, you should use the CLIENT_PORT: program file directive to set up 
+ the Hub listener, as we saw in our <a
+ href="pgm_intro.html#CLIENT_PORT:">program  file tutorial</a>. Second, you 
+should start up the server using <tt>-contact_hub</tt>.  As an example, here's 
+the command line to start up the Audio server from the toy travel demo: </p>
+     
+<blockquote><tt>% $DEMO_ROOT/bin/Audio -audio_data $GC_HOME/tutorial/toy-travel/short-example.frames
+  -contact_hub localhost:2800 -verbosity 0</tt></blockquote>
+    The Hub program file has the appropriate listener set up:    
+<blockquote><tt>SERVICE_TYPE: Audio</tt> <br>
+     <tt>CLIENT_PORT: 2800</tt> <br>
+     <tt>OPERATIONS: Play</tt></blockquote>
+    Under normal operating circumstances, you should be able to connect as
+ many servers as you want to the Hub listener; there is no limit imposed.
+If you want the listener locked to a particular session, you can use the
+<tt>-session_id</tt>  command line argument we talked about in the <a
+ href="session_tutorial.html#Creating_sessions">session lesson</a>.    
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="Guidelines_for_writing_servers_and_Hub_programs"></a>Guidelines
+  for writing servers and Hub programs</h2>
+        
+<h3> Always use the environment to write messages to the Hub</h3>
+    There are publicly available functions in the Galaxy Communicator API 
+which  allow you to write messages to the Hub using the connection directly, 
+instead  of the environment. But if you use call environments, you're always 
+guaranteed  of passing along the correct session information. We recommend 
+<b>always</b>  using the call environment.    
+<h3> Make sure to declare your dispatch functions and Hub operations</h3>
+    If you write a dispatch function in a server, you have to <a
+ href="basic_server.html#Step_4:_Write_and_incorporate_your_server_declarations">declare
+  it using GAL_SERVER_OP</a> if you want the server to know about it. Similarly,
+  if you want the Hub to know that the server has a dispatch function, you
+ have to declare it in the appropriate <a
+ href="pgm_intro.html#OPERATIONS:">OPERATIONS:  directive entry</a>.    
+<h3> Make sure your messages are distinct</h3>
+    The Hub programming language is very forgiving, in the sense that it
+will  ignore or pay attention to messages which invoke programs depending
+on the  keys in the message. So, for example, you could use <tt>main</tt>
+for the  name of every message you send to the Hub via <a
+ href="../reference/adding.html#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame</a>()
+  or <a href="../reference/adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a>(),
+  and use the keys in the message to decide what to do with them. However,
+ this strategy makes the program file extremely hard to read. We have learned,
+ from studying MIT's program files, that it's much more straightforward to
+ distinguish your messages at least by the server that sent them. Our <a
+ href="../../../contrib/MITRE/demos/docs/toy-travel-tut.html">toy travel example</a>
+demostrates this strategy.    
+<h3> Use the listener-in-Hub capability at least for your UI elements</h3>
+    The easiest way to manage UI connections to the Hub (that is, GUIs, audio 
+ servers, and the like) is to have them contact the Hub instead of the other 
+ way around. If you set things up using the <a
+ href="../advanced/hub_listener.html">listener-in-Hub</a> capability, you'll 
+ be able to have UI elements contact the Hub on an ad-hoc basis, and there 
+ are simple hooks for keeping the sessions separate as well. You can use listener-in-Hub
+ for all your server connections, if you choose, but it's most desirable
+for  UI elements.    
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="The_Builtin_server"></a>The Builtin server</h2>
+    The <a href="../../servers/builtin.html">Builtin</a> server is a special 
+ server which is implemented as part of the Hub itself. This server is always 
+ available, which means that it doesn't need to be declared in the Hub program 
+ file. It has special access to the internals of the Hub operations, so that 
+ it can be used to provide information about the Hub state (such as the servers 
+ which are available, or the state of various namespaces). The Builtin server 
+ is a grab bag of functionality, and we're not going to talk about most of 
+ it. We'll concentrate here on a small number of potentially interesting and
+ relevant functions.    
+<h3> nop</h3>
+    The dispatch function <tt>nop</tt> is a no-op. It simply returns its
+input  frame. The reason you might want to use <tt>nop</tt> is that there
+may be  some times when you may want simply to update a key-value pair in
+a namespace  when a certain condition is met:    
+<blockquote><tt>RULE: :output_parse == "PARSE_FAILED" --&gt; Builtin.nop</tt>
+    <br>
+     <tt>OUT: (:parse_failed 1)</tt></blockquote>
+    The Hub scripting language probably ought to provide a case where you 
+can  omit the operation, but for now, using <tt>nop</tt> is the appropriate 
+strategy.    
+<h3> call_program</h3>
+    This dispatch function can be used to construct a new message to the
+Hub.  The name of the program should be passed in as the value of the <tt>:program</tt>
+  key. All the other key-value pairs passed to <tt>call_program</tt> will
+appear in the new message. The new message will be processed like any other
+new message; it will either invoke a program with the appropriate name, be
+relayed to a server which supports an operation with the appropriate name,
+or be discarded. This dispatch function will also return the result of the
+executed program, if requested.    
+<p>For example, the toy travel demo unifies the processing of its typed input 
+ and the "output" of the Recognizer server by routing both to the same program 
+ (named <tt>UserInput</tt>), as follows: </p>
+     
+<blockquote><tt>PROGRAM: FromRecognizer</tt>          
+  <p><tt>RULE: :input_string --&gt; Builtin.call_program</tt> <br>
+     <tt>IN: (:program "UserInput") :input_string</tt> <br>
+     <tt>OUT: none!</tt></p>
+   </blockquote>
+    In this example, no result is requested, so none will be provided.  
+ 
+<h3> new_session</h3>
+    This dispatch function creates or resets a session. For creation, this
+ dispatch function is really not needed, because sessions are created automatically 
+ when they're mentioned, but this dispatch function is crucial if you try 
+to reuse a session ID. For instance, you might be running a system which will
+never have multiple simultaneous users, and you might be using the default 
+ session as your session every time. <b>This is not recommended</b>. However, 
+ if you must do this, new_session will reset the current session state and 
+ start a new log file in the appropriate circumstances (i.e., if you're calling 
+ <tt>new_session</tt> on this session for the second time, or later).    
+<h3> end_session</h3>
+    This dispatch function ends the current session. We discussed in the
+<a href="session_tutorial.html#Ending_sessions">session lesson</a> how important 
+ this is.    
+<h3> destroy</h3>
+    This dispatch function destroys the current token. We alluded to this 
+dispatch  function when we talked about the special <tt>destroy! </tt>value 
+of OUT:  in the <a href="pgm_intro.html#The_destroy!_value">program file 
+tutorial</a>.  This method of destroying the token is somewhat less efficient 
+than the OUT:  value, but it's an available alternative.    
+<h3> hub_exit</h3>
+    This dispatch function causes the Hub to exit, in case you ever want
+this  sort of thing under program control.    
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="Debugging_strategies"></a>Debugging strategies</h2>
+    There are a number of things you can do to make it easier for you to
+understand  what's going on (and what's going wrong) with your end-to-end
+system. In this section, we describe some of them briefly.    
+<h3> Builtin.hub_break</h3>
+    This Builtin dispatch function suspends the execution of the Hub and
+enters  a loop where you can inspect the state of various namespaces. We
+used this  functionality to halt the Hub in our initial lesson on the <a
+ href="../../../contrib/MITRE/demos/docs/toy-travel-tut.html">toy travel demo</a>.
+If there's a Hub program rule that isn't getting fired and you think it should
+be (or vice versa), you may find it useful to insert a call to <tt>Builtin.hub_break</tt>
+at the appropriate point in your Hub program.    
+<h3> The <tt>-debug</tt> argument to the Hub</h3>
+    You can also access this same breakpoint behavior by using the <tt>-debug</tt> 
+ <a href="../reference/hub.html#The_Hub">Hub command line argument</a>. This
+ argument will cause the Hub to break after it sends each new message. You
+ can shut this behavior off as the Hub is running if you choose to, by typing
+ a capital C at the breakpoint prompt.    
+<h3> Exploit your verbosity settings</h3>
+    As we described in the <a
+ href="../../../contrib/MITRE/demos/docs/toy-travel-tut.html#Controlling_how_much_you_see">toy
+  travel demo lesson</a>, the Hub and servers support 6 levels of verbose
+output, from nothing (level 0) to 6 (everything). These levels can be controlled
+by setting the <tt><a href="../advanced/util.html#Printing">GAL_VERBOSE</a></tt>
+  environment variable in your shell, or by using the <tt>-verbosity</tt>
+command line arguments for the Hub and servers. The default is 3. If you
+choose a level above 3, you'll get more information. Among the relevant values
+are:    
+<ul>
+    <li> At level 4, you'll get a full printout of the message traffic in 
+the  servers instead of the truncated messages with ellipses that you usually 
+see.</li>
+     <li> At level 6, you'll get the actual XDR encodings which are written 
+ to and read from the servers and the Hub. It's not necessarily advisable 
+to use this level if you have broker connections, since the broker data encoding 
+ will be dumped as well.</li>
+       
+</ul>
+       
+<h3> MODE: pedantic</h3>
+    In normal circumstances, the Hub will report errors in program files, 
+but  a number of those errors will not cause the Hub to exit (for instance, 
+a reference to an undeclared operation). If you insert the directive entry 
+"<a href="../reference/pgm.html#MODE:">MODE: pedantic</a>" into your program 
+ file, the Hub will always exit when it encounters these errors. This is a
+ good way to find typos in your server and operation names.    
+<h3> Fake desktop audio</h3>
+    If you're building a telephony application, we strongly recommend constructing 
+ versions of your audio server to handle desktop audio, and one to handle 
+text I/O. Both of these should present as similar as possible a set of functionality 
+ as the telephony server. MITRE hopes to make its open-source cross-platform
+audio server available in the next release of the Open Source Toolkit.  
+ 
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="Avoiding_trouble"></a>Avoiding trouble</h2>
+        
+<h3> Consider using the -assert command line argument</h3>
+    If a server is starting up a listener for Hub connections (as opposed 
+to  using the <a href="../advanced/hub_listener.html">listener-in-Hub</a> 
+capability),  it will use the first port it finds available. If the requested 
+port isn't  available, it will try the requested port + 1, and so on until 
+it finds a  port it can start up on. This behavior can sometimes lead to unexpected
+consequences.  For instance, if you start up a server on port 6000 and there's
+already a  server running on that port, the new server will happily start
+up on port  6001. If you don't notice this, your Hub may try to contact the
+wrong server,  or you might not be able to make a connection at all. One
+way to avoid this  is to use the <tt>-assert </tt><a
+ href="../reference/adding.html#Initialization">server command line argument</a>, 
+ which will force the server to exit if the requested port isn't available.
+    
+<h3> Don't forget about the initial token</h3>
+    You may remember that we talked about the <a
+ href="how_it_works.html#First_new_message_source:_the_initial_token">initial
+  token</a> when we talked about how to send new messages to the Hub. This
+ initial token can be specified using the <a
+ href="../reference/pgm.html#Initial_token">INITIAL_TOKEN:</a> directive entry
+in the Hub program file. While we don't really recommend using the initial
+token for anything besides global initializations and simple tests and examples,
+you should be aware that you don't have complete control over the appearance
+and content of the initial token. In particular, for historical reasons,
+even if you don't specify INITIAL_TOKEN:, an initial token will be created
+if there's a program named <tt>main</tt>. If your <tt>main</tt> program is
+being invoked unexpectedly on a token with token index 0, you should check
+to see if there is some accidental overlap between the keys you expect and
+the keys in the default initial token.    
+<h3> Turn off the Hub pacifier</h3>
+    In all of our exercises, we've used the <tt>-suppress_pacifier</tt> command 
+ line argument to the Hub. If this flag is not provided, the Hub will print 
+ out a period (".") each second when it is idle. If you're trying to scan 
+back through the Hub output, many displays (X terminals and the process monitor, 
+ for instance) will cause problems because they scroll to the end whenever 
+ there's output. In the process monitor, you can press the "Pause" button; 
+ but in general, if you're having problems with this, use <tt>-suppress_pacifier</tt>.
+      
+<h3> <tt>Builtin.increment_utterance</tt> and logging</h3>
+    You may recall when we talked about the <a
+ href="logging_tutorial.html#Looking_at_the_log">content of the Hub log</a>,
+ we told you to ignore the features <tt>:BEGIN_UTT</tt> and the reference 
+to <tt>-01</tt> throughout the log. These elements have to do with the way 
+the Hub was originally designed to handle utterance boundaries. The Hub has 
+an utterance counter, which can be incremented using the Builtin dispatch 
+function <tt>increment_utterance</tt>. The original designers assumed that 
+a Communicator-compliant system would begin with a presentation to the user 
+(utterance -1), followed by a call to <tt>increment_utterance</tt>, and then 
+a call to <tt>increment_utterance</tt> each time the Hub program writer determined 
+an utterance boundary was reached.    
+<p>The utterance counter has had three uses in the history of the Hub: </p>
+     
+<ul>
+    <li> It is used to index entries in a Hub-internal database which is
+local  to each session. You can use the <a
+ href="../reference/pgm.html#STORE:">STORE:</a>   directive entry to store
+key-value pairs in a frame associated with the current utterance counter
+in the current session, and use the <a
+ href="../reference/pgm.html#RETRIEVE:">RETRIEVE:</a> directive entry to retrieve
+key-value pairs from a frame associated with (by default) the <b>previous</b> 
+ utterance counter in the current session. If you have a strong commitment 
+ to stateless servers, you may find this functionality useful as a storage 
+ device. However, it clearly depends on the utterance counter being incremented; 
+ otherwise, you'd just be able to use the session namespace.</li>
+     <li> The original MIT audio server used this counter to help name the
+ audio files logged for the given session. We believe there are better ways
+ to do this; in particular, we recommend that the audio server determine
+its  own file names, and report them to the Hub so that they can be logged
+in the Hub log.</li>
+     <li> Incrementing the utterance counter has the effect of ending an
+utterance  in the log and starting a new one. When we designed the XML DTD
+for the     <a href="logging_tutorial.html#Working_with_logs">XML version
+of the Hub log</a>, we introduced a tag called GC_TURN which correspond this
+boundary. However, we subsequently moved to a different model of introducing
+"meaningful" information into the log, through a system of annotation rules
+which "decorate" existing tags with meaningful landmarks which indicate things
+like the beginning and end of turns. This was because we didn't want people
+to have to write their program files a particular way in order to guarantee
+logs that could be scored. As a result, the GC_TURN tag is mostly ignored
+in the log analysis process, with a single exception: it's possible to write
+annotation rules which rely on GC_TURN as a scoping device, and under some
+circumstances, it's difficult to write your rules if you don't have enough
+scoping levels. This is a flaw which ought to be addressed eventually, but
+has not been yet.</li>
+       
+</ul>
+    In summary, unless you want to use STORE: and RETRIEVE:, you can usually 
+ ignore the utterance counter. But you should be aware of the issues involved.
+    
+<h3> Other historical artifacts</h3>
+    There are a few other elements which are worth mentioning which may surprise 
+ you or can get you into trouble:    
+<ul>
+    <li> The frame type (the <tt>c</tt> at the beginning of the frame's string 
+ representation) is a relic of how frames were originally used (and are still 
+ used in the MIT servers): as hierarchical representations of parses and semantic
+ interpretations. The c stands for "clause"; there are also predicates ("p")
+ and topics ("q" for quantificational element). Frames without the leading
+ type (e.g., <tt>{ foo :bar 1 }</tt>) are interpreted as clauses. We only
+use the clause type in the infrastructure proper.</li>
+     <li> The Galaxy Communicator header include line for C code should always 
+ be <tt>-I$GC_HOME/include</tt>,&nbsp; and the main header file should always 
+ be <tt>#include &lt;galaxy/galaxy_all.h&gt;</tt>. This is because all the 
+ Galaxy Communicator header files assume that the include lines end with the
+     <tt>include/</tt> directory, and will include other files which are
+referenced  as, say, <tt>#include &lt;galaxy/util.h&gt;</tt>. This is a historical
+idiosyncracy  which will never be changed.</li>
+     <li> Finally, you may wonder why the second argument of dispatch functions 
+ is a <tt>void *</tt>, rather than a call environment pointer. This, again, 
+ is a historical relic, but because of the vagaries of typing in C and the 
+ base of installed code already finished, it's something that we can't change.</li>
+       
+</ul>
+        
+<hr width="100%">    
+<h2> <a name="Summary"></a>Summary</h2>
+    Congratulations! You've completed the Galaxy Communicator tutorial. Not 
+ only should you have enough information to understand the remainder of the 
+ documentation, you should also know enough by now to actually get started 
+ building your own end-to-end system. Good luck!    
+<p> </p>
+     
+<hr> 
+<center>  
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+     <tbody>
+       <tr>
+         <td valign="middle" align="left" width="10%"><a
+ href="session_tutorial.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+       </a></td>
+         <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>    
+   </td>
+         <td valign="middle" align="right" width="10%"><a
+ href="../advanced/environment.html"><img src="../../arrow_right.gif"
+ alt="" width="30" height="30">
+       </a></td>
+       </tr>
+          
+  </tbody>   
+</table>
+   Last updated August 8, 2002</center>
+     <br>
+   <br>
+  <br>
+ <br>
+</body>
+</html>

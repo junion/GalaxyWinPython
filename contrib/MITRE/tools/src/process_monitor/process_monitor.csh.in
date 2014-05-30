@@ -1,0 +1,111 @@
+#! /bin/csh -f
+
+# This file (c) Copyright 1998 - 2002 The MITRE Corporation
+# 
+# This file is part of the Galaxy Communicator system. It is licensed
+# under the conditions described in the file LICENSE in the root 
+# directory of the Galaxy Communicator system.
+
+
+source MF_MITRE_ROOTDIR/templates/env.csh
+
+# This will work as long as I make sure that there's an exec
+# in the command line for the operation. Otherwise, we won't be
+# able to kill the processes appropriately. Ditto for Python.
+
+# I have a problem: I can't put the "sleep" in to show the error
+# if I use exec. Perhaps I should add a sleep argument to the 
+# process monitor, and drop the exec if the sleep is present.
+# This will run the danger described above. Sigh.
+
+set usage_string = "Usage: process_monitor [--sleep <n>] [ [ -T <title> ] -c <cmdline> ]*"
+
+if ($#argv == 0) then
+    echo usage_string:q
+    exit 1
+endif
+
+set cur_title = ''
+
+@ sleep = 0
+
+# I have to store $argv[1] because if I don't, one of the
+# else if's will check it, even if a previous clause has already
+# been matched. Ugh.
+
+while ($#argv)
+    set cur_arg = $argv[1]
+    shift
+    if ("$cur_arg" == '-T') then
+        if ("$cur_title" != '' || $#argv == 0) then
+            echo $usage_string:q
+            exit 1
+        else
+            set cur_title = $argv[1]:q
+            shift
+        endif
+    else if ("$cur_arg" == '-c') then
+        if ($#argv == 0) then
+            echo $usage_string:q
+            exit 1
+        else
+            if ("$cur_title" == '') then
+                set cur_title = "<server>"
+            endif
+	    if ( $sleep == 0 ) then
+		$XTERM -sb -sl 1000 -T "$cur_title" -e /bin/sh -c "exec $argv[1]" &
+	    else
+		$XTERM -sb -sl 1000 -T "$cur_title" -e /bin/sh -c "$argv[1]; sleep $sleep" &
+	    endif
+            set cur_title = ""
+            shift
+        endif
+    else if ( "$cur_arg" == "--sleep" ) then
+	if ($#argv == 0) then
+            echo $usage_string:q
+            exit 1
+        else
+	    @ sleep = $argv[1]
+	    shift
+	endif
+    else if ( "$cur_arg" == "--open" ) then
+        echo "Ignoring option --open in process_monitor.csh"	
+    else if ( "$cur_arg" == "--start" ) then
+        echo "Ignoring option --start in process_monitor.csh"
+    else if ( "$cur_arg" == "--compressed" ) then
+        echo "Ignoring option --compressed in process_monitor.csh"
+    else if ( "$cur_arg" == "--clear_history" ) then
+        echo "Ignoring option --clear_history in process_monitor.csh"
+	if ($#argv == 0) then
+            echo $usage_string:q
+            exit 1
+	else
+	    shift
+	endif
+    else if ( "$cur_arg" == "--master_title" ) then
+        echo "Ignoring option --master_title in process_monitor.csh"
+	if ($#argv == 0) then
+            echo $usage_string:q
+            exit 1
+	else
+	    shift
+	endif
+    else if ( "$cur_arg" == "--ncols" ) then        
+	echo "Ignoring option --ncols in process_monitor.csh"
+	if ($#argv == 0) then
+            echo $usage_string:q
+            exit 1
+	else
+	    shift
+	endif
+    else if ("$cur_arg" == "--input_return" ) then
+	echo "Ignoring option --input_return in process_monitor.csh"
+    else if ("$cur_arg" == "--keep_alive" ) then
+        echo "Ignoring option --keep_alive in process_monitor.csh"
+    else if ("$cur_arg" == "--input_line" ) then
+	echo "Ignoring option --input_line in process_monitor.csh"
+    else
+        echo $usage_string:q
+        exit 1
+    endif
+end

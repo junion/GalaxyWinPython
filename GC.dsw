@@ -1,0 +1,530 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "Audio"=".\contrib\MITRE\demos\toy-travel\Audio.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "Backend"=".\contrib\MITRE\demos\toy-travel\Backend.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "Dialogue"=".\contrib\MITRE\demos\toy-travel\Dialogue.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "Generator"=".\contrib\MITRE\demos\toy-travel\Generator.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "HUB"=.\src\HUB\HUB.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libGalaxyHubControl
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "IOMonitor"=".\contrib\MITRE\demos\toy-travel\IOMonitor.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "Parser"=".\contrib\MITRE\demos\toy-travel\Parser.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "Recognizer"=".\contrib\MITRE\demos\toy-travel\Recognizer.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "Synthesizer"=".\contrib\MITRE\demos\toy-travel\Synthesizer.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "UI"=".\contrib\MITRE\demos\toy-travel\UI.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "audio_binary"=.\contrib\MITRE\examples\binary_data\audio_binary.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "basic_double"=.\contrib\MITRE\examples\simple_mainloop\basic_double.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "cGalaxy"=.\contrib\MITRE\bindings\python\cGalaxy.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy_binding_support
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "data_binary"=.\contrib\MITRE\examples\binary_data\data_binary.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "double"=.\contrib\MITRE\examples\double\double.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "headerless_double"=.\contrib\MITRE\examples\double\headerless_double.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "libGalaxy"=.\src\libGalaxy\libGalaxy.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libGalaxyHubControl"=.\contrib\MIT\galaxy\src\libGalaxyHubControl\libGalaxyHubControl.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libGalaxy_binding_support"=.\contrib\MITRE\bindings\binding_support\libGalaxy_binding_support.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libMITRE_galaxy"=.\contrib\MITRE\utilities\src\libMITRE_galaxy.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "mainloop_double"=.\contrib\MITRE\examples\simple_mainloop\mainloop_double.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mainloop_testaudio_receive"=.\contrib\MITRE\examples\simple_mainloop\mainloop_testaudio_receive.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mainloop_testaudio_send"=.\contrib\MITRE\examples\simple_mainloop\mainloop_testaudio_send.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "mgal_data_binary"=.\contrib\MITRE\examples\binary_data\mgal_data_binary.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "multiply"=.\contrib\MITRE\examples\double\multiply.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "nt_build"=.\contrib\MITRE\examples\local_makefile\nt_build.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "testaudio_abort_send"=.\contrib\MITRE\examples\audio\testaudio_abort_send.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "testaudio_receive"=.\contrib\MITRE\examples\audio\testaudio_receive.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "testaudio_send"=.\contrib\MITRE\examples\audio\testaudio_send.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libMITRE_galaxy
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "verify_program"=.\contrib\MIT\galaxy\src\verify_program\verify_program.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libGalaxy
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libGalaxyHubControl
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+

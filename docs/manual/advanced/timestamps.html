@@ -1,0 +1,112 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+       
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+       
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Timestamps</title>
+         <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+   
+<center> 
+<h1> Galaxy Communicator Documentation:<br>
+  <br>
+  How to use timestamps</h1>
+ </center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "provider_id.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "scriptless.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+   
+<hr width="100%"> 
+<p>One of the important dimensions of developing multimodal applications is
+being able to tell when things happen, in order to coordinate multiple input
+gestures, for instance. Starting with version 4.0, we associate timestamps 
+with message traffic to support this need.<br>
+ </p>
+ 
+<p>In the Communicator infrastructure, a timestamp is associated with a new 
+message when the Hub receives it. We do not create timestamps in the server, 
+because we can't depend on the servers having synchronized time to a fine 
+enough degree. While it's not completely accurate to perform the timestamping 
+when the Hub receives a message (rather than when the message is sent), we 
+do benefit from a forced serialization and a common time reference base. In
+other words, we're betting that network latency, in those situations where 
+time synchronization is important, is less of an issue than non-synchronized 
+hosts. It's not clear that there's another bet to make; the best-known time 
+synchronization protocol, NTP, is only accurate to a granularity of seconds, 
+which is fine for most applications, but too coarse for multimodal synchronization 
+by at least two orders of magnitude.<br>
+ </p>
+ 
+<p>When the Hub receives a new message, then, it creates a token and assigns 
+a 64-bit float as the current UTC time (i.e., number of seconds, with a granularity
+of microseconds, since midnight, January 1, 1970). When the Hub a message
+associated with that token to a server, it transmits the token's creation
+time as part of the administrative information in the calling environment.
+This time can be retrieved by the server via the environment.<br>
+ </p>
+ 
+<p>double&nbsp;<a name="GalSS_EnvGetTokenTimestamp"></a><b><big>GalSS_EnvGetTokenTimestamp</big></b>(GalSS_Environment
+ *<i>env</i>)<br>
+ If <i>env</i> is an environment created by virtue of calling a dispatch
+function, this function returns the creation time of the token which led
+to the invocation of the dispatch function.<br>
+</p>
+<p>This functionality is also available to Hub programs; see the Builtin
+dispatch function <a
+ href="../../servers/builtin.html#hub_token_timestamp">hub_token_timestamp</a>.<br>
+</p>
+ 
+<p>Sometimes, the server may want to send a new message to the Hub, but preserve 
+the creation time of the environment it's writing through.<br>
+ </p>
+ 
+<p>void&nbsp;<a name="GalSS_EnvInheritTokenTimestamp"></a><b><big>GalSS_EnvInheritTokenTimestamp</big></b>(GalSS_Environment
+ *<i>env</i>)<br>
+ If <i>env</i> has a &nbsp;token creation time associated with it, this function 
+causes all new messages sent through <i>env</i> to inherit the creation time 
+of the originating token.<br>
+</p>
+<p>This functionality is also available when the Hub creates a new message;
+see the Builtin dispatch function <a
+ href="../../servers/builtin.html#call_program">call_program</a>.<br>
+</p>
+ 
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "provider_id.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "scriptless.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated May 27, 2002</center>
+   <br>
+ <br>
+</body>
+</html>

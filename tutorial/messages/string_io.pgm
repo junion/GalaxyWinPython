@@ -1,0 +1,71 @@
+;; Use extended syntax (new in version 3.0).
+
+PGM_SYNTAX: extended
+
+SERVICE_TYPE: UI
+CLIENT_PORT: 14500
+OPERATIONS: ReportIO
+
+SERVER: Parser
+HOST: localhost
+PORT: 10000
+OPERATIONS: Parse
+
+SERVER: Generator
+HOST: localhost
+PORT: 16000
+OPERATIONS: Generate
+
+SERVER: Dialogue
+HOST: localhost
+PORT: 18500
+OPERATIONS: DoDialogue DoGreeting
+
+SERVER: Backend
+HOST: localhost
+PORT: 13000
+OPERATIONS: Retrieve
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;            MAIN INPUT BODY
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+PROGRAM: UserInput
+
+RULE: :input_string --> Parser.Parse
+IN: :input_string
+OUT: :frame
+
+RULE: :frame --> Dialogue.DoDialogue
+IN: :frame
+OUT: none!
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;            MAIN OUTPUT BODY
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+PROGRAM: FromDialogue
+
+RULE: :output_frame --> Generator.Generate
+IN: :output_frame
+OUT: :output_string
+
+RULE: :output_string --> UI.ReportIO
+IN: :output_string
+OUT: none!
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;            DB SUBQUERY
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+PROGRAM: DBQuery
+
+RULE: :sql_query --> Backend.Retrieve
+IN: :sql_query
+OUT: :column_names :nfound :values

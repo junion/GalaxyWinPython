@@ -1,0 +1,645 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                    
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Tutorial: MITRE Demo: A Sample End-to-End System</title>
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+          
+<center>     
+<h1> Galaxy Communicator Tutorial:<br>
+     <br>
+     MITRE Demo: A Sample End-to-End System</h1>
+    </center>
+     
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="../../tools/docs/process_monitor_tut.html"><img
+ src="../../../../docs/arrow_left.gif" alt="" width="30" height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../../LICENSE">License</a> / <a
+ href="../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a> 
+        </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="../../../../docs/manual/tutorial/frame_intro.html"><img
+ src="../../../../docs/arrow_right.gif" alt="" width="30" height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+           
+<hr width="100%">     
+<p>The best way to understand how a configuration of Galaxy Communicator
+servers might work together is to watch an example in action. For pedagogical
+purposes, we've constructed a set of dummy components which follow a script
+of message sequences. In this lesson, we'll follow a single interaction with
+this set of components, to illustrate one plausible flow of control for messages
+in a Communicator-compliant system, which we call our <b>toy travel system</b>. 
+  </p>
+       
+<ul>
+     <li> <a href="#The_servers">The servers</a></li>
+      <li> <a href="#Setting_up_the_toy_travel_demo">Setting up the  toy
+travel  demo</a></li>
+                  
+  <ul>
+     <li> <a href="#Starting_the_process_monitors">Starting the process 
+monitors</a></li>
+      <li> <a href="#Understanding_what_you_see:_server_startup">Understanding 
+  what you see: server startup</a></li>
+      <li> <a href="#Controlling_how_much_you_see">Controlling how much 
+you  see</a></li>
+      <li> <a href="#Understanding_what_you_see:_Hub_startup">Understanding 
+  what you see: Hub startup</a></li>
+      <li> <a href="#Starting_the_interaction">Starting the interaction</a></li>
+                 
+  </ul>
+      <li> <a href="#Step_1:_Audio_available">Step 1: Audio available</a></li>
+                  
+  <ul>
+     <li> <a href="#Understanding_what_you_see:_Hub_processing">Understanding 
+  what you see: Hub processing</a></li>
+                 
+  </ul>
+      <li> <a href="#Step_2:_Reroute_to_handle_general_input">Step  2: Reroute
+ to handle general input</a></li>
+                  
+  <ul>
+     <li> <a href="#Understanding_what_you_see:_server_processing">Understanding 
+  what you see: server processing</a></li>
+                 
+  </ul>
+      <li> <a href="#Step_3:_Send_to_dialogue">Step 3: Send to dialogue</a></li>
+      <li> <a href="#Step_4:_Dialogue_consults_backend">Step 4: Dialogue
+ consults backend</a></li>
+      <li> <a href="#Step_5:_Dialogue_reply_to_generation_and_synthesis">Step 
+  5: Dialogue reply to generation and synthesis</a></li>
+      <li> <a href="#Step_6:_Audio_output">Step 6: Audio output</a></li>
+      <li> <a href="#Summary">Summary</a></li>
+         
+</ul>
+          
+<p><br>
+     </p>
+       
+<hr width="100%">     
+<h2> <a name="The_servers"></a>The servers</h2>
+     We will focus our attention on seven dummy servers, plus the Hub's Builtin
+  server:     
+<center><img src="../../../../docs/images/ToyTravel.jpg" nosave=""
+ height="431" width="599">
+    </center>
+     There are two other dummy servers in the toy travel system. One is a 
+dummy  server which is intended to emulate typed input and output; we will 
+not use  this server in this course. The other server, called IOMonitor, monitors
+both input and output and reports what is said by each side; we do use this
+server in this lesson, but we omit it from the illustrated flow of control
+for the sake of simplicity.     
+<p> </p>
+       
+<hr width="100%">     
+<h2> <a name="Setting_up_the_toy_travel_demo"></a>Setting up the toy travel
+  demo</h2>
+          
+<h3> <a name="Starting_the_process_monitors"></a>Starting the process monitors</h3>
+     We'll be using the process monitor once more. Start up the demonstration
+  as follows:     
+<blockquote><b><tt>[Toy travel demo exercise 1]<br>
+   <br>
+ Unix:<br>
+   </tt></b>             
+  <p><tt>% process_monitor $GC_HOME/tutorial/toy-travel/short-toy-travel.config<br>
+   </tt></p>
+   
+  <p><tt><b>Windows:</b><br>
+   </tt></p>
+   
+  <p><tt>C:\&gt; </tt><tt>python %PM_DIR%\process_monitor.py %GC_HOME%\tutorial\toy-travel\short-toy-travel.config</tt><br>
+   </p>
+    </blockquote>
+     You'll get a process monitor in its compressed configuration, with three
+  button rows of three processes each. Select "Process Control -&gt; Restart
+  all". You'll start all the processes in the order of the presentation of
+ the buttons. The processes are started in the order described in the tutorial
+  on <a
+ href="../../../../docs/manual/tutorial/how_it_works.html#Starting_up_a_Galaxy_Communicator_system">starting 
+  up a Galaxy Communicator configuration</a>: first the servers which are 
+listening for connections, then the Hub, then the servers (in this case, the
+dummy audio server), which will connect to the Hub. More precisely, in the
+case of the audio server, you'll get a second process monitor window which
+will allow you to start the audio server separately (we'll do that in just
+a minute).     
+<p>At this point, you should have two process monitors on the screen, like
+  so: </p>
+       
+<center>     
+<p><img src="../../../../docs/images/ToyTravelPM1.jpg" nosave=""
+ height="374" width="597">
+     </p>
+       
+<p><img src="../../../../docs/images/ToyTravelAudioPM1.jpg" nosave=""
+ height="274" width="655">
+    </p>
+    </center>
+          
+<h3> <a name="Understanding_what_you_see:_server_startup"></a>Understanding 
+  what you see: server startup</h3>
+     The "Recognizer" button is selected in the "Toy travel single exchange"
+  process monitor, so this pane shows the output of the recognizer. We can
+ see three lines of output. The last two tell us, first, that the recognizer
+ server is available for connections on port 11000, and second, that the
+recognizer   server has accepted a connection (from the Hub; remember, it's
+started up   already).     
+<p>You'll find that if you select any of the first six processes, you'll
+see a variation of this output; all of these servers will have started listening
+  (each on a different port, of course), and all of these servers will have
+  accepted a connection. However, the last three processes will look different. 
+  </p>
+       
+<h3> <a name="Controlling_how_much_you_see"></a>Controlling how much you
+see</h3>
+     Select the "IOMonitor" button. The only indication that the server is
+ running  is that the Start/Stop button now reads "Stop"; there will be nothing
+ in the output pane except the original command line:     
+<blockquote><b><tt>[IOMonitor pane]</tt></b>             
+  <p><tt>[exec $DEMO_ROOT/$BINDIR/IOMonitor -verbosity 0 2&gt;&amp;1]</tt></p>
+    </blockquote>
+     The reason that there's no other output is because we've limited the 
+<b>verbosity</b>  of the server to 0.     
+<p>For Communicator-compliant servers, there are six levels of verbosity.
+  The status messages in the Galaxy Communicator infrastructure can be made
+  sensitive to the verbosity level. 0 is the most severe; no verbosity-sensitive
+  status messages of any sort are printed. 3 is the default; at this level,
+  you'll see normal status messages, indicating when connections are established
+  and lost, and what messages are being sent and received. 6, the most verbose,
+  provides debugging information and a full dump of the encoded message traffic.
+  In this tutorial, we'll only use verbosity levels 0 or 3 (the default).
+</p>
+       
+<p>You can control the verbosity in two ways. First, as shown here, Communicator-compliant
+  servers all accept the <tt>-verbosity</tt> command-line argument, as does
+  the Hub.&nbsp; Second, you can set the environment variable <tt>GAL_VERBOSE</tt>
+  to the verbosity level you desire. In this tutorial, we'll only use the
+command-line  argument. (Notice that the command line for the audio server
+in the "Audio  client" process monitor also limits the verbosity to 0.) </p>
+       
+<p>The IOMonitor will print out a transcription of the dialogue you're about
+  to trace through. Make sure that the "IOMonitor" button is still selected,
+  and press "Detach this pane" to detach the IOMonitor. </p>
+       
+<h3> <a name="Understanding_what_you_see:_Hub_startup"></a>Understanding what
+you see: Hub startup</h3>
+     Now select the "Hub" button in the "Toy travel single exchange" process
+  monitor. We'll now examine the output of the Hub up to this point. Detach
+  the Hub pane, and enlarge it for easier viewing. First you'll see printouts
+  informing you that the Hub is reading and loading the program file:   
+ 
+<blockquote><tt><b>[Hub pane]</b> <br>
+    <br>
+  Reading /usr/local/GalaxyCommunicator/tutorial/toy-travel/toy-travel.pgm 
+   <br>
+    Done reading /usr/local/GalaxyCommunicator/tutorial/toy-travel/toy-travel.pgm 
+  (264 lines) <br>
+    9 service types <br>
+    7 service providers <br>
+    9 programs</tt></blockquote>
+     Notice that the Hub distinguishes between <b>service types</b>, which
+ are  named collections of behavior (e.g., the service named Parser provides
+ the  operation Parse), and <b>service providers</b>, which are actual processes
+  which are instances of service types. So the Parser server in our configuration,
+  from the Hub's point of view, is a provider for the Parser service.   
+ 
+<p>Next, you'll see printouts informing you that the Hub is listening for
+  connections from the servers which might contact it (the audio server,
+in   this case). Observe that the Hub reports setting up this connection
+listener   just as the Recognizer server does: </p>
+       
+<blockquote><tt><b>[Hub pane]</b><br>
+    &nbsp;<br>
+    -------------------------------------------------- <br>
+    service type: Audio : 2800 <br>
+    Opening listener Audio <br>
+    Trying to set up listener on port 2800 <br>
+    Opened listener on port 2800<br>
+    Using listener on port 2800</tt></blockquote>
+     Finally, the Hub contacts all the other servers, and exchanges some
+crucial   connectivity information (which we don't care about). Here's an
+example for  the dummy Parser server:     
+<blockquote><tt><b>[Hub pane]</b><br>
+      <br>
+    Sending new message to localhost<br>
+    {c handshake<br>
+    &nbsp;&nbsp; :conn_type 1<br>
+    &nbsp;&nbsp; :protocol_version 1 }<br>
+    Received reply from localhost<br>
+    {c Parser<br>
+    &nbsp;&nbsp; :signatures ( ( "Parse"<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  ... ) )<br>
+    &nbsp;&nbsp; :properties {c server_properties ... }<br>
+    &nbsp;&nbsp; :extra_service_types (&nbsp; )<br>
+    &nbsp;&nbsp; :protocol_version 1 }<br>
+    Connected to provider for Parser @ localhost:10000</tt> </blockquote>
+     There are two things which commonly appear which we haven't seen so
+far:   processing the initial token in the Hub, and processing a <tt>reinitialize</tt> 
+  message in the server. We'll see the <tt>reinitialize</tt> message in later
+lessons; there are no examples of use of the initial token in this tutorial.
+    
+<h3> <a name="Starting_the_interaction"></a>Starting the interaction</h3>
+     At this point, we're ready to begin. The message script we're going
+to  follow models the following simple dialogue:     
+<blockquote><tt>System: Welcome to Communicator. How may I help you?</tt> 
+    <br>
+      <tt>User: I WANT TO FLY FROM BOSTON TO LOS ANGELES</tt> <br>
+      <tt>System: American Airlines flight 115 leaves at 11:44 AM, and United 
+  flight 436 leaves at 2:05 PM</tt></blockquote>
+     We're not going to step through the initial greeting in detail; we're
+ going  to pay detailed attention only to the user request and system reply.
+ In the  following lessons, we'll learn in detail how this exchange is constructed. 
+     
+<p>Press the "Start" button on the "Audio client" process monitor to start
+  the dummy audio server, which will contact the Hub. The reason the audio
+ server contacts the Hub is that we want to manage access to our speech-based
+ service dynamically, so that users can contact it from any one of a number
+ of phone lines or desktop microphones. Since every one of the audio connections
+ needs to be a Communicator-compliant server, we can either choose a fixed
+ number (from fixed locations) when we write the Hub program file, or we
+can  set up a listener so that any appropriate service can contact the Hub.
+</p>
+       
+<p>Now that you've pressed the "Start" button, a number of things have happened.
+  The Audio server sent a message which caused the Dialogue server to send
+ a greeting. The Hub has reported its message processing, which we will ignore
+  for the moment. The detached "IOMonitor" window contains the resulting
+textual   output, and the "Audio client" process monitor shows the (dummy)
+audio segments   which are being streamed to the user: </p>
+       
+<blockquote><b><tt>[IOMonitor window]</tt></b>             
+  <p><tt>In session session-998661263.227: system said "Welcome to Communicator. 
+  How may I help you?"</tt> </p>
+               
+  <p><b><tt>[Audio client process monitor]</tt></b> </p>
+               
+  <p><tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (184 samples)]</tt> <br>
+      <tt>[Audio data to user is finalized (14520 samples).]</tt> <br>
+      <tt>Hit &lt;return&gt; to send speech:</tt></p>
+    </blockquote>
+     The "Audio client" process monitor has a button called "Input &lt;return&gt;".
+  You'll use this button to move the dialogue forward, to send the next user
+  utterance. The "Hub" pane also has an "Input &lt;return&gt;" button; the
+ program file the Hub is running has breakpoints inserted at crucial points,
+ and you'll use this button to step through these breakpoints.     
+<p> </p>
+       
+<hr width="100%">     
+<h2> <a name="Step_1:_Audio_available"></a>Step 1: Audio available</h2>
+     Press the "Input &lt;return&gt;" button on the "Audio client" process
+ monitor,  which simulates telling a push-to-talk audio server that it should
+ start listening. As a result, the Audio server informs the Hub that audio
+ is available, and the Hub informs the Recognizer to start processing: <br>
+    <img src="../../../../docs/images/ToyTravelStep1.jpg" nosave=""
+ height="503" width="839">
+         
+<p>At this point, the Hub will be paused at a breakpoint. </p>
+       
+<h3> <a name="Understanding_what_you_see:_Hub_processing"></a>Understanding 
+  what you see: Hub processing</h3>
+     For this first step, let's take a detailed look at the Hub output. First,
+  the printout informs us that the Hub has received a new message from the
+ Audio server. This output will be at the very bottom of the Hub pane. The
+ Hub constructs a token from this new message, and the <b>token index</b>
+of the new token is 4 (that is, it's the fourth new message the Hub has received
+ since startup). This new token contains seven key-value pairs, which will
+ will ignore for the moment:     
+<blockquote><b><tt>[Hub pane]</tt></b>             
+  <p><tt>Got new message from provider for Audio (id 8)<br>
+  Created token 4<br>
+    </tt> </p>
+               
+  <p><tt>----------------[&nbsp; 4]---------------------- <br>
+   {c FromAudio <br>
+   &nbsp;&nbsp; :sample_rate 8000<br>
+   &nbsp;&nbsp; :encoding_format "linear16"<br>
+   &nbsp;&nbsp; :proxy "[broker proxy: call ID 129.83.10.107:5478:0, host 
+129.83.10.107,  port 15010, type GAL_INT_16]"<br>
+   &nbsp;&nbsp; :session_id "session-998661263.227" <br>
+   &nbsp;&nbsp; :tidx 4 } <br>
+   ----------------------------------------</tt>                     </p>
+    </blockquote>
+     When the Hub receives a new message, it looks for a program by the same
+  name, and starts comparing the new token state with the conditions on the
+  rules in that program. When it finds a rule whose conditions are satisfied
+  by the token state, it invokes the associated dispatch function (which
+the   Hub calls an <b>operation</b>) by constructing and sending a message
+to the  appropriate server.     
+<p>In some conditions, the Hub can fire multiple rules in immediate sequence,
+  and in this case, the Hub finds and fires two rules: the first invokes
+the   <tt>Recognizer.Recognize</tt> message, and the second invokes <tt>Builtin.hub_break</tt>, 
+  which forces the breakpoint. In each case, there is only one service provider 
+  for the relevant service type. </p>
+       
+<blockquote><tt><b>[Hub pane]</b> <br>
+      <br>
+  Found operation for token 4: Recognizer.Recognize<br>
+    Found operation for token 4: Builtin.hub_break<br>
+    Serving message with token index 4 to provider for Recognizer @ localhost:11000<br>
+    ---- Serve(Recognizer@localhost:11000, token 4 op_name Recognize)<br>
+    Serving message with token index 4 to provider for Builtin<br>
+    ---- Serve(Builtin@&lt;none&gt;:-1, token 4 op_name hub_break)<br>
+      </tt></blockquote>
+     Finally, the Builtin server within the Hub receives the <tt>hub_break</tt>
+  message, and triggers the breakpoint:     
+<blockquote><tt>Received new message from &lt;local&gt;<br>
+    {c Builtin.hub_break <br>
+    &nbsp;&nbsp; :session_id "session-998661263.227" <br>
+    &nbsp;&nbsp; :hub_opaque_data {c admin_info ... } } <br>
+    Invoking dispatch function: hub_break<br>
+    (h for help, c or &lt;return&gt; to continue) --&gt;</tt></blockquote>
+     From this point on, we'll ignore the calls to <tt>hub_break</tt>.  
+  
+<p>Press the "Input &lt;return&gt;" button on the "Hub" pane to continue. 
+  </p>
+       
+<p> </p>
+       
+<hr width="100%">     
+<h2> <a name="Step_2:_Reroute_to_handle_general_input"></a>Step 2: Reroute
+  to handle general input</h2>
+     Once the recognizer is done processing the audio, it sends a new message
+  reporting its results. This is one form of textual input. This configuration
+  of servers, under other circumstances, can also handle typed input and
+output.   In this next step, we use the <tt>Builtin.call_program</tt> dispatch
+function   to invoke a new Hub program, which unifies the processing of text
+input.  <br>
+    <img src="../../../../docs/images/ToyTravelStep2.jpg" nosave=""
+ height="503" width="839">
+         
+<p>We see this reflected in the Hub printout: </p>
+       
+<blockquote><b><tt>[Hub pane]</tt></b>             
+  <p><tt>Got new message from provider for Recognizer @ localhost:11000<br>
+  Created token 5<br>
+    </tt>    </p>
+               
+  <p><tt>----------------[&nbsp; 5]----------------------</tt> <br>
+      <tt>{c FromRecognizer</tt> <br>
+      <tt>&nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON LOS ANGELES"</tt> 
+    <br>
+      <tt>&nbsp;&nbsp; :session_id "session-998661263.227"</tt> <br>
+      <tt>&nbsp;&nbsp; :tidx 5 }</tt> <br>
+      <tt>----------------------------------------</tt> </p>
+               
+  <p><tt>Found operation for token 5: Builtin.call_program<br>
+    Found operation for token 5: Builtin.hub_break<br>
+    Serving message with token index 5 to provider for Builtin<br>
+    ---- Serve(Builtin@&lt;none&gt;:-1, token 5 op_name call_program)<br>
+      </tt></p>
+    </blockquote>
+       
+<p>The Hub finds two operations to perform, and then performs the first one.<br>
+    </p>
+          
+<h3> <a name="Understanding_what_you_see:_server_processing"></a>Understanding 
+  what you see: server processing</h3>
+     We can take this dispatch to the Builtin server as an opportunity to 
+examine  a little more closely what server-side printouts look like. Immediately
+ after  the Hub reports that it's fired the rule which calls <tt>Builtin.call_program</tt>, 
+  the Builtin server "takes over" the printout and reports how it processes 
+  the message. First, the server reports the message it receives, and the 
+fact that it's found a dispatch function for the message:     
+<blockquote><tt><b>[Hub pane]</b><br>
+      <br>
+    Received new message from &lt;local&gt;<br>
+    {c call_program <br>
+    &nbsp;&nbsp; :session_id "session-998661263.227" <br>
+    &nbsp;&nbsp; :program "UserInput" <br>
+    &nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON LOS ANGELES" <br>
+    &nbsp;&nbsp; :hub_opaque_data {c admin_info ... } } <br>
+    Invoking dispatch function: call_program</tt></blockquote>
+     Next, the server prints out anything related to what it does to process
+  the message. In this case, it sends a new message to the Hub:     
+<blockquote><tt><b>[Hub pane]</b><br>
+     <br>
+    Sending new message to &lt;local&gt; <br>
+    {c UserInput <br>
+    &nbsp;&nbsp; :session_id "session-998661263.227" <br>
+    &nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON LOS ANGELES" <br>
+    &nbsp;&nbsp; :hub_opaque_data {c admin_info ... } }<br>
+   </tt></blockquote>
+     Finally, it reports its return value. In this case, there is none: 
+   
+<blockquote><tt><b>[Hub pane]</b><br>
+     <br>
+    No result frame for &lt;local&gt;</tt></blockquote>
+     This structure for printouts is identical to the printout for any server
+  at the default level of verbosity.     
+<p>Press the "Input &lt;return&gt;" button on the "Hub" pane to continue
+from the current breakpoint. </p>
+       
+<p> </p>
+       
+<hr width="100%">     
+<h2> <a name="Step_3:_Send_to_dialogue"></a>Step 3: Send to dialogue</h2>
+     At this point, the Hub will receive the new message sent by <tt>Builtin.call_program</tt>, 
+  named <tt>UserInput</tt>, and will route this message through the parser
+  to the dialogue manager: <br>
+    <img src="../../../../docs/images/ToyTravelStep3.jpg" nosave=""
+ height="503" width="719">
+         
+<p>At each point where the Hub receives a message reply, it will print out
+  the token state for the updated token. So we can extract the following
+sequence   from the Hub output (there will be various other messages interspersed,
+such  as calls to the IOMonitor to print out the output, to the breakpoint
+function,  and replies which the Hub program does not need and will ignore):
+</p>
+       
+<blockquote><b><tt>[Hub pane]</tt></b>             
+  <p><tt>Got new message from provider for Builtin<br>
+  Created token 6<br>
+    </tt> </p>
+               
+  <p><tt>----------------[&nbsp; 6]---------------------- <br>
+  {c UserInput <br>
+  &nbsp;&nbsp; :session_id "session-998661263.227" <br>
+  &nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON LOS ANGELES"    <br>
+  &nbsp;&nbsp; :tidx 6 } <br>
+  ----------------------------------------</tt>                     </p>
+               
+  <p><tt>Found operation for token 6: Parser.Parse <br>
+  Serving message with token index 6 to provider for Parser @ localhost:10000<br>
+  ---- Serve(Parser@localhost:10000, token 6 op_name Parse)<br>
+    </tt></p>
+       
+  <p><tt>Got reply from provider for Parser @ localhost:10000 : token 6</tt> 
+    </p>
+               
+  <p><tt>----------------[&nbsp; 6]---------------------- <br>
+  {c UserInput <br>
+  &nbsp;&nbsp; :session_id "session-998661263.227" <br>
+  &nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON LOS ANGELES"    <br>
+  &nbsp;&nbsp; :tidx 6 <br>
+  &nbsp;&nbsp; :frame {c flight ... } } <br>
+  ----------------------------------------</tt>                        </p>
+    </blockquote>
+     You can see that the token state is evolving as the program proceeds;
+ so  token 6 has a value for the <tt>:frame</tt> key after the call to the
+ Parser  which it didn't have before.     
+<p>Press the "Input &lt;return&gt;" button on the "Hub" pane to continue
+from the current breakpoint. </p>
+       
+<p> </p>
+       
+<hr width="100%">     
+<h2> <a name="Step_4:_Dialogue_consults_backend"></a>Step 4: Dialogue consults
+  backend</h2>
+     At this point, the Dialogue server will consult the Backend server and 
+ retrieve a database response. This is accomplished by the Dialogue server 
+ sending a new message to the Hub with an indication that it wants a response. 
+ The Hub creates a token,&nbsp; finds an appropriate Hub program, and executes
+  the program, and returns the updated token state to the Dialogue server
+when  the program ends: <br>
+    <img src="../../../../docs/images/ToyTravelStep4.jpg" nosave=""
+ height="503" width="719">
+         
+<p>The current breakpoint is immediately after the Backend responds to the
+  Hub, but immediately before the end of the program. Press the "Input &lt;return&gt;"
+  button on the "Hub" pane to continue from the breakpoint; you'll see the
+ token state returned to the Dialogue server immediately afterward: </p>
+       
+<blockquote><tt><b>[Hub pane] </b><br>
+      <br>
+    Done with token 7 --&gt; returning to owner Dialogue@localhost:18500
+  <br>
+    Destroying token 7</tt></blockquote>
+          
+<hr width="100%">     
+<h2> <a name="Step_5:_Dialogue_reply_to_generation_and_synthesis"></a>Step 
+  5: Dialogue reply to generation and synthesis</h2>
+     Now, the Dialogue manager decides that it's time to say something to 
+the  user (in this case, to list flights). So it sends a new message to the 
+Hub,  which is routed through the Generator server to the Synthesizer server:
+ <br>
+    <img src="../../../../docs/images/ToyTravelStep5.jpg" nosave=""
+ height="455" width="743">
+         
+<p>At this point, the IOMonitor has been notifed what the system is about
+  to say, and you should be able to see the entire three-turn dialogue in
+the  IOMonitor window. </p>
+       
+<p>The current breakpoint is set immediately before the call to the Synthesizer
+  server. Press the "Input &lt;return&gt;" button on the "Hub" pane to continue
+  to the final step. </p>
+       
+<p> </p>
+       
+<hr width="100%">     
+<h2> <a name="Step_6:_Audio_output"></a>Step 6: Audio output</h2>
+     Finally, the Synthesizer server produces a new message to notify the 
+Audio  server that audio is available, and the Audio server fetches the audio:
+ <br>
+    <img src="../../../../docs/images/ToyTravelStep6.jpg" nosave=""
+ height="503" width="695">
+         
+<p>You can see the result in the "Audio client" process monitor: </p>
+       
+<blockquote><b><tt>[Audio client process monitor]</tt></b>             
+  <p><tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>...</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (1024 samples)]</tt> <br>
+      <tt>[Audio data to user (252 samples)]</tt> <br>
+      <tt>[Audio data to user is finalized (35068 samples).]</tt> <br>
+      <tt>Hit &lt;return&gt; to send speech:</tt></p>
+    </blockquote>
+     At this point, the exchange is over. Press the "Input &lt;return&gt;"
+ button  on the "Audio client process monitor"; since the server has no further
+ inputs  in its message script, it reports that audio is no longer available
+ and shuts  down.     
+<p>Select "File -&gt; Quit" in the "Toy travel single exchange" process monitor
+  to shut down the toy travel demo. </p>
+       
+<p> </p>
+       
+<hr width="100%">     
+<h2> <a name="Summary"></a>Summary</h2>
+     In this lesson, you've seen how a plausible exchange between a user
+and   system might proceed in a Communicator-compliant system. You've also
+learned   a few more terms:     
+<ul>
+     <li> verbosity</li>
+      <li> service type</li>
+      <li> service provider</li>
+      <li> token index</li>
+      <li> operation</li>
+         
+</ul>
+     In the next lessons, we'll learn more about these terms, and about how 
+ this demo is constructed.     
+<p><b>Next</b>: <a
+ href="../../../../docs/manual/tutorial/frame_intro.html">Introducing frames
+  and objects</a> </p>
+       
+<hr>  
+<center>   
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="../../tools/docs/process_monitor_tut.html"><img
+ src="../../../../docs/arrow_left.gif" alt="" width="30" height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../../LICENSE">License</a> / <a
+ href="../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a> 
+        </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="../../../../docs/manual/tutorial/frame_intro.html"><img
+ src="../../../../docs/arrow_right.gif" alt="" width="30" height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+    Last updated August 8, 2002</center>
+      <br>
+    <br>
+   <br>
+  <br>
+ <br>
+</body>
+</html>

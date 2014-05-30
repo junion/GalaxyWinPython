@@ -1,0 +1,4 @@
+# PYTHONBIN C:/Python/python.exe
+# PYINCLUDE C:/Python//include
+# JDK_HOME c:/jdk1.3
+THREADS_SUPPORTED 1

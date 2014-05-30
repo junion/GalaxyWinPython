@@ -1,0 +1,642 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+        
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Tutorial: Sending New Messages to the Hub</title>
+         <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+    
+<center>  
+<h1> Galaxy Communicator Tutorial:<br>
+  <br>
+  Sending New Messages to the Hub</h1>
+ </center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="errors.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="broker_tutorial.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+     
+<hr width="100%">  
+<p>Up to this point, we've studied only the simplest type of servers, which 
+we exemplified using the Parser server. As we described in the <a
+ href="basic_server.html#How_complex_can_a_server_get">server basics lesson</a>,
+the Generator and Backend also are no more complex: all three servers accept
+messages and return a response. In this lesson, we're going to look at a
+slighly more complex server, one which doesn't return any responses, but
+rather sends new messages (and sometimes waits for their replies). This server
+is the Dialogue server. </p>
+ 
+<ul>
+  <li> <a href="#An_overview_of_the_Dialogue_server">An overview of the Dialogue
+server</a></li>
+   <li> <a href="#Asynchronous_messages">Asynchronous messages</a></li>
+   <li> <a href="#Synchronous_messages">Synchronous messages</a></li>
+      
+  <ul>
+  <li> <a href="#From_the_unit_tester">From the unit tester</a></li>
+   <li> <a href="#From_the_Dialogue_server">From the Dialogue server</a></li>
+     
+  </ul>
+   <li> <a href="#Putting_it_all_together">Putting it all together</a></li>
+   <li> <a href="#Summary">Summary</a></li>
+   
+</ul>
+    
+<hr width="100%">  
+<h2> <a name="An_overview_of_the_Dialogue_server"></a>An overview of the Dialogue
+server</h2>
+  The Dialogue server supports two dispatch functions. The first is <tt>DoGreeting</tt>,
+ which is called when a user connects, and sends a greeting to the user.
+The second is <tt>DoDialogue</tt>, which decides what to do with each user
+input. In some cases, the Dialogue server will contact the Backend server
+to retrieve data from the database, and present the result to the user; in
+other cases, the Dialogue server might decide that it needs more information
+from the user before it continues. The full toy travel demo contains a small
+dialogue which exemplifies all three of these outputs:  
+<blockquote><b><tt># Greeting</tt></b> <br>
+   <tt>System: Welcome to Communicator. How may I help you?</tt> <br>
+   <tt>User: I WANT TO FLY TO LOS ANGELES</tt> <br>
+   <b><tt># Additional information</tt></b> <br>
+   <tt>System: Where are you traveling from?</tt> <br>
+   <tt>User: BOSTON</tt> <br>
+   <b><tt># Database query and response presentation</tt></b> <br>
+   <tt>System: American Airlines flight 115 leaves at 11:44 AM, and United
+ flight 436 leaves at 2:05 PM</tt></blockquote>
+  The way the Dialogue server is implemented, all of these interactions involve 
+sending a new message to the Hub. In addition, the database query involves 
+sending a new message to the Hub and waiting for the response. We'll examine 
+each of these elements in turn.  
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Asynchronous_messages"></a>Asynchronous messages</h2>
+  The first message type we'll look at is asynchronous; that is, we don't 
+ask for a response, and we don't wait for one. We'll choose the <tt>DoGreeting</tt> 
+dispatch function to illustrate this.  
+<blockquote><tt>Gal_Frame DoGreeting(Gal_Frame frame, void *server_data)</tt>
+   <br>
+   <tt>{</tt> <br>
+   <tt>&nbsp; char *s = "{c FromDialogue :output_frame {c greeting } :is_greeting
+ 1 }";</tt> <br>
+   <tt>&nbsp; Gal_Frame greeting = Gal_ReadFrameFromString(s);</tt>    
+  <p><tt>&nbsp; <b>GalSS_EnvWriteFrame((GalSS_Environment *) server_data,
+ greeting, 0);</b></tt> <br>
+   <tt>&nbsp; Gal_FreeFrame(greeting);</tt> <br>
+   <tt>&nbsp; return (Gal_Frame) NULL;</tt> <br>
+   <tt>}</tt></p>
+ </blockquote>
+  The function we use to write new frames is <a
+ href="../reference/adding.html#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame</a>.
+ This function takes three arguments: a <a
+ href="errors.html#Environments_and_message_returns">call environment</a>, 
+a frame to use as the message, and a flag indicating whether to wait for the
+frame to be written before returning. So when the Dialogue server receives 
+a frame named <tt>DoGreeting</tt>, it constructs a frame named <tt>FromDialogue</tt>,
+ writes it to the Hub, frees the frame, and returns <tt>NULL</tt>, which
+means that no frame will be returned (unless a reply is required, in which
+case a dummy will be sent). We can illustrate this with an example.  
+<blockquote><tt><b>[New messages exercise 1]</b><br>
+  <br>
+  <b>Unix:</b><br>
+  </tt>    
+  <p><tt>% process_monitor $GC_HOME/tutorial/messages/greeting.config<br>
+  </tt></p>
+  <p><tt><b>Windows:</b><br>
+  </tt></p>
+  <p><tt>C:\&gt; python %PM_DIR%\process_monitor.py %GC_HOME%\tutorial\messages\greeting.config<br>
+  </tt></p>
+ </blockquote>
+  In this example, the unit tester will pretend to be the Hub. Start the
+Dialogue server and then the unit tester. Select "Send new message", choose
+the <tt>DoGreeting</tt>  frame, and press OK. The interaction history will
+show a new message:  
+<blockquote><b><tt>[Interaction History pane]</tt></b>    
+  <p><tt>[Sending: new message]</tt> <br>
+   <tt>{c DoGreeting }</tt> <br>
+   <tt>[Received: new message]</tt> <br>
+   <tt>{c FromDialogue</tt> <br>
+   <tt>&nbsp;&nbsp; :output_frame {c greeting }</tt> <br>
+   <tt>&nbsp;&nbsp; :is_greeting 1 }</tt></p>
+ </blockquote>
+  Note that we neither asked for a reply to the message we sent, nor did
+we receive one.  
+<p>(If you're curious, you can repeat this exercise with "Reply required" 
+selected, and you can see how the unit tester receives a dummy reply in addition 
+to the new message.) </p>
+ 
+<p>Select "File --&gt; Quit" to end this exercise. </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Synchronous_messages"></a>Synchronous messages</h2>
+  The process through which a server sends a message to the Hub and gets
+a reply is a little more complicated, although we've actually seen it happen 
+a number of times; every time we've used the unit tester as a server and sent
+a message which requires a reply, we've done exactly the same thing that
+any other server does in the same circumstances. One such circumstance, as
+we've already described, is when the Dialogue server retrieves information 
+from the database. The Dialogue server sends a new message named DBQuery, 
+which invokes the corresponding Hub program:  
+<blockquote><tt>PROGRAM: DBQuery</tt>    
+  <p><tt>RULE: :sql_query --&gt; Backend.Retrieve</tt> <br>
+   <tt>IN: :sql_query</tt> <br>
+   <tt>OUT: :column_names :nfound :values</tt></p>
+ </blockquote>
+  When the program is done, the result is returned to the originating server. 
+This interaction corresponds to the following small subsection of the toy 
+travel demo:  
+<center><img src="../../images/BackendPgm.jpg" nosave="" height="503"
+ width="599">
+ </center>
+    
+<h3> <a name="From_the_unit_tester"></a>From the unit tester</h3>
+  Before we look at the Dialogue server itself, let's try invoking this behavior 
+from the unit tester.  
+<blockquote><b><tt>[New messages exercise 2]<br>
+  <br>
+Unix:<br>
+  </tt></b>    
+  <p><tt>% process_monitor $GC_HOME/tutorial/messages/backend.config<br>
+  </tt></p>
+  <p><tt><b>Windows:</b><br>
+  </tt></p>
+  <p><tt>C:\&gt; python %PM_DIR%\process_monitor.py %GC_HOME%\tutorial\messages\backend.config<br>
+   </tt></p>
+   </blockquote>
+  The unit tester will be functioning as a server in this example. Start
+the Backend server, the Hub, then the unit tester. Select "Send new message", 
+select the first frame named <tt>DBQuery</tt>, press "Reply required" and 
+then OK. You should see something like this in the unit tester interaction 
+history:  
+<blockquote><b><tt>[Interaction History pane]</tt></b>    
+  <p><tt>[Sending: new message]</tt> <br>
+   <tt>{c DBQuery</tt> <br>
+   <tt>&nbsp;&nbsp; :sql_query "select airline, flight_number, departure_datetime
+ from flight_table where departure_aiport = 'BOS' and arrival_airport = 'LAX'" 
+}</tt> <br>
+   <tt>[Received: reply message]</tt> <br>
+   <tt>{c DBQuery</tt> <br>
+   <tt>&nbsp;&nbsp; :nfound 2</tt> <br>
+   <tt>&nbsp;&nbsp; :values ( ( "AA"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ "115"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ "1144" )</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ ( "UA"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ "436"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ "1405" ) )</tt> <br>
+   <tt>&nbsp;&nbsp; :sql_query "select airline, flight_number, departure_datetime
+ from flight_table where departure_aiport = 'BOS' and arrival_airport = 'LAX'"</tt>
+   <br>
+   <tt>&nbsp;&nbsp; :column_names ( "airline"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ "flight_number"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ "departure_datetime" )</tt> <br>
+   <tt>&nbsp;&nbsp; :session_id "Default" }</tt></p>
+ </blockquote>
+  If you look at the Hub pane, you'll see that the new message matched the 
+appropriate program, fired the rule to invoke the Backend server, and then 
+terminated normally, returning the token state to the originating server (the
+unit tester):  
+<blockquote><b><tt>[Hub pane]</tt></b>    
+  <p><tt>----------------[&nbsp; 1]----------------------<br>
+ {c DBQuery<br>
+ &nbsp;&nbsp; :sql_query "select airline, flight_number, departure_datetime 
+from flight_table where departure_aiport = 'BOS' and arrival_airport = 'LAX'"<br>
+ &nbsp;&nbsp; :session_id "Default"<br>
+ &nbsp;&nbsp; :tidx 1 }<br>
+ --------------------------------------------<br>
+   <br>
+ Found operation for token 1: Backend.Retrieve<br>
+ Serving message with token index 1 to provider for Backend @ localhost:13000<br>
+ ---- Serve(Backend@localhost:13000, token 1 op_name Retrieve)<br>
+ Got reply from provider for Backend @ localhost:13000 : token 1<br>
+   <br>
+ ----------------[&nbsp; 1]----------------------<br>
+ {c DBQuery<br>
+ &nbsp;&nbsp; :sql_query "select airline, flight_number, departure_datetime 
+from flight_table where departure_aiport = 'BOS' and arrival_airport = 'LAX'"<br>
+ &nbsp;&nbsp; :session_id "Default"<br>
+ &nbsp;&nbsp; :tidx 1<br>
+ &nbsp;&nbsp; :column_names ( "airline"<br>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+... )<br>
+ &nbsp;&nbsp; :nfound 2<br>
+ &nbsp;&nbsp; :values ( ( "AA"<br>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+... )<br>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+... ) }<br>
+ --------------------------------------------<br>
+   <br>
+ Done with token 1 --&gt; returning to owner UI@&lt;remote&gt;:-1<br>
+ Destroying token 1</tt></p>
+ </blockquote>
+  Formally, this interaction is identical to our previous interactions with 
+the Parser server: the unit tester sends a new message to the Hub, the appropriate 
+program is matched, the rules are fired and the token state updated, and the
+token state returned when the program ends.  
+<p>If the Backend server raises an error, of course, the error will be forwarded 
+to the originating server, as we saw in <a
+ href="errors.html#Passive_error_handling">the last lesson</a>. (Notice that
+there's no ERROR: directive in the Hub program rule, so the program won't
+continue.) We can see this again if we select "Send new message", select the
+second frame named <tt>DBQuery</tt> (the one with <tt>arrival_airport = 'SFO'</tt>),
+press "Reply required" and then OK. This time, the uniit tester interaction
+history will show an error reply: </p>
+ 
+<blockquote><b><tt>[Interaction History pane]</tt></b>    
+  <p><tt>[Sending: new message]</tt> <br>
+   <tt>{c DBQuery</tt> <br>
+   <tt>&nbsp;&nbsp; :sql_query "select airline, flight_number, departure_datetime
+ from flight_table where departure_aiport = 'BOS' and arrival_airport = 'SFO'" 
+}</tt> <br>
+   <tt>[Received: error message]</tt> <br>
+   <tt>{c system_error</tt> <br>
+   <tt>&nbsp;&nbsp; :session_id "Default"</tt> <br>
+   <tt>&nbsp;&nbsp; :err_description "no DB result"</tt> <br>
+   <tt>&nbsp;&nbsp; :errno 0 }</tt></p>
+ </blockquote>
+  Select "File --&gt; Quit" to end this exercise  
+<h3> <a name="From_the_Dialogue_server"></a>From the Dialogue server</h3>
+  Now, let's take a look at the Dialogue server itself, to see how it does 
+the same thing. This is a vastly simplified version of the actual dispatch 
+function:  
+<blockquote><tt>Gal_Frame DoDialogue(Gal_Frame f, void *server_data)</tt>
+   <br>
+   <tt>{</tt> <br>
+   <tt>&nbsp; Gal_Frame msg_frame = Gal_MakeFrame("DBQuery", GAL_CLAUSE);</tt>
+   <br>
+   <tt>&nbsp; Gal_Frame r_f;</tt> <br>
+   <tt>&nbsp; GalIO_MsgType reply_type;</tt> <br>
+   <tt>&nbsp; char *sql_query;</tt> <br>
+   <tt>&nbsp; GalSS_Environment *env = (GalSS_Environment *) server_data;</tt>
+   
+  <p><tt>&nbsp; /* ... */</tt> </p>
+   
+  <p><tt>&nbsp; Gal_SetProp(msg_frame, ":sql_query", Gal_StringObject(sql_query);</tt>
+   <br>
+   <tt>&nbsp; <b>response_frame = GalSS_EnvDispatchFrame(env, msg_frame,
+&amp;reply_type);</b></tt>    <br>
+   <tt>&nbsp; Gal_FreeFrame(msg_frame);</tt> <br>
+   <tt>&nbsp; switch (reply_type) {</tt> <br>
+   <tt>&nbsp; case GAL_ERROR_MSG_TYPE:</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp; /* Relay error */</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp; /* ... */</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp; break;</tt> <br>
+   <tt>&nbsp; case GAL_REPLY_MSG_TYPE:</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp; /* Construct presentation of database response
+*/</tt>    <br>
+   <tt>&nbsp;&nbsp;&nbsp; /* ... */</tt> <br>
+   <tt>&nbsp; }</tt> <br>
+   <tt>}</tt></p>
+ </blockquote>
+  Let's look at this a little more closely: <br>
+ <img src="../../images/MessageReply.jpg" nosave="" height="455"
+ width="815">
+  <br>
+ As before, we construct the message. This time, we use the function <a
+ href="../reference/adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a>,
+ which takes three arguments: the call environment and new message, as before,
+ and also a pointer to a message type variable. The message we receive will
+ be either a normal reply (<tt>GAL_REPLY_MSG_TYPE</tt>) or an error reply 
+(<tt>GAL_ERROR_MSG_TYPE</tt>), and the final argument captures this information. 
+The frame which this function returns is the final token state of the Hub 
+program invoked by the new message, or an error which the Hub is returning.
+ 
+<p>So when the Dialogue server receives a frame which causes it to consult 
+the Backend server, this is how it gets the result from the Backend server 
+via the Hub. </p>
+ 
+<p>In this next example, the unit tester is going to act as a server. We're 
+going to use the following program file: </p>
+ 
+<blockquote><tt>;; Use extended syntax (new in version 3.0).</tt>    
+  <p><tt>PGM_SYNTAX: extended</tt> </p>
+   
+  <p><tt>SERVICE_TYPE: UI</tt> <br>
+   <tt>CLIENT_PORT: 14500</tt> <br>
+   <tt>OPERATIONS: FromDialogue</tt> </p>
+   
+  <p><tt>SERVER: Dialogue</tt> <br>
+   <tt>HOST: localhost</tt> <br>
+   <tt>PORT: 18500</tt> <br>
+   <tt>OPERATIONS: DoDialogue DoGreeting</tt> </p>
+   
+  <p><tt>SERVER: Backend</tt> <br>
+   <tt>HOST: localhost</tt> <br>
+   <tt>PORT: 13000</tt> <br>
+   <tt>OPERATIONS: Retrieve</tt> </p>
+   
+  <p><tt>PROGRAM: DBQuery</tt> </p>
+   
+  <p><tt>RULE: :sql_query --&gt; Backend.Retrieve</tt> <br>
+   <tt>IN: :sql_query</tt> <br>
+   <tt>OUT: :column_names :nfound :values</tt></p>
+ </blockquote>
+  We're going to send a message named <tt>DoDialogue</tt>, and the Dialogue 
+server will respond with a message named <tt>FromDialogue</tt>, as in the 
+<a href="#Asynchronous_messages"><tt>DoGreeting</tt> case</a>. Now, neither 
+of these messages corresponds to a Hub program by that name, but both of them
+correspond to operations, and the Hub will find the server with the appropriately
+named operation and send the message to it. The Dialogue server provides
+<tt>DoDialogue</tt>, and the UI server (!) provides <tt>FromDialogue</tt>.
+ 
+<p>This last bit is a little sneaky. The unit tester connects to the Hub, 
+pretending to be the UI. The unit tester itself doesn't implement <b>any</b>
+ dispatch functions, but it is constructed so it can field any message. So 
+we're just relaying this message to that server so that you can see what the
+result of the interaction is. In effect, we're performing a slightly larger
+subset of the toy travel demo than just the interaction with the Backend; 
+the unit tester is providing input to the Dialogue server, and digesting output
+from the Dialogue server: </p>
+ 
+<center><img src="../../images/DialogueBackendPgm.jpg" nosave=""
+ height="503" width="599">
+ </center>
+  Let's try it:  
+<blockquote><b><tt>[New messages exercise 3]<br>
+  <br>
+Unix:<br>
+  </tt></b>    
+  <p><tt>% process_monitor $GC_HOME/tutorial/messages/hub_backend.config<br>
+  </tt></p>
+  <p><tt><b>Windows:</b><br>
+  </tt></p>
+  <p><tt>C:\&gt; </tt><tt>python %PM_DIR%\process_monitor.py %GC_HOME%\tutorial\messages\hub_backend.config</tt><br>
+  </p>
+ </blockquote>
+  Start the Backend, Dialogue, Hub and then the unit tester. Select "Send 
+new message", select the first frame named <tt>DoDialogue</tt>, and press 
+OK. If you scroll through the output in the Hub pane, you'll see the following 
+steps:  
+<ol>
+  <li> Hub receives the <tt>DoDialogue</tt> message</li>
+   <li> Hub dispatches the <tt>DoDialogue</tt> message to the Dialogue server, 
+and destroys the token (because there was no program that matched, and no 
+reply requested)</li>
+   <li> Hub receives the <tt>DBQuery</tt> message</li>
+   <li> Hub dispatches the <tt>DBQuery</tt> message to the Backend server</li>
+   <li> Hub receives the reply from the Backend server, relays the result 
+to the Dialogue server, and destroys the token (because the <tt>DBQuery</tt> 
+program has ended)</li>
+   <li> Hub receives the <tt>FromDialogue</tt> message from the Dialogue
+server</li>
+   <li> Hub dispatches the <tt>FromDialogue</tt> message to the UI (unit
+tester), and destroys the token (because there was no program that matched,
+and no reply requested)</li>
+   
+</ol>
+  And the unit tester interaction history will reveal the result:  
+<blockquote><b><tt>[Interaction History pane]</tt></b>    
+  <p><tt>[Sending: new message]</tt> <br>
+   <tt>{c DoDialogue</tt> <br>
+   <tt>&nbsp;&nbsp; :frame {c flight</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ :origin "BOSTON"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ :destination "LOS ANGELES" } }</tt> <br>
+   <tt>[Received: new message]</tt> <br>
+   <tt>{c FromDialogue</tt> <br>
+   <tt>&nbsp;&nbsp; :tidx 3</tt> <br>
+   <tt>&nbsp;&nbsp; :output_frame {c db_result</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ :tuples ( ( "AA"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ "115"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ "1144" )</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ ( "UA"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ "436"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ "1405" ) )</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ :column_names ( "airline"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ "flight_number"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ "departure_datetime" ) }</tt> <br>
+   <tt>&nbsp;&nbsp; :session_id "Default" }</tt></p>
+ </blockquote>
+  Now, let's look at how errors might be handled here. Remember, the <tt>DoDialogue</tt>
+ dispatch function doesn't send a reply. This means that it can't send an
+error reply (well, it could, but since the Hub isn't waiting for a reply,
+it will discard whatever reply it gets). So the Dialogue server will have
+to send a new message when it gets an error from the Backend server. So select
+"Send new message", select the second frame named <tt>DoDialogue</tt>, and
+press OK. The Hub and servers will follow exactly the same steps, except
+that the Hub will receive an error reply from the Backend server, and the
+new message the unit tester receives will describe the error:  
+<blockquote><b><tt>[Interaction History pane]</tt></b>    
+  <p><tt>[Sending: new message]</tt> <br>
+   <tt>{c DoDialogue</tt> <br>
+   <tt>&nbsp;&nbsp; :frame {c flight</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ :origin "BOSTON"</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ :destination "SAN FRANCISCO" } }</tt> <br>
+   <tt>[Received: new message]</tt> <br>
+   <tt>{c FromDialogue</tt> <br>
+   <tt>&nbsp;&nbsp; :tidx 6</tt> <br>
+   <tt>&nbsp;&nbsp; :output_frame {c error</tt> <br>
+   <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ :description "error consulting backend" }</tt> <br>
+   <tt>&nbsp;&nbsp; :session_id "Default" }</tt></p>
+ </blockquote>
+  Select "File --&gt; Quit" to end this exercise.  
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Putting_it_all_together"></a>Putting it all together</h2>
+  At this point, we can add in the Generator and Parser servers and perform 
+an even larger subsection of the toy travel demo: we can provide strings as
+input and see strings as output, as illustrated here:  
+<center><img src="../../images/StringIOPgm.jpg" nosave="" height="503"
+ width="599">
+ </center>
+  We'll continue to expand our Hub program file, and we'll once again use 
+the trick of assigning a phony operation (<tt>ReportIO</tt>) to the UI server 
+(i.e., the unit tester). For simplicitly, we'll only show the Hub programs 
+here. Note that some of these Hub programs have multiple rules:  
+<blockquote><tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt>
+   <br>
+   <tt>;;</tt> <br>
+   <tt>;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ MAIN INPUT BODY</tt> <br>
+   <tt>;;</tt> <br>
+   <tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt>    
+  <p><tt>PROGRAM: UserInput</tt> </p>
+   
+  <p><tt>RULE: :input_string --&gt; Parser.Parse</tt> <br>
+   <tt>IN: :input_string</tt> <br>
+   <tt>OUT: :frame</tt> </p>
+   
+  <p><tt>RULE: :frame --&gt; Dialogue.DoDialogue</tt> <br>
+   <tt>IN: :frame</tt> <br>
+   <tt>OUT: none!</tt> </p>
+   
+  <p><tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt> <br>
+   <tt>;;</tt> <br>
+   <tt>;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ MAIN OUTPUT BODY</tt> <br>
+   <tt>;;</tt> <br>
+   <tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt> </p>
+   
+  <p><tt>PROGRAM: FromDialogue</tt> </p>
+   
+  <p><tt>RULE: :output_frame --&gt; Generator.Generate</tt> <br>
+   <tt>IN: :output_frame</tt> <br>
+   <tt>OUT: :output_string</tt> </p>
+   
+  <p><tt>RULE: :output_string --&gt; UI.ReportIO</tt> <br>
+   <tt>IN: :output_string</tt> <br>
+   <tt>OUT: none!</tt> </p>
+   
+  <p><tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt> <br>
+   <tt>;;</tt> <br>
+   <tt>;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ DB SUBQUERY</tt> <br>
+   <tt>;;</tt> <br>
+   <tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt> </p>
+   
+  <p><tt>PROGRAM: DBQuery</tt> </p>
+   
+  <p><tt>RULE: :sql_query --&gt; Backend.Retrieve</tt> <br>
+   <tt>IN: :sql_query</tt> <br>
+   <tt>OUT: :column_names :nfound :values</tt></p>
+ </blockquote>
+  Let's do one more exercise:  
+<blockquote><b><tt>[New messages exercise 4]<br>
+  <br>
+Unix:<br>
+  </tt></b>    
+  <p><tt>% process_monitor $GC_HOME/tutorial/messages/string_io.config<br>
+  </tt></p>
+  <p><tt><b>Windows:</b><br>
+  </tt></p>
+  <p><tt>C:\&gt; python %PM_DIR%\process_monitor.py %GC_HOME%\tutorial\messages\string_io.config</tt><br>
+   </p>
+   </blockquote>
+  The two available inputs in this exercise correspond to the two inputs
+in exercise 3. There are a number of processes in this exercise; you should 
+be able to start them all by selecting "Process Control --&gt; Restart all". 
+When the unit tester window appears, select "Send new message", select the 
+first frame named <tt>UserInput</tt>, and press OK. You'll see the following 
+interaction in the interaction history:  
+<blockquote><b><tt>[Interaction History pane]</tt></b>    
+  <p><tt>[Sending: new message]</tt> <br>
+   <tt>{c UserInput</tt> <br>
+   <tt>&nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"
+ }</tt> <br>
+   <tt>[Received: new message]</tt> <br>
+   <tt>{c UI.ReportIO</tt> <br>
+   <tt>&nbsp;&nbsp; :session_id "Default"</tt> <br>
+   <tt>&nbsp;&nbsp; :output_string "American Airlines flight 115 leaves at 
+11:44 AM, and United flight 436 leaves at 2:05 PM" }</tt></p>
+ </blockquote>
+  If you like, you can select the Hub pane in the process monitor and trace 
+the history of this interaction; at this point in the tutorial, you should 
+be able to do that without assistance.  
+<p>To induce the error, select "Send new message" in the unit tester, select 
+the second frame named <tt>UserInput</tt>, and press OK, and then look at 
+the interaction history: </p>
+ 
+<blockquote><b><tt>[Interaction History pane]</tt></b>    
+  <p><tt>[Sending: new message]</tt> <br>
+   <tt>{c UserInput</tt> <br>
+   <tt>&nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON TO SAN FRANCISCO"
+ }</tt> <br>
+   <tt>[Received: new message]</tt> <br>
+   <tt>{c UI.ReportIO</tt> <br>
+   <tt>&nbsp;&nbsp; :session_id "Default"</tt> <br>
+   <tt>&nbsp;&nbsp; :output_string "I'm sorry, but I can't get your answer
+ from the database" }</tt></p>
+ </blockquote>
+  Again, inspect the history of the interaction in the Hub pane if you like.
+ 
+<p>Select "File --&gt; Quit" to end this exercise. </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Summary"></a>Summary</h2>
+  In this lesson, you've learned about the following concepts and components:
+ 
+<ul>
+  <li> Synchronous and asynchronous new messages</li>
+   <li> The functions <a
+ href="../reference/adding.html#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame</a>
+ and <a href="../reference/adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a></li>
+   
+</ul>
+  At this point, we've learned enough about servers and program files to
+understand a substantial subsection of the toy travel demo. In the next lesson,
+we'll take a look at the next level of complexity: backchannel audio connections, 
+known as "brokers".  
+<p><b>Next</b>: <a href="broker_tutorial.html">Setting up a brokered audio 
+connection</a> </p>
+ 
+<p> </p>
+ 
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="errors.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="broker_tutorial.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated August 8, 2002</center>
+   <br>
+ <br>
+</body>
+</html>

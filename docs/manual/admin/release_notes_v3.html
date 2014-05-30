@@ -1,0 +1,1675 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                
+  <meta name="GENERATOR"
+ content="Mozilla/4.78 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Release Notes for Version 3.x</title>
+                 <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+        
+<center>    
+<h1> Galaxy Communicator Documentation:<br>
+    <br>
+    Release Notes for Version 3.x</h1>
+   </center>
+     
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="3point0upgrade.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>  
+     </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="2point1upgrade.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+         
+<hr width="100%">    
+<p>This document briefly lists all the changes from one Galaxy Communicator 
+distribution to the next for versions 3.x. </p>
+ 
+<p>Version 3.x is not the current version of Galaxy Communicator.</p>
+        
+<hr width="100%">    
+<h2> January 2002: Version 3.3</h2>
+        
+<h3> <a name="3.3_Core_distribution"></a>Core distribution</h3>
+        
+<ul>
+    <li> <b>Enhancement</b>. The distribution can now be <a
+ href="install.html#config">configured for compilation</a> using GNU <tt>configure</tt>
+  exclusively, although the old method still works. All references to specific
+  platform dependencies are now in <tt>include/galaxy/sysdep.h</tt>, and
+many  files and headers throughout the distribution have been modified. Old
+cruft  relating to platforms we no longer have access to for testing (e.g.,
+DEC Alpha OSF/1 and HP/UX) has been removed.</li>
+     <li> <b>Enhancement</b>. As a byproduct of the new configuration process, 
+ we can easily test and compile on three <a
+ href="install.html#supported">additional  platforms</a>: SGI IRIX, Intel 
+FreeBSD, and MacOS X/Darwin.</li>
+     <li> <b>Enhancement</b>. New Builtin server functions <a
+ href="../../servers/builtin.html#hub_set_verbosity">hub_set_verbosity</a>,
+      <a href="../../servers/builtin.html#hub_raise_error">hub_raise_error</a>.</li>
+     <li> <b>Enhancement</b>. A couple of unnecessary bottlenecks in the
+transport  layer have been removed, resulting in significantly higher message
+throughput.</li>
+     <li> <b>Enhancement</b>. We have confirmed that we can cross-compile 
+the  Galaxy Communicator infrastructure for Linux on the iPaq.</li>
+     <li> <b>Enhancement</b>. We have released experimental support for external 
+ Hub visualization servers. These servers can subscribe to special message 
+ streams which indicate the status of the Hub. See the <a
+ href="../reference/hub.html#The_Hub"><tt>-gui</tt> command line flag</a> 
+ for the Hub executable.</li>
+     <li> <b>Enhancement</b>. New <a
+ href="../reference/hub.html#The_Hub">Hub   command line flag </a><tt><a
+ href="../reference/hub.html#The_Hub">-suppress_pacifier</a></tt>.</li>
+     <li> <b>Clarification</b>. We've clarified the precedence when inconsistent 
+     <a
+ href="../reference/server_structure.html#GalIO_ServerListenStatus">listen
+  status flags</a> are set.</li>
+     <li> <b>Clarification</b>. We've clarified in the <a
+ href="../advanced/external_makefile.html">non-MIT makefile documentation</a> 
+ that the Communicator libraries should follow the source or object files 
+in your link line.</li>
+     <li> <b>Clarification</b>. We've clarified that the use of <tt>#ifndef</tt> 
+ to ensure that header files are only loaded once is counterproductive in 
+the case of <a href="../reference/adding.html#Basics">server declaration files</a>.</li>
+     <li> <b>Bug fix</b>. To support BSD operating systems, we identified 
+and  fixed a bug where BSD platforms couldn't determine their own IP address 
+using  the existing code.</li>
+     <li> <b>Bug fix</b>. We finally changed the name of a file in the <tt>templates</tt>
+  subdirectory whose name differed from another file only by capitalization.</li>
+     <li> <b>Bug fix</b>. A bug in the Hub was identified and fixed where 
+sessions  could have been freed prematurely if multiple servers were locked 
+to it.</li>
+     <li> <b>Bug fix</b>. A bug in the Hub was identified and fixed where 
+server  messages were sometimes not being freed, and one case where the server 
+messages  were potentially referenced after they were freed.</li>
+     <li> <b>Bug fix</b>. A bug in the Hub was identified and fixed where 
+messages  queued for a server in the Hub were not all getting sent if some 
+of them didn't require a reply.</li>
+     <li> <b>Bug fix</b>. A bug in the Hub was identified and fixed where 
+round-trip  messages from a server which were processed in scriptless mode 
+by the Hub  were never returning when the destination server did not provide 
+a reply.</li>
+     <li> <b>Bug fix</b>. A bug in the core C library was identified and
+fixed  where threaded servers could potentially fail to free a mutex if the
+server  was contacting the Hub.</li>
+     <li> <b>Incompatible change</b>. As a consequence of the <a
+ href="install.html#config">new configuration process</a>, the experimental 
+     <a href="install.html#Cross_compilation">cross-compilation support</a> 
+ has been completely changed.</li>
+       
+</ul>
+        
+<h3> <a name="3.3_MIT_contributions"></a>MIT contributions</h3>
+        
+<ul>
+    <li> <b>Enhancement</b>. We have added the capability in the Hub scripting 
+ language of monitoring a server for a new message and interpreting it as 
+a reply. We call this capability <a
+ href="../advanced/synch_vs_asynch.html#Hub/server_expectation_mismatches">Hub
+ continuations</a>. It is available as <a
+ href="../reference/pgm.html#Hub_continuations">scripting  language directives</a>
+ and as a <a href="../../servers/builtin.html#hub_continue">Builtin function</a>.</li>
+     <li> <b>Bug fix</b>. Fixed a bug where the Builtin function wasn't being 
+ declared if there were no programs or messages.</li>
+       
+</ul>
+        
+<h3> <a name="3.3_MITRE_contributions"></a>MITRE contributions</h3>
+        
+<ul>
+    <li> <b>Enhancement</b>. It is now possible to compile and use the Python 
+ process monitor without compiling the Python bindings.</li>
+     <li> <b>Enhancement</b>. The Java bindings now support the same Hub
+connection  policy flags as the other language bindings.</li>
+     <li> <b>Enhancement</b>. The <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#cleanup()">cleanup</a>
+  method has been added to the <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html">MainServer</a>
+  class, allowing subclasses to run arbitrary code before the server shuts
+ down.</li>
+     <li> <b>Enhancement</b>. The <a
+ href="../../../contrib/MITRE/tools/docs/process_monitor_ref.html">process
+  monitor</a> now makes arguments passed to its configuration files available
+  by name as well as position.</li>
+     <li> <b>Bug fix</b>. While we are no longer officially maintaining the 
+ XML log manipulation code, we have addressed a bug where partial match information 
+ in the XML annotation rule matcher was being preserved by accident. We do 
+ not have a test suite for this section of code, so we can't be absolutely 
+ sure that we haven't broken something else, but the fix is very local and 
+ we can't imagine what other effects it might have beyond addressing this 
+bug.</li>
+     <li> <b>Bug fix</b>. When a Java server that is acting only as a Hub 
+client  starts an outgoing broker, the listener thread that is started as 
+a result  no longer accepts regular connections from the Hub.</li>
+     <li> <b>Incompatible change</b>. In <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html">MainServer</a>,
+  a number of methods have been renamed: setActsAsClient is now <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#setActsAsHubClient(boolean)">setActsAsHubClient</a>,
+  isClient is now <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#isHubClient()">isHubClient</a>,
+  setActsAsListener is now <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#setActsAsHubListener(boolean)">setActsAsHubListener</a>,
+  isListener is now <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#isHubListener()">isHubListener</a>,
+  startListenerThread is now startHubListenerThread (and it was changed from
+  protected to private), and startClientThread is now startHubClientThread
+ (and it was also changed from protected to private). Finally, the <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html">MainServer</a>
+  connection bitmask flag values (<a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#GAL_CONNECTION_LISTENER">GAL_CONNECTION_LISTENER</a>,
+      <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#GAL_BROKER_LISTENER">GAL_BROKER_LISTENER</a>,
+      <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#GAL_HUB_CLIENT">GAL_HUB_CLIENT,</a>
+      <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#GAL_SERVER_TYPE_MASK">GAL_SERVER_TYPE_MASK</a>)
+  have been made protected (were public).</li>
+     <li> <b>Incompatible change</b>. In order to establish the Open Source 
+ toolkit, all servers previously in <tt>contrib/MITRE</tt>, along with their 
+ documentation and supporting examples, have been removed from the distribution.</li>
+       
+</ul>
+        
+<h3> <a name="3.3_Known_bugs"></a>Known bugs</h3>
+    Two <a href="#3.2_Known_bugs">known bugs from 3.2</a> remain:    
+<ul>
+    <li> In rare cases, if two broker servers attempt to contact each other 
+ simultaneously, a deadlock will arise. This bug is fixable, but would require 
+ some serious internal reorganization. (Observed 3/01)</li>
+     <li> Line breaks inside Galaxy Communicator list objects in program
+files  do not work. (Observed 2/01)</li>
+       
+</ul>
+    We judge that fixing these two bugs is not a high priority at the moment. 
+ All bugs which have been reported since the release of 3.1 have been fixed.
+    
+<p> </p>
+     
+<hr width="100%">    
+<h2> October 2001: Version 3.2</h2>
+        
+<h3> <a name="3.2_Core_distribution"></a>Core distribution</h3>
+        
+<ul>
+    <li> <b>Enhancement</b>. The <a href="../index.html">documentation</a>
+ has been completely reorganized into four sections: tutorial, advanced topics, 
+ reference and administrative information. The tutorial material is mostly 
+ new, and represents a completely updated version of the original Communicator 
+ training course (previously distributed separately). This tutorial is designed 
+ to be self-guided, and is generously illustrated.</li>
+     <li> <b>Enhancement</b>. The <a
+ href="../reference/server_structure.html#Listener-in-Hub_support">flags
+ which control server behavior</a> when they contact the Hub didn't have
+a value which allowed the user to specify that the server should shut down
+if it couldn't contact the Hub in the first place. In addition, there were
+some intuitively mnemonic names and values (for masks, for instance) which
+were missing. These problems have been remedied (not in Java yet).</li>
+     <li> <b>Enhancement</b>. For advanced programmers, there is now an undocumented 
+ capability of overriding the default method for selecting dispatch functions. 
+ We use this to allow the Python bindings to use native dictionary lookup 
+as its selection method, which also allows us to defeat the selection method 
+ entirely for the new Python-based <a
+ href="../../../contrib/MITRE/tools/docs/unit_tester_ref.html">unit tester</a>.</li>
+     <li> <b>Enhancement</b>. For 3.2, we will be using a different, better 
+ tool to generate the PDF version of the documentation. Due to expanded documentation 
+ and illustrations, this document has grown to 10MB, and will be distributed 
+ separately.</li>
+     <li> <b>Enhancement</b>. Added the functions <a
+ href="../advanced/environment.html#GalSS_EnvReturnRequired">GalSS_EnvReturnRequired</a>
+  and <a href="../advanced/util.html#GalUtil_SetVerbose">GalUtil_SetVerbose</a>.</li>
+     <li> <b>Bug fix</b>. In 3.1, service providers in the Hub which were 
+providers  for multiple service types were being added multiple times to the
+global list of service providers, leading to a segmentation fault when the
+provider disconnected. This has been fixed.</li>
+     <li> <b>Bug fix</b>. In 3.1, <a
+ href="../advanced/hub_properties.html#GalSS_EnvSetSession">session locks</a> 
+ were being misinterpreted by the Hub; restrictions on message received were 
+ being interpreted as restrictions on messages sent, and vice versa. This 
+has been fixed.</li>
+     <li> <b>Bug fix</b>. Because of a flaw in the Makefile templates, it 
+was  not possible to maintain simultaneously different settings for whether 
+to  compile shared libraries on different platforms. This bug has been fixed.</li>
+     <li> <b>Bug fix</b>. MIT discovered and helped fix a bug where under 
+unusual  circumstances involving queued brokers in C which were not activated, 
+the  brokers would loop forever.</li>
+     <li> <b>Bug fix</b>. MIT discovered and fixed a bug where read streams 
+ associated with strings would rewind incorrectly under unusual circumstances.</li>
+     <li> <b>Bug fix</b>. We have finally fixed a longstanding bug where
+program  files with Unix line terminations could not be read properly on
+Windows.</li>
+     <li> <b>Bug fix</b>. We have discovered and fixed an arcane Hub bug
+where  extraneous unexpected reply messages from asynchronous Hub calls could
+destroy  tokens by accident.</li>
+     <li> <b>Bug fix</b>. With MIT's help, we have discovered and fixed a 
+bug  where server and session lock release requests were not being transmitted 
+ from server to Hub.</li>
+     <li> <b>Bug fix</b>. We have fixed a bug where older servers which use 
+ bare connections to write messages to the Hub couldn't control server and 
+ session locking correctly.</li>
+     <li> <b>Incompatible change</b>. The way service provider eligibility
+ in the Hub is determined has changed slightly. In particular, in 3.1, service 
+ providers which are the only provider for a particular service type were 
+being used because they were the only available server, even when they were 
+locked to other sessions. Service providers which are locked to sessions can
+now be used only by that session, without exception.</li>
+     <li> <b>Incompatible change</b>. The signatures of the undocumented
+functions  Gal_FindDispatchFunctionEntry and Gal_EncodeDispatchFnSignatures
+have changed.</li>
+     <li> <b>Incompatible change</b>. The function <a
+ href="../reference/frame.html#Gal_GetListValue">Gal_GetListValue</a> has 
+ been deprecated, and will be removed in the next major release.</li>
+       
+</ul>
+        
+<h3> <a name="3.2_MIT_contributions"></a>MIT contributions</h3>
+        
+<ul>
+    <li> <b>Bug fix</b>. In 3.1, any operations referenced in Hub program 
+rules  which had no explicit service type (e.g., <tt>Parse</tt> instead of 
+    <tt>Parser.Parse</tt>)  were erroneously assigned a service type at Hub 
+startup time (in general,  the last service type mentioned which supported 
+the operation). As a result,  if multiple service types supported the same 
+operation, only one service type would ever be considered, even though the 
+script writer intended the reference to be ambiguous. This bug has been fixed, 
+along with a number of related bugs which had been hidden by this bug. However, 
+if only one service type supports a given operation, that service type is 
+still explicitly assigned  at read time to operations without a service type.</li>
+     <li> <b>Enhancement</b>. MIT has provided minor enhancements to its
+dialogue  tools.</li>
+       
+</ul>
+        
+<h3> <a name="3.2_MITRE_contributions"></a>MITRE contributions</h3>
+        
+<ul>
+    <li> <b>Enhancement</b>. In support of the new tutorial, the <a
+ href="../../../contrib/MITRE/demos/docs/toy-travel-ref.html">toy travel demo</a>
+has been completely redesigned and reimplemented, so that the code as well
+as the program file are pedagogically appropriate.</li>
+     <li> <b>Enhancement</b>. The <a
+ href="../../../contrib/MITRE/tools/docs/process_monitor_ref.html">process
+  monitor</a> now accepts a configuration file as an argument, as an alternative
+  to the sequence of flags it has previously accepted (and still accepts).
+ This functionality makes visible some process monitor extensions we had
+previously  only used internally in our test harness. This enhancement makes
+it significantly  easier to maintain and start up examples in the tutorial,
+as well as making  it simpler to port the process monitor to Windows.</li>
+     <li> <b>Enhancement</b>. In support of the new tutorial, the <a
+ href="../../../contrib/MITRE/tools/docs/unit_tester_ref.html">unit tester</a> 
+ has been completely redesigned and reimplemented. It now allows you to connect 
+ to a Hub pretending to be a server, or to a server pretending to be a Hub. 
+ It also provides a graphical interface to allow you to respond to incoming 
+ messages and to send new messages of your own, and keeps a mouseable history 
+ of frames for you to select from if you choose.</li>
+     <li> <b>Enhancement</b>. We have augmented the <a
+ href="../../../contrib/MITRE/examples/audio/main.html">audio example</a> 
+ and <a href="../reference/brokering.html">brokering documentation</a> with 
+ examples of outbound streaming broker data.</li>
+     <li> <b>Bug fix</b>. In the Python bindings, the equivalent of GalIO_ClientConnect 
+ did not support disconnect callbacks appropriately. This has been fixed.</li>
+     <li> <b>Bug fix</b>. In the Python bindings, it was not possible to
+reset  the verbosity level for the underlying C library after startup. This
+has been fixed.</li>
+       
+</ul>
+        
+<h3> <a name="3.2_Known_bugs"></a>Known bugs</h3>
+    Two <a href="#3.1_Known_bugs">known bugs from 3.1</a> remain:    
+<ul>
+    <li> In rare cases, if two broker servers attempt to contact each other 
+ simultaneously, a deadlock will arise. This bug is fixable, but would require 
+ some serious internal reorganization. (Observed 3/01)</li>
+     <li> Line breaks inside Galaxy Communicator list objects in program
+files  do not work. (Observed 2/01)</li>
+       
+</ul>
+    We judge that fixing these two bugs is not a high priority at the moment. 
+ All bugs which have been reported since the release of 3.1 have been fixed.
+    
+<p> </p>
+     
+<hr width="100%">    
+<h2> June 2001: Version 3.1</h2>
+        
+<ul>
+    <li> <a href="#3.1_Core_distribution">Core distribution</a></li>
+     <li> <a href="#3.1_MIT_contributions">MIT contributions</a></li>
+     <li> <a href="#3.1_MITRE_contributions">MITRE contributions</a></li>
+     <li> <a href="#3.1_Known_bugs">Known bugs</a></li>
+       
+</ul>
+        
+<h3> <a name="3.1_Core_distribution"></a>Core distribution</h3>
+        
+<ul>
+    <li> <b>Enhancement</b>. Perl is no longer required by the Communicator 
+ infrastructure.</li>
+     <li> <b>Enhancement</b>. New API functions <a
+ href="../reference/frame.html#Gal_NumNonNullProperties">Gal_NumNonNullProperties</a>,
+      <a href="../reference/libgalaxy.html#Gal_PrintEntity">Gal_PrintEntity</a></li>
+     <li> <b>Enhancement</b>. The Makefile infrastructure now includes <a
+ href="install.html#Cross_compilation">experimental Unix support for cross-compilation</a>.</li>
+     <li> <b>Enhancement</b>. The nightmarishly complex process of embedding 
+ Communicator in external main loops has been <a
+ href="../advanced/special_mainloop.html">vastly simplified</a>.</li>
+     <li> <b>Enhancement</b>. The Hub builtin server now has a number of
+new  functions: <a href="../../servers/builtin.html#call_program">call_program</a>,
+  which eliminates the idiosyncracies in invoking subprograms and supports
+ returns from subprograms; <a
+ href="../../servers/builtin.html#hub_available_servers">hub_available_servers</a>,
+  which provides access to the list of service types that are currently enabled;
+      <a href="../../servers/builtin.html#hub_token_owner">hub_token_owner</a>,
+  which provides the service type of the originating server for the current
+  token; and <a href="../../servers/builtin.html#hub_pause">hub_pause</a>,
+ which introduces a pause after each Hub message dispatch for demo purposes.</li>
+     <li> <b>Incompatible change</b>. The default <a
+ href="../advanced/util.html#Printing">verbosity level</a> is now 3; it was 
+ previously undefined, which was equivalent to 6 (the most verbose).</li>
+     <li> <b>Clarification</b>. If you use Python, it must be configured
+with  Tkinter support.</li>
+     <li> <b>Clarification</b>. The function <a
+ href="../reference/frame.html#Gal_NumProperties">Gal_NumProperties</a> counts 
+ properties with NULL values. Use the new <a
+ href="../reference/frame.html#Gal_NumNonNullProperties">Gal_NumNonNullProperties</a>
+  to skip NULL-valued properties.</li>
+     <li> <b>Clarification</b>. For reasons of backward compatibility, the
+ keys :pred and :PRED are <a href="../reference/frame.html#Pred_warning">special
+  to Gal_ReadFrameFromString and its relatives</a>, and should be avoided
+by sites other than MIT.</li>
+     <li> <b>Clarification</b>. The 3.1 distribution also contains undocumented 
+ experimental hooks for supporting an external Hub visualization tool. These 
+ hooks are disabled because the functionality is only partially implemented.</li>
+     <li> <b>Bug fix</b>. In 3.0, if a frame contained a key-value pair with 
+ a NULL value, the property was counted but not encoded in the XDR transport, 
+ causing the number of properties in the frame to be encoded incorrectly in
+ the XDR transport. This bug is now fixed.</li>
+     <li> <b>Bug fix</b>. There is now a more reliable way of avoiding name 
+ collisions with OS-level C library functions which only exist on a subset 
+ of supported platforms.</li>
+     <li> <b>Bug fix</b>. In 3.0, the automatically generated Makefile dependency 
+ files incorrectly expanded the ARCHOS Makefile variable, partially invalidating 
+ the dependencies on platforms other than the one they were generated on. 
+This bug has been fixed, along with a number of other lurking bugs in the 
+dependency generation.</li>
+     <li> <b>Bug fix</b>. In 3.0, tokens were not consistently being returned 
+ to their originating servers when they died, due to poor code organization. 
+ This facility has been completely reorganized.</li>
+     <li> <b>Bug fix</b>. In 3.0, a null <a
+ href="../reference/pgm.html#OPERATIONS:">OPERATIONS:</a> directive in service 
+ type declarations in the Hub program file could lead to apparently random 
+ server choices for operations, including servers which did not support the 
+ operation. This bug has been fixed.</li>
+     <li> <b>Bug fix</b>. In 3.0, servers which were <a
+ href="../reference/server_structure.html#Listener-in-Hub_support">configured
+  to shut down</a> after their connection to the Hub was lost were using
+the  wrong facility to shut down, with the result that the wrong thing was
+happening  in external main loops. This bug has been fixed.</li>
+     <li> <b>Bug fix</b>. In 3.0, there were a couple cases where sessions
+ were not being created automatically in the Hub. This bug has been fixed.</li>
+     <li> <b>Bug fix</b>. In 3.0, under some circumstances sessions could 
+be  destroyed without their corresponding database history being freed, leading 
+ to potential memory leaks. This bug has been fixed.</li>
+       
+</ul>
+        
+<h3> <a name="3.1_MIT_contributions"></a>MIT contributions</h3>
+        
+<ul>
+    <li> <b>Enhancement</b>. New Hub scripting <a
+ href="../reference/pgm.html#IGNORE:">IGNORE:</a> directive, <a
+ href="../reference/pgm.html#Rule_conditions">IN comparison</a>,</li>
+     <li> <b>Enhancement</b>. The Hub scripting <a
+ href="../reference/pgm.html#Key-value_pairs">global namespace</a> is now 
+ writable, and there is a new value for the <a
+ href="../reference/pgm.html#MODE:">MODE: directive</a> called <tt>global_read_only</tt>
+  which will write-lock the namespace.</li>
+     <li> <b>Enhancement</b>. The current logfile name is <a
+ href="../reference/pgm.html#Special_logging_session_keys">now available
+ as a session key</a> in the Hub scripting.</li>
+     <li> <b>Bug fix</b>. The DEL: Hub scripting directive seg faulted when 
+ only simple keywords were listed.</li>
+       
+</ul>
+        
+<h3> <a name="3.1_MITRE_contributions"></a>MITRE contributions</h3>
+        
+<ul>
+    <li> <b>Enhancement</b>. Running Python servers in debug mode no longer 
+ causes an exit when an error is encountered, but rather prints out better 
+ debugging information.</li>
+     <li> <b>Enhancement</b>. The <a
+ href="../../../contrib/MITRE/tools/docs/process_monitor_ref.html">process
+  monitor</a> now takes two new arguments: <tt>--master_title</tt>, to set 
+ the title of the process monitor window, and <tt>--clear_history</tt>, to 
+ automatically clear the history of each pane after a given number of lines 
+ are printed.</li>
+     <li> <b>Enhancement</b>. The following methods have been added to the
+ Java bindings:</li>
+              
+  <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html">galaxy.server.MainServer</a></li>
+                    
+    <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#setVerbosityLevel(int)">setVerbosityLevel</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#getVerbosityLevel()">getVerbosityLevel</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#setHubContactPolicy(int)">setHubContactPolicy</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#getHubContactPolicy()">getHubContactPolicy</a>
+  (public)</li>
+                   
+    </ul>
+             
+  </ul>
+     <li> <b>Enhancement</b>. Added initial support for the <tt>-verbosity
+     </tt><a
+ href="../../../contrib/MITRE/bindings/java/index.html#Command_Line_Arguments">command
+  line argument</a> in the Java bindings.</li>
+     <li> <b>Clarification</b>. We have determined that the Python bindings 
+ work with Python 2.0.</li>
+     <li> <b>Incompatible change</b>. The Java method MainServer.contactHub 
+ has been modified. It no longer takes a <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html">Server</a>
+  argument. Rather, if the Hub contact policy argument is set to -1, the
+default  policy of the invoked <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html">MainServer</a>
+  is used.</li>
+     <li> <b>Bug fix</b>. "make distclean" at the toplevel no longer operates 
+ on contrib/MITRE twice.</li>
+     <li> <b>Bug fix</b>. In 3.0, the Allegro and Python bindings were missing 
+ the functionality provided by <a
+ href="../advanced/session.html#GalSS_EnvGetSessionID">GalSS_EnvGetSessionID</a>
+  and related functions. This has been fixed.</li>
+     <li> <b>Bug fix</b>. In the Python Tk bindings, the application wasn't 
+ exiting appropriately when the server exited. This is now fixed.</li>
+     <li> <b>Bug fix</b>. The PostGres wrapper now handles SQL queries other 
+ than insert and delete appropriately.</li>
+       
+</ul>
+        
+<h3> <a name="3.1_Known_bugs"></a>Known bugs</h3>
+        
+<ul>
+    <li> In rare cases, if two broker servers attempt to contact each other 
+ simultaneously, a deadlock will arise. This bug is fixable, but would require 
+ some serious internal reorganization. (Observed 3/01)</li>
+     <li> If you ask the Hub on NT to read a program file which was written 
+ on Unix, the Hub will fail due to the difference in line breaks between platforms.
+ This bug has apparently been lurking for quite a while. (Observed 3/01)</li>
+     <li> Line breaks inside Galaxy Communicator list objects in program
+files  do not work. (Observed 2/01)</li>
+     <li> The tool which automatically generates the PDF documentation from 
+ the HTML documentation does a good but not great job, and in some cases the
+ formatting is quite odd. (Observed 3/01)</li>
+       
+</ul>
+        
+<hr width="100%">    
+<h2> January 2001: Version 3.0</h2>
+        
+<ul>
+    <li> <a href="#3.0_Core_distribution">Core distribution</a></li>
+     <li> <a href="#3.0_MIT_contributions">MIT contributions</a></li>
+     <li> <a href="#3.0_MITRE_contributions">MITRE contributions</a></li>
+     <li> <a href="#3.0_Known_bugs">Known bugs</a></li>
+     <li> <a href="#3.0_Wish_list">Wish list</a></li>
+       
+</ul>
+        
+<h3> <a name="3.0_Core_distribution"></a>Core distribution</h3>
+        
+<ul>
+    <li> We have documented and radically improved <a
+ href="../advanced/session.html">session management support</a>. This includes 
+ a better defined use of call environments.</li>
+     <li> We have introduced <a href="../advanced/session.html">continuations</a>
+  to allow better management of asynchronous communication with the Hub.</li>
+     <li> We have introduced <a href="../advanced/server_locations.html">server
+  locations files</a> to allow dynamic control of the location of Hub and
+server listeners.</li>
+     <li> We have documented the <a
+ href="../reference/adding.html#Conditionalize_your_server_for_multiple_Communicator_versions">GC_VERSION
+  header definition</a>, which allows you to conditionalize your servers
+against  different versions of the Galaxy Communicator distribution.</li>
+     <li> The timed task facilities now allow you to register error streams 
+ as well as input and output streams for monitoring, and also give you access 
+ to the reasons the task is being run. See the functions <a
+ href="../advanced/timed_tasks.html#Gal_AddTaskExtended">Gal_AddTaskExtended</a>
+  and <a href="../advanced/timed_tasks.html#Gal_TaskPkgRunReasons">Gal_TaskPkgRunReasons</a>.
+  Due to this change, we now recommend that programmers upgrade from the
+"simple"  timed task API. See the <a
+ href="3point0upgrade.html#Upgrade_timed_task_invocation_(advanced,_optional)">upgrade
+  notes</a>.</li>
+     <li> The core frame library now includes support for dynamically expandable 
+ lists and binary objects. See the functions <a
+ href="../reference/frame.html#Gal_CreateListObject">Gal_CreateListObject</a>
+  and <a href="../reference/frame.html#Gal_CreateBinaryObject">Gal_CreateBinaryObject</a>.</li>
+     <li> The distribution now includes versions of object creation functions 
+ which allow explicit control of memory management, as well as creation functions 
+ for all the array types which could only be brokered in previous releases.</li>
+     <li> As a side benefit of using the C library as the basis of the Python 
+ and Allegro language bindings, the API for embedding Communicator servers 
+ in other main loops has been tremendously improved. You are strongly encouraged 
+ to take advantage of these modifications. See the <a
+ href="3point0upgrade.html#Upgrade_your_own_main_loop_(advanced,_optional)">upgrade
+  notes</a>.</li>
+     <li> Thread startup for timed tasks now works on Windows NT.</li>
+     <li> The syntax of Hub scripts has been extended in a number of powerful 
+ and consistent ways. It is now possible to refer to the memory states of 
+sessions, etc. in a transparent way. In addition, the Hub now organizes its 
+known servers into service types and service providers, which simplifies and
+clarifies the process of selecting a server to deliver a message to. Finally,
+the Builtin server no longer needs to be declared. See the extensively revised
+    <a href="../reference/pgm.html">scripting documentation</a> for details.</li>
+     <li> Both brokering and message traffic have been reimplemented using
+ the XDR data encoding. There is no longer any distinction between the frame
+ types which can be brokered and the frame types which can be included in
+frames. In addition, brokering floats between platforms finally works. Also,
+there is no longer any possibility of confusing values of the <tt>:pred</tt>
+key with elements of the list of predicates in a frame.</li>
+     <li> The <a href="../reference/adding.html#reinitialize">reinitialize</a>
+  dispatch function can now be called as a normal dispatch function.</li>
+     <li> It is now possible to build frames from string representations
+with  embedded variables. See the function <a
+ href="../reference/frame.html#Gal_VAReadVarFrameFromString">Gal_VAReadVarFrameFromString</a>.</li>
+     <li> The Hub now informs the server whether it needs a reply or not, 
+and  the server bindings now return a pacifier reply when the dispatch function 
+ doesn't return a frame. This means the Hub will never block waiting on a 
+reply from a server.</li>
+     <li> Servers now provide a unique index for each server-to-server request 
+ via <a href="../reference/adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a>,
+  and appropriately postpone new requests while they're waiting for a response.
+  This more robust behavior is superfluous under normal circumstances, but
+ is crucial for proper functioning when two threads are using the same connection.</li>
+     <li> A bug in internal socket management in 2.1 has been fixed, in which 
+ mutex protection for sockets was not fine-grained enough. This caused multiple-connection 
+ servers to deadlock in threaded mode in 2.1.</li>
+     <li> Naming conventions for non-public functions in the core library 
+have  been cleaned up and simplified.</li>
+     <li> We have clarified in the documentation that <a
+ href="../reference/brokering.html#GalIO_CommBrokerDataInInit">incoming broker 
+ callbacks</a> have responsibility for freeing the data they're passed. See 
+ the <a
+ href="3point0upgrade.html#Upgrading_memory_management_in_broker_callbacks">upgrade
+  notes</a>.</li>
+     <li> We have cleaned up the event-driven programming and callback data 
+ storage models for servers, connections and brokers considerably. Some of 
+ this cleanup has resulted in recommended upgrades for <a
+ href="../reference/brokering.html#Receiving_broker_data">incoming brokering</a>. 
+ See the <a
+ href="3point0upgrade.html#Upgrading_incoming_brokering_(optional)">upgrade
+  notes</a> and the new section on <a
+ href="../reference/server_structure.html#Event-driven_programming">event-driven
+  programming</a>.</li>
+     <li> We've done some internal cleanup and reorganization of the headers. 
+ This should be transparent to the programmer.</li>
+     <li> The distribution now includes a PDF version of the documentation.</li>
+     <li> <a href="../reference/frame.html#Gal_ObjectEqual">Gal_ObjectEqual,</a><a
+ href="../reference/frame.html#Gal_MatchFrame">Gal_MatchFrame</a> and <a
+ href="../reference/frame.html#Gal_ObjectCaseEqual">Gal_ObjectCaseEqual</a>
+  now work on list objects.</li>
+     <li> A long-standing bug where error keys were not reliably logged in
+ the Hub has been fixed.</li>
+     <li> <b>Deprecation</b>. It's become clear that we can't keep changing 
+ the signature of <a
+ href="../reference/server_structure.html#GalSS_InitializeServerToplevel">GalSS_InitializeServerToplevel</a>
+  every time we add a new command line argument to the server bindings. The
+  following functions have been deprecated.</li>
+              
+  <ul>
+    <li> <a
+ href="../reference/server_structure.html#GalSS_InitializeServerToplevel">GalSS_InitializeServerToplevel</a></li>
+     <li> <a
+ href="../reference/server_structure.html#GalSS_CmdlineInitializeServer">GalSS_CmdlineInitializeServer</a></li>
+     <li> <a
+ href="../reference/server_structure.html#GalSS_InitializeServer">GalSS_InitializeServer</a></li>
+     <li> <a
+ href="../reference/server_structure.html#GalSS_InitializeServerFromServerArgs">GalSS_InitializeServerFromServerArgs</a></li>
+     <li> <a
+ href="../reference/server_structure.html#GalSS_ExtractServerArgs">GalSS_ExtractServerArgs</a></li>
+     <li> <a href="../reference/server_structure.html#GalSS_RunServer">GalSS_RunServer</a></li>
+             
+  </ul>
+     <li> <b>Deprecation</b>. The frame key <tt>:hub_new_session</tt> in
+new  messages currently forces the Builtin server function <a
+ href="../../servers/builtin.html#new_session">new_session</a> to be called. 
+ This mechanism will be replaced in a subsequent release. The frame key <tt>:session_id</tt>
+  can currently be used to access and modify the session associated with
+a  message. This behavior is now deprecated; use <a
+ href="../advanced/session.html#GalSS_EnvGetSessionID">GalSS_EnvGetSessionID</a>
+  and <a href="../advanced/session.html#GalSS_EnvUpdateSessionID">GalSS_EnvUpdateSessionID</a>
+  instead.</li>
+     <li> <b>Incompatible change</b>. As part of cleaning up the callback 
+data  storage model, the signature of <a
+ href="../reference/server_structure.html#GalIO_SetServerData">GalIO_SetServerData</a>
+  has changed.</li>
+     <li> <b>Incompatible change</b>. Dispatch server support has been removed 
+ from the distribution.</li>
+     <li> <b>Incompatible change</b>. The following deprecated functions
+have  been removed:</li>
+              
+  <ul>
+    <li> sls_pp_frame</li>
+     <li> Gal_GetValue</li>
+     <li> sls_cpp_frame</li>
+     <li> sls_pp_object</li>
+     <li> sls_pr_object</li>
+     <li> sls_cpp_object</li>
+     <li> Gal_UnwrapValue</li>
+     <li> Gal_Value</li>
+     <li> Gal_ValueWarn</li>
+     <li> Gal_ValueWarnWithKey</li>
+     <li> Gal_ValueSilent</li>
+     <li> GalIO_SetServerDisconnectCallback</li>
+     <li> GalIO_ReconnectInit</li>
+     <li> GalIO_ServerReconnect</li>
+     <li> GalSS_SetHubDisconnect</li>
+     <li> GalSS_GetServerData</li>
+     <li> GalSS_GetServerName</li>
+     <li> GalSS_GetServerSock</li>
+     <li> GalSS_CloseServerSock</li>
+     <li> GalSS_ReadFrameFromHub</li>
+     <li> GalSS_FlushHubWriteQueue</li>
+     <li> GalSS_CloseHubConnection</li>
+     <li> GalSS_HubReconnectInit</li>
+     <li> GalSS_ForceReturn</li>
+     <li> GalSS_EnvForceReturn</li>
+             
+  </ul>
+    The following functions have been moved from the core into the MIT dialogue 
+ control library, until they can be replaced by MIT:          
+  <ul>
+    <li> Gal_SetServerName</li>
+     <li> Gal_GetServerName</li>
+             
+  </ul>
+    The following functions remain in the core library to support MIT dialogue 
+ control, until they can be replaced by MIT:          
+  <ul>
+    <li> GalSS_DispatchViaHub</li>
+     <li> GalSS_WriteFrameToHub</li>
+             
+  </ul>
+     <li> <b>Incompatible change</b>. Due to improvements in outgoing brokering, 
+ the function <a
+ href="../reference/brokering.html#GalIO_BrokerDataOutInit">GalIO_BrokerDataOutInit</a>
+  has a new argument list, a number of new functions have been added, and
+the function GalIO_FrameGetBrokerPort has been removed. See the <a
+ href="3point0upgrade.html#Updating_outgoing_brokering">upgrade notes</a>.</li>
+     <li> <b>Incompatible change</b>. Due to a number of protocol changes 
+to  support better handshaking and improved outgoing brokering, the 3.0 distribution 
+ is not on-the-wire compatible with 2.x. Some of these changes involve modified 
+ handshakes and message encoding, and others involve some modifications to 
+ the <a href="../reference/reserved_keys.html">distinguished keys</a> used 
+ in the protocol.</li>
+     <li> <b>Incompatible change</b>. Due to the new reorganization in the
+ Hub of servers into service types and providers, the <a
+ href="../reference/hub.html#The_Hub"><tt>-locations</tt> command line argument</a>
+ no longer overwrites <a href="../reference/pgm.html#CLIENT_PORT:">CLIENT_PORT:</a>directives.</li>
+     <li> <b>Incompatible change</b>. The flags controlling server listener 
+ status, first introduced in version 2.1, have been changed slightly in connection 
+ with upgraded outgoing brokering. See the <a
+ href="3point0upgrade.html#Upgrading_server_listen_status">upgrade notes</a>.</li>
+     <li> <b>Incompatible change</b>. In connection with improving session
+ management, the semantics of <a
+ href="../reference/adding.html#GalSS_EnvError">GalSS_EnvError</a>  and <a
+ href="../reference/adding.html#GalSS_EnvDestroyToken">GalSS_EnvDestroyToken</a>
+  have changed slightly; the return value from a dispatch function which
+calls  them is now ignored, rather than being treated as a new message. See
+the     <a
+ href="3point0upgrade.html#Upgrading_references_to_the_call_environment">upgrade
+  notes</a>.</li>
+     <li> <b>Incompatible change</b>. Due to the revised handshaking protocol, 
+ broker clients can no longer contact a broker server running in the same 
+server as the broker client in non-threaded mode. This restriction can be 
+fixed if it turns out to be important.</li>
+     <li> <b>Incompatible change</b>. The internal reader functions Gal_ReadObjectLine, 
+ Gal_ReadBinary, Gal_ReadString, Gal_ReadFrame, Gal_ReadList, and Gal_ReadObject 
+ have been made static and are no longer externally visible. These functions 
+ were never intended to be used by the programmer, and we doubt that anyone 
+ uses them.</li>
+     <li> <b>Incompatible change</b>. As a result of cleaning up the internal 
+ processing in the Hub, a number of functions in the API now have slightly 
+ different function signatures. These functions should only have been used 
+ internally anyway, so no user programs should be affected. The functions 
+are:</li>
+              
+  <ul>
+    <li> Gal_ReadProgramLine</li>
+     <li> Gal_PrintTests</li>
+     <li> Gal_PrintCondition</li>
+     <li> Gal_TestCondition</li>
+     <li> Gal_NewCondition</li>
+     <li> Gal_ReadProgramLine</li>
+             
+  </ul>
+    In addition, the types Gal_FileStruct and Gal_ConditionStruct no longer 
+ have the aliases FileStruct and ConditionStruct. <li> <b>Incompatible change</b>. 
+ The following utility functions have been removed because they are not used, 
+ and were only intended to be used internally:</li>
+              
+  <ul>
+    <li> __GalUtil_MaybeByteSwapVector</li>
+     <li> __GalUtil_LittleEndianMaybeByteSwapVector</li>
+     <li> GalUtil_SockReadIntWithTimeout</li>
+     <li> GalUtil_SockWriteFloat</li>
+     <li> GalUtil_SockWriteAtom</li>
+     <li> GalUtil_SockReadShortArray</li>
+     <li> GalUtil_SockReadAtomWithTimeout</li>
+     <li> GalUtil_SockReadInt</li>
+     <li> GalUtil_SockReadFloat</li>
+     <li> GalUtil_SockWriteInt</li>
+     <li> GalUtil_SockAllocReadString</li>
+     <li> GalUtil_SockReadString</li>
+     <li> GalUtil_SockReadAtom</li>
+             
+  </ul>
+     <li> <b>Incompatible change</b>. The deprecated construct using the
+    <tt>:timestamp</tt>   key to indicate the timestamping of a bare key
+in Hub logging has been removed.</li>
+       
+</ul>
+        
+<h3> <a name="3.0_MIT_contributions"></a>MIT contributions</h3>
+        
+<ul>
+    <li> The <a href="../../servers/verify_program.html">Hub program verifier</a> 
+ now allows you to print the result to standard output instead of a file.</li>
+       
+</ul>
+        
+<h3> <a name="3.0_MITRE_contributions"></a>MITRE contributions</h3>
+        
+<ul>
+    <li> It is now possible to conditionalize Allegro and Python servers
+using  the <tt>*features*</tt> list in the same way that C servers can be
+conditionalized  using the <tt>#define</tt> for <tt>GC_VERSION</tt>. Like
+C, Allegro supports  read/compile time conditionalization via features; the
+Allegro feature for  3.0 is <tt>:gc-version-3</tt>. Python only supports
+runtime conditionalization;  the Python feature is <tt>Galaxy.GC_VERSION</tt>,
+the value of which is identical  to the C value. You can distinguish in Python
+between 3.0 and pre-3.0 libraries  by checking for the presence of <tt>GC_VERSION</tt>
+in the <tt>Galaxy</tt>  module. Java is a compiled language which has no
+compile-time conditionalizations  that we can find, so this feature is unfortunately
+unavailable in Java.</li>
+     <li> In order to better ensure consistency across programming languages, 
+ the Allegro and Python bindings now rely on the C library. This change should 
+ be invisible to the server developer. We have preserved Java as a natively 
+ implemented binding.</li>
+     <li> As a result of relying on the C library for Allegro bindings (see 
+ below), the longstanding bug where Allegro servers don't allow their sockets 
+ to be reused promptly has been fixed.</li>
+     <li> The MITRE toy travel demo has been upgraded to use all the current 
+ session management utilities.</li>
+     <li> We've made significant improvements to the MITRE PostGres database 
+ wrapper.</li>
+     <li> This distribution contains the very latest XML log analysis tools 
+ distributed in 2.0p3 and 2.1p1.</li>
+     <li> We have fixed an insidious bug in the stdin polling utility which 
+ manifested itself during the upgrade to 3.0.</li>
+     <li> In 2.1, there was an inconsistency between the behavior of programming 
+ language bindings in the <a href="../advanced/hub_listener.html">listener-in-Hub</a>
+  case and the C library, where the programming language bindings would shut
+  down after the last Hub disconnected. As a result of relying on the C library
+  for Python and Allegro bindings, this inconsistency has been resolved.</li>
+     <li> Brokering of floats now works correctly in Allegro.</li>
+     <li> It is now possible to initialize Python and Allegro server objects 
+ with keyword arguments as well as command line arguments.</li>
+     <li> The following classes have been added to the Java bindings:</li>
+              
+  <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Environment.html">galaxy.server.Environment</a></li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/PostponeMessage.html">galaxy.lang.PostponeMessage</a></li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Continuation.html">galaxy.server.Continuation</a></li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/ServerArgParser.html">galaxy.server.ServerArgParser</a></li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/ServerCreationThread.html">galaxy.server.ServerCreationThread</a>
+  (internal class that Galaxy Communicator developers do not use directly)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/ListenerThread.html">galaxy.server.ListenerThread</a>
+  (internal class that Galaxy Communicator developers do not use directly)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/ClientThread.html">galaxy.server.ClientThread</a>
+  (internal class that Galaxy Communicator developers do not use directly)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/FrameDispatcher.html">galaxy.server.FrameDispatcher</a>
+  (internal class that Galaxy Communicator developers do not use directly)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/ContinuationData.html">galaxy.server.ContinuationData</a>
+  (internal class that Galaxy Communicator developers do not use directly)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/XdrInBuffer.html">galaxy.io.XdrInBuffer</a>
+  (internal class that Galaxy Communicator developers do not use directly)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/XdrOutBuffer.html">galaxy.io.XdrOutBuffer</a>
+  (internal class that Galaxy Communicator developers do not use directly)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/util/FifoMutex.html">galaxy.util.FifoMutex</a>
+  (internal class that Galaxy Communicator developers do not use directly)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/util/HubContactInfo.html">galaxy.util.HubContactInfo</a>&nbsp;
+  (internal class that Galaxy Communicator developers do not use directly)</li>
+             
+  </ul>
+     <li> The following methods have been added to the Java bindings:</li>
+              
+  <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html">galaxy.server.MainServer</a></li>
+                    
+    <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#MainServer(java.lang.String)">MainServer(java.lang.String
+  name)</a> (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#MainServer(java.lang.String, java.lang.String[])">MainServer(java.lang.String
+  name, java.lang.String[] args)</a> (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#MainServer(java.lang.String, java.lang.String[], java.lang.String)">MainServer(java.lang.String.name,
+  java.lang.String[] args, java.lang.String helpText)</a> (public)</li>
+     <li> setActsAsListener (public)</li>
+     <li> isListener (public)</li>
+     <li> setActsAsClient (public)</li>
+     <li> isClient (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#getSessionId()">getSessionId</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#getMaxConnections()">getMaxConnections</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#setMaxConnections(int)">setMaxConnections</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#contactHub(java.lang.String, int, java.lang.String, int)">contactHub</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#listenerHasPort()">listenerHasPort</a>
+  (protected)</li>
+     <li> startListenerThread (protected)</li>
+     <li> startClientThread (protected)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#registerOutBroker(galaxy.server.DataOutBroker)">registerOutBroker</a>
+  (protected)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#unregisterOutBroker(galaxy.server.DataOutBroker)">unregisterOutBroker</a>
+  (protected)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html">galaxy.server.Server</a></li>
+                    
+    <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#getCurrentEnvironment()">getCurrentEnvironment</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#getCopyOfCurrentEnvironment()">getCopyOfCurrentEnvironment</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#getServerProperties()">getServerProperties</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#setServerProperties(galaxy.lang.GFrame)">setServerProperties</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#deleteServerProperties(java.lang.String[])">deleteServerProperties</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#addServiceType(java.lang.String)">addServiceType</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#getServiceTypes()">getServiceTypes</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#getMainServer()">getMainServer</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#getSessionId()">getSessionId</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#setHubContactPolicy(int)">setHubContactPolicy</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#getHubContactPolicy()">getHubContactPolicy</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#cleanup()">cleanup</a>
+  (protected)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#getContinuationData(int)">getContinuationData</a>
+  (protected)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#addContinuationData(int, galaxy.server.ContinuationData)">addContinuationData</a>
+  (protected)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#registerOutBroker(galaxy.server.DataOutBroker)">registerOutBroker</a>
+  (protected)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#unregisterOutBroker(galaxy.server.DataOutBroker)">unregisterOutBroker</a>
+  (protected)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html">galaxy.server.DataInBroker</a></li>
+                    
+    <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#DataInBroker(galaxy.server.Server, java.lang.String, int, galaxy.lang.GFrame)">DataInBroker(galaxy.server.Server,
+  java.lang.String, int, galaxy.langGFrame)</a> (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#stop()">stop</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#registerWithServer()">registerWithServer</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#unregisterFromServer()">unregisterFromServer</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#start()">start</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#isStopped()">isStopped</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#receivedList(galaxy.lang.GVector)">receivedList</a>
+  (public abstract)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#receivedInteger(java.lang.Integer)">receivedInteger</a>
+  (public abstract)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#receivedFloat(java.lang.Float)">receivedFloat</a>
+  (public abstract)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#receivedSymbol(galaxy.lang.Symbol)">receivedSymbol</a>
+  (public abstract)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#cleanup()">cleanup</a>
+  (protected)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#disconnectReceived()">disconnectReceived</a>
+  (protected)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html#abortReceived()">abortReceived</a>
+  (protected)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html">galaxy.server.DataOutBroker</a></li>
+                    
+    <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html#getCallIdIndex()">getCallIdIndex</a>
+  (public static)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html#getCallId()">getCallId</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html#isExpired()">isExpired</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html#stop()">stop</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html#expire()">expire</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html#populateFrame(galaxy.lang.GFrame, java.lang.String, java.lang.String)">populateFrame</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html#isStopped()">isStopped</a>
+  (public)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html">galaxy.io.GalaxyInputStream</a></li>
+                    
+    <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#tryReadInt16()">tryReadInt16</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#tryReadInt32()">tryReadInt32</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#tryReadInt64()">tryReadInt64</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#tryReadFloat32()">tryReadFloat32</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#tryReadFloat64()">tryReadFloat64</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#tryReadBinary()">tryReadBinary</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#tryReadString()">tryReadString</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#tryReadFrame()">tryReadFrame</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#tryReadMessage()">tryReadMessage</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#tryReadObject()">tryReadObject</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#readList()">readList</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#tryReadList()">tryReadList</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#readInteger()">readInteger</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#tryReadInteger()">tryReadInteger</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#readFloat()">readFloat</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#tryReadFloat()">tryReadFloat</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#readSymbol()">readSymbol</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#tryReadSymbol()">tryReadSymbol</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyInputStream.html#getMutex()">getMutex</a>
+  (public)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GFrame.html">galaxy.lang.GFrame</a></li>
+                    
+    <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GFrame.html#GFrame(galaxy.lang.Symbol, int)">GFrame(galaxy.lang.Symbol
+  name, int frameType)</a> (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GFrame.html#getFrameType()">getFrameType</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GFrame.html#setFrameType(int)">setFrameType</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GFrame.html#encodeFrame(galaxy.io.XdrOutBuffer)">encodeFrame</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GFrame.html#encodeObject(galaxy.io.XdrOutBuffer, java.lang.Object)">encodeObject</a>
+  (public static)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GFrame.html#decodeFrame(galaxy.io.XdrInBuffer)">decodeFrame</a>(public
+  static)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GFrame.html#decodeObject(galaxy.io.XdrInBuffer)">decodeObject</a>
+  (public static)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GBinary.html">galaxy.lang.GBinary</a></li>
+                    
+    <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GBinary.html#GBinary(byte[], boolean)">GBinary(byte[]
+  data, boolean makeCopy)</a> (public)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float32.html">galaxy.lang.Float32</a></li>
+                    
+    <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float32.html#Float32(float[])">Float32(float[]
+  floatArray)</a> (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float32.html#Float32(float[], boolean)">Float32(float[]
+  floatArray, boolean makeCopy)</a> (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float32.html#getFloatArray()">getFloatArray</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float32.html#append(float[])">append</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float32.html#getSize()">getSize</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float32.html#navbar_top">getBytes</a>
+  (public)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float64.html">galaxy.lang.Float64</a></li>
+                    
+    <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float64.html#Float64(double[])">Float64(double[]
+  doubleArray)</a> (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float64.html#Float64(double[], boolean)">Float64(double[]
+  doubleArray, boolean makeCopy)</a> (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float64.html#getDoubleArray()">getDoubleArray</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float64.html#append(double[])">append</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float64.html#getSize()">getSize</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float64.html#navbar_top_firstrow">getBytes</a>
+  (public)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int16.html">galaxy.lang.Int16</a></li>
+                    
+    <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int16.html#Int16(short[])">Int16(short[]
+  shortArray)</a> (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int16.html#Int16(short[], boolean)">Int16(short[]
+  shortArray, boolean makeCopy)</a> (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int16.html#getShortArray()">getShortArray</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int16.html#append(short[])">append</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int16.html#getSize()">getSize</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int16.html#navbar_top_firstrow">getBytes</a>
+  (public)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int32.html">galaxy.lang.Int32</a></li>
+                    
+    <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int32.html#Int32(int[])">Int32(int[]
+  intArray)</a> (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int32.html#Int32(int[], boolean)">Int32(int[]
+  intArray, boolean makeCopy)</a> (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int32.html#getIntArray()">getIntArray</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int32.html#append(int[])">append</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int32.html#getSize()">getSize</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int32.html#navbar_top_firstrow">getBytes</a>
+  (public)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int64.html">galaxy.lang.Int64</a></li>
+                    
+    <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int64.html#Int64(long[])">Int64(long[]
+  longArray)</a> (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int64.html#Int64(long[], boolean)">Int64(long[]
+  longArray, boolean makeCopy)</a> (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int64.html#getLongArray()">getLongArray</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int64.html#append(long[])">append</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int64.html#getSize()">getSize</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int64.html#getBytes()">getBytes</a>
+  (public)</li>
+                   
+    </ul>
+             
+  </ul>
+     <li> <a name="3.0_Java_deprecations"></a>The following methods are deprecated 
+ as of 3.0:</li>
+              
+  <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html">galaxy.server.MainServer</a></li>
+                    
+    <ul>
+    <li>getRequirePort (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#isRequiredPort()">galaxy.server.MainServer.isRequiredPort</a>)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html">galaxy.server.Server</a></li>
+                    
+    <ul>
+    <li>Server(galaxy.server.MainServer,  java.net.Socket, java.lang.String,
+ java.lang.String) (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#Server(galaxy.server.MainServer, java.net.Socket)">galaxy.server.Server(galaxy.server.MainServer,
+  java.net.Socket)</a> instead)</li>
+     <li>writeMessage (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Environment.html#error(java.lang.String)">galaxy.server.Environment.error</a>,
+          <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Environment.html#error(java.lang.String, int)">galaxy.server.Environment.error</a>
+  (second version), <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Environment.html#writeFrame(galaxy.lang.GFrame)">galaxy.server.Environment.writeFrame</a>,
+          <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Environment.html#destroyToken()">galaxy.server.Environment.destroyToken</a>,
+  or <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Environment.html#reply(galaxy.lang.GFrame)">galaxy.server.Environment.reply</a>
+  instead)</li>
+     <li>writeErrorMessage (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Environment.html#error(java.lang.String)">galaxy.server.Environment.error</a>
+  or <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Environment.html#error(java.lang.String, int)">galaxy.server.Environment.error</a>
+  (second version) instead)</li>
+     <li>writeFrame (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Environment.html#writeFrame(galaxy.lang.GFrame)">galaxy.server.Environment.writeFrame</a>
+  instead)</li>
+     <li>writeDestroyMessage (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Environment.html#destroyToken()">galaxy.server.Environment.destroyToken</a>
+  instead)</li>
+     <li>dispatchFrame  (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Environment.html#dispatchFrame(galaxy.lang.GFrame)">galaxy.server.Environment.dispatchFrame</a>
+  instead)</li>
+     <li>register (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#registerOutBroker(galaxy.server.DataOutBroker)">galaxy.server.Server.registerOutBroker</a>
+  instead)</li>
+     <li>unregister (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html#unregisterOutBroker(galaxy.server.DataOutBroker)">galaxy.server.Server.unregisterOutBroker</a>
+  instead)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyOutputStream.html">galaxy.io.GalaxyOutputStream</a></li>
+                    
+    <ul>
+    <li>write(galaxy.lang.GFrame, int) (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyOutputStream.html#writeObject(java.lang.Object, int)">galaxy.io.GalaxyOutputStream.writeObject</a>
+  instead)</li>
+     <li>write(java.lang.String, int) (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyOutputStream.html#writeObject(java.lang.Object, int)">galaxy.io.GalaxyOutputStream.writeObject</a>instead)</li>
+     <li>write(galaxy.lang.BinaryObject, int) (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyOutputStream.html#writeObject(java.lang.Object, int)">galaxy.io.GalaxyOutputStream.writeObject</a>
+  instead)</li>
+     <li>writeFrame (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyOutputStream.html#writeObject(java.lang.Object, int)">galaxy.io.GalaxyOutputStream.writeObject</a>
+  instead)</li>
+                   
+    </ul>
+     <li> galaxy.server.DataOutBroker</li>
+                    
+    <ul>
+    <li>DataOutBroker(galaxy.server.Server,  int, galaxy.lang.GFrame, boolean)
+ (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html#DataOutBroker(galaxy.server.Server, int, int)">DataOutBroker(galaxy.server.Server,
+  int, int)</a> instead)</li>
+     <li>DataOutBroker(galaxy.server.Server,  int, galaxy.lang.GFrame) (use
+         <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html#DataOutBroker(galaxy.server.Server, int, int)">DataOutBroker(galaxy.server.Server,
+  int, int)</a> instead)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float32.html">galaxy.lang.Float32</a></li>
+                    
+    <ul>
+    <li>Float32(byte[] data)</li>
+     <li>toFloatArray  (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float32.html#getFloatArray()">galaxy.lang.Float32.getFloatArray</a>
+  in conjunction with <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float32.html#Float32(float[])">Float32(float[]
+  floatArray)</a>)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float64.html">galaxy.lang.Float64</a></li>
+                    
+    <ul>
+    <li>Float64(byte[] data)</li>
+     <li>toDoubleArray  (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float64.html#getDoubleArray()">galaxy.lang.Float64.getDoubleArray</a>
+  in conjunction with <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Float64.html#Float64(double[])">Float64(double[]
+  doubleArray)</a>)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int16.html">galaxy.lang.Int16</a></li>
+                    
+    <ul>
+    <li>Int16(byte[] data)</li>
+     <li>toShortArray (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int16.html#getShortArray()">galaxy.lang.Int16.getShortArray</a>
+  in conjunction with <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int16.html#Int16(short[])">Int16(short[]
+  shortArray)</a>)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int32.html">galaxy.lang.Int32</a></li>
+                    
+    <ul>
+    <li>Int32(byte[] data)</li>
+     <li>toIntArray (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int32.html#getIntArray()">galaxy.lang.Int32.getIntArray</a>
+  in conjunction with <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int32.html#Int32(int[])">Int32(int[]
+  intArray)</a>)</li>
+                   
+    </ul>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int64.html">galaxy.lang.Int64</a></li>
+                    
+    <ul>
+    <li>Int64(byte[] data)</li>
+     <li>toLongArray (use <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int64.html#getLongArray()">galaxy.lang.Int64.getLongArray</a>
+  in conjunction with <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int64.html#Int64(long[])">Int64(long[]
+  longArray)</a>)</li>
+                   
+    </ul>
+             
+  </ul>
+     <li> <tt>galaxy.lang.BinaryObject</tt>  has been deprecated as of 3.0.
+ As a result, the <tt>byte[]</tt>-based constructors for the array objects
+ have also been deprecated as have the various <tt>to&lt;data type&gt;Array()</tt>
+ methods. The default constructors for the array objects have been changed
+ to create empty arrays of the appropriate type (e.g., <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/Int32.html">galaxy.lang.Int32</a></tt>
+  objects have arrays of ints). New local <tt>append</tt> methods for the
+array objects have also been added to accept the appropriate data types,
+    <tt>getBytes</tt> returns the array as an array of bytes, and <tt>getSize</tt>
+will return the length of the data type array (if the object was initialized
+with a byte array, the length of that array is returned). Finally, the use
+of these <tt>BinaryObject</tt>  methods on array objects are deprecated:</li>
+              
+  <ul>
+    <li>getBytes</li>
+     <li>toString</li>
+     <li>toEncodedString</li>
+     <li>toFormattedString</li>
+             
+  </ul>
+     <li> The Java class <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GBinary.html">galaxy.lang.GBinary</a></tt>
+  has taken on <tt>galaxy.lang.BinaryObject</tt>'s  "binary data" role. In
+ particular, <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GBinary.html">GBinary</a></tt>
+  now has these local methods:</li>
+              
+  <ul>
+    <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GBinary.html#getBytes()">getBytes</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GBinary.html#getSize()">getSize</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GBinary.html#toString()">toString</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GBinary.html#toEncodedString()">toEncodedString</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GBinary.html#toFormattedString()">toFormattedString</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GBinary.html#append(byte[])">append</a>
+  (public)</li>
+     <li> <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GBinary.html#readBinaryFile(java.lang.String)">readBinaryFile</a>
+  (static public)</li>
+             
+  </ul>
+     <li> In the Java bindings, the environment object has been moved out 
+of      <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html">galaxy.server.Server</a></tt>
+  and implemented as the object <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Environment.html">galaxy.server.Environment</a></tt>.</li>
+     <li> A Java server can now postpone a reply to a Hub message. See the
+     <a
+ href="../../../contrib/MITRE/bindings/java/index.html#Postponing_a_Reply">Java
+  bindings documentation</a> for details.</li>
+     <li> See the Java bindings documentation for the new, preferred way
+to  send new messages and replies to the Hub from a <a
+ href="../../../contrib/MITRE/bindings/java/index.html#Sending_Messages_to_the_Hub">server</a>
+  or <a
+ href="../../../contrib/MITRE/bindings/java/index.html#Calling_Dispatch_Functions_From_Incoming_Brokers">incoming
+  broker</a>.</li>
+     <li> <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html">galaxy.server.MainServer</a></tt>
+  has a new <a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#MainServer(java.lang.String, java.lang.String[])">constructor</a>
+  that takes in a server name and the array of command line arguments. It
+can initialize itself with the values of <tt>-port, -assert</tt>, <tt>-maxconns</tt>,
+      <tt>-contact_hub</tt>, <tt>-session_id</tt>, and <tt>-validate</tt>.
+ This simplifies the development of servers that do not rely on a user interface
+  (e.g., as provided by <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/ui/ServerUI.html">galaxy.server.ServerUI</a></tt>).</li>
+     <li> The Java class <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/util/ArgParser.html">galaxy.util.ArgParser</a></tt>
+  has a new method <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/util/ArgParser.html#getStringArg(java.lang.String, java.lang.String)">getStringArg</a></tt>
+  for accessing the string value of a command line argument (if appropriate).</li>
+     <li> Additional frame key type definitions have been added to the Java 
+ class <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/GFrame.html">galaxy.lang.GFrame</a></tt>.</li>
+     <li> There is now support for the <tt>-maxconns </tt><a
+ href="../../../contrib/MITRE/bindings/java/index.html#Command_Line_Arguments">command
+  line argument</a> in the Java bindings. Also, if both the <tt>-port</tt>
+ and     <tt>-contact_hub</tt> command line arguments are specified, the
+server  will act as a listener AND Hub client. Finally, if the <tt>-assert</tt> 
+command  line argument is specified, and <tt>-port</tt> has also been specified, 
+the  server will fail to establish a listener if it cannot obtain the specified 
+ port (or the default port if the <tt>-port</tt> argument is not used with 
+     <tt>-assert</tt>).</li>
+     <li> Enabled support for appending to a log file in the Java bindings
+ (this had been unimplemented previously).</li>
+     <li> Added support for the <tt>-server_locations_file </tt><a
+ href="../../../contrib/MITRE/bindings/java/index.html#Command_Line_Arguments">command
+  line argument</a> in the Java bindings.</li>
+     <li> <b>Incompatible change</b>. The Java bindings no longer treat the 
+ colon (:) character in any special way when processing frames. In particular, 
+ colons are no longer prepended to the names of keys and frame names are no
+ longer prevented from beginning with a colon.</li>
+     <li> <b>Incompatible change</b>. As a result of relying on the C library 
+ for Python and Allegro bindings, the installation procedure is slightly different.
+ The Allegro bindings now require Allegro 5.0 or later, and the Python bindings
+ require access to the Python header files. See the <a
+ href="install.html#config">installation notes</a>.</li>
+     <li> <b>Incompatible change</b>. As a result of improving outgoing brokering, 
+ the API for setting up an outgoing broker in the various programming language 
+ bindings has changed, as well as the argument list for <a
+ href="../../../contrib/MITRE/utilities/docs/brokering.html#MGal_AddOutgoingBrokering">MGal_AddOutgoingBrokering</a>().
+  See the <a href="3point0upgrade.html#Updating_outgoing_brokering">upgrade
+  notes</a>.</li>
+     <li> <b>Incompatible change</b>. For consistency with the rest of the
+ system, the values controlling "raw" vs. pretty printing in the Allegro
+bindings  have been changed from :<tt>pr</tt> and <tt>:pp</tt> to <tt>galaxy::*GAL-PR-PRINT*</tt>
+  and <tt>galaxy::*GAL-PP-PRINT*</tt>.</li>
+     <li> <b>Incompatible change</b>. As a result of relying on the C library 
+ for Python bindings, the method <tt>ReadFrameFromString()</tt> of the <tt>Galaxy.Frame</tt> 
+ class has been removed. The <tt>Galaxy.OPr()</tt> function no longer accepts 
+ the <tt>indent</tt> keyword. A number of attributes of the <tt>GalaxyIO.Server</tt>
+  class have been replaced with methods to access the underlying C functionality:</li>
+              
+  <ul>
+    <li> the <tt>port</tt> attribute is now the <tt>ListenPort()</tt> method</li>
+     <li> the <tt>validate</tt> attribute is now the <tt>Validating() </tt>and
+        <tt>EnableValidation()</tt> methods</li>
+     <li> the <tt>server_name</tt> attribute is now the <tt>ServerName()
+      </tt>method</li>
+     <li> the <tt>max_connections</tt> attribute is now the <tt>MaxConnections()</tt>
+  method</li>
+             
+  </ul>
+    Finally, as part of the deprecation process, the <tt>Galaxy.ValueWarn()</tt> 
+ function has been removed. See the <a
+ href="3point0upgrade.html#Upgrading_Python_bindings">upgrade notes</a> and
+ the implementation of the Python bindings for more details. <li> <b>Incompatible 
+ change</b>. The (undocumented) TkMGalaxy module has been cleaned up, and 
+some non-central functionality has been moved elsewhere. See <tt>contrib/MITRE/servers/src/ui/py_gui_ui.py</tt>.
+  If you import this module, your code will need to be updated.</li>
+     <li> <b>Incompatible change</b>. In support of more robust session support, 
+ and to reduce confusion, the Python <tt>GalaxyIO.Connection</tt> class has 
+ finally been renamed <tt>GalaxyIO.CallEnvironment</tt>, which has been its 
+ actual function since Galaxy Communicator 2.0. See the <a
+ href="3point0upgrade.html#Upgrading_Python_bindings">upgrade notes</a>.</li>
+     <li> <b>Incompatible change</b>. Looking forward to better Python support 
+ on Windows NT, we have simplified and changed the way Python servers are 
+configured to get access to the core Python libraries. See the <a
+ href="3point0upgrade.html#Upgrading_Python_bindings">upgrade notes</a>.</li>
+     <li> <b>Incompatible change</b>. See the <a
+ href="3point0upgrade.html#Starting_galaxy.server.DataInBroker">upgrade  notes</a>
+for changes to the procedure for starting <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html">galaxy.server.DataInBroker</a></tt>
+  threads.</li>
+     <li> <b>Incompatible change</b>. See the <a
+ href="3point0upgrade.html#New_galaxy.server.DataInBroker_methods">upgrade
+  notes</a> for details on new methods that must be implemented by subclasses
+  of <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html">galaxy.server.DataInBroker</a></tt>.</li>
+     <br>
+     <b>Incompatible change</b>. See the <a
+ href="3point0upgrade.html#Methods_removed_from_galaxy.server.DataOutBroker">upgrade
+  notes</a> for a list of methods removed from the interface of <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataOutBroker.html">galaxy.server.DataOutBroker</a></tt>.
+    <li> <b>Incompatible change</b>. See the <a
+ href="3point0upgrade.html#Threads_in_Java_bindings">upgrade notes</a> for
+ changes in thread management in the Java bindings.</li>
+     <li> <b>Incompatible change</b>. See the <a
+ href="3point0upgrade.html#Changes_to_Java_command_line_arguments">upgrade
+  notes</a> for changes to the command line arguments used in the Java bindings.</li>
+     <li> <b>Incompatible change</b>. See the <a
+ href="3point0upgrade.html#Miscellaneous_changes_to_Java_bindings">upgrade
+  notes</a> for other miscellaneous changes to the Java bindings.</li>
+       
+</ul>
+        
+<h3> <a name="3.0_Known_bugs"></a>Known bugs</h3>
+        
+<ul>
+    <li> In rare cases, if two broker servers attempt to contact each other 
+ simultaneously, a deadlock will arise. This bug is fixable, but would require 
+ some serious internal reorganization.</li>
+     <li> If you ask the Hub on NT to read a program file which was written 
+ on Unix, the Hub will fail due to the difference in line breaks between platforms.
+ This bug has apparently been lurking for quite a while.</li>
+     <li> Some of the specialized Makefile behavior seems to exhibit some 
+small  bugs (for instance, "make distclean" appears to do contrib/MITRE twice).</li>
+     <li> The tool which automatically generates the PDF documentation from 
+ the HTML documentation does a good but not great job, and in some cases the
+ formatting is quite odd.</li>
+       
+</ul>
+        
+<h3> <a name="3.0_Wish_list"></a>Wish list</h3>
+    This list contains some of the features we had hoped to include in version 
+ 3.0 but didn't have time for.    
+<ul>
+    <li> The Hub program file reader does not yet warn developers when they 
+ appear to be trying to use extended syntax features in non-extended mode.</li>
+     <li> The Hub session history DB has not been incorporated into the extended 
+ syntax paradigm.</li>
+     <li> The dispatch_token Builtin dispatch function is not capable of
+returning  the result state.</li>
+     <li> The extended syntax mode in Hub programs does not implement things 
+ like explicit reference to frame types and names, attribute paths through 
+ frames, etc., although the infrastructure to support for these references 
+ is already present.</li>
+     <li> Server locations files do not support servers contacting multiple 
+ Hubs.</li>
+     <li> It should be possible to provide a much better encapsulation of 
+broker  information. We have included protocol support for a proxy data type 
+in frames,  but no API support yet.</li>
+     <li> We had hoped to provide real Python support for NT.</li>
+     <li> We had hoped to improve the PostGres wrapper in a number of ways
+ we haven't had a chance to address yet.</li>
+     <li> We have not yet updated the correspondences between C and Python/Allegro 
+ API calls.</li>
+       
+</ul>
+        
+<hr>  
+<center>   
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="3point0upgrade.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>  
+     </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="2point1upgrade.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+    Last modified January 18, 2002</center>
+        
+<p><br>
+    </p>
+   <br>
+   <br>
+  <br>
+ <br>
+</body>
+</html>

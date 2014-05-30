@@ -1,0 +1,274 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Provider Names and Provider Selection</title>
+                 <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+        
+<center>    
+<h1> Galaxy Communicator Documentation:<br>
+    <br>
+    Provider Names and Provider Selection</h1>
+   </center>
+     
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="synch_vs_asynch.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>  
+     </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="timestamps.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+         
+<hr width="100%">    
+<p>The Galaxy Communicator infrastructure has evolved considerably in the 
+ way it handles references to servers. The Hub, for instance, makes the distinction 
+ between <a href="../reference/pgm.html#Service_types">service types</a>, 
+which is a set of operations the Hub can perform, and <a
+ href="../reference/pgm.html#Service_providers">service providers</a>, which 
+ are the individual Communicator-compliant servers which implement these operations.
+ </p>
+     
+<p>In version 4.0, we have enhanced and rendered consistent the way programmers 
+ can refer to these service providers. Until this release, it was possible 
+ to describe providers in various ways (e.g., by their service type), but 
+not to identify them uniquely. This could be a problem in situations where, 
+for instance, the programmer desires to use only <a
+ href="synch_vs_asynch.html#Invocations">asynchronous invocations</a> to support
+<a href="synch_vs_asynch.html#Interactions">synchronous interactions</a>,
+  but the Hub maintains connections to multiple providers of the affected
+type. If the programmer was either unwilling or unable to <a
+ href="hub_properties.html#GalSS_EnvSetSession">lock the server to the session</a>, 
+ or if the session itself could make use of multiple providers for the affected 
+ type (for load balancing, for instance), the programmer had no other options. 
+ Now, provider names fill this gap. </p>
+     
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="The_syntax_of_provider_names"></a>The syntax of provider names</h2>
+    The syntax of provider names is as follows:    
+<blockquote><tt>"["&lt;id&gt;"]"(&lt;service_type&gt;)</tt></blockquote>
+That is, the provider name begins with a left square bracket ("["), followed
+by an ID, followed by a right square bracket ("]"), followed optionally by
+the name of a service type (declared by either the <a
+ href="../reference/pgm.html#SERVICE_TYPE:">SERVICE_TYPE:</a> or <a
+ href="../reference/pgm.html#SERVER:">SERVER:</a> directives in the Hub script).<br>
+<br>
+We call the bracket-delimited portion the <b>provider ID</b>. The <tt>&lt;id&gt;</tt> 
+can be either an integer or a string. Here are some examples:    
+<blockquote><tt>[4]</tt> <br>
+     <tt>[myparser]Parser</tt> <br>
+     <tt>[17]Dialogue</tt></blockquote>
+    The integers are assigned by the Hub when the Hub first learns of the 
+existence  of each provider: either one it should contact, or one that contacts 
+it. The non-integer IDs are assigned by the Hub programmer, as follows:  
+ 
+<blockquote><tt>SERVICE_PROVIDER: Parser</tt> <br>
+     <tt>PROVIDER_ID: [myparser]</tt></blockquote>
+    These provider names are used in a number of different contexts, which
+ we describe here and in the <a href="../reference/pgm.html">Hub program
+reference</a>  document.    
+<h3> <a name="Extended_provider_names"></a>Extended provider names</h3>
+    In a number of contexts, provider names can be optionally extended with 
+ a location suffix. This location suffix is the same format as the value of
+ the <a href="../reference/pgm.html#LOCATION:">LOCATION:</a>&nbsp;directive
+  in the Hub scripts. The suffix is attached with an at sign ("@"):    
+<blockquote><tt>[7]Parser@foo.bar.com:1567</tt></blockquote>
+        
+<hr width="100%">    
+<h2> <a name="Selecting_a_provider"></a>Selecting a provider</h2>
+    Provider names can impose restrictions on how the Hub selects providers.
+    
+<p>The Hub selects a provider to use according to the following rules. These 
+ rules apply either to <a href="scriptless.html">scriptless interaction</a> 
+ or to the RHS of <a href="../reference/pgm.html#Rules">Hub program rules</a>.
+  </p>
+     
+<h3> The basic requirements</h3>
+    First, the provider must minimally satisfy three requirements:    
+<h4> The provider must be available</h4>
+    In order to be available, a provider must be connected, idle (not busy
+ with another operation for another token), and not <a
+ href="hub_properties.html#GalSS_EnvSetSession">locked to another session</a>.
+    
+<h4> The provider must support the specified operation</h4>
+    The RHS of the rule must be listed in the <a
+ href="../reference/pgm.html#OPERATIONS:">OPERATIONS:</a> list of one of the
+service types associated with the provider.    
+<h4> The provider must satisfy the specified service type or service provider 
+ conditions, if present</h4>
+    The service provider must satisfy whatever conditions are specified by
+ the relevant <a href="../reference/pgm.html#CONDITIONS:">CONDITIONS:</a>
+directives.    
+<h3> <a name="Service_type_and_provider_prefixes"></a>Service type and provider 
+ prefixes</h3>
+    In addition to these requirements, it's possible to narrow the range
+of  provider selection by attaching a prefix to the operation name, separated 
+ from the operator by a period ("."). This prefix can be either a service 
+type or a provider name.    
+<p>If the operation name prefix is the name of a service type, the Hub restricts 
+ its search to providers of that type. This restriction can be valuable if 
+ multiple service types support the same operation. For example, the following 
+ rule directs the Hub to consider only those providers of service type <tt>jupiter</tt>:
+  </p>
+     
+<blockquote><tt>RULE: :request_frame &amp; :key_value &amp; :domain Jupiter
+  --&gt; jupiter.turn_management</tt></blockquote>
+    Alternatively, if an incoming message named <tt>jupiter.turn_management</tt>
+  matches no program name (i.e., it's <a href="scriptless.html">scriptless</a>),
+  the Hub will consider relaying it only to providers of service type <tt>jupiter</tt>.
+    
+<p>The operation name prefix can also be a provider name. In this case, the 
+ Hub will consider only one provider, namely the one with the specified name. 
+ For example, the following rule directs the Hub to consider only the provider 
+ with id 1: </p>
+     
+<blockquote><tt>RULE: :request_frame &amp; :key_value &amp; :domain Jupiter
+  --&gt; [1].turn_management</tt></blockquote>
+    In the scriptless case (i.e., if the Hub receives a message named <tt>[1].turn_management</tt>
+  which matches no program), the same restriction would apply.<br>
+  <br>
+  Finally, you can use the PROVIDER_NAME: directive to add a provider  name
+restriction. The advantage of this directive is that it can be any value;
+ so if you've stored the provider name in a key in the token, you can refer
+ to that key:<tt><br>
+  </tt>  
+<blockquote><tt>RULE: :request_frame &amp; :key_value &amp; :domain Jupiter
+  --&gt; turn_management<br>
+  PROVIDER_NAME: :stored_provider<br>
+    </tt></blockquote>
+      
+<h3>What if you don't know the name or ID of the provider you're interested 
+in?</h3>
+ If you're interested in referring to a provider by name in a program file, 
+then be sure to give it a PROVIDER_ID: directive when you declare it. If it's
+a server which contacts the Hub, then your life is a little more complicated. 
+If the provider sends a new message to the Hub at any point (ideally, when 
+it connects), you can call the Builtin function <a
+ href="../../servers/builtin.html#hub_token_owner">hub_token_owner</a> to 
+retrieve the provider ID of the originating provider. If it doesn't, you're 
+currently out of luck.<br>
+ 
+<h3> Other conditions</h3>
+    If the provider is "write-locked" to the current session (that is, if 
+the  session is required to send all its output to that provider when it can),
+ that provider will be the only one considered. The Hub also provides <a
+ href="../reference/pgm.html#Selecting_a_provider">additional functionality</a> 
+ which can be used to affect provider selection in Hub programs.    
+<h3> Once the candidates are chosen</h3>
+    If multiple providers satisfy all the requirements, the Hub makes a random 
+ choice among them (there is no broadcast option yet). If no candidate fulfills 
+ all the requirements, but there is a chance that one will (i.e., it's eligible 
+ except for not being idle at the moment), the Hub will queue the message. 
+ However, the Hub currently considers some situations irrecoverable, and will
+ not queue the message. This is not and has never been implemented consistently; 
+ it will be fixed in a later release, we hope.    
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="Bypassing_Hub_programs"></a>Bypassing Hub programs</h2>
+    When the Hub receives a new message, it tries to find a program which 
+matches  the message name. This match is an identical string match, and it 
+ignores  the significance of the <a
+ href="#Service_type_and_provider_prefixes">dot  notation</a>. This means 
+that even if the provider intends to route the message to a particular provider, 
+and tries to impose this routing by use of the dot notation, the Hub program 
+can override this intention. For instance, the following programs would override 
+this apparent intention in the <a
+ href="#Service_type_and_provider_prefixes">dot notation</a> examples:  
+ 
+<blockquote><tt>PROGRAM: jupiter.turn_management</tt> <br>
+     <tt>...</tt>          
+  <p><tt>PROGRAM: [1].turn_management</tt> <br>
+     <tt>...</tt></p>
+   </blockquote>
+    The Communicator infrastructure does provide a way to bypass this potential 
+ override (i.e., force a scriptless interaction). The functions GalSS_EnvWriteFrameToProvider 
+ and GalSS_EnvDispatchFrameToProvider accomplish this.    
+<p>int&nbsp;<a name="GalSS_EnvWriteFrameToProvider"></a><b><big>GalSS_EnvWriteFrameToProvider</big></b>(GalSS_Environment
+  *<i>env</i>, Gal_Frame <i>frame</i>, const char *<i>provider_id</i>, int 
+ <i>do_block</i>) <br>
+   Like <a href="../reference/adding.html#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame</a>,
+  but directs the message to the provider name or service type name specified
+  by <i>provider_id</i> and bypasses Hub program matching. </p>
+     
+<p>Gal_Frame&nbsp;<a name="GalSS_EnvDispatchFrameToProvider"></a><b><big>GalSS_EnvDispatchFrameToProvider</big></b>(GalSS_Environment
+  *<i>env</i>, Gal_Frame <i>frame</i>, const char *<i>provider_id</i>, GalIO_MsgType
+  *<i>t</i>) <br>
+   Like <a href="../reference/adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a>,
+  but directs the message to the provider name or service type name specified
+  by <i>provider_id</i> and bypasses Hub program matching. </p>
+     
+<p>If you need to know the name of the provider you want to direct the message 
+ to, you can retrieve it in one of two ways: either by using the <a
+ href="../reference/pgm.html#$id">$id entity reference function</a> or the 
+ function GalSS_EnvGetOriginatingProvider. </p>
+     
+<p>char *<a name="GalSS_EnvGetOriginatingProvider"></a><b><big>GalSS_EnvGetOriginatingProvider</big></b>(GalSS_Environment
+  *<i>env</i>) <br>
+   This function returns the provider name of the provider associated with
+ the environment <i>env</i> which originated the token (i.e., sent the new
+ message which caused the Hub to create the token). This provider name will
+ be available in the context of a dispatch function invocation, and will
+be  stored in any environment (or a copy of any such environment) which is
+created  for this purpose, because this information is provided by the Hub
+along with  each dispatch function invocation. If the environment <i>env</i>
+doesn't have this information recorded (e.g., if it wasn't created for a
+dispatch function invocation), this function returns NULL. </p>
+     
+<p> </p>
+     
+<hr>  
+<center>   
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="synch_vs_asynch.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>  
+     </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="timestamps.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+    Last updated August 23, 2002</center>
+     <br>
+   <br>
+  <br>
+ <br>
+</body>
+</html>

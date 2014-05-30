@@ -1,0 +1,158 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>Galaxy Communicator Documentation: Upgrading from 3.0 to 3.1</title>
+<!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+<body style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#0000FF">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:<br>
+<br>
+Upgrading from 3.0 to 3.1</h1></center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "3point2upgrade.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "3point0upgrade.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+
+<hr WIDTH="100%">
+<p>Upgrading to Galaxy Communicator 3.1 is
+simple. In fact, except for one minor change to Java servers, there are
+no obligatory upgrades.
+<p>This document describes only the steps
+required or recommended to upgrade existing features of Galaxy Communicator.
+You can find a list of new features <a href="new_features.html">here</a>.
+You can find the complete release notes <a href="release_notes.html">here</a>.
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER COLS=3 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Step</b></td>
+
+<td><b>Who's affected</b></td>
+
+<td><b>Status</b></td>
+</tr>
+
+<tr>
+<td><a href="#Configuring_your_system">Step
+1: Configuring your system</a></td>
+
+<td>All users</td>
+
+<td>Optional</td>
+</tr>
+
+<tr>
+<td><a href="#Updating_external_mainloop_references">Step
+2: Updating external mainloop references</a></td>
+
+<td>All users of the C API who have embedded
+Communicator in an external main loop</td>
+
+<td>Optional</td>
+</tr>
+
+<tr>
+<td><a href="#Upgrading_GAL_VERBOSE_references">Step
+3: Upgrading GAL_VERBOSE references</a></td>
+
+<td>All users</td>
+
+<td>Optional</td>
+</tr>
+
+<tr>
+<td><a href="#Updating_Java_bindings">Step
+4: Updating Java bindings</a></td>
+
+<td>Users of the Java bindings</td>
+
+<td>Required</td>
+</tr>
+</table>
+
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Configuring_your_system"></a>Step
+1: Configuring your system</h2>
+Perl is no longer required for configuration
+or compilation. The appropriate changes have been made in the file <tt>templates/config.make.in</tt>.
+If you have a configuration file you've stored somewhere which you use
+during compilation, you may wish to update that configuration file to be
+consistent with the template.
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Updating_external_mainloop_references"></a>Step
+2: Updating external mainloop references</h2>
+In version 3.0, it was necessary to provide
+extensive, detailed callback code to embed the Communicator infrastructure
+in an external main loop. After considerable experience with this process,
+we have been able to abstract and simplify it. If you've already gone through
+the headache of making your external embedding 3.0-compliant, you may not
+want to go back and make yet another upgrade; however, the new abstraction
+deals with the vast majority of the details you'd otherwise need to maintain
+yourself, and it may be valuable to you to use it. The 3.0 API underlies
+this new abstraction, and will continue to be supported.
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Upgrading_GAL_VERBOSE_references"></a>Step
+3: Upgrading GAL_VERBOSE references</h2>
+In previous versions of Galaxy Communicator,
+the default value for <a href="../advanced/util.html#Printing">GAL_VERBOSE</a>
+was undefined, which translated into the largest amount of data being printed.
+We have changed the default value of GAL_VERBOSE to be 3, which prints
+out a reasonable, but not overwhelming, amount of information. Many of
+the <a href="../../../contrib/MITRE/tools/docs/index.html">tools</a> distributed
+with the Galaxy Communicator infrastructure already impose this value.
+In the unlikely case that you run C, Allegro or Python servers in situations
+which assume that GAL_VERBOSE is not set (and, therefore, that the servers
+maximally verbose), you'll have to explicitly set GAL_VERBOSE to 0.
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Updating_Java_bindings"></a>Step
+4: Updating Java bindings</h2>
+The method <a href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html#contactHub(java.lang.String, int, java.lang.String, int)">MainServer.contactHub&nbsp;</a>
+has been modified. It no longer takes a <a href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/Server.html">Server</a>
+argument. Rather, if the Hub contact policy argument is set to -1, the
+default policy of the invoked <a href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/MainServer.html">MainServer</a>
+is used.
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "3point2upgrade.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "3point0upgrade.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated June 11, 2001</center>
+
+<p><br>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+        
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Example: Audio and Brokering</title>
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+    
+<center>  
+<h1> Galaxy Communicator Documentation:<br>
+  <br>
+  Brokering example</h1>
+ </center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="../double/description.html"><img
+ src="../../../../docs/arrow_left.gif" alt="" width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../../LICENSE">License</a> / <a
+ href="../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a> 
+       </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="../simple_mainloop/description.html"><img
+ src="../../../../docs/arrow_right.gif" alt="" width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+     
+<hr>In this example, we demonstrate the basic principles of brokering, including 
+multiple broker clients and environment-aware brokers.  
+<p>This example can be found in the distribution in <tt>contrib/MITRE/examples/audio</tt>.<br>
+ <br>
+ All examples use <tt>/dev/audio</tt> for output, so they will only play
+the audio on platforms which support that device.<br>
+  </p>
+ 
+<h3> Source fiiles</h3>
+  testaudio_send.c: sets up an outgoing broker for 8-bit audio data. Provides 
+options for all types of brokering, including broker proxies and streaming.
+ 
+<p>testaudio_receive.c: sets up an incoming broker for 8-bit audio in response 
+to a Hub message. Provides options for all sorts of brokering, including using
+environments, proxies and streaming. Dumps the result to the audio device
+and writes a notification message to the Hub. </p>
+ 
+<p> </p>
+ 
+<p>testaudio_abort_send.c: terminates a broker without completing it appropriately. 
+This server triggers the broker abort behavior in the receiving servers.
+</p>
+ 
+<h3> Running the example</h3>
+All configurations in this example can be accessed by invoking the process
+monitor, as follows.<br>
+ 
+<blockquote><tt><b>Unix</b><br>
+   <br>
+ % cd &lt;root_of_GC&gt;<br>
+ % ./contrib/MITRE/tools/bin/process_monitor contrib/MITRE/examples/audio/audio.config<br>
+   <br>
+   <b>Windows</b><br>
+   <br>
+ C:\&gt; set GC_HOME=&lt;root_of_GC&gt;<br>
+ C:\&gt; python %GC_HOME%\</tt><tt>contrib\MITRE\tools\src\process_monitor\process_monitor.py
+%GC_HOME%\contrib\MITRE\examples\audio\audio.config</tt><br>
+ </blockquote>
+ In addition, on Unix, we generate the following scripts.<br>
+<br>
+  audio.csh: runs the testaudio_send and testaudio_receive servers and the 
+Hub, using the audio.pgm program file.  
+<p>env_audio.csh: runs the testaudio_send and testaudio_receive servers and 
+the Hub, using the env_audio.pgm program file. Note that the Hub receives 
+a session ID along with the notification message at the end of the interaction, 
+in contrast to the audio.csh example. </p>
+ 
+<p>double_audio.csh: runs the testaudio_send server, two testaudio_receive 
+servers, and the Hub, using the double_audio.pgm program file. Observe that 
+both broker clients receive the same audio. </p>
+ 
+<p>client_double_audio.csh: like double_audio.csh, except that the testaudio_send 
+server is started up as a Hub client. Start this server last. </p>
+ 
+<h3> Language bindings</h3>
+ The python/ subdirectory contains a Python version of the testaudio_send 
+and testaudio_receive servers. These servers are completely interchangeable 
+with the C versions. In order to play with it, you can substitute it into 
+the scripts.  
+<p>The acl/ subdirectory contains an Allegro Common Lisp version of the testaudio_send 
+and testaudio_receive&nbsp; servers. These servers are completely interchangeable 
+with the C versions. In order to play with them, you can substitute it into 
+the scripts. </p>
+ 
+<p>The java/ subdirectory contains a Java version of the testaudio_send and 
+testaudio_receive servers. These servers are completely interchangeable with 
+the C version. In order to play with it, you can substitute them into the 
+scripts. </p>
+ 
+<h3> Compilation</h3>
+  On Unix, typing "make" in this directory will create the servers, MIT-style
+Makefiles, scripts and Python, Java and Allegro Common Lisp servers.<br>
+<br>
+The C version of this server contains a MSVC workspace for Windows, which
+is also included in the toplevel MSVC workspace for the Galaxy Communicator
+distribution.   
+<h3> Discussion</h3>
+  See the documentation on <a
+ href="../../../../docs/manual/reference/brokering.html">audio and brokering</a>, 
+as well as the <a href="../../../../docs/manual/advanced/session.html">session
+ management documentation</a>.  
+<p> </p>
+ 
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="../double/description.html"><img
+ src="../../../../docs/arrow_left.gif" alt="" width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../../LICENSE">License</a> / <a
+ href="../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a> 
+       </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="../simple_mainloop/description.html"><img
+ src="../../../../docs/arrow_right.gif" alt="" width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated August 8, 2002</center>
+   <br>
+ <br>
+</body>
+</html>

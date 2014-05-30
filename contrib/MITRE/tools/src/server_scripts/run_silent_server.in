@@ -1,0 +1,14 @@
+#!/bin/csh -f
+
+if ( $#argv < 1) then
+    echo "Usage: run_silent_server <server_and_args>..."
+    exit
+endif
+
+# Don't let this change the path...
+
+source MF_MITRE_ROOTDIR/templates/env.csh
+
+setenv GAL_VERBOSE 0
+
+exec $argv[1-]:q

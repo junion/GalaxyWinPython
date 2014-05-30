@@ -1,0 +1,62 @@
+(
+( {c dialogue_output
+     :frame {c greeting } }
+  {c generator_output
+     :output_string "Welcome to Communicator. How may I help you?" }
+  {c synthesizer_output
+     :sample_rate 8000
+     :encoding_format "linear16"
+     :num_samples 14520 } )
+( {c dialogue_output
+     :frame {c error :description "error consulting backend" } }
+  {c generator_output
+     :output_string "I'm sorry, but I can't get your answer from the database" }
+  {c synthesizer_output
+     :sample_rate 8000
+     :encoding_format "linear16"
+     :num_samples 17520 } )
+( {c audio_input
+     :sample_rate 8000
+     :encoding_format "linear16"
+     :num_samples 18907 }
+  {c text_input
+     :input_string "I WANT TO FLY FROM BOSTON TO LOS ANGELES" }
+  {c recognizer_output
+     :input_string "I WANT TO FLY FROM BOSTON LOS ANGELES" }
+  {c parser_output
+     :frame {c flight
+               :destination "LOS ANGELES"
+               :origin "BOSTON" } }
+  {c backend_query
+     :sql_query "select airline, flight_number, departure_datetime from flight_table where departure_aiport = 'BOS' and arrival_airport = 'LAX'" }
+  {c backend_output
+     :column_names ( "airline" "flight_number" "departure_datetime" )
+     :nfound 2
+     :values ( ( "AA" "115" "1144" )
+               ( "UA" "436" "1405" ) ) }
+  {c dialogue_output
+     :frame {c db_result
+               :column_names ( "airline" "flight_number" "departure_datetime" )
+               :tuples ( ( "AA" "115" "1144" )
+                         ( "UA" "436" "1405" ) ) } }
+  {c generator_output
+     :output_string "American Airlines flight 115 leaves at 11:44 AM, and United flight 436 leaves at 2:05 PM" }
+  {c synthesizer_output
+     :sample_rate 8000
+     :encoding_format "linear16"
+     :num_samples 35068 } )
+( {c audio_input
+     :sample_rate 8000
+     :encoding_format "linear16"
+     :num_samples 18907 }
+  {c text_input
+     :input_string "I WANT TO FLY FROM BOSTON TO SAN FRANCISCO" }
+  {c recognizer_output
+     :input_string "I WANT TO FLY FROM BOSTON SAN FRANCISCO" }
+  {c parser_output
+     :frame {c flight
+               :destination "SAN FRANCISCO"
+               :origin "BOSTON" } }
+  {c backend_query
+     :sql_query "select airline, flight_number, departure_datetime from flight_table where departure_aiport = 'BOS' and arrival_airport = 'SFO'" } )
+)

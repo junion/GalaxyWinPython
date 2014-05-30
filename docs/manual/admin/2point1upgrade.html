@@ -1,0 +1,492 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.75 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>Galaxy Communicator Documentation: Upgrading from 2.0 to 2.1</title>
+<!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+<body style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#0000FF">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:<br>
+<br>
+Upgrading from 2.0 to 2.1</h1></center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "release_notes_v3.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "upgrade.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+
+<hr WIDTH="100%">
+<p>In almost all cases, upgrading from 2.0
+to 2.1 will be completely transparent.
+<ul>
+<li>
+<a href="#Configuring_your_system">Step 1:
+Configuring your system</a></li>
+
+<li>
+<a href="#Check_your_use_of_none!_and_destroy!">Step
+2: Check your use of none! and destroy!</a></li>
+
+<li>
+<a href="#Check_your_use_of_SET:_and_DEL:_with_dispatch_to_main">Step
+3: Check your use of SET: and DEL: with dispatch_to_main</a></li>
+
+<li>
+<a href="#Upgrade_your_own_main_loop_(advanced,_optional)">Step
+4: Upgrade your own main loop (advanced, optional)</a></li>
+
+<li>
+<a href="#Upgrade_timed_task_invocation_(advanced)">Step
+5: Upgrade timed task invocation (advanced)</a></li>
+
+<li>
+<a href="#Upgrade_timed_task_invocation_(advanced)">Step
+6: </a><a href="#Upgrade_your_local_Makefile_(advanced)">Upgrade your local
+Makefile (advanced)</a></li>
+</ul>
+
+<hr WIDTH="100%">
+<h2>
+<a NAME="Configuring_your_system"></a>Step
+1: Configuring your system</h2>
+The 2.1 distribution contains two major changes
+in your <tt>config.make</tt> file.
+<p>First, because the Galaxy Communicator
+distribution no longer contains any MIT servers, there are no longer any
+settings for contrib/MIT. Second, it is now possible to compile Galaxy
+Communicator libraries as shared libraries, which reduces the size of executables,
+but introduces a run-time dependency on the shared library. MITRE's experience
+suggests that using shared libraries can reduce the size of your Galaxy
+Communicator installation by 50%. See the <a href="install.html#config">installation
+notes</a> for details.
+<p>It's possible that you've included explicit
+dependencies on static libraries (<tt>.a</tt>)
+files in your Makefiles. Any examples you have which use the MITRE utilities
+library may have such references. If you intend to preserve the option
+of compiling with shared libraries, you will need to change those references.
+For instance, here's a fragment of a Makefile based on the Communicator
+Makefile template, in version 2.0 and version 2.1:
+<h4>
+Version 2.0</h4>
+
+<blockquote><tt>LIBDEPS += $(MITRE_ROOTDIR)/utilities/lib/$(ARCHOS)/libMITRE_galaxy.a</tt></blockquote>
+
+<h4>
+Version 2.1</h4>
+
+<blockquote><tt>LIBDEPS += $(MITRE_ROOTDIR)/utilities/lib/$(ARCHOS)/libMITRE_galaxy$(LIBEXT)</tt></blockquote>
+
+<p><br>Although we haven't tried it, <tt>config.make</tt>
+files for 2.0 should still work in 2.1; you simply won't have the option
+of shared libraries.
+<p>
+<hr WIDTH="100%">
+<h2>
+Step 2:&nbsp;<a NAME="Check_your_use_of_none!_and_destroy!"></a>Check
+your use of none! and destroy!</h2>
+In version 2.0, the program file <a href="../reference/pgm.html#Special_control_directives">special
+directives</a> none! and destroy! had the following interpretations:
+<ul>
+<li>
+OUT: <b><tt>none!</tt></b>
+indicated no response was expected from server operation; token reference
+count was decremented</li>
+
+<li>
+OUT: <b><tt>destroy!</tt></b>&nbsp;
+indicated that the Hub expected a response from the server; token was destroyed
+after the server responded</li>
+</ul>
+In version 2.1, the behavior of these directives
+has been redefined in terms of the <a href="../reference/pgm.html#CONTROL:">CONTROL:</a>
+directive. As far as we can tell, <tt>none!</tt>
+still behaves identically, but <tt>destroy!</tt>
+now behaves identically to <tt>none!</tt>,
+except that the program stops executing immediately after the rule. Because
+<tt>destroy!</tt>
+no longer waits until the message return to stop execution, certain rule
+sequences will no longer work as before. For instance, <tt>destroy!</tt>
+followed by <tt>none!</tt> will fire
+both rules in 2.0, but only the first in 2.1:
+<blockquote><tt>RULE: ...</tt>
+<br><tt>...</tt>
+<br><tt>OUT: destroy!</tt>
+<p><tt>RULE: ...</tt>
+<br><tt>...</tt>
+<br><tt>OUT: none!</tt></blockquote>
+This is a very subtle change, so inspect your
+program files carefully.
+<p>
+<hr WIDTH="100%">
+<h2>
+Step 3:&nbsp;<a NAME="Check_your_use_of_SET:_and_DEL:_with_dispatch_to_main"></a>Check
+your use of SET: and DEL: with dispatch_to_main</h2>
+As a special case in versions previous to
+2.1, the <a href="../reference/pgm.html#SET:">SET:</a> and <a href="../reference/pgm.html#DEL:">DEL:</a>
+directives applied to the message, not the token, when the dispatch function
+was <a href="../../servers/builtin.html#dispatch_to_main">builtin.dispatch_to_main</a>.
+This special case has been eliminated in version 2.1. The following program
+file illustrates the contrast:
+<blockquote><tt>SERVER: builtin</tt>
+<br><tt>OPERATIONS: dispatch_to_main</tt>
+<p><tt>INITIAL_TOKEN: {c foo :baz 6 }</tt>
+<p><tt>PROGRAM: foo</tt>
+<p><tt>RULE: --> dispatch_to_main</tt>
+<br><tt>IN: :baz</tt>
+<br><tt>SET: :bar 5</tt>
+<br><tt>DEL: :baz</tt>
+<p><tt>PROGRAM: main</tt></blockquote>
+Previous to version 2.1, :<tt>baz</tt>
+was deleted from the message and <tt>:bar</tt>
+was added, with the effect that <tt>:bar</tt>
+and not <tt>:baz</tt> was transmitted
+to the <tt>main</tt> program. In 2.1,
+neither change applies to the message, so <tt>:baz</tt>
+and not <tt>:bar</tt> is transmitted
+to the <tt>main</tt> program. This
+is a very subtle change, so inspect your program files carefully. The clean
+and proper way to transmit values from the <tt>foo</tt>
+program to the <tt>main</tt> program
+is and has always been to include them in the IN: directive:
+<blockquote><tt>RULE: --> dispatch_to_main</tt>
+<br><tt>IN: :baz (:bar 5)</tt></blockquote>
+
+<hr WIDTH="100%">
+<h2>
+Step 4:&nbsp;<a NAME="Upgrade_your_own_main_loop_(advanced,_optional)"></a>Upgrade
+your own main loop (advanced, optional)</h2>
+In order to support the new <a href="../advanced/hub_listener.html">listener-in-Hub</a>
+functionality, the function <a href="../reference/server_structure.html#GalSS_InitializeServerToplevel">GalSS_InitializeServerToplevel</a>()
+is now preferred to <a href="../reference/server_structure.html#GalSS_InitializeServer">GalSS_InitializeServer</a>().
+In addition, it is now much more straightforward to customize server settings
+both before and after you parse command line arguments.
+<p>Unless you're embedding a Communicator-compliant
+server in another top-level loop, you won't need to worry about this; but
+if you do, there are a number of differences in 2.1 that you should be
+aware of. Here is the main() from the MITRE example fd_double.c, with the
+potential differences in boldface:
+<h4>
+Version 2.0</h4>
+
+<blockquote><tt>int main(int argc, char **argv)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) NULL;</tt>
+<p><tt>&nbsp; gcr = (GalaxyCallbackRecord *) malloc(sizeof(GalaxyCallbackRecord));</tt>
+<br><tt>&nbsp; gcr->timer_cb = (TimerCallback *) NULL;</tt>
+<br><tt>&nbsp; gcr->server_sock = -1;</tt>
+<br><tt>&nbsp; gcr->l = SM_NewLooper();</tt>
+<p><tt>&nbsp; <b>gcr->gcomm = GalSS_InitializeServer(-1, 10, 0, 1, GAL_LOOP_EXTERNAL,
+0, argc, argv);</b></tt>
+<p><tt>&nbsp; if (!gcr->gcomm) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; fprintf(stderr, "Couldn't create a server\n");</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; fflush(stderr);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; exit(1);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; <b>gcr->server_sock = GalIO_GetServerListenSocket(gcr->gcomm);</b></tt>
+<br><b><tt>&nbsp; SM_AddFDCallback(gcr->l, gcr->server_sock, DoubleServerHandler,</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(void *) gcr);</tt></b>
+<br><tt>&nbsp; SM_Mainloop(gcr->l);</tt>
+<br><tt>&nbsp; exit(0);</tt>
+<br><tt>}</tt></blockquote>
+If you aren't interested in the new listener-in-Hub
+functionality, nor interested in automatic parsing of Communicator-specific
+command line arguments, this example will function in 2.1. If you are interested
+in making a minimal change to obtain access to the listener-in-Hub functionality,
+you can do this:
+<h4>
+Version 2.0/2.1 (not recommended)</h4>
+
+<blockquote><tt>int main(int argc, char **argv)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) NULL;</tt>
+<p><tt>&nbsp; gcr = (GalaxyCallbackRecord *) malloc(sizeof(GalaxyCallbackRecord));</tt>
+<br><tt>&nbsp; gcr->timer_cb = (TimerCallback *) NULL;</tt>
+<br><tt>&nbsp; gcr->server_sock = -1;</tt>
+<br><tt>&nbsp; gcr->l = SM_NewLooper();</tt>
+<br><b><tt>#if GC_VERSION &lt; 0x20100</tt></b>
+<br><b><tt>&nbsp; gcr->gcomm = GalSS_InitializeServer(-1, 10, 0, 1, GAL_LOOP_EXTERNAL,
+0, argc, argv);</tt></b>
+<br><b><tt>#else</tt></b>
+<br><b><tt>&nbsp; gcr->gcomm = GalSS_InitializeServerToplevel(-1, 10, 0,
+1, GAL_LOOP_EXTERNAL,</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+0, -1, GAL_LISTENING_SERVER,</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(char *) NULL, (char *) NULL, argc, argv);</tt></b>
+<br><b><tt>#endif</tt></b>
+<p><tt>&nbsp; if (!gcr->gcomm) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; fprintf(stderr, "Couldn't create a server\n");</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; fflush(stderr);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; exit(1);</tt>
+<br><tt>&nbsp; }</tt>
+<p><tt>&nbsp; /* If the server is acting as a client, we'll want to</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; set up callbacks for the connections;
+if it has its own</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; listener, we'll want to set up a callback
+for the server,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; which will set up the listeners for the
+connections as</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; they're received. */</tt>
+<p><tt>&nbsp; <b>if (GalIO_ServerListenStatus(gcr->gcomm) == GAL_LISTENING_SERVER)
+{</b></tt>
+<br><b><tt>&nbsp;&nbsp;&nbsp; gcr->server_sock = GalIO_GetServerListenSocket(gcr->gcomm);</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp; SM_AddFDCallback(gcr->l, gcr->server_sock,
+DoubleServerHandler,</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(void *) gcr);</tt></b>
+<br><b><tt>&nbsp; } else {</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp; /* Add a callback for the connections. */</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp; GalIO_OperateOnConnections(gcr->gcomm, (void
+*) gcr,</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+__AddConnectionCallback);</tt></b>
+<br><b><tt>&nbsp; }</tt></b>
+<p><tt>&nbsp; SM_Mainloop(gcr->l);</tt>
+<br><tt>&nbsp; exit(0);</tt>
+<br><tt>}</tt></blockquote>
+You can now modify the call to GalSS_InitializeServerToplevel()
+to modify the listen status and declare the host and port you wish to contact.
+The second change is sensitive to the listen status, and will start up
+the server main loop appropriately. However, these changes aren't particularly
+useful unless you can pass in the host and port as command line arguments,
+and since the Communicator libraries already provide this functionality,
+we've made it easy in 2.1 to exploit it.
+<h4>
+Version 2.1 (recommended)</h4>
+
+<blockquote><tt>int main(int argc, char **argv)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) NULL;</tt>
+<br><tt>&nbsp; int new_argc;</tt>
+<br><tt>&nbsp; char **new_argv;</tt>
+<br><tt>&nbsp; GalSS_ServerArgs *arg_pkg;</tt>
+<p><tt>&nbsp; gcr = (GalaxyCallbackRecord *) malloc(sizeof(GalaxyCallbackRecord));</tt>
+<br><tt>&nbsp; gcr->timer_cb = (TimerCallback *) NULL;</tt>
+<br><tt>&nbsp; gcr->server_sock = -1;</tt>
+<br><tt>&nbsp; gcr->l = SM_NewLooper();</tt>
+<p><tt>&nbsp; <b>/* If you want to use the built-in server arguments, you</b></tt>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp; can use GalSS_ExtractServerArgs. Otherwise,
+you can just</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp; call GalSS_InitializeServerToplevel().
+*/</tt></b>
+<p><b><tt>&nbsp; arg_pkg = GalSS_DefaultServerArgs();</tt></b>
+<p><b><tt>&nbsp; /* Make sure it knows that we're using our own main loop.
+We set this</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp; before we ever parse the server arguments,
+because we don't even want</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp; the arguments pertaining to the loop
+type enabled for the user. */</tt></b>
+<br><b><tt>&nbsp; GalSS_SAFixLoopType(arg_pkg, GAL_LOOP_EXTERNAL);</tt></b>
+<br><b><tt>&nbsp; arg_pkg = GalSS_ExtractCmdlineServerArgs(arg_pkg, argc,
+argv,</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&amp;new_argc, &amp;new_argv);</tt></b>
+<p><b><tt>&nbsp; if (!arg_pkg) {</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp; /* Something bad happened, or -help was passed.
+*/</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp; exit(1);</tt></b>
+<br><b><tt>&nbsp; }</tt></b>
+<p><b><tt>&nbsp; /* Now, we call GalSS_InitializeServerFromServerArgs,
+and we don't have</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp; to worry about the signature of GalSS_InitializeServerToplevel.
+*/</tt></b>
+<p><b><tt>&nbsp; gcr->gcomm = GalSS_InitializeServerFromServerArgs(arg_pkg,</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+new_argc,</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+new_argv);</tt></b>
+<br><b><tt>&nbsp; GalSS_FreeArgPkg(arg_pkg);</tt></b>
+<p><tt>&nbsp; if (!gcr->gcomm) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; fprintf(stderr, "Couldn't create a server\n");</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; fflush(stderr);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; exit(1);</tt>
+<br><tt>&nbsp; }</tt>
+<p><tt>&nbsp; /* If the server is acting as a client, we'll want to</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; set up callbacks for the connections;
+if it has its own</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; listener, we'll want to set up a callback
+for the server,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; which will set up the listeners for the
+connections as</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; they're received. */</tt>
+<p><tt>&nbsp; <b>if ((GalIO_ServerListenStatus(gcr->gcomm) &amp; GAL_SERVER_TYPE_MASK)
+==</b></tt>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GAL_LISTENING_SERVER) {</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp; gcr->server_sock = GalIO_GetServerListenSocket(gcr->gcomm);</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp; SM_AddFDCallback(gcr->l, gcr->server_sock,
+DoubleServerHandler,</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(void *) gcr);</tt></b>
+<br><b><tt>&nbsp; } else {</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp; GalIO_ServerCheckHubContacts(gcr->gcomm);</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp; if (GalIO_GetServerNumConnections(gcr->gcomm)
+== 0) {</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; fprintf(stderr, "Couldn't contact
+any Hubs\n");</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; fflush(stderr);</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; exit(1);</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp; }</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp; /* Add a callback for the connections. */</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp; GalIO_OperateOnConnections(gcr->gcomm, (void
+*) gcr,</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+__AddConnectionCallback);</tt></b>
+<br><b><tt>&nbsp; }</tt></b>
+<br><tt><b>&nbsp; </b>SM_Mainloop(gcr->l);</tt>
+<br><tt>&nbsp; exit(0);</tt>
+<br><tt>}</tt></blockquote>
+In this final version, the first difference
+is that 2.1 includes support for using the built-in command line argument
+parsing tools to "peel off" the <a href="../reference/adding.html#Initialization">standard
+server arguments</a>, using the functions <a href="../reference/server_structure.html#GalSS_DefaultServerArgs">GalSS_DefaultServerArgs</a>(),
+<a href="../reference/server_structure.html#GalSS_InitializeServerFromServerArgs">GalSS_InitializeServerFromServerArgs</a>(),
+and <a href="../reference/server_structure.html#GalSS_FreeArgPkg">GalSS_FreeArgPkg</a>().
+Before you extract the server args with GalSS_ExtractServerArgs(), you
+can make whatever changes to the argument package you choose; here, for
+instance, we're telling the server that it's not going to run its own main
+loop. Because of this functionality, you will not need to worry about the
+function signature for GalSS_InitializeServerToplevel(), nor do you have
+to recapitulate the Communicator argument parsing if you desire that level
+of flexibility. If you don't want to give the user access to some of these
+settings, of course, you can either overwrite them between the first two
+function calls, or simply use GalSS_InitializeServerToplevel() directly.
+<p>The second difference is that once we permit
+the listener-in-Hub functionality, we need to check the listen status of
+the server and initialize our own listeners appropriately. In this case,
+if the server has a listener in it, we add a file descriptor callback for
+the server listener; otherwise, if the server is contacting Hubs, we check
+the Hub contacts and then call
+<a href="../reference/server_structure.html#GalIO_OperateOnConnections">GalIO_OperateOnConnections</a>()
+with an operation which makes sure that reinitialize messages that are
+queued as part of the listener-in-Hub handshake are actually processed.
+<p>Notice that because the default C behavior
+for listener-in-Hub functionality is to retry both for initial connections
+and after disconnects, this loop doesn't conform to the default C behavior
+because it's only possible to implement that sort of retry using timers,
+and this example only uses file descriptor callbacks.
+<p>
+<hr WIDTH="100%">
+<h2>
+Step 5:&nbsp;<a NAME="Upgrade_timed_task_invocation_(advanced)"></a>Upgrade
+timed task invocation (advanced)</h2>
+Version 2.0 had a logic problem involving
+the interaction of sockets and the timed task loop on Win32. To fix this
+bug, the function Gal_AddTimedTaskWithIO() had to be eliminated, and replaced
+with the new functions <a href="../advanced/timed_tasks.html#Gal_AddTimedTaskWithSocketIO">Gal_AddTimedTaskWithSocketIO</a>()
+and <a href="../advanced/timed_tasks.html#Gal_AddTimedTaskWithFileIO">Gal_AddTimedTaskWithFileIO</a>().
+The chances are extremely slim that you have used the function Gal_AddTimedTaskWithIO()
+in your own code; however, if you have, you must replace it with the appropriate
+version, depending on whether you're using it to poll files or sockets.
+For instance, the MITRE stdin polling utility had to be changed as follows:
+<h4>
+Version 2.0</h4>
+
+<blockquote><tt>fd_set readfd;</tt>
+<br><tt>unsigned int fd = fileno(stdin);</tt></blockquote>
+
+<blockquote><tt>FD_ZERO(&amp;readfd);</tt>
+<br><tt>FD_SET(fd, &amp;readfd);</tt>
+<br><tt>Gal_AddTimedTaskWithIO(stdin_poll,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(void *) poll_struct,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+poll_struct->ms,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&amp;readfd, (fd_set *) NULL);</tt></blockquote>
+
+<h4>
+Version 2.1</h4>
+
+<blockquote><tt><a href="../advanced/timed_tasks.html#Gal_AddTimedTaskWithFileIO">Gal_AddTimedTaskWithFileIO</a>(stdin_poll,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(void *) poll_struct,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+poll_struct->ms,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+stdin, (FILE *) NULL);</tt></blockquote>
+
+<p><br>In addition, because select() doesn't
+support polling on file descriptors under Win32, the file I/O polling is
+not available on Win32.
+<p>
+<hr WIDTH="100%">
+<h2>
+Step 6:&nbsp;<a NAME="Upgrade_your_local_Makefile_(advanced)"></a>Upgrade
+your local Makefile (advanced)</h2>
+If you don't use the C Makefile templates
+included in the distribution, and you opt for shared object compilation
+when you <a href="install.html#config">install Galaxy Communicator</a>,
+you will have to update your references to the Galaxy Communicator libraries
+in your C Makefiles if you've chosen to encode library dependencies. We
+illustrate with a relevant subsection of the Makefile in our <a href="../../../contrib/MITRE/examples/local_makefile/main.html">local
+Makefile example</a>:
+<h4>
+Version 2.0</h4>
+
+<blockquote><tt>LIBS = -L$(ROOTDIR)/lib/$(ARCHOS) -lGalaxy</tt>
+<p><b><tt>LIBDEPS = $(ROOTDIR)/lib/$(ARCHOS)/libGalaxy.a</tt></b>
+<p><tt>SOURCES =&nbsp; ../double/double.c ../double/double_core.c</tt>
+<p><tt>double: ../double/double.c $(LIBDEPS)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; gcc -g $(CPPFLAGS) -I../double
+-o double.$(ARCHOS).bin $(SOURCES) $(LIBS)</tt></blockquote>
+
+<h4>
+Version 2.1</h4>
+
+<blockquote><tt>LIBS = -L$(ROOTDIR)/lib/$(ARCHOS) -lGalaxy</tt>
+<p><b><tt># Depending on whether there are shared libraries or not,</tt></b>
+<br><b><tt># we want to pick the right one library extension, etc.</tt></b>
+<p><b><tt>include $(TEMPLATES)/shared_libs.make</tt></b>
+<p><b><tt>ifdef SHARED_LIBS</tt></b>
+<br><b><tt>&nbsp; ifdef XLINKER_RTFLAG</tt></b>
+<br><b><tt>&nbsp;&nbsp;&nbsp; LIBS += -Xlinker $(XLINKER_RTFLAG) -Xlinker
+$(ROOTDIR)/lib/$(ARCHOS)</tt></b>
+<br><b><tt>&nbsp; endif</tt></b>
+<br><b><tt>endif</tt></b>
+<p><b><tt>LIBDEPS = $(ROOTDIR)/lib/$(ARCHOS)/libGalaxy$(LIBEXT)</tt></b>
+<p><tt>SOURCES =&nbsp; ../double/double.c ../double/double_core.c</tt>
+<p><tt>double: ../double/double.c $(LIBDEPS)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; gcc -g $(CPPFLAGS) -I../double
+-o double.$(ARCHOS).bin $(SOURCES) $(LIBS) -lm</tt></blockquote>
+The file <tt>templates/shared_libs.make</tt>
+is guaranteed to be created when you install and compile the Galaxy Communicator
+system, and it contains the appropriate setting for <tt>LIBEXT</tt>
+for you to use in other Makefiles, as well as the proper linker flag to
+pass via gcc which will set the run-time location of the shared library
+in the executable.
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "release_notes_v3.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "upgrade.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated August 10, 2000</center>
+
+<p><br>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                    
+  <meta name="GENERATOR"
+ content="Mozilla/4.7 [en] (X11; I; Linux 2.2.14pre9 ppc) [Netscape]">
+  <title>Galaxy Communicator Documentation: Saving Away Environments</title>
+                     <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+          
+<center>     
+<h1> Galaxy Communicator Documentation:<br>
+     <br>
+   Saving Away An Environment Object For Later Use</h1>
+    </center>
+       
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+       <tbody>
+         <tr>
+           <td valign="middle" align="left" width="10%"><a
+ href="../tutorial/end_to_end.html"><img src="../../arrow_left.gif"
+ alt="" width="30" height="30">
+         </a></td>
+           <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+           <td valign="middle" align="right" width="10%"><a
+ href="server_locations.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+         </a></td>
+         </tr>
+                  
+  </tbody>     
+</table>
+           
+<hr width="100%">     
+<p>Let's say you want to write a frame to the Hub, but you don't want to do
+it from a dispatch function. You need an environment to use, so you save a
+reference to the environment from within a dispatch function. But later, when
+you try to write your frame, your application crashes. What went wrong? The
+answer lies in the memory management rules for environment objects, which 
+ is the topic of this section.<br>
+  </p>
+   
+<ul>
+    <li><a href="#Whats_the_problem">What's the problem?</a></li>
+    <li><a href="#Functions_which_save_away_environments">Functions which 
+save away environments for you</a></li>
+    <li><a href="#Saving_away_environments_by_hand">Saving away environments 
+by hand</a></li>
+    <li><a href="#Administrative_functions">Administrative functions</a><br>
+    </li>
+   
+</ul>
+   
+<p>  </p>
+       
+<hr width="100%">     
+<h2><a name="Whats_the_problem"></a>   What's the problem?</h2>
+ As we saw in the <a
+ href="../tutorial/errors.html#Environments_and_message_returns">tutorial</a>, 
+the call environment instantiates the information required to communicate 
+properly with the Hub. Much of the time, this communication happens from within
+a dispatch function, which is where call environments are found:<br>
+ 
+<blockquote><tt>Gal_Frame do_something(Gal_Frame f, void *server_data)<br>
+ {<br>
+ &nbsp; GalSS_Environment *env = (GalSS_Environment *) server_data;<br>
+ &nbsp; Gal_Frame new_f;<br>
+   <br>
+ &nbsp; /* ... */<br>
+ &nbsp; GalSS_EnvWriteFrame(env, new_f, 0);<br>
+ &nbsp; /* ... */<br>
+ }</tt><br>
+ </blockquote>
+ 
+<p>(We talk about this in more detail in the <a
+ href="../reference/adding.html#Dispatch_functions_and_call_environments">documentation
+  on adding a server</a>.) These call  environments can be used inside dispatch 
+functions to <a href="../reference/adding.html#Replying_to_the_Hub">provide 
+replies</a>  or <a href="../reference/adding.html#Invoking_the_Hub">send new
+messages to the Hub</a>. But dispatch functions aren't restricted to providing
+a reply  to an incoming message or sending new messages; they can also set
+up callbacks  or timed tasks which may send new messages later. So the programmer
+might want to save away a call environment to send a message outside the
+scope of the dispatch function. However, if you're not careful, you can crash
+your program doing this. The reason is that the call environment is allocated
+for the call to the dispatch function, and freed (under normal circumstances)
+when the dispatch function exits. So if you touch it later, it'll be gone.<br>
+ </p>
+ 
+<p>In order to address this issue, we've set up the call environment so that 
+it's managed by a <b>reference count</b>. When the reference count reaches 
+0, the call environment is freed. As a programmer, there are a number of ways
+you can exploit this feature to ensure that the environment will be around
+when you need it.<br>
+ </p>
+   
+<hr width="100%" size="2">  
+<h2><a name="Functions_which_save_away_environments"></a>Functions which save
+away environments for you</h2>
+    
+<p>There are a number of circumstances where you might logically want to save
+away a call environment. These include broker callbacks and timed tasks. In
+order to make your job easier, we provide utilities for cleanly saving a
+call environment in all the callback contexts the infrastructure supports. 
+<br>
+ </p>
+ 
+<p>In particular, the Galaxy Communicator library provides  environment-aware 
+<a href="../reference/brokering.html#GalSS_EnvBrokerDataInInit">broker callback</a> 
+ and timed task setup, as well as a way of maintaining an environment through 
+ successive calls to dispatch functions. In this section, we describe some 
+ of these functions. </p>
+     
+<p>void&nbsp;<a name="GalSS_TaskSetEnvironment"></a><b><big>GalSS_TaskSetEnvironment</big></b>(Gal_TaskPkg
+  *<i>p</i>, GalSS_Environment *<i>env</i>) <br>
+   Sets the environment associated with the task <i>p</i> to <i>env</i>.
+</p>
+     
+<p>GalSS_Environment *<a name="GalSS_TaskGetEnvironment"></a><b><big>GalSS_TaskGetEnvironment</big></b>(Gal_TaskPkg
+  *<i>p</i>) <br>
+   Returns the environment associated with the task <i>p</i>. </p>
+     
+<p>Gal_TaskPkg *<a name="GalSS_EnvAddTask"></a><b><big>GalSS_EnvAddTask</big></b>(GalSS_Environment
+  *<i>env</i>, void (*<i>task</i>)(Gal_TaskPkg *), void *<i>caller_data</i>,
+  long <i>num_millisecs</i>, int <i>read_blocking_available</i>, GAL_SOCKET
+  *<i>read_socket</i>, GAL_SOCKET *<i>write_socket</i>, GAL_SOCKET *<i>err_socket</i>,
+  FILE *<i>read_file</i>, FILE *<i>write_file</i>, FILE*<i>err_file</i>,
+Gal_TaskConditionFn  <i>condition</i>, void (*<i>cleanup_fn</i>)(void *))
+<br>
+   This function provides all the functionality of <a
+ href="timed_tasks.html#Gal_AddTaskExtended">Gal_AddTaskExtended</a>, but 
+ also saves away the call environment <i>env</i> for access using the function 
+ GalSS_TaskGetEnvironment. A task thus established can be refired in any of
+ the normal ways; see the <a href="timed_tasks.html">timed task documentation</a> 
+ for details. </p>
+     
+<p>At times, connections may be associated with UI elements, which can issue 
+ new messages. So the UI itself is an element outside the scope of dispatch 
+ functions where it would be helpful to have a call environment to use to 
+issue new messages. It's not enough to set up the environment when the connection 
+ is established; crucial properties of the UI interaction, such as the session 
+ ID, may be changed by other servers in the course of evaluation. The safest 
+ thing to do is to create an environment for the UI when the connection is 
+ established, update it every time a dispatch function is called, and free 
+ the environment when the connection is shut down. The function GalSS_EnvMaintainInLocation 
+ does this for you. </p>
+     
+<p>void&nbsp;<a name="GalSS_EnvMaintainInLocation"></a><b><big>GalSS_EnvMaintainInLocation</big></b>(GalIO_CommStruct
+  *<i>gcomm</i>, const char *<i>initial_session_id</i>, GalSS_Environment
+**<i>env_loc</i>)  <br>
+   The connection <i>gcomm</i> is the connection to the Hub which is associated 
+ with a UI element for the current session, and hosts the dispatch functions 
+ which are fired. This function seeds the location <i>env_loc</i> with a new
+ environment and updates its session ID to <i>initial_session_id</i>. It
+sets  a dispatch function callback via <a
+ href="../reference/server_structure.html#GalIO_AddConnectionDispatchFnCallback">GalIO_AddConnectionDispatchFnCallback
+  </a>to keep the location current, and sets up a shutdown callback to free 
+ the environment. </p>
+     
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="Saving_away_environments_by_hand"></a>Saving away environments 
+by hand</h2>
+    There are a number of functions which store away an environment for later 
+ use in a callback, for example <a href="#GalSS_EnvAddTask">GalSS_EnvAddTask</a>
+  and <a href="../reference/brokering.html#GalSS_EnvBrokerDataInInit">GalIO_EnvBrokerDataInInit</a>.
+  These functions increment a reference count associated with the environment,
+  so that the environment isn't freed prematurely. However, there may be
+situations in which you want to save the environment way yourself. If you
+save the environment   away by hand, in your own memory location, you <b>must</b>
+protect it using the same mechanisms. You can either increment and decrement
+the reference counters, and share the environment, or, if you don't need
+the environment to be shared,  you can copy the environment instead of locking
+it,  which is safer in a multithreaded environment (the environment reference
+count currently has no mutex associated with it).    
+<p>void&nbsp;<a name="GalSS_EnvLock"></a><b><big>GalSS_EnvLock</big></b>(GalSS_Environment
+  *<i>env</i>) <br>
+   Increments the reference counter on the environment <i>env</i> to indicate 
+ that it should not be freed. </p>
+     
+<p>void&nbsp;<a name="GalSS_EnvUnlock"></a><b><big>GalSS_EnvUnlock</big></b>(GalSS_Environment
+  *<i>env</i>) <br>
+   Decrements the reference counter on the environment <i>env</i>. When the 
+ reference counter reaches 0, the environment is freed. </p>
+     
+<p>GalSS_Environment *<a name="GalSS_EnvCopy"></a><b><big>GalSS_EnvCopy</big></b>(GalSS_Environment
+  *<i>old_env</i>) <br>
+   Copies the environment <i>old_env</i> and sets the reference counter in
+ the new environment to 1. </p>
+     
+<p>GalSS_Environment *<a name="GalSS_EnvCopyNoLock"></a><b><big>GalSS_EnvCopyNoLock</big></b>(GalSS_Environment
+  *<i>old_env</i>) <br>
+   Copies the environment <i>old_env</i>. The reference counter in the new
+ environment remains at 0. This function is present mostly for internal backward
+ compatibility.  </p>
+     
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="Administrative_functions"></a>Administrative functions</h2>
+    These are the functions the infrastructure uses to manage call environments. 
+ You will seldom need to use these functions directly.    
+<p>GalSS_Environment *<a name="GalSS_EnvCreate"></a><b><big>GalSS_EnvCreate</big></b>(GalIO_CommStruct
+  *<i>gcomm</i>) <br>
+   Creates an environment from the connection <i>gcomm</i>. </p>
+     
+<p> </p>
+     
+<p>int&nbsp;<a name="GalSS_EnvReturnRequired"></a><b><big>GalSS_EnvReturnRequired</big></b>(GalSS_Environment
+  *<i>env</i>) <br>
+   Returns 1 if the call environment represents a dispatch function invocation 
+ for which a return is expected, or 0 if it does not. </p>
+     
+<p> </p>
+       
+<p> </p>
+       
+<hr>   
+<center>    
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+       <tbody>
+         <tr>
+           <td valign="middle" align="left" width="10%"><a
+ href="../tutorial/end_to_end.html"><img src="../../arrow_left.gif"
+ alt="" width="30" height="30">
+         </a></td>
+           <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+           <td valign="middle" align="right" width="10%"><a
+ href="server_locations.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+         </a></td>
+         </tr>
+                  
+  </tbody>     
+</table>
+     Last updated July 29, 2002</center>
+      <br>
+    <br>
+   <br>
+   <br>
+</body>
+</html>

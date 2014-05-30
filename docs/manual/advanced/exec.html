@@ -1,0 +1,77 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.7 [en] (X11; I; Linux 2.2.14pre9 ppc) [Netscape]">
+  <title>Galaxy Communicator Documentation: How to Use the Communicator Library
+in Arbitrary Executables</title>
+     <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+  
+<center> 
+<h1> Galaxy Communicator Documentation:<br>
+ <br>
+ How to Use the Communicator Library in Arbitrary Executables</h1>
+</center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "util.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "../reference/faq.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+  
+<hr width="100%"> 
+<p>At times, you may be interested in using the Galaxy Communicator C library
+in executables besides the Hub and servers. For instance, you may be interested
+in writing code which pretends to be a Hub and contacts a server directly,
+or you may be interested in parsing and manipulating Communicator frames. 
+</p>
+<p>GalIO_CommStruct *<a name="GalIO_ClientConnect"></a><b><big>GalIO_ClientConnect</big></b>(const
+char *<i>name</i>, const char *<i>host</i>, unsigned short <i>port</i>, int
+<i>silent</i>, Gal_Frame <i>welcome_frame</i>, Gal_Frame *<i>reply_frame</i>) 
+<br>
+Contact the server located at <i>host</i> and <i>port</i> and use <i>welcome_frame
+</i>as the contents of the <a
+ href="../reference/adding.html#reinitialize">reinitialize</a> message. The
+<i>name</i> and <i>silent</i> arguments are for debugging purposes. The server
+that is contacted will behave exactly as if a Hub had contacted it. </p>
+<p>void&nbsp;<a name="Gal_InitializeStatics"></a><b><big>Gal_InitializeStatics</big></b>(void 
+) <br>
+This function initializes the verbosity printing and all the mutexes required
+for threaded interaction. If you write an application which doesn't create
+a GalIO_ServerStruct object, you must call this function. </p>
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "util.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "../reference/faq.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated June 21, 2002</center>
+  <br>
+</body>
+</html>

@@ -1,0 +1,484 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Release Notes for Version 1.x</title>
+     <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+  
+<center> 
+<h1> Galaxy Communicator Documentation:<br>
+ <br>
+ Release Notes for Version 1.x</h1>
+</center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="release_notes_v2.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a href="org.html"><img
+ src="../../arrow_right.gif" alt="" width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+   
+<hr width="100%"> 
+<p>This document briefly lists all the changes from one Galaxy Communicator
+distribution to the next for versions 1.x. </p>
+<p>Version 1.x is not the current version of Galaxy Communicator. </p>
+<p> </p>
+<hr width="100%"> 
+<h2> August 17, 1999: Version 1.3</h2>
+ All reported bugs have been fixed. 
+<h3> <a name="Galaxy_Communicator_1.3"></a>Galaxy Communicator 1.3</h3>
+  
+<ul>
+ <li> MIT has deprecated the functions Gal_GetValue, Gal_Value, Gal_ValueWarn,
+Gal_ValueWarnWithKey, Gal_ValueSilent, and Gal_UnwrapValue. They will be
+removed in a subsequent release.</li>
+  <li> <b>Incompatible change:</b> To support appropriate manipulation of
+audio output, the brokering mechanism now maintains a queue of brokering
+objects. Each object in the queue must now be made active in order to work
+correctly. Also, the function to be called when all the data has been written
+to a broker connection has changed from <a
+ href="../reference/brokering.html#GalIO_BrokerDataDone">GalIO_BrokerDataDone</a> 
+to <a href="../reference/brokering.html#GalIO_BrokerDataOutDone">GalIO_BrokerDataOutDone</a>. 
+See the <a href="../reference/brokering.html">brokering documentation</a>.</li>
+  <li> MIT has provided significant improvements to the program file parsing,
+including a <a href="../../servers/verify_program.html">verification program</a>.
+All previously reported program file parsing bugs have been fixed. A number
+of changes in the program file syntax have been introduced:</li>
+  
+  <ul>
+ <li> <b>Incompatible change:</b> all multi-token string values of toplevel
+declarations now require double quotes, as in the value of <a
+ href="../reference/pgm.html#INITIAL_REPLY:">INITIAL_REPLY:</a>.</li>
+  <li> The <a href="../reference/pgm.html#Subfiles">#include directive</a>
+now permits quotes around its value.</li>
+  <li> The backslash character (\) can now be used to escape linebreaks.</li>
+  <li> I<b>ncompatible change:</b> The order of declarations in the program
+file is now more restrictive. While global declarations can still appear
+anywhere, servers must be defined before programs.</li>
+  <li> Logging information may now appear in included files.</li>
+  <li> <b>Incompatible change:</b> the comparisons ":foo EXISTS", ":foo X",
+and ":foo -" no longer count as existence tests for the key :foo in <a
+ href="../reference/pgm.html#Constructing_a_Rule">rule conditions</a>. The
+comparison ":foo NULL" no longer counts as a nonexistence test. The comparison
+":foo #5" no longer counts as an integer identity test.</li>
+  <li> The comparison ":foo ^ bar" is a new substring comparison in <a
+ href="../reference/pgm.html#Constructing_a_Rule">rule conditions</a>. MIT
+intends to deprecate the % comparison.</li>
+  <li> The connectives "&amp;&amp;" and "||" now work as well as "&amp;"
+and "|".</li>
+  <li> <b>Incompatible change:</b> the <a
+ href="../reference/pgm.html#HOST:">HOST:</a> directive no longer permits
+server IP addresses without delimited double quotes.</li>
+  <li> The spacing rules in <a
+ href="../reference/pgm.html#Constructing_a_Rule">rule conditions</a> are
+now more liberal; whitespace is now permitted between the comparison and
+its value, and between the negation and the comparison it precedes.</li>
+  <li> It is no longer necessary to delimit the opening and closing brackes
+of <a href="../reference/frame.html#Frame_Syntax">frame and list representations</a>
+with whitespace.</li>
+  <li> It is now possible to group clauses explicitly using parentheses.
+The default "closest binding" for disjunction remains in effect in the absence
+of explicitly grouping.</li>
+  <li> <b>Incompatible change:</b> keywords in program files must now begin
+with a colon (:), except in rule conditions, where a colon will be prepended
+if one is missing.</li>
+ 
+  </ul>
+  <li> MIT has introduced a new method of generating headers for its <a
+ href="../reference/adding.html#Declare_server_information">servers</a> and
+    <a href="../../servers/turn_management.html#The_new_style">dialogue control</a>
+which use the C preprocessor and are thus portable to platforms like <a
+ href="ntport.html#How_do_I_write_a_server?">Windows NT</a> which do not
+typically use GNU <tt>make</tt>. We strongly recommend updating to this new
+method, since we are deprecating the old method and may not support it in
+the future.</li>
+  <li> As a side effect of program file parsing, MIT has added the Gal_Boolean
+type, with values GAL_TRUE and GAL_FALSE.</li>
+  <li> <b>Incompatible change:</b> MIT has changed the argument order of
+sls_pp_frame to render it consistent with other functions.</li>
+  <li> MIT has updated its audio server to incorporate most of the functionality
+from the MITRE version. MITRE has made some slight modifications to the result
+in order to eliminate the MITRE audio server altogether.</li>
+  <li> It is no longer necessary to define a program named <tt>main</tt>
+in the Hub program file.</li>
+  <li> MIT has rationalized the behavior of <a
+ href="../reference/pgm.html#Output_Parameters">destroy! and none!</a> so
+that both now respect <a href="../reference/pgm.html#Merge_Parameters">SET: 
+and DEL: directives</a> in rules; previously, only destroy! did so.</li>
+  <li> <b>Incompatible change:</b> the following functions have been removed:
+Gal_PatternMatches, Gal_FillConditions.</li>
+  <li> <b>Incompatible change:</b> the following functions have changed their
+signatures, in addition to sls_pp_frame: Gal_ReadObject, Gal_ReadFrame, <a
+ href="../reference/libgalaxy.html#Gal_HashListNext">Gal_HashListNext</a>, 
+    <a href="../reference/brokering.html#GalIO_BrokerSetFinalizer">GalIO_BrokerSetFinalizer</a>.</li>
+  <li> MIT has changed the printed encoding of floats in the print representation
+of frames from %f (e.g., 56.78) to %e (e.g., 5.678000e+01). All language
+bindings now reflect this change. The frame reader should still recognize
+both formats, though, so if you have frames saved to files which you parse
+using the Galaxy utilities, and these frames have floats in them, you should
+not have any problems with the data.</li>
+  <li> MIT has introduced a new C preprocessor directive -DREPLACE_PRINTF
+which will cause all calls to printf() to be replaced with calls to sls_pinfo1().</li>
+  <li> MIT has made significant updates to its batchmode and nl servers.
+However, due to the large volume of changes, the MITRE documentation is now
+rather incomplete.</li>
+  <li> <b>Incompatible change:</b> MIT has updated the administrative information
+keys in its frames from <tt>tidx</tt> and <tt>ridx</tt> to <tt>:tidx</tt> 
+and <tt>:ridx</tt>. This change should be invisible to anyone who wasn't
+trying to do anything complicated. However, tools which rely on data which
+stores frames from the Hub may need to be updated if these tools rely on
+the identities of these administrative information keys.</li>
+  <li> MITRE has introduced a distinction between the 32- and 64- bit Irix
+architectures, following a suggestion by AT&amp;T.</li>
+ 
+</ul>
+  
+<h3> MITRE support 1.3</h3>
+  
+<ul>
+ <li> MITRE has finally documented <a
+ href="../reference/pgm.html#Session_keys">session keys</a> in the Hub.</li>
+  <li> <b>Incompatible change:</b> in conjunction with MIT's change to incoming
+brokering, the MITRE function <a
+ href="../../../contrib/MITRE/utilities/docs/brokering.html#MGal_AddIncomingBrokering">MGal_AddIncomingBrokering</a> 
+now takes an additional <i>activate</i> argument.</li>
+  <li> MITRE has updated Python, ACL and Java language bindings to be consistent
+with MIT's use of %e instead of %f encoding for floats in frames.</li>
+  <li> MITRE has provided a Python utility for updating to the new method
+of generating server headers.</li>
+  <li> MITRE has finally documented its push-to-talk server. <b>Incompatible
+change</b>: this server has been moved from MITRE/examples/speech_explore
+to MITRE/servers/bin.</li>
+  <li> MITRE has successfully compiled the Allegro bindings with Allegro
+5.0, but there is a bug in brokering in 5.0 which we have not yet had time
+to track down.</li>
+  <li> The MITRE audio server is no more. MIT has incorporated the relevant
+functionality into their audio server.</li>
+ 
+</ul>
+  
+<hr width="100%"> 
+<h2> July 15, 1999: Version 1.2</h2>
+ Almost all reported bugs have been fixed (but see the list of known bugs).
+Some program file parsing bugs have been fixed in the latest MIT distribution,
+which we will make available in mid-August. 
+<h3> Galaxy Communicator 1.2</h3>
+  
+<ul>
+ <li> MIT has fixed a bug where the environment variables ARCH, OS and ARCHOS
+were sometimes clashing with local shell configurations. See the <a
+ href="install.html">installation instructions</a> and templates/init.make.in</li>
+  <li> MIT has resolved collisions between its STOP constant in the libgalaxy
+library and the Perl STOP constant.</li>
+  <li> MIT has improved automatic generation of lib and include links. This
+fix has necessitated a modification of the <a href="install.html">installation 
+procedure</a>.</li>
+  <li> MIT has added a GUI server and necessary support files (Web directory,
+Java client applet, icons, etc.) to this distribution. Documentation will
+follow in MITRE support 1.2.1.</li>
+  <li> MIT has improved logging capabilities.</li>
+  <li> MIT has improved x86-linux audio support</li>
+  <li> In previous releases, the only way to access the value of the utterance
+ID was by calling the dispatch function <tt>builtin.increment_utterance</tt>. 
+The utterance ID is now always available for access in <tt>:hub_session_utterance_id</tt>.</li>
+  <li> New dispatch function <tt>builtin.dispatch_token</tt> allows tokens
+to move from one program to another, not just to <tt>main</tt>.</li>
+  <li> Logging now writes keys to the log file when they are encountered,
+not when <tt>builtin.increment_utterance</tt> is called.</li>
+  <li> Mapping IN: keywords will now <a
+ href="../reference/pgm.html#Input_Parameters">remap keys</a> previously
+set by PARAM: and RETRIEVE:.</li>
+  <li> STORE: now <a href="../reference/pgm.html#Database_parameters">searches 
+"unmapped" key name</a>s in the OUT: keys if the named keys are not found 
+directly.</li>
+  <li> The MIT audio playbox now sets levels automatically by sampling line
+noise.</li>
+  <li> It is now possible to use <tt><a href="upgrade.html#SFUNC.H">SFUNC.H</a></tt> 
+in the MIT Makefile to customize the name of the operations header file, normally
+named <tt>server.h</tt>. This will allow multiple servers in the same directory.</li>
+  <li> A couple of subtle bugs discovered by AT&amp;T in the timed tasks
+loop have been fixed.</li>
+  <li> Thanks in part to AT&amp;T and CMU, MITRE and MIT have made the core
+Communicator functionality <a href="ntport.html">available on Windows NT</a>.</li>
+  <li> It is now possible to <a href="../reference/hub.html#The_Hub">specify 
+values for the initial token</a> on the command line.</li>
+  <li> LOG_ALL:, LOG_FIRST: and LOG_LAST: have been superseded by LOG_IN:
+and LOG_OUT:. See the <a href="../reference/logging.html">logging documentation</a>.</li>
+  <li> A bug reported by CMU which involves memory management problems in
+logging timestamps has been fixed.</li>
+  <li> A bug reported by CSLU where the audio server seg faults on long utterances
+has been fixed.</li>
+ 
+</ul>
+  
+<h4> Known bugs</h4>
+  
+<ul>
+ <li> If the MIT audio playbox receives two broker output requests, it will
+output the audio which it receives first, not necessarily in the order it
+received the broker requests. This bug has been fixed in the MITRE version
+of the MIT audio playbox, and will be fixed in the next MIT distribution.</li>
+  <li> A string consisting of a single space as a key value in the program
+file will cause the Hub to seg fault. This bug will be fixed in the next
+MIT distribution.</li>
+  <li> A server name which contains a dash will cause the Hub to do the wrong
+thing when the server name is used explicitly in the consequent of a program
+file rule (e.g., <tt>--&gt; foo-server.bar</tt>). This bug should be fixed
+in the next MIT distribution.</li>
+  <li> There may still be some infelicities in the IRIX support which will
+be resolved with the next MIT release.</li>
+ 
+</ul>
+  
+<h3> MITRE support 1.2</h3>
+  
+<ul>
+ <li> Local MITRE change: removed support for devel in MITRE/install.</li>
+  <li> A fatal bug discovered by SRI in the <a
+ href="../advanced/special_mainloop.html">MITRE example for using external
+main loops</a> has been fixed.</li>
+  <li> A memory error in the hub stream utility which caused a seg fault
+on Linux has been fixed.</li>
+  <li> A bug discovered by SRI in the frame parsing for the <a
+ href="../../../contrib/MITRE/bindings/clisp/docs/index.html">Allegro Common
+Lisp bindings</a> has been fixed.</li>
+  <li> A bug in the frame printing for the <a
+ href="../../../contrib/MITRE/bindings/python/docs/index.html">Python bindings</a>
+and the <a href="../../../contrib/MITRE/bindings/clisp/docs/index.html">Allegro 
+Common Lisp bindings</a> has been fixed.</li>
+  <li> MITRE has finally documented the <a
+ href="../reference/frame.html#Frame_Syntax">frame syntax</a>.</li>
+  <li> The multiple connection server utilities now work correctly when no
+server data is passed to frame writing functions.</li>
+  <li> MITRE now provides the process monitor which was developed for the
+MITRE training course. The process monitor is currently used in some (but
+not all) of the MITRE examples.</li>
+  <li> The <a href="../reference/frame.html">frame documentation</a> and
+the documentation on <a href="../reference/adding.html">adding a new server
+    </a>now include information on memory management.</li>
+  <li> The new <tt><a href="upgrade.html#SFUNC.H">SFUNC.H</a></tt> customization
+has been incorporated into all MITRE examples.</li>
+  <li> The documentation of the Galaxy Communicator system is now up-to-date.</li>
+  <li> MITRE has added a number of servers, including a general-purpose dispatch
+server (not yet documented), a Festival server (provided by Alan Black; not
+yet documented), a MITRE version of the MIT audio playbox, an audio replay
+server (not yet documented), a frame transducer (not yet documented), and
+a PostGres DB server (not yet documented).</li>
+  <li> MITRE has added new tools, including a set of scoring and log manipulation
+tools (not yet documented), a <a
+ href="../../../contrib/MITRE/tools/docs/unit_tester_ref.html">unit tester</a>,
+    <a
+ href="../../../contrib/MITRE/tools/docs/index.html#Server_scripts">server 
+scripts</a> and a <a
+ href="../../../contrib/MITRE/tools/docs/process_monitor_ref.html">process 
+monitor</a>. The process monitor was developed for the MITRE training course, 
+and is currently used in some (but not all) of the MITRE examples.</li>
+ 
+</ul>
+  
+<h4> Known bugs</h4>
+  
+<ul>
+ <li> There is a string quoting bug in the frame encoding process in the
+Python bindings which has not been fixed. We will hold off on fixing this
+bug until we incorporate the string quoting bug fixes from the MIT July distribution.</li>
+ 
+</ul>
+  
+<hr width="100%"> 
+<h2> March 26, 1999</h2>
+  
+<h3> MITRE support 1.1.2</h3>
+  
+<ul>
+ <li> Added expanded usage instructions to all server pages.</li>
+  <li> Ensured that every dispatch function in the MITRE servers returns
+a frame, as recommended in the training course.</li>
+  <li> Fixed some dead links in the documentation for the language bindings.</li>
+  <li> Corrected some errors in the documentation.</li>
+  <li> Fixed a buffer flushing problem in the speech monitor server.</li>
+ 
+</ul>
+  
+<hr width="100%"> 
+<h2> January 29, 1999: Version 1.1.1</h2>
+  
+<h3> Galaxy Communicator 1.1.1</h3>
+  
+<ul>
+ <li> Added new rule-based logging keys LOG_IN:, LOG_OUT:. Documentation
+to follow.</li>
+  <li> Added new global program file key INITIAL_TOKEN:. Documentation to
+follow.</li>
+  <li> Fixed typo in ComputerFone library.</li>
+  <li> Added Makefile dependencies to force recompilation of clean_headers.pl
+in the appropriate circumstances.</li>
+  <li> Added i586 as an architecture.</li>
+  <li> Fixed a bug in the Hub in which type mismatches between tokens and
+program file values caused a segmentation fault.</li>
+  <li> Fixed a bug in the Hub in which empty rule conditions were occasionally
+being read incorrectly.</li>
+ 
+</ul>
+  
+<h3> MITRE support 1.1.1</h3>
+  
+<ul>
+ <li> Fixed bug where Java subdirectories were not being appropriately ignored
+when Java was not enabled.</li>
+  <li> Changed Java API slightly. See the <a
+ href="../../../contrib/MITRE/bindings/java/index.html#Change_Log">change 
+log</a>.</li>
+  <li> Added to <a href="../reference/faq.html">FAQ</a>.</li>
+  <li> Enhanced <a href="../reference/logging.html">logging</a> documentation.
+Fixed documentation errors: <a href="../reference/pgm.html#PARAM:">PARAM</a>,
+DB server API</li>
+  <li> Fixed flaw in TrueTalk server relating to how session IDs are passed
+around.</li>
+  <li> Documented <a
+ href="../../../contrib/MITRE/utilities/docs/stdin_poll.html#MGal_GetStdinPollData">MGal_GetStdinPollData</a> 
+and <a
+ href="../../../contrib/MITRE/utilities/docs/stdin_poll.html#MGal_SetStdinPollData">MGal_SetStdinPollData</a>. 
+Following a recommendation from CMU, modified the stdin polling utility to
+allow immediate restarts and to allow the prompt to be changed.</li>
+ 
+</ul>
+  
+<hr width="100%"> 
+<h2> January 15, 1999: Version 1.1</h2>
+  
+<h3> Galaxy Communicator 1.1</h3>
+  
+<ul>
+ <li> The binary data frame printout problem has been fixed.</li>
+  <li> MIT has made improvements to their Makefiles.</li>
+  <li> MIT has enhanced the Communicator API: GalIO_AddTimedTaskWithIO.</li>
+  <li> Linux support is now included.</li>
+ 
+</ul>
+  
+<h3> MITRE support 1.1</h3>
+  
+<ul>
+ <li> We have added Allegro Common Lisp bindings. These bindings currently
+lack the functionality of the MITRE utilities library.</li>
+  <li> We have significantly improved the Python bindings, and revised their
+API to conform as closely as possible with the C libraries. These bindings
+are incompatible with 1.0.1.</li>
+  <li> We have added a number of MITRE servers to the distribution.</li>
+  <li> We have added two demos to the distribution.</li>
+  <li> We have included support for PPC Linux and SGI Irix.</li>
+ 
+</ul>
+  
+<hr width="100%"> 
+<h2> November 6, 1998: Version 1.0.1</h2>
+  
+<h3> Galaxy Communicator 1.0.1</h3>
+  
+<ul>
+ <li> We have fixed a significant bug in audio brokering, which will cause
+audio brokering to fail.</li>
+  <li> We have fixed a number of bugs in preparation for distributing the
+Pegasus Lite demo. We believe that all that we're missing is the documentation
+about how to run the demo, although we have not yet tested the audio version.</li>
+  <li> We are aware of an infelicity in the printing of binary data in frames,
+due to a poor implementation of the encoding algorithm. This will be fixed
+in the next release.</li>
+ 
+</ul>
+  
+<h3> MITRE support 1.0.1</h3>
+  
+<ul>
+ <li> We have improved the layout of the example documentation.</li>
+  <li> We have added Python bindings and examples of Python servers. Documentation
+is somewhat spare; it will be improved soon.</li>
+ 
+</ul>
+  
+<p><br>
+ </p>
+<hr width="100%"> 
+<h2> November 1, 1998: Version 1.0</h2>
+  
+<h3> Galaxy Communicator 1.0</h3>
+  
+<ul>
+ <li> We have not yet had a chance to learn about and document a number of
+features of the Galaxy Communicator system:</li>
+  
+  <ul>
+ <li> The BIANCA turn management tools</li>
+  <li> Logging in the Hub script</li>
+  <li> Dispatch servers</li>
+ 
+  </ul>
+ We will document these as soon as we can. <li> Some of the MIT servers may
+have public functions whose names are too "generic" and lead to symbol clashes
+with other libraries. We will be working with them to fix these problems
+when they arise.</li>
+ 
+</ul>
+  
+<h3> MITRE support 1.0</h3>
+  
+<ul>
+ <li> We have not yet had a chance to update and bulletproof the Java bindings.
+These will be forthcoming soon.</li>
+ 
+</ul>
+  
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="release_notes_v2.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a href="org.html"><img
+ src="../../arrow_right.gif" alt="" width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last modified September 28, 2001</center>
+  
+<p><br>
+ </p>
+<br>
+</body>
+</html>

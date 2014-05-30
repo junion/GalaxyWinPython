@@ -1,0 +1,200 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>MITRE Utilities Documentation: Binary Data</title>
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+  
+<center> 
+<h1> Galaxy Communicator Documentation:<br>
+ <br>
+ MITRE Utilities: Binary Data Tools</h1>
+</center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "frame.html"><img src="../../../../docs/arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../../LICENSE">License</a> / <a href = "../../../../docs/manual/index.html">Documentation home</a> / <a href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "brokering.html"><img src="../../../../docs/arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+  
+<hr width="100%"> 
+<p>The MIT <a href="../../../../docs/manual/advanced/binary_data.html">binary 
+data object</a> can be used to transmit arbitrary structures from server to
+server, among other things. In this set of tools, we provide a facility for
+automatically encoding and decoding these structures. We provide an <a
+ href="../../examples/binary_data/">example</a> of this facility in the context
+of the binary data example. </p>
+<p>See the page on <a href="install.html">compiling and accessing</a> these
+utilities. </p>
+<p> </p>
+<hr width="100%"> 
+<h2> Defining the data type</h2>
+ The MIT system supports a set of <a
+ href="../../../../docs/manual/reference/frame.html#Object_Types">predefined 
+datatypes</a> which are used when determining the types of information transmitted
+over broker connections and stored in keys of frames. The tools here allow
+the user to "extend" this set of types. 
+<p>typedef void *(*<a name="MGal_BinaryDataEncoder"></a><b><big>MGal_BinaryDataEncoder</big></b>)(void 
+*<i>obj</i>, int *<i>size</i>) <br>
+typedef void *(*<a name="MGal_BinaryDataDecoder"></a><b><big>MGal_BinaryDataDecoder</big></b>)(void 
+*<i>data</i>, int <i>size</i>) </p>
+<p>void&nbsp;<a name="MGal_AddBinaryDataType"></a><b><big>MGal_AddBinaryDataType</big></b>(int 
+<i>data_type</i>, MGal_BinaryDataEncoder <i>encoder</i>, MGal_BinaryDataDecoder 
+<i>decoder</i>) <br>
+This function associates the <i>encoder</i> and <i>decoder</i> functions
+with the <i>data_type</i>. The encoder takes an arbitrary structure and returns
+something that will be treated as an array of bytes of length <i>size</i>.&nbsp;
+The decoder takes an array of bytes of length <i>size</i> and returns an
+arbitrary structure. The programmer defines the encoder and decoder; typically,
+the types are declared in <a
+ href="../../../../docs/manual/reference/adding.html#_GalSS_init_server">_GalSS_init_server</a>: 
+</p>
+<ul>
+  <tt>enum {TEST1_DT, TEST2_DT};</tt> 
+  <p><tt>/* The Test2 type is elided here; see example */</tt> </p>
+  <p><tt>typedef struct __TestStruct1 {</tt> <br>
+  <tt>&nbsp; int first;</tt> <br>
+  <tt>&nbsp; int last;</tt> <br>
+  <tt>&nbsp; char *msg;</tt> <br>
+  <tt>} TestStruct1;</tt> </p>
+  <p><tt>static void *encode_test_struct1(void *data, int *len)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; char *encode_buf;</tt> <br>
+  <tt>&nbsp; TestStruct1 *s = (TestStruct1 *) data;</tt> </p>
+  <p><tt>&nbsp; encode_buf = (char *) malloc(sizeof(char) * (strlen(s-&gt;msg) 
++ 64));</tt> <br>
+  <tt>&nbsp; sprintf(encode_buf, "%d %d %s", s-&gt;first, s-&gt;last, s-&gt;msg);</tt> 
+  <br>
+  <tt>&nbsp; *len = strlen(encode_buf);</tt> <br>
+  <tt>&nbsp; return (void *) encode_buf;</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>static void *decode_test_struct1(void *data, int len)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; TestStruct1 *s = (TestStruct1 *) malloc(sizeof(TestStruct1));</tt> 
+  <br>
+  <tt>&nbsp; int where;</tt> </p>
+  <p><tt>&nbsp; sscanf(data, "%d %d %n", &amp;(s-&gt;first), &amp;(s-&gt;last), 
+&amp;where);</tt> <br>
+  <tt>&nbsp; s-&gt;msg = (char *) malloc(sizeof(char) * (1 + (len - where)));</tt> 
+  <br>
+  <tt>&nbsp; strncpy(s-&gt;msg, data + where, len - where);</tt> <br>
+  <tt>&nbsp; s-&gt;msg[1 + (len - where)] = '\0';</tt> <br>
+  <tt>&nbsp; return (void *) s;</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>void *_GalSS_init_server(GalIO_ServerStruct *s, int argc, char **argv)</tt> 
+  <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; MGal_AddBinaryDataType(TEST1_DT, encode_test_struct1, decode_test_struct1);</tt> 
+  <br>
+  <tt>&nbsp; return (void *) NULL;</tt> <br>
+  <tt>}</tt></p>
+</ul>
+  
+<hr width="100%"> 
+<h2> Storing and accessing the data type</h2>
+ We provide facilities for storing and accessing this data. The functions
+here are intended to be parallel to functions like <a
+ href="../../../../docs/manual/reference/frame.html#Gal_IntObject">Gal_IntObject</a>/<a
+ href="../../../../docs/manual/reference/frame.html#Gal_GetInt">Gal_GetIn</a>t, 
+etc. 
+<p>Gal_Object&nbsp;<a name="MGal_OpaqueObject"></a><b><big>MGal_OpaqueObject</big></b>(void 
+*<i>obj</i>, int <i>data_type</i>) <br>
+Given an object whose encoder and decoder have been associated with <i>data_type</i>,
+return an object suitable for use as a value of a frame key. This function
+constructs a frame which contains the data_type and the binary encoding of
+the object: </p>
+<blockquote><tt>{c __opaque__</tt> <br>
+  <tt>&nbsp;&nbsp; :type &lt;datatype&gt;</tt> <br>
+  <tt>&nbsp;&nbsp; :data &lt;binary_encoding&gt;}</tt></blockquote>
+ void *<a name="MGal_GetOpaque"></a><b><big>MGal_GetOpaque</big></b>(Gal_Frame 
+<i>fr</i>, char *<i>key</i>, int *<i>data_type</i>) <br>
+Looks for a frame of the structure just described as the value of <i>key</i>
+in frame <i>fr</i>, decodes it according to its user-defined atatype, and
+sets the <i>data_type.</i> If the key does not exist, or the value is not
+a frame of the form described, or if there is no decoder for the datatype
+the frame contains, this function returns NULL and does not set <i>data_type</i>. 
+<p>void *<a name="MGal_GetOpaqueWarn"></a><b><big>MGal_GetOpaqueWarn</big></b>(Gal_Frame 
+<i>fr</i>, char *<i>key</i>, int <i>data_type</i>) <br>
+Like MGal_GetOpaque, but in addition returns NULL if the element found is
+not of the required <i>data_type</i>. </p>
+<p>In the example provided, the <a
+ href="../../../../docs/manual/reference/adding.html#reinitialize">reinitialize</a> 
+dispatch function creates an object and dispatches it to the Hub, which returns
+it to othe receive_binary dispatch function, which prints out the structure
+based on its decoded type: </p>
+<ul>
+  <tt>Gal_Frame receive_binary(Gal_Frame f, void *server_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; int dt;</tt> <br>
+  <tt>&nbsp; void *obj = MGal_GetOpaque(f, ":binary_data", &amp;dt);</tt> 
+  <br>
+  <tt>&nbsp; TestStruct1 *s1;</tt> 
+  <p><tt>&nbsp;if (obj) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; switch (dt) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; case TEST1_DT:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s1 = (TestStruct1 *) obj;</tt> </p>
+  <p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sls_pinfo1("First is %d, last is %d,
+msg is `%s'\n",</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+s1-&gt;first, s1-&gt;last, s1-&gt;msg);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; break;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; /* ... */</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; }</tt> <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>&nbsp; return (Gal_Frame) NULL;</tt> <br>
+  <tt>}</tt> </p>
+  <p><tt>Gal_Frame reinitialize(Gal_Frame f, void *server_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; Gal_Frame fr = Gal_MakeFrame("main", GAL_CLAUSE);</tt> <br>
+  <tt>&nbsp; TestStruct1 *s1;</tt> </p>
+  <p><tt>&nbsp; s1 = (TestStruct1 *) malloc(sizeof(TestStruct1));</tt> </p>
+  <p><tt>&nbsp; s1-&gt;first = Gal_GetInt(f, ":test_first");</tt> <br>
+  <tt>&nbsp; s1-&gt;last = Gal_GetInt(f, ":test_last");</tt> <br>
+  <tt>&nbsp; s1-&gt;msg = Gal_GetString(f, ":test_msg");</tt> <br>
+  <tt>&nbsp; Gal_SetProp(fr, ":binary_data", MGal_OpaqueObject((void *) s1,
+TEST1_DT));</tt> </p>
+  <p><tt>&nbsp; /* ... */</tt> </p>
+  <p><tt>&nbsp; /* Satisfy the response to reinitialize() */</tt> <br>
+  <tt>&nbsp; GalSS_WriteFrameToHub(f, server_data, 0);</tt> <br>
+  <tt>&nbsp; /* Send the new message */</tt> <br>
+  <tt>&nbsp; return fr;</tt> <br>
+  <tt>}</tt></p>
+</ul>
+  
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "frame.html"><img src="../../../../docs/arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../../LICENSE">License</a> / <a href = "../../../../docs/manual/index.html">Documentation home</a> / <a href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "brokering.html"><img src="../../../../docs/arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated September 20, 2001</center>
+  <br>
+</body>
+</html>

@@ -1,0 +1,472 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Tutorial: Setting Up a Brokered Audio Connection</title>
+                 <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+        
+<center>    
+<h1> Galaxy Communicator Tutorial:</h1>
+   </center>
+        
+<center>    
+<h1> Setting Up a Brokered Audio Connection</h1>
+   </center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="new_messages.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a href="ui.html"><img
+ src="../../arrow_right.gif" alt="" width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+         
+<hr width="100%">    
+<p>Up to this point, all the communication between servers has been mediated 
+ by the Hub. This arrangement has its advantages: for instance, the Hub provides 
+ a central location for flow of control and routing. However, it also has 
+its disadvantages: in order for a message to get from one server to another, 
+it has to be decoded, analyzed, and reconstructed in the Hub. While this process
+appears to be quite efficient, there are circumstances in which you might
+prefer to send data directly: for example, in situations involving high bandwidth
+or streaming, such as audio input or output. </p>
+     
+<p>To support this alternative, the Galaxy Communicator infrastructure supports 
+ a peer-to-peer connection called a <b>broker</b>. The Hub mediates the establishment 
+ of this connection, but all data which flows through the connection goes 
+directly from server to server. In this lesson, we'll learn how to set up 
+a broker connection and how it works. </p>
+     
+<ul>
+    <li> <a href="#Recognizer,_Synthesizer_and_Audio">Recognizer, Synthesizer 
+ and Audio</a></li>
+     <li> <a href="#Brokering_in_four_steps">Brokering in four steps</a></li>
+              
+  <ul>
+    <li> <a href="#Step_1:_Establish_the_broker_listener">Step 1:  Establish
+the broker listener</a></li>
+     <li> <a href="#Step_2:_Notify_the_Hub_and_client">Step 2:  Notify the
+Hub and client</a></li>
+     <li> <a
+ href="#Step_3:_Establish_the_broker_connection,_transmit_data">Step   3:
+Establish the broker connection, transmit data</a></li>
+     <li> <a href="#Step_4:_Process_data,_shut_down_broker_listener">Step
+  4: Process data, shut down broker listener</a></li>
+             
+  </ul>
+     <li> <a href="#Brokering_details">Brokering details</a></li>
+              
+  <ul>
+    <li> <a href="#Source_server:_broker_setup,_message_dispatch">Source
+ server: broker setup, message dispatch</a></li>
+     <li> <a href="#Hub:_broker_client_notification">Hub: broker client 
+notification</a></li>
+     <li> <a
+ href="#Target_server:_set_up_broker_client,_establish_callback">Target  
+server: set up broker client, establish callback</a></li>
+     <li> <a href="#About_broker_data">About broker data</a></li>
+     <li> <a href="#The_two_ends_of_the_broker_connection">The  two ends
+of the broker connection</a></li>
+     <li> <a href="#An_example">An example</a></li>
+             
+  </ul>
+         <li> <a href="#Summary">Summary</a></li>
+       
+</ul>
+    Once you feel comfortable with this lesson, you can consult the <a
+ href="../reference/brokering.html">broker reference documentation</a>.  
+ 
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="Recognizer,_Synthesizer_and_Audio"></a>Recognizer, Synthesizer 
+ and Audio</h2>
+    Up to this point, we've examined four servers in the toy travel demo: 
+the  Parser, Backend and Generator servers, which represent the simplest type
+of server, and the Dialogue server, which represents the next level of complexity.
+ The first three servers simply send responses to dispatch functions, while
+ the Dialogue server sends new messages to the Hub and occasionally waits
+for the response. The last three servers take advantage of all these tools,
+and furthermore interact with each other via broker connections.    
+<p>In addition, the Audio server also exhibits the complexities of UI programming, 
+ which we'll explore in the next lesson. </p>
+     
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="Brokering_in_four_steps"></a>Brokering in four steps</h2>
+    The setup and operation of brokers can be broken down into four steps.
+ We'll describe and illustrate these steps briefly, and then look at some
+code. We'll focus on the interaction between the Synthesizer and Audio servers 
+ as an example.    
+<h3> <a name="Step_1:_Establish_the_broker_listener"></a>Step 1: Establish 
+ the broker listener</h3>
+    In the first step, the server which will be the source of the broker
+data  establishes a listener for the broker. This listener, in most cases,
+is the  same listener that's listening for connections from the Hub; the
+protocol  is constructed so that the listener can distinguish between the
+two types  of connections. The server assigns each broker a unique ID, so
+that the server  can listen for multiple brokers simultaneously. The server
+also assigns each  broker a timeout; it will accept multiple connections
+for the broker, until  the timeout is reached.    
+<center><img src="../../images/BrokerSetup.jpg" nosave="" height="407"
+ width="527">
+   </center>
+        
+<h3> <a name="Step_2:_Notify_the_Hub_and_client"></a>Step 2: Notify the Hub 
+ and client</h3>
+    In the second step, the source server sends a new message to the Hub
+which  contains the broker contact information. This information consists
+of the  host, port, datatype and unique ID associated with this particular
+broker,  and is encapsulated in an object called a <b>broker proxy</b>. The
+message  which contains the proxy is a message like any other, and can contain
+additional  information (such as encoding format and sample rate for audio).
+   
+<center><img src="../../images/BrokerMessage.jpg" nosave="" height="407"
+ width="527">
+   </center>
+        
+<h3> <a name="Step_3:_Establish_the_broker_connection,_transmit_data"></a>Step
+  3: Establish the broker connection, transmit data</h3>
+    When the target server receives this information, it establishes a connection 
+ to the source server using information in the proxy, and establishes a callback 
+ to receive the data. The source server can now send data over the connection, 
+ and the callback will be invoked in the target server whenever data is received.
+    
+<center><img src="../../images/BrokerConnection.jpg" nosave=""
+ height="407" width="527">
+   </center>
+        
+<h3> <a name="Step_4:_Process_data,_shut_down_broker_listener"></a>Step 4: 
+ Process data, shut down broker listener</h3>
+    Finally, when the source server is done sending data, it notifies the 
+target  server that it's done, and the broker connection is terminated. The 
+target  server does whatever it wants to do with the data (e.g., send audio 
+to the  audio device). When the source server's broker reaches its timeout, 
+it stops  accepting connections for that broker; when all the connections 
+for the broker  are done, the source server shuts down the broker.    
+<center><img src="../../images/InsideBroker.jpg" nosave="" height="407"
+ width="527">
+   </center>
+    Now that we've seen these steps in the abstract, let's take a look at 
+each  one of them in detail.    
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="Brokering_details"></a>Brokering details</h2>
+        
+<h3> <a name="Source_server:_broker_setup,_message_dispatch"></a>Source server: 
+ broker setup, message dispatch</h3>
+    In the first and second brokering steps, the source server sets up a
+broker  listener and sends a message to the Hub announcing the broker. Here's
+how  that happens. <br>
+   <img src="../../images/BrokerServer.jpg" nosave="" height="455"
+ width="815">
+    <br>
+   There's more than one way to do this, but in this particular case, we
+use  the function <a
+ href="../reference/brokering.html#GalSS_ProxifyObjectType">GalSS_ProxifyObjectType</a>. 
+ This function creates the broker listener, and wraps a proxy around it. The
+ first argument of this function is the call environment. The connection this
+ call environment contains, and the server it's associated with, will host
+ the broker and its listener. The second argument is the type of data we'll
+ send across this broker connection; in this case, it's arrays of 16-bit integers.
+ The next argument is how often (or whether) to allow the toplevel Communicator
+ loop to poll this broker to see if there's anything to do; 0 means use the
+ default poll value. The fourth argument is the timeout, in seconds; after
+ this amount of time, the broker will stop accepting new connections.<br>
+     
+<p>After the new proxy is created, it's inserted into the frame like any other
+data, and the frame is sent to the Hub and then freed, just like any other
+message. </p>
+     
+<h3> <a name="Hub:_broker_client_notification"></a>Hub: broker client notification</h3>
+    The Hub portion of the process is the simplest, and you can probably
+guess  what it looks like:    
+<blockquote><tt>PROGRAM: FromSynthesizer</tt>          
+  <p><tt>RULE: :proxy --&gt; Audio.Play</tt> <br>
+     <tt>IN: :proxy :encoding_format :sample_rate</tt></p>
+  </blockquote>
+  The Hub matches the incoming message with the appropriate program, shown 
+here, and checks the rule. The <tt>:proxy</tt> key is present. So the rule 
+fires, and the relevant  data is sent to the <tt>Audio.Play</tt> dispatch 
+function.    
+<h3> <a name="Target_server:_set_up_broker_client,_establish_callback"></a>Target
+  server: set up broker client, establish callback</h3>
+    When the Audio server invokes the <tt>Audio.Play</tt> dispatch function, 
+ it creates a broker client, as follows: <br>
+   <img src="../../images/BrokerClient1.jpg" nosave="" height="311"
+ width="767" alt="">
+    <br>
+ Again, there are a few ways to do this, but here we use the function <a
+ href="../reference/brokering.html#GalSS_Unproxify">GalSS_Unproxify</a>. This
+function creates the broker client and establishes the callbacks. It requires
+a call environment object (in case  the callback needs the environment to
+write new messages to the Hub), the proxy, and three possible callbacks: one
+to handle the data, one which is called when the data transfer is done, and
+one to be called if the connection aborts before completing. (There are also
+a few other arguments we won't discuss.) Notice that we copied the broker 
+proxy before we established the connection; this is because, like all other 
+data in frames, the original proxy will be freed when the dispatch function 
+exits and the incoming message is freed.<br>
+ 
+<p>At this point, the source and target servers have established a broker
+ connection, and the broker client can begin to consume data.   </p>
+ 
+<h3> <a name="About_broker_data"></a>About broker data</h3>
+    When we discussed <a href="frame_intro.html#What's_in_a_frame">frames
+ and objects</a>, we talked about the object types that could appear in frames,
+ and concentrated on frames, strings, integers and lists. We <a
+ href="frame_intro.html#Summary">suggested</a> at that point that there were 
+ <a href="../reference/frame.html#Object_Types">many other datatypes</a> 
+which could appear in frames, including arrays of integers of various sizes. 
+ Any type that can appear in a frame can be sent across a broker connection, 
+ and vice versa, but we won't be looking at frames, string, integers and lists
+ in our broker example; we'll be looking at arrays of integers.    
+<p>When data is written to a broker server, it is encoded and cached in an 
+ output queue. If any broker clients are currently connected, it is also written
+ to the client; and when a new client connects, the server transmits the
+contents  of the output queue to the new client. In other words, all clients
+which connect to the broker server are guaranteed to see all the same data
+in the same order, no matter when they connect. This is one of the reasons
+that broker servers are set up to expire; if a broker server didn't expire,
+it would never be possible to free its output queue. </p>
+     
+<h3> <a name="The_two_ends_of_the_broker_connection"></a>The two ends of the
+broker connection</h3>
+    On the source server side, the server writes data to the broker, and
+then  indicates that it's done, approximately as follows:    
+<blockquote><tt>&nbsp; void *data; <br>
+ &nbsp; int num_samples; <br>
+ &nbsp; GalSS_BrokerProxy *bp; <br>
+ &nbsp; SynthesisRecord *s;<br>
+ &nbsp;<br>
+ &nbsp; /*&nbsp;... */<br>
+ &nbsp;<br>
+ &nbsp; data = PollSynthesis(s, &amp;num_samples);   <br>
+ &nbsp; while (data) { <br>
+     &nbsp;&nbsp;&nbsp; <b>GalSS_ProxyArrayAdd(bp, data, num_samples);  
+   </b><br>
+     &nbsp;&nbsp;&nbsp; free(data); <br>
+     &nbsp;&nbsp;&nbsp; data = PollSynthesis(s, &amp;num_samples);   <br>
+     &nbsp; }<br>
+ &nbsp;<br>
+     &nbsp; if (SynthesisIsDone(s)) { <br>
+     &nbsp;&nbsp;&nbsp; <b>GalSS_ProxyDone(bp); </b><br>
+     &nbsp; }<br>
+ &nbsp; /*&nbsp;... */</tt>                            </blockquote>
+    There are two functions involved in this example.    
+<ul>
+    <li> The function <a
+ href="../reference/brokering.html#GalSS_ProxyArrayAdd">GalSS_ProxyArrayAdd</a> 
+writes array data to a broker. The data does not need to be typed, because 
+the broker proxy is already typed (remember, we're writing arrays of 16-bit 
+integers). The second argument is the array of data, and the third argument 
+is the number of elements in the array. This function can be called as many 
+times as desired.</li>
+     <li> When there's no more data to send, the function <a
+ href="../reference/brokering.html#GalSS_ProxyDone">GalSS_ProxyDone</a>  must
+be called. This call causes a special message to be sent over the broker 
+connection which indicates that all data has been written. If this function 
+ is not called, the broker clients will never terminate and disconnect, and 
+ the broker server will never die.</li>
+       
+</ul>
+    On the target server side, the data callback function is invoked each 
+time  a block of data is received (each block corresponds to a single call 
+to GalSS_ProxyArrayAdd). The data callback function looks  approximately like
+this:    
+<blockquote><tt>static void __AudioOutputCallback(GalSS_Environment *env,<br>
+ &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Gal_ObjectType 
+o_type,<br>
+ &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Gal_Object 
+elt, void *caller_data)<br>
+ {<br>
+ &nbsp; AudioPkg *p = (AudioPkg *) caller_data;<br>
+ &nbsp; int n_samples = 0;<br>
+ &nbsp; void *data = Gal_Int16Value(elt, &amp;n_samples);<br>
+ &nbsp; <br>
+ &nbsp; printf("[Audio data to user (%d samples)]\n", n_samples);<br>
+ &nbsp; fflush(stdout);<br>
+ &nbsp; PlayAudio(p-&gt;device, data, n_samples);<br>
+ &nbsp; Gal_FreeObject(elt);<br>
+ }</tt></blockquote>
+ Each data callback function has the same signature. The first argument is 
+the environment passed to GalSS_Unproxify. The second argument is the <a
+ href="frame_intro.html#What's_in_a_frame">data type</a> of the broker proxy.
+The third object is a Gal_Object corresponding to the data, and the final
+argument is caller data which was passed to GalSS_Unproxify, in case you
+need to refer to your own structures.    
+<p>So when the target server receives a block of data, it invokes the data 
+ callback. The data is allocated as a new Gal_Object before it's passed to 
+the data callback function, so once it's done with the data, it frees it. 
+This happens for each block of data (that is, each GalSS_ProxyArrayAdd call 
+on the source side), until the broker client receives the termination message, 
+at which point it will do whatever it's supposed to do when it's done,  and 
+terminate. </p>
+     
+<h3> <a name="An_example"></a>An example</h3>
+    Let's watch a broker in action. This is slightly complicated by the fact 
+ that the unit tester cannot host broker servers or clients. So we need to 
+ use the unit tester, acting as a server, to send a message to the Hub which 
+ will cause the Synthesizer server to produce a broker connection. This is 
+ actually pretty simple; we'll just send a <tt>Synthesizer.Synthesize</tt> 
+ message to the Hub, and populate its program file with the program we saw 
+ <a href="#Hub:_broker_client_notification">here</a>, to handle the new message
+from the Synthesizer server.    
+<blockquote><b><tt>[Brokering exercise 1]<br>
+  <br>
+Unix</tt></b>:<br>
+          
+  <p><tt>%&nbsp;process_monitor $GC_HOME/tutorial/brokering/synth.config<br>
+  </tt></p>
+  <p><tt><b>Windows:</b><br>
+  </tt></p>
+  <p><tt>C:\&gt; </tt><tt>python %PM_DIR%\process_monitor.py %GC_HOME%\tutorial\brokering\synth.config</tt><br>
+  </p>
+   </blockquote>
+    Select "Process Control --&gt;&nbsp;Restart all", then select "Send new 
+ message"&nbsp;in the unit tester. Select the message named <tt>Synthesizer.Synthesize</tt>,
+  and press OK. You'll see the result in the Audio pane:    
+<blockquote><b><tt>[Audio client pane]</tt></b><tt></tt>          
+  <p><tt>[Audio data to user (1024 samples)]</tt> <br>
+     <tt>[Audio data to user (1024 samples)]</tt> <br>
+     <tt>[Audio data to user (1024 samples)]</tt> <br>
+     <tt>[Audio data to user (1024 samples)]</tt> <br>
+     <tt>[Audio data to user (1024 samples)]</tt> <br>
+     <tt>[Audio data to user (1024 samples)]</tt> <br>
+     <tt>[Audio data to user (1024 samples)]</tt> <br>
+     <tt>[Audio data to user (1024 samples)]</tt> <br>
+     <tt>[Audio data to user (1024 samples)]</tt> <br>
+     <tt>[Audio data to user (1024 samples)]</tt> <br>
+     <tt>[Audio data to user (1024 samples)]</tt> <br>
+     <tt>[Audio data to user (1024 samples)]</tt> <br>
+     <tt>[Audio data to user (1024 samples)]</tt> <br>
+     <tt>[Audio data to user (1024 samples)]</tt> <br>
+     <tt>[Audio data to user (184 samples)]</tt> <br>
+     <tt>[Audio data to user is finalized (14520 samples).]</tt></p>
+   </blockquote>
+    Each of these printouts corresponds to a single call to the data callback 
+ function. The Hub shows how the information was conveyed from the source 
+server to the target server:    
+<blockquote><b><tt>[Hub pane]</tt></b><tt></tt>          
+  <p><tt>----------------[&nbsp; 3]----------------------<br>
+ {c FromSynthesizer<br>
+ &nbsp;&nbsp; :proxy "[broker proxy: call ID 129.83.10.107:6113:0, host 129.83.10.107, 
+port 15500, type GAL_INT_16]"<br>
+ &nbsp;&nbsp; :sample_rate 8000<br>
+ &nbsp;&nbsp; :encoding_format "linear16"<br>
+ &nbsp;&nbsp; :session_id "Default"<br>
+ &nbsp;&nbsp; :tidx 3 }<br>
+ --------------------------------------------<br>
+   <br>
+ Found operation for token 3: Audio.Play<br>
+ Serving message with token index 3 to provider for Audio (id 2)<br>
+ ---- Serve(Audio@&lt;remote&gt;:-1, token 3 op_name Play (session locked))<br>
+ Got reply from provider for Audio (id 2) : token 3<br>
+   <br>
+ ----------------[&nbsp; 3]----------------------<br>
+ {c FromSynthesizer<br>
+ &nbsp;&nbsp; :proxy "[broker proxy: call ID 129.83.10.107:6113:0, host 129.83.10.107, 
+port 15500, type GAL_INT_16]"<br>
+ &nbsp;&nbsp; :sample_rate 8000<br>
+ &nbsp;&nbsp; :encoding_format "linear16"<br>
+ &nbsp;&nbsp; :session_id "Default"<br>
+ &nbsp;&nbsp; :tidx 3 }<br>
+ --------------------------------------------<br>
+   <br>
+ Destroying token 3</tt><br>
+   </p>
+   </blockquote>
+    The <tt>FromSynthesizer</tt> message constructed by the Synthesizer server 
+ contains the proxy, and the program shown <a
+ href="#Hub:_broker_client_notification">here</a> sends the appropriate 
+message to the Audio server. Finally, the Synthesizer pane shows the evidence 
+ of the broker client connecting, the unique ID&nbsp;matching, and the transmission 
+ of the special conclusion message:    
+<blockquote><b><tt>[Synthesizer pane]</tt></b><tt></tt>          
+  <p><tt>Accepted connection from 129.83.10.107 (socket 6)<br>
+ Found matching out broker for incoming request 129.83.10.107:6113:0<br>
+ Destroying connection to 129.83.10.107 (socket 6)<br>
+ Done sending data from out broker<br>
+   </tt></p>
+   </blockquote>
+    Select "File --&gt; Quit"&nbsp;to end this exercise.    
+<p> </p>
+           
+<hr width="100%">    
+<h2> <a name="Summary"></a>Summary</h2>
+    In this lesson, you've learned about the concept and the details of broker 
+ connections, including:    
+<ul>
+    <li> The broker server function <a
+ href="../reference/brokering.html#GalSS_ProxifyObjectType">GalSS_ProxifyObjectType</a><a
+ href="../reference/brokering.html#GalIO_BrokerPopulateFrame"></a></li>
+     <li> The broker client function <a
+ href="../reference/brokering.html#GalSS_Unproxify">GalSS_Unproxify</a><a
+ href="../reference/brokering.html#GalIO_SetBrokerActive"></a></li>
+     <li> The data transmission functions <a
+ href="../reference/brokering.html#GalSS_ProxyArrayAdd">GalSS_ProxyArrayAdd</a>, 
+    <a href="../reference/brokering.html#GalSS_ProxyDone">GalSS_ProxyDone</a></li>
+       
+</ul>
+    In the next lesson, we'll learn about the final and most complex type 
+of  server:&nbsp;one which monitors user interaction.    
+<p><b>Next</b>: <a href="ui.html">Creating a UI server</a> </p>
+     
+<p> </p>
+     
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="new_messages.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a href="ui.html"><img
+ src="../../arrow_right.gif" alt="" width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated August 8, 2002</center>
+     <br>
+   <br>
+  <br>
+ <br>
+</body>
+</html>

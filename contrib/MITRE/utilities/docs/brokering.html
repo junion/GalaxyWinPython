@@ -1,0 +1,130 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>MITRE Utilities Documentation: Brokering</title>
+</head>
+<body style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#3333FF" vlink="#993399" alink="#FF0000">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:<br>
+<br>
+MITRE Utilities: Brokering Tools</h1></center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "binary_data.html"><img src="../../../../docs/arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../../LICENSE">License</a> / <a href = "../../../../docs/manual/index.html">Documentation home</a> / <a href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "stdin_poll.html"><img src="../../../../docs/arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+
+<hr WIDTH="100%">
+<p>MITRE offers a utility which bundles up
+some of the brokering information and slightly simplifies setting up a
+brokering connection. This utility involves three steps: defining type
+handlers for the broker, adding outgoing broker support, and adding incoming
+broker support.
+<p>The <a href="../../examples/audio/">brokering
+example</a> contains servers which illustrate this technique in addition
+to the technique support directly by the MIT API. This tool is completely
+compatible with the MIT API; it's possible to use the MITRE tools on one
+end of the connection and the MIT API on the other, and the MITRE tool
+works without the timed task loop in the same way as the MIT API does.
+<p>See the page on <a href="install.html">compiling
+and accessing</a> these utilities.
+<p>
+<hr WIDTH="100%">
+<h2>
+Defining type handlers</h2>
+A type handler accepts the broker structure,
+the data, and the data length as arguments:
+<p>typedef void (*<a NAME="MGal_BrokerDTHandler"></a><b><big>MGal_BrokerDTHandler</big></b>)(GalIO_BrokerStruct
+*broker_struct, void *data, int n_samples)
+<p>These type handlers should be registered
+in <a href="../../../../docs/manual/reference/adding.html#_GalSS_init_server">_GalSS_init_server</a>:
+<blockquote><tt>void *_GalSS_init_server(GalIO_ServerStruct *s, int argc,
+char **argv)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; MGal_AddBrokerDTHandler(GAL_STRING, (void *) AUDIO_SERVER_NEW_UTT,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+audio_in_new_utt);</tt>
+<br><tt>&nbsp; MGal_AddBrokerDTHandler(GAL_STRING, (void *) AUDIO_SERVER_SAMPLES_DONE,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+audio_in_done);</tt>
+<br><tt>&nbsp; MGal_AddBrokerDTHandler(GAL_STRING, (void *) AUDIO_SERVER_SAMPLES_ABORT,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+audio_in_abort);</tt>
+<br><tt>&nbsp; MGal_AddBrokerDTHandler(GAL_INT_16, (void *) NULL,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+audio_in_int16_data);</tt>
+<br><tt>&nbsp; return (void *) NULL;</tt>
+<br><tt>}</tt></blockquote>
+void&nbsp;<a NAME="MGal_AddBrokerDTHandler"></a><b><big>MGal_AddBrokerDTHandler</big></b>(Gal_ObjectType
+<i>dt</i>,
+void *<i>val</i>, MGal_BrokerDTHandler <i>h</i>)
+<br>The <i>dt</i> is an <a href="../../../../docs/manual/reference/frame.html#Object_Types">integer
+data type</a>. The <i>val</i> is what the data needs to match (currently,
+this is only implemented for strings). The handler <i>h</i> is a callback
+function which will perform the appropriate actions for this type and match
+value.
+<p>
+<hr WIDTH="100%">
+<h2>
+Adding outgoing broker support</h2>
+In the usual case, the programmer needs to
+populate the frame with the appropriate broker information, much of which
+is predictable. The MITRE utility handles this case.
+<p>GalIO_BrokerStruct *<a NAME="MGal_AddOutgoingBrokering"></a><b><big>MGal_AddOutgoingBrokering</big></b>(GalIO_CommStruct
+*<i>gcomm</i>, Gal_Frame <i>fr</i>, int <i>poll_ms</i>, int <i>timeout_ms</i>)
+<br>The arguments for this function are identical
+to those of <a href="../../../../docs/manual/reference/brokering.html#GalIO_BrokerDataOutInit">GalIO_BrokerDataOutInit</a>.
+In addition, this function computes the :call_id and records the appropriate
+host and port in the keys :broker_host and :broker_port.
+<p>
+<hr WIDTH="100%">
+<h2>
+Adding incoming broker support</h2>
+GalIO_BrokerStruct *<a NAME="MGal_AddIncomingBrokering"></a><b><big>MGal_AddIncomingBrokering</big></b>(Gal_Frame
+<i>fr</i>,
+int <i>poll_ms</i>, void *<i>caller_data</i>, int <i>activate</i>)
+<br>The <i>fr</i> and <i>poll_ms</i> arguments
+are identical to those of <a href="../../../../docs/manual/reference/brokering.html#GalIO_BrokerDataInInit">GalIO_BrokerDataInInit</a>;
+the caller_data argument corresponds to the <i>refptr</i> argument there.
+In addition, this function accesses the host and port and establishes the
+dispatch function for selecting among the type handlers. If <i>activate</i>
+is nonzero, <a href="../../../../docs/manual/reference/brokering.html#GalIO_SetBrokerActive">GalIO_SetBrokerActive</a>
+will be called on the broker structure.
+<br>&nbsp;
+<br>&nbsp;
+<br>
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "binary_data.html"><img src="../../../../docs/arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../../LICENSE">License</a> / <a href = "../../../../docs/manual/index.html">Documentation home</a> / <a href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "stdin_poll.html"><img src="../../../../docs/arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated September 20, 2000</center>
+
+</body>
+</html>

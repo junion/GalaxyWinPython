@@ -1,0 +1,1081 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                            
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                            
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Server Architecture</title>
+                             <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+              
+<center>       
+<h1> Galaxy Communicator Documentation:<br>
+       <br>
+       The Toplevel Server Loop</h1>
+      </center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="brokering.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="reserved_keys.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+               
+<hr width="100%">       
+<p>The toplevel server loop in the MIT Communicator server library exploits
+   a complex array of callback and object types. Understanding this structure
+   is crucial to being able to do "unusual" things with the Communicator
+system.    In this section, we'll describe the rough outline of the toplevel
+loop and   how it relates to the dispatch functions. </p>
+           
+<ul>
+       <li> <a href="#Simulating_a_main_loop">Simulating a main loop</a></li>
+        <li> <a href="#Argument_packages">Argument packages</a></li>
+        <li> <a href="#Manipulating_the_server_object">Manipulating the server
+   object</a></li>
+        <li> <a href="#Manipulating_the_connection_object">Manipulating the 
+ connection  object</a></li>
+        <li> <a href="#Event-driven_programming">Event-driven programming</a></li>
+        <li> <a href="#Listener-in-Hub_support">Listener-in-Hub support</a></li>
+             
+</ul>
+              
+<hr width="100%">       
+<h2> <a name="Simulating_a_main_loop"></a>Simulating a main loop</h2>
+       Here's a main loop which exposes the basic functionality. This code
+ is  taken from <a
+ href="../../../contrib/MITRE/examples/simple_mainloop/basic_double.c">basic_double.c</a>, 
+   in the <a
+ href="../../../contrib/MITRE/examples/simple_mainloop/main.html">simple_mainloop</a> 
+   example. As the comment notes, this main loop is identical to the main 
+loop  in the Communicator library.<br>
+     <br>
+            
+<blockquote><tt>      /* The main() here is essentially the same main() as
+  in <br>
+     &nbsp;&nbsp; the Communicator library. */       <br>
+     int main(int argc, char **argv) <br>
+     { <br>
+     &nbsp; GalIO_ServerStruct *server;<br>
+    &nbsp;<br>
+     &nbsp; server = GalSS_CmdlineSetupServer(argc, argv); <br>
+     &nbsp; if (!server) { <br>
+     &nbsp;&nbsp;&nbsp; GalUtil_Fatal("Failed to set up server!\n");    <br>
+     &nbsp; } <br>
+     &nbsp; GalSS_StartAndRunServer(server); <br>
+     &nbsp; exit(0); <br>
+     }                     </tt></blockquote>
+       GalIO_ServerStruct *<a name="GalSS_CmdlineSetupServer"></a><b><big>GalSS_CmdlineSetupServer</big></b>(int 
+   <i>argc</i>, char **<i>argv</i>) <br>
+      This function creates and returns a server, according to the parameters 
+  provided in <i>argc</i> and <i>argv</i>. It first uses the MIT <a
+ href="../advanced/util.html#Command_line_argument_parsing">command line
+argument parsing</a> library to parse the argument list and remove the <a
+ href="adding.html#_GalSS_init_server">general server arguments</a>. Next,
+   it calls the function <a href="adding.html#_GalSS_InitializeDefaults">_GalSS_InitializeDefaults</a>, 
+   which is typically generated automatically from server information. It 
+creates  a server according to all this information, initializes <a
+ href="../advanced/signal.html">signal handling</a>, and calls <a
+ href="adding.html#_GalSS_init_server">_GalSS_init_server</a> on the remaining
+   arguments and stores the return value for later retrieval by <a
+ href="#GalIO_GetCommServerData">GalIO_GetCommServerData</a>.       
+<p>int<a name="GalSS_StartAndRunServer"></a><b><big>GalSS_StartAndRunServer</big></b>(GalIO_ServerStruct 
+   *<i>server</i>) <br>
+      This function sets up the server listener and starts the <a
+ href="../advanced/timed_tasks.html">timed task</a> loop. Returns 1 if the
+   server started up and ran appropriately, 0 if server startup failed. </p>
+           
+<p> </p>
+           
+<hr width="100%">       
+<h2> <a name="Argument_packages"></a>Argument packages</h2>
+       In order to allow the user to configure servers in the most extensible 
+  and flexible way possible, the Communicator infrastructure supports argument
+   packages which can be manipulated before server instantiation.       
+<p>GalIO_ServerStruct *<a name="GalSS_SetupServer"></a><b><big>GalSS_SetupServer</big></b>(GalSS_ServerArgs 
+   *<i>arg_pkg</i>, int <i>new_argc</i>, char **<i>new_argv</i>) <br>
+      Like GalSS_CmdlineSetupServer, but sets up a server given the <a
+ href="#Argument_packages">argument package</a><i> arg_pkg</i>. </p>
+           
+<p>GalSS_ServerArgs *<a name="GalSS_ExtractCmdlineServerArgs"></a><b><big>GalSS_ExtractCmdlineServerArgs</big></b>(GalSS_ServerArgs 
+   *<i>arg_pkg</i>, int <i>argc</i>, char **<i>argv</i>, int *<i>new_argc_ptr</i>, 
+   char ***<i>new_argv_ptr</i>) <br>
+      void&nbsp;<a name="GalSS_FreeArgPkg"></a><b><big>GalSS_FreeArgPkg</big></b>(GalSS_ServerArgs 
+   *<i>arg_pkg</i>) <br>
+      void&nbsp;<a name="GalSS_FreeArgv"></a><b><big>GalSS_FreeArgv</big></b>(int 
+   <i>argc</i>, char **<i>argv</i>) <br>
+      In case you want to have access to all the <a
+ href="adding.html#_GalSS_init_server">standard server arguments</a>, but
+   you need to change some of the settings programmatically before you initialize
+   the server, you can extract the server arguments using GalSS_ExtractCmdlineServerArgs 
+   and then pass the result to GalSS_SetupServer. GalSS_ExtractCmdlineServerArgs 
+   peels off the standard server arguments and returns the remainder via <i>new_argc_ptr</i>
+   and <i>new_argv_ptr.</i> The remainder is new memory, and you can free
+it  using GalSS_FreeArgv. If GalSS_ExtractCmdlineServerArgs returns NULL,
+something's  gone wrong and you should exit. Here's what the main loop would
+look like  if you did that: </p>
+           
+<blockquote><tt>int main(int argc, char **argv) <br>
+    { <br>
+    &nbsp; GalIO_ServerStruct *server; <br>
+    &nbsp; GalSS_ServerArgs *arg_pkg; <br>
+    &nbsp; int new_argc; <br>
+    &nbsp; char **new_argv;<br>
+    &nbsp;<br>
+    &nbsp; arg_pkg = GalSS_ExtractCmdlineServerArgs((GalSS_ServerArgs  *) 
+NULL,    <br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+   argc, argv, &amp;new_argc, &amp;new_argv); <br>
+    &nbsp; if (!arg_pkg) { <br>
+    &nbsp;&nbsp;&nbsp; GalUtil_Fatal("Failed to parse command line arguments!\n"); 
+     <br>
+    &nbsp; } <br>
+    &nbsp; /* Do whatever you need to do */ <br>
+    &nbsp; /* ... */ <br>
+    &nbsp; server = GalSS_SetupServer(arg_pkg, new_argc, new_argv);    <br>
+    &nbsp; if (!server) { <br>
+    &nbsp;&nbsp;&nbsp; GalUtil_Fatal("Failed to initialize server!\n"); 
+    <br>
+    &nbsp; } <br>
+    &nbsp; GalSS_FreeArgPkg(arg_pkg); <br>
+    &nbsp; GalSS_FreeArgv(new_argc, new_argv); <br>
+    &nbsp; GalSS_StartAndRunServer(server); <br>
+    &nbsp; exit(0); <br>
+    }</tt>                                                              
+                      </blockquote>
+       GalSS_ServerArgs *<a name="GalSS_DefaultServerArgs"></a><b><big>GalSS_DefaultServerArgs</big></b>() 
+   <br>
+      Sometimes, you may want to use the built-in argument parsing mechanism, 
+  but you might want to set some of the arguments so that the user can't modify
+  them. In this case, you can create a default GalSS_ServerArgs * object
+with   GalSS_DefaultServerArgs and use the functions below to set the appropriate
+  arguments. In all these cases, the appropriate <a
+ href="adding.html#Initialization">command line arguments</a> will be disabled,
+   and the values you provide will be used.       
+<p>All these following functions can be used to modify the server args either
+   before or after <a href="#GalSS_ExtractServerArgs">GalSS_ExtractServerArgs</a>() 
+   is called. If called before, they disable the appropriate command line 
+arguments,  set a fixed value, and return the defaults (or a previously set 
+value). If  called after, they still disable the appropriate command line 
+arguments (although  this has no effect, since the values have already been 
+extracted), but their  primary effect is to allow the programmer to capture 
+and overwrite information  from the arguments before the server is created 
+with <a href="#GalSS_SetupServer">GalSS_SetupServer</a>().
+           
+<p>unsigned short&nbsp;<a name="GalSS_SAFixPort"></a><b><big>GalSS_SAFixPort</big></b>(GalSS_ServerArgs 
+   *<i>arg_pkg</i>, unsigned short <i>port</i>) <br>
+      Sets the port to try to start the server listener on to <i>port</i>.
+ 0  uses  the default found in the <a
+ href="adding.html#Declare_server_information">server declaration information</a>.
+   Disables the <tt>-port</tt> command line argument. Returns the old value. 
+   </p>
+           
+<p>int&nbsp;<a name="GalSS_SAFixMaxConns"></a><b><big>GalSS_SAFixMaxConns</big></b>(GalSS_ServerArgs 
+   *<i>arg_pkg</i>, int <i>max_conns</i>) <br>
+      Sets the maximum number of connections permitted to <i>max_conns</i>. 
+ A  non-positive integer uses the default found in the <a
+ href="adding.html#Declare_server_information">server declaration information</a>,
+   or 1 if there is no default. Disables the <tt>-maxconns</tt> command line
+   argument. Returns the old value. </p>
+           
+<p>int&nbsp;<a name="GalSS_SAFixVerbosity"></a><b><big>GalSS_SAFixVerbosity</big></b>(GalSS_ServerArgs 
+   *<i>arg_pkg</i>, int <i>verbosity</i>) <br>
+      Sets the verbosity level. If <i>verbosity</i> is not -1, it is used 
+as  the  verbosity level for the server. Disables the <tt>-verbosity </tt>command 
+  line argument. Returns the old value. </p>
+           
+<p>int&nbsp;<a name="GalSS_SAFixColor"></a><b><big>GalSS_SAFixColor</big></b>(GalSS_ServerArgs 
+   *<i>arg_pkg</i>, int <i>color</i>) <br>
+      If <i>color</i> is &gt; 0, printing will be set up for a color xterm; 
+ if  0, black and white, if &lt; 0, it's assumed that printing is initialized
+  elsewhere. Use 0 for this argument. Disables the <tt>-color</tt> command
+ line argument. Returns the old value. </p>
+           
+<p>int&nbsp;<a name="GalSS_SAFixAssert"></a><b><big>GalSS_SAFixAssert</big></b>(GalSS_ServerArgs 
+   *<i>arg_pkg</i>, int <i>assert</i>) <br>
+      If <i>assert</i> is non-zero, the server initialization will fail if
+ the   declared port is not available, instead of searching for an available
+ port.&nbsp;   Disables the <tt>-assert</tt> command line argument. Returns
+ the old value.   </p>
+           
+<p>int&nbsp;<a name="GalSS_SAFixValidate"></a><b><big>GalSS_SAFixValidate</big></b>(GalSS_ServerArgs 
+   *<i>arg_pkg</i>, int <i>validate</i>) <br>
+      If <i>validate</i> is non-zero, the server will check each dispatch 
+function   call against the message signature. Disables the <tt>-validate 
+</tt>command   line argument. Returns the old value. </p>
+           
+<p>int&nbsp;<a name="GalSS_SAFixLoopType"></a><b><big>GalSS_SAFixLoopType</big></b>(GalSS_ServerArgs 
+   *<i>arg_pkg</i>, int <i>loop_type</i>) <br>
+      Sets the loop type. The <i>loop_type</i> argument can have one of three 
+  values:  </p>
+           
+<ul>
+       <li> GAL_LOOP_TT: use the <a href="../advanced/timed_tasks.html">timed 
+  task loop</a></li>
+        <li> GAL_LOOP_THREADS: use <a
+ href="../advanced/timed_tasks.html#Threads">threads</a> instead of the timed
+   task loop</li>
+        <li> GAL_LOOP_EXTERNAL: don't use any loop (the caller will supply
+ one;   see the <a href="../advanced/special_mainloop.html">special mainloop</a>
+  documentation)</li>
+             
+</ul>
+       Disables the <tt>-thread</tt>, <tt>-ttloop</tt>, <tt>-nottloop</tt>
+ command   line arguments. Returns the old value.       
+<p>int&nbsp;<a name="GalSS_SAFixServerListenStatus"></a><b><big>GalSS_SAFixServerListenStatus</big></b>(GalSS_ServerArgs 
+   *<i>arg_pkg</i>, int <i>server_listen_status</i>) <br>
+      Sets the listen status (values documented in <a
+ href="#GalIO_ServerListenStatus">GalIO_ServerListenStatus</a>()). If the
+   listen status is fixed and it's a server listener, then <tt>-contact_hub</tt> 
+   and <tt>-session_id</tt> are disabled. Returns the old value. </p>
+           
+<p>char *<a name="GalSS_SAFixContactHubInfo"></a><b><big>GalSS_SAFixContactHubInfo</big></b>(GalSS_ServerArgs 
+   *<i>arg_pkg</i>, const char *<i>client_pair_status</i>, const char *<i>session_id</i>, 
+   char **<i>old_session_id_ptr</i>) <br>
+      Sets the Hub contact information, if the server is supposed to contact
+  the  Hub. The&nbsp;<i> client_pair_status </i>and<i> session_id</i> arguments
+  have the same form as the command line arguments described in the <a
+ href="../advanced/hub_listener.html#Setting_up_the_server">listener-in-Hub</a> 
+   documentation. Disables the <tt>-contact_hub</tt>, <tt>-session_id</tt> 
+ command line arguments. Returns the old values. The returned memory is up 
+ to the caller to free. If <i>old_session_id_ptr</i> is NULL, the old session 
+ ID string is freed internally and not returned. </p>
+           
+<p>char *<a name="GalSS_SAFixServerLocations"></a><b><big>GalSS_SAFixServerLocations</big></b>(GalSS_ServerArgs 
+   *<i>arg_pkg</i>, const char *<i>server_locations_file</i>) <br>
+      Sets the <a href="../advanced/server_locations.html">server location
+ file</a>.   Disables the <tt>-server_locations_file</tt> command line argument.
+ Returns   the old value. </p>
+           
+<p> </p>
+           
+<hr width="100%">       
+<h2> <a name="Manipulating_the_server_object"></a>Manipulating the server
+   object</h2>
+       There are a number of functions which can be used to manipulate the
+ server   object.       
+<p>unsigned short&nbsp;<a name="GalIO_GetServerListenPort"></a><b><big>GalIO_GetServerListenPort</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>) <br>
+      This function returns the port number that the server is actually listening
+   on. </p>
+           
+<p>void *<a name="GalIO_GetServerData"></a><b><big>GalIO_GetServerData</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>) <br>
+      void&nbsp;<a name="GalIO_SetServerData"></a><b><big>GalIO_SetServerData</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>, void *<i>data</i>, void (*<i>free_fn</i>)(void *)) <br>
+      These functions get and set the server data. This data can also be
+set   by  returning a value from <a
+ href="adding.html#_GalSS_init_server">_GalSS_init_server</a>,    although
+this behavior is strongly discouraged. The server data is also  available
+for retrieval through individual connections using <a
+ href="#GalIO_GetCommServerData">GalIO_GetCommServerData</a>. </p>
+           
+<p>void *<a name="GalIO_GetCommServerData"></a><b><big>GalIO_GetCommServerData</big></b>(GalIO_CommStruct 
+   *<i>gcomm</i>) <br>
+      This function returns the value which was set by GalIO_SetServerData. 
+ </p>
+           
+<p>void&nbsp;<a name="GalIO_SetCommClientData"></a><b><big>GalIO_SetCommClientData</big></b>(GalIO_CommStruct 
+   *<i>gcomm</i>, const char *<i>name</i>, void *<i>client_data</i>) <br>
+      void *<a name="GalIO_GetCommClientData"></a><b><big>GalIO_GetCommClientData</big></b>(GalIO_CommStruct 
+   *<i>gcomm</i>, const char *<i>name</i>) <br>
+      void&nbsp;<a name="GalIO_SetServerClientData"></a><b><big>GalIO_SetServerClientData</big></b>(GalIO_ServerStruct 
+   *<i>server</i>, const char *<i>name</i>, void *<i>client_data</i>) <br>
+      void *<a name="GalIO_GetServerClientData"></a><b><big>GalIO_GetServerClientData</big></b>(GalIO_ServerStruct 
+   *<i>server</i>, const char *<i>name</i>) <br>
+      These functions get and set <i>client_data</i> associated with the
+dispatch    function named by <i>name</i>. The same repository of client
+data information    is accessible through the server or any of its connections.
+This functionality    is useful when there's persistent data that's relevant
+to the dispatch function   which it doesn't make sense to make global. </p>
+           
+<p>char *<a name="GalIO_GetServerName"></a><b><big>GalIO_GetServerName</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>) <br>
+      void&nbsp;<a name="GalIO_SetServerName"></a><b><big>GalIO_SetServerName</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>, char *<i>name</i>) <br>
+      These function get and set the name by which the server is known. Typically,
+   this information is set in <a
+ href="adding.html#_GalSS_InitializeDefaults">_GalSS_InitializeDefaults</a>. 
+   </p>
+           
+<p>int&nbsp;<a name="GalIO_GetServerMaxConnections"></a><b><big>GalIO_GetServerMaxConnections</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>) <br>
+      void&nbsp;<a name="GalIO_SetServerMaxConnections"></a><b><big>GalIO_SetServerMaxConnections</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>, int <i>max</i>) <br>
+      These functions get and set the maximum number of connections the server
+   may accept. Typically, the default case is handled before <a
+ href="adding.html#_GalSS_init_server">_GalSS_init_server</a> is called,
+so you may reset it there if you choose. Note that this function can be used
+   to reduce the number of maximum connections permitted, but it will silently
+   fail if the number of active connections exceeds the maximum requested.
+ </p>
+           
+<p>int&nbsp;<a name="GalIO_GetServerNumConnections"></a><b><big>GalIO_GetServerNumConnections</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>) <br>
+      Returns the number of connections currently connected to the server.
+ </p>
+           
+<p>GalIO_CommStruct *<a name="GalIO_GetUniqueConnection"></a><b><big>GalIO_GetUniqueConnection</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>) <br>
+      This function will return the single active connection when there is
+ an  active connection <b>and the maximum number of connections permitted
+is one</b>.  This is present mostly for backward compatibility. In releases 
+ before 2.0,  there was no distinction between the server and the connection 
+ object, and  only one connection at a time was permitted. In those situations, 
+ the code  assumes easy access to the single permitted connection, given the
+ server.  This function provides that access. </p>
+           
+<p>unsigned short&nbsp;<a name="GalIO_GetServerDefaultPort"></a><b><big>GalIO_GetServerDefaultPort</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>) <br>
+      void&nbsp;<a name="GalIO_SetServerDefaultPort"></a><b><big>GalIO_SetServerDefaultPort</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>, unsigned short <i>port</i>) <br>
+      These functions get and set the default port for the server. Typically, 
+  the default case is handled before <a
+ href="adding.html#_GalSS_init_server">_GalSS_init_server</a>  is called, 
+  so you may reset it there if you choose. </p>
+           
+<p>int&nbsp;<a name="GalIO_ServerUsesTimedTasks"></a><b><big>GalIO_ServerUsesTimedTasks</big></b>(GalIO_ServerStruct 
+   *<i>server</i>) <br>
+      This function returns 1 if the server is configured to use the timed
+ task   loop (the default case), 0 otherwise. </p>
+           
+<p>void&nbsp;<a name="GalIO_EnableDispatchFnValidation"></a><b><big>GalIO_EnableDispatchFnValidation</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>) <br>
+      This function is called when the validate argument to <a
+ href="#GalSS_InitializeServerToplevel">GalSS_InitializeServerToplevel</a> 
+   is set. All connections spawned by this server will validate each dispatch 
+   function call. Validation cannot be disabled. <br>
+      &nbsp; </p>
+           
+<p> </p>
+           
+<hr width="100%">       
+<h2> <a name="Manipulating_the_connection_object"></a>Manipulating the connection
+   object</h2>
+       When the server accepts a connection, it creates a GalIO_CommStruct
+ object   to handle that connection. This object can be accessed from the
+second argument   of each <a
+ href="adding.html#Writing_a_Dispatch_Function">dispatch function</a>   using
+the function GalSS_EnvComm. It is possible to use this connection object
+ to access server information or to send information to the Hub. These functions,
+  however, <b>do not provide enough of a context to support appropriate session
+  management</b>. We strongly recommend using the environment-aware versions
+  of these functions. See the documentation on <a href="adding.html">adding
+  a server</a> and <a href="../advanced/session.html">session management</a>.
+       
+<p>For example, the function <a href="#GalIO_CommWriteFrame">GalIO_CommWriteFrame</a> 
+   sends a new message to the Hub. We illustrate with a simplified variant 
+ of the double example: </p>
+           
+<blockquote><tt>Gal_Frame twice(Gal_Frame frame, void *server_data)   <br>
+    { <br>
+    &nbsp; Gal_Frame new_f = Gal_MakeFrame("main", GAL_CLAUSE); <br>
+    &nbsp; Gal_SetProp(new_f, ":int", Gal_IntObject(2 * Gal_GetInt(frame, 
+ ":int")));    <br>
+    &nbsp; GalIO_CommWriteFrame(GalSS_EnvComm((GalSS_Environment *) server_data),
+   new_f, 0); <br>
+    &nbsp; Gal_FreeFrame(new_f); <br>
+    &nbsp; return (Gal_Frame) NULL; <br>
+    }</tt>                            </blockquote>
+       We see here that we cast the server_data back to a GalSS_Environment*
+  to  access the connection to send the message.       
+<p>We exemplify the corresponding behavior for server-to-server subdialogues
+   using a variant of the complex_twice function in the <a
+ href="../../../contrib/MITRE/examples/double/double_core.c">double</a> example.
+   Here, before the server doubles the input and submits a new token, it
+invokes    a "multiply" message to multiply the input by some factor (set
+in the server    which provides the "multiply" message): <br>
+    </p>
+           
+<blockquote>         <tt>Gal_Frame complex_twice(Gal_Frame frame, void *server_data)<br>
+    {<br>
+    &nbsp; Gal_Frame new_f = Gal_MakeFrame("multiply", GAL_CLAUSE);<br>
+    &nbsp; Gal_Frame res_f;<br>
+    &nbsp; GalIO_MsgType t;<br>
+        <br>
+    &nbsp; Gal_SetProp(new_f, ":int", Gal_IntObject(Gal_GetInt(frame,  ":int")));<br>
+    &nbsp; res_f = GalIO_DispatchViaHub(GalSS_EnvComm((GalSS_Environment
+ *)  server_data), new_f, &amp;t);<br>
+        <br>
+    &nbsp; if (!res_f) {<br>
+    &nbsp;&nbsp;&nbsp; GalUtil_Warn("Didn't hear back from multiply");<br>
+    &nbsp;&nbsp;&nbsp; return (Gal_Frame) NULL;<br>
+    &nbsp; }<br>
+    &nbsp; Gal_FreeFrame(new_f);<br>
+    &nbsp; /* Ignoring the message type return for the sake of the example
+  ... */<br>
+    &nbsp; new_f = Gal_MakeFrame("main", GAL_CLAUSE);<br>
+    &nbsp; Gal_SetProp(new_f, ":int", Gal_IntObject(2 * Gal_GetInt(res_f, 
+ ":int")));<br>
+    &nbsp; GalIO_CommWriteFrame(GalSS_EnvComm((GalSS_Environment *) server_data),
+   new_f, 0);<br>
+    &nbsp; Gal_FreeFrame(new_f);<br>
+    &nbsp; return (Gal_Frame) NULL;<br>
+    }</tt>           </blockquote>
+    Once again, we see here that we cast the server_data back to a GalSS_Environment*
+   to access the connection to send the message.       
+<p>GalIO_CommStruct *<a name="GalSS_EnvComm"></a><b><big>GalSS_EnvComm</big></b>(GalSS_Environment 
+   *<i>env</i>) <br>
+      Retrieves the connection object from the environment. </p>
+           
+<p>int&nbsp;<a name="GalIO_CommValidating"></a><b><big>GalIO_CommValidating</big></b>(GalIO_CommStruct 
+   *<i>gcomm</i>) <br>
+      Returns 1 if the connection is validating dispatch function calls,
+0  otherwise.   </p>
+           
+<p>void *<a name="GalIO_GetCommData"></a><b><big>GalIO_GetCommData</big></b>(GalIO_CommStruct 
+   *<i>gcomm</i>) <br>
+      void&nbsp;<a name="GalIO_SetCommData"></a><b><big>GalIO_SetCommData</big></b>(GalIO_CommStruct 
+   *<i>gcomm</i>, void *<i>data</i>, void (*<i>free_fn</i>)(void *)) <br>
+      These functions get and set the data specific to a connection. If <i>free_fn</i>
+   is non-NULL, it will be called on the <i>data</i> when the data is reset
+  or the connection is destroyed. </p>
+           
+<p>char *<a name="GalIO_GetCommServerName"></a><b><big>GalIO_GetCommServerName</big></b>(GalIO_CommStruct 
+   *<i>gcomm</i>) <br>
+      This function retrieves the name by which the server is known from
+<i>gcomm</i>.    This information was originally set by <a
+ href="#GalIO_GetServerName">GalIO_SetServerName</a>.    </p>
+           
+<p>int&nbsp;<a name="GalIO_CommWriteFrame"></a><b><big>GalIO_CommWriteFrame</big></b>(GalIO_CommStruct 
+   *<i>gcomm</i>, Gal_Frame <i>frame</i>, int <i>do_block</i>) <br>
+      This function writes a frame to the Hub through the <i>gcomm</i> connection.
+   The type of the message is always GAL_MESSAGE_MSG_TYPE. See the section
+ on  <a href="adding.html#Message_types">message types</a>. </p>
+           
+<p>Gal_Frame&nbsp;<a name="GalIO_DispatchViaHub"></a><b><big>GalIO_DispatchViaHub</big></b>(GalIO_CommStruct 
+   *<i>gcomm</i>, Gal_Frame <i>frame</i>, GalIO_MsgType *<i>msg_type_ptr</i>) 
+   <br>
+      This function implements a server-to-server subdialogue with the Hub. 
+ It  sends the <i>frame</i> and waits for a reply. The type of the reply is
+ stored  in <i>msg_type_ptr</i>. If the reply type is GAL_DESTROY_MSG_TYPE 
+ or GAL_MESSAGE_MSG_TYPE,  this function prints a warning and returns NULL; 
+ therefore, the only legal  values for <i>*msg_type_ptr</i> are GAL_REPLY_MSG_TYPE 
+ and GAL_ERROR_MSG_TYPE.  See the section on <a
+ href="adding.html#Message_types">message types</a>.   <br>
+      &nbsp; </p>
+           
+<blockquote>                   
+  <h4> Memory management</h4>
+       None of the frames related to these two functions are freed.</blockquote>
+              
+<hr width="100%">       
+<h2> <a name="Event-driven_programming"></a>Event-driven programming</h2>
+       The Communicator infrastructure has a rich set of event-driven programming
+   capabilities. Programmers can register callbacks to be run at any one
+of   these events. This event-driven model is used to implement the Communicator
+  main loop, as well as external main loops and programming language bindings.
+  Using this model to its fullest, it is possible to write dispatch functions
+  identically for the Communicator main loop and external main loops.   
+   
+<p>These event callbacks should not have any interdependencies among them.
+   They are not guaranteed to be called in the order they are defined. <br>
+      &nbsp;       
+<table border="1" cols="2" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td><b>event</b></td>
+        <td><b>description</b></td>
+       </tr>
+        <tr>
+       <td><tt>GAL_SERVER_LISTENER_STARTUP_EVENT</tt></td>
+        <td>The server has just opened a listener on a port, either because 
+ it's  listening for server connections or an outgoing broker requires it</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_SERVER_LISTENER_SHUTDOWN_EVENT</tt></td>
+        <td>The server is about to shut down its listener</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_SERVER_CLIENT_POLL_STARTUP_EVENT</tt></td>
+        <td>The server hast just started attempting to contact the Hub</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_SERVER_DESTRUCTION_EVENT</tt></td>
+        <td>The server is about to be destroyed</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_SERVER_CONNECTION_CREATION_EVENT</tt></td>
+        <td>The server has just created a new connection</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_CONNECTION_BROKER_OUT_CREATION_EVENT</tt></td>
+        <td>The connection has just created an outgoing broker</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_CONNECTION_BROKER_IN_CREATION_EVENT</tt></td>
+        <td>The connection has just created an incoming broker</td>
+       </tr>
+        <tr>
+        <td valign="top"><tt>GAL_CONNECTION_BROKER_OUT_STARTUP_EVENT</tt><br>
+        </td>
+        <td valign="top">The connection is starting up an outgoing broker<br>
+        </td>
+      </tr>
+      <tr>
+        <td valign="top"><tt>GAL_CONNECTION_BROKER_IN_STARTUP_EVENT</tt><br>
+        </td>
+        <td valign="top">The connection is starting up an incoming broker<br>
+        </td>
+      </tr>
+      <tr>
+       <td><tt>GAL_CONNECTION_DISPATCH_FN_EVENT</tt></td>
+        <td>The connection is about to invoke a dispatch function</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_CONNECTION_SHUTDOWN_EVENT</tt></td>
+        <td>The connection is about to shuts down</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_CONNECTION_DESTRUCTION_EVENT</tt></td>
+        <td>The connection is about to be destroyed</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_BROKER_DATA_DONE_EVENT</tt></td>
+        <td>The broker has just determined it is done, either by receiving
+ a  termination  message or via the call <a
+ href="brokering.html#GalIO_BrokerDataDone">GalIO_BrokerDataDone</a>.</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_BROKER_ABORT_EVENT</tt></td>
+        <td>The broker is about to be destroyed before determining it is
+done</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_BROKER_DESTRUCTION_EVENT</tt></td>
+        <td>The broker is about to be destroyed</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_BROKER_CONNECTION_EVENT</tt></td>
+        <td>The (outgoing) broker has just accepted a connection</td>
+       </tr>
+                         
+  </tbody>      
+</table>
+        </p>
+           
+<blockquote><b>IMPORTANT. </b>These callbacks cannot be reentrant. If these
+   callbacks call themselves, you'll get a deadlock in the threaded version
+  of the library.</blockquote>
+              
+<p><br>
+      typedef void (*<b><big>GalIO_ServerCallbackFn</big></b>)(GalIO_ServerStruct 
+   *, void *); <br>
+      GalIO_Callback *<a name="GalIO_AddServerCallback"></a><b><big>GalIO_AddServerCallback</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>, int <i>callback_event</i>, GalIO_ServerCallbackFn <i>fn</i>, 
+   void *<i>callback_data</i>) <br>
+      This function adds the callback <i>fn</i> to the server <i>scomm</i>. 
+ The  possible values for <i>callback_event</i> are <tt>GAL_SERVER_LISTENER_STARTUP_EVENT,
+   GAL_SERVER_LISTENER_SHUTDOWN_EVENT, GAL_SERVER_CLIENT_POLL_STARTUP_EVENT,
+   GAL_SERVER_DESTRUCTION_EVENT.</tt> The <i>fn</i> is invoked with the server
+   <i>scomm</i> and <i>callback_data</i>. The callback is returned. </p>
+           
+<p>typedef void (*<b><big>GalIO_ServerConnectCallbackFn</big></b>)(GalIO_ServerStruct 
+   *, GalIO_CommStruct *, void *); <br>
+      GalIO_Callback *<a name="GalIO_AddServerConnectCallback"></a><b><big>GalIO_AddServerConnectCallback</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>, GalIO_ServerConnectCallbackFn <i>connect_callback</i>, void
+   *<i>callback_data</i>) <br>
+      This function adds the callback <i>fn</i> to the server <i>scomm</i>. 
+ The  event is <tt>GAL_SERVER_CONNECTION_CREATION_EVENT.</tt> The <i>fn</i> 
+ is invoked with the server <i>scomm</i>, the new connection, and <i>callback_data</i>.
+   The callback is returned. </p>
+           
+<p>void&nbsp;<a name="GalIO_RemoveServerCallback"></a><b><big>GalIO_RemoveServerCallback</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>, GalIO_Callback *<i>cb</i>) <br>
+      Removes the callback <i>cb</i> from the server <i>scomm</i>. </p>
+           
+<p>typedef void (*<b><big>GalIO_ConnectionCallbackFn</big></b>)(GalIO_CommStruct 
+   *, void *); <br>
+      GalIO_Callback *<a name="GalIO_AddConnectionCallback"></a><b><big>GalIO_AddConnectionCallback</big></b>(GalIO_CommStruct 
+   *<i>gcomm</i>, int <i>callback_event</i>, GalIO_ConnectionCallbackFn <i>connect_callback</i>, 
+   void *<i>callback_data</i>) <br>
+      This function adds the callback <i>fn</i> to the connection <i>gcomm</i>.
+   The possible values for <i>callback_event</i> are <tt>GAL_CONNECTION_SHUTDOWN_EVENT,
+   GAL_CONNECTION_DESTRUCTION_EVENT.</tt> The <i>fn</i> is invoked with the
+  connection <i>gcomm</i> and <i>callback_data</i>. The callback is returned.
+   </p>
+           
+<p>typedef void (*<b><big>GalIO_ConnectionBrokerCallbackFn</big></b>)(GalIO_CommStruct 
+   *, GalIO_BrokerStruct *, void *); <br>
+      GalIO_Callback *<a name="GalIO_AddConnectionBrokerCallback"></a><b><big>GalIO_AddConnectionBrokerCallback</big></b>(GalIO_CommStruct 
+   *<i>gcomm</i>, int <i>callback_event</i>, GalIO_ConnectionBrokerCallbackFn 
+   <i>connect_callback</i>, void *<i>callback_data</i>) <br>
+      This function adds the callback <i>fn</i> to the connection <i>gcomm</i>.
+   The possible values for <i>callback_event</i> are&nbsp; <tt>GAL_CONNECTION_BROKER_OUT_STARTUP_EVENT,
+   GAL_CONNECTION_BROKER_IN_STARTUP_EVENT, </tt><tt>GAL_CONNECTION_BROKER_OUT_CREATION_EVENT</tt><tt>, 
+</tt><tt>GAL_CONNECTION_BROKER_IN_CREATION_EVENT</tt><tt>.</tt> The <i>fn</i> 
+is invoked with   the connection <i>gcomm</i>, the new broker, and <i>callback_data</i>.
+ The   callback is returned. </p>
+           
+<p>typedef void (*<b><big>GalIO_ConnectionDispatchFnCallbackFn</big></b>)(GalSS_Environment 
+   *, Gal_Frame, void *); <br>
+      GalIO_Callback *<a name="GalIO_AddConnectionDispatchFnCallback"></a><b><big>GalIO_AddConnectionDispatchFnCallback</big></b>(GalIO_CommStruct 
+   *<i>gcomm</i>, GalIO_ConnectionDispatchFnCallbackFn <i>dispatch_callback</i>, 
+   void *<i>callback_data</i>) <br>
+      This function adds the callback <i>fn</i> to the connection <i>gcomm</i>.
+   The event is <tt>GAL_CONNECTION_DISPATCH_FN_EVENT.</tt> The <i>fn</i>
+is   invoked with the environment of the dispatch function call, the frame
+comprising   the message, and <i>callback_data</i>. The callback is returned.
+</p>
+           
+<p>void&nbsp;<a name="GalIO_RemoveConnectionCallback"></a><b><big>GalIO_RemoveConnectionCallback</big></b>(GalIO_CommStruct 
+   *<i>gcomm</i>, GalIO_Callback *<i>cb</i>) <br>
+      Removes the callback <i>cb</i> from the connection <i>gcomm</i>. </p>
+           
+<p>typedef void (*<b><big>GalIO_BrokerCallbackFn</big></b>)(GalIO_BrokerStruct 
+   *, void *); <br>
+      GalIO_Callback *<a name="GalIO_AddBrokerCallback"></a><b><big>GalIO_AddBrokerCallback</big></b>(GalIO_BrokerStruct 
+   *<i>b</i>, int <i>callback_event</i>, GalIO_BrokerCallbackFn <i>fn</i>, 
+ void *<i>callback_data</i>) <br>
+      This function adds the callback <i>fn</i> to the broker <i>b</i>. The 
+ possible  values for <i>callback_event</i> are<tt> GAL_BROKER_DATA_DONE_EVENT, 
+ GAL_BROKER_ABORT_EVENT,  GAL_BROKER_DESTRUCTION_EVENT, GAL_BROKER_CONNECTION_EVENT.</tt> 
+ The <i>fn</i>   is invoked with the broker <i>b</i> and <i>callback_data</i>. 
+ The callback   is returned. </p>
+           
+<p>void&nbsp;<a name="GalIO_RemoveBrokerCallback"></a><b><big>GalIO_RemoveBrokerCallback</big></b>(GalIO_BrokerStruct 
+   *<i>b</i>, GalIO_Callback *<i>cb</i>) <br>
+      Removes the callback <i>cb</i> from the broker <i>b</i>. </p>
+           
+<p> </p>
+           
+<hr width="100%">       
+<h2> <a name="Listener-in-Hub_support"></a>Listener-in-Hub support</h2>
+       As of version 2.1, it is possible to set up Hubs and servers so that 
+ <a href="../advanced/hub_listener.html">servers contact listeners in the 
+Hub</a>,  instead of Hubs contacting listeners in servers. This new functionality
+  comes with API support, which has been considerably expanded in 4.0.<br>
+         
+<h3>Programmer API for Hub contact</h3>
+   Under normal circumstances, it is probably enough to use the <a
+ href="../advanced/hub_listener.html#Setting_up_the_server">default method 
+ for configuring a server</a>. However, under certain circumstances, you may
+ prefer a little more programmer control. For example, you may want to construct
+ an application (such as a GUI or an audio application) which contacts the
+ Hub only when it has an active user. In these cases, you might want simply
+ to configure a connection or an environment.<br>
+     
+<p>Let's look again at the Communicator main loop:</p>
+       
+<blockquote><tt>      /* The main() here is essentially the same main() as
+  in <br>
+      &nbsp;&nbsp; the Communicator library. */       <br>
+      int main(int argc, char **argv) <br>
+      { <br>
+      &nbsp; GalIO_ServerStruct *server;<br>
+    &nbsp;<br>
+      &nbsp; server = GalSS_CmdlineSetupServer(argc, argv); <br>
+      &nbsp; if (!server) { <br>
+      &nbsp;&nbsp;&nbsp; GalUtil_Fatal("Failed to set up server!\n");   
+  <br>
+      &nbsp; } <br>
+      &nbsp; GalSS_StartAndRunServer(server); <br>
+      &nbsp; exit(0); <br>
+      }                       </tt></blockquote>
+       
+<p>There are three steps in operating a Communicator server object, typically.<br>
+   </p>
+     
+<ul>
+     <li>Setup: in this step, the command line arguments are digested and 
+the  relevant settings are configured in the server object. The function 
+   <tt>GalSS_CmdlineSetupServer</tt>  handles this step in the default loop 
+shown above.</li>
+     <li>Start: in this step, &nbsp;the configured server is updated with 
+the  relevant callbacks appropriate to the main loop which is about to be 
+run.</li>
+     <li>Run: In this step, the server's main loop is actually run. In normal 
+ circumstances, these two latter steps are collapsed into <tt>GalSS_StartAndRunServer</tt>, 
+ as in the default loop shown here. (In the situation where an <a
+ href="../advanced/special_mainloop.html">external main loop</a> is used, 
+ this step is skipped, of course.)</li>
+     
+</ul>
+     
+<p>In between these steps, you can add your own customizations. For instance, 
+ before step 1, you can build your own <a href="#Argument_packages">argument 
+ package</a> and modify it before the command line is digested. Or between 
+ steps 1 and 2, you can add your own callbacks to the server. Typically, there's
+ no need to insert any instructions between steps 2 and 3, which is why those
+ two steps are typically collapsed. However, when you're contacting the Hub
+ via the API below, you actually need this full three-way partition.<br>
+   </p>
+     
+<p>As an illustration, let's look at a simplified version of the toplevel 
+ loop for the UI server from the <a
+ href="../../../contrib/MITRE/demos/docs/toy-travel-tut.html">toy travel demo</a>:<br>
+   </p>
+     
+<blockquote><tt>int main(int argc, char **argv)<br>
+   {<br>
+   &nbsp; GalIO_ServerStruct *server;<br>
+   &nbsp; GalSS_Environment *env;<br>
+   &nbsp; GalIO_CommStruct *gcomm;<br>
+   &nbsp; UIPkg *p;<br>
+   &nbsp; char *contact_info = (char *) NULL;<br>
+   &nbsp; char *session_id = (char *) NULL;<br>
+     <br>
+   &nbsp; server = <b>GalSS_CmdlineSetupServerForHubContact(argc, argv, &amp;contact_info,<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ &amp;session_id,<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 0, -1, GAL_LOOP_TT);</b><br>
+   &nbsp; <br>
+   &nbsp; if (!server) {<br>
+   &nbsp;&nbsp;&nbsp; GalUtil_Warn("Failed to set up server!");<br>
+   &nbsp;&nbsp;&nbsp; exit(1);<br>
+   &nbsp; } else if (!<b>GalIO_ServerStart(server)</b>) {<br>
+   &nbsp;&nbsp;&nbsp; GalUtil_Warn("Server startup failed");<br>
+   &nbsp;&nbsp;&nbsp; exit(1);<br>
+   &nbsp; } else {<br>
+   &nbsp;&nbsp;&nbsp; env = <b>GalSS_SetupEnvironment((char *) NULL, 0,<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ (char *) NULL,<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ contact_info, session_id,<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ 1, server);</b><br>
+   &nbsp;&nbsp;&nbsp; if (!env) {<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalUtil_Warn("Couldn't create environment, 
+ exiting.");<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_SetServerDone(server);<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_DestroyServerStruct(server);<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; exit(1);<br>
+   &nbsp;&nbsp;&nbsp; }<br>
+   &nbsp;&nbsp;&nbsp; gcomm = GalSS_EnvComm(env);<br>
+   &nbsp;&nbsp;&nbsp; /* This environment will be freed when the<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; connection is destroyed. */<br>
+   &nbsp;&nbsp;&nbsp; GalSS_EnvMaintainInLocation(gcomm, GalSS_EnvGetSessionID(env),<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ &amp;(p-&gt;env));<br>
+   &nbsp;&nbsp;&nbsp; GalSS_EnvUnlock(env);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  <br>
+   &nbsp;&nbsp;&nbsp; <b>GalSS_RunServer(server);</b><br>
+   &nbsp;&nbsp;&nbsp; GalIO_SetServerDone(server);<br>
+   &nbsp;&nbsp;&nbsp; GalIO_DestroyServerStruct(server);<br>
+   &nbsp;&nbsp;&nbsp; exit(0);<br>
+   &nbsp; }<br>
+   }<br>
+     </tt></blockquote>
+       
+<p>In this example, we're creating a single connection to the Hub. There are
+four steps shown in boldface here. Three of them correspond to the three steps
+we discussed above; the fourth, <tt>GalSS_SetupEnvironment</tt>, is new.<br>
+   </p>
+     
+<p>First, we call <tt>GalSS_CmdlineSetupServerForHubContact</tt>. Although 
+ we're not listening for connections, or polling to establish a connection, 
+ we still need a server object, because most of the loop and configuration 
+ information is stored there. This is our first step. This function limits 
+ rather severely what the server will be able to do; it permits only what 
+is necessary to handle outbound connections established under programmer control.<br>
+   </p>
+     
+<p>Second, we call <tt>GalIO_ServerStart</tt>. This function performs our 
+ step 2, and only step 2.<br>
+   </p>
+     
+<p>Third, we call <tt>GalSS_SetupEnvironment</tt> to establish the connection 
+ to the Hub. This function <b>must</b> be called between steps 2 and 3. The 
+ reason for this is that the callbacks which govern the connection's interaction 
+ with the Hub are established, indirectly, in step 2. If you establish the 
+ connection to the Hub before step 2, the connection will never be polled.<br>
+   </p>
+     
+<p>Finally, we call <tt>GalSS_RunServer</tt>. This function performs step 
+ 3, and only step 3.<br>
+   </p>
+         
+<p>GalIO_ServerStruct *<a name="GalSS_CmdlineSetupServerForHubContact"></a><b><big>GalSS_CmdlineSetupServerForHubContact</big></b>(int 
+  <i>argc</i>, char **<i>argv</i>, char **<i>client_string_ptr</i>, char **<i>session_id_ptr</i>,
+  int <i>allow_listener</i>, int <i>client_poll_flags</i>, int <i>loop_type</i>)<br>
+   This function configures a server object for use in contacting the Hub.
+ First, it creates an <a href="#Argument_packages">argument package</a> to
+ digest the command line arguments <i>argv</i>. This argument package disables
+ the <tt>-thread</tt>, <tt>-ttloop</tt>, and <tt>-nottloop</tt> command 
+line  arguments and uses the value of <i>loop_type</i> instead (see <a
+ href="#GalSS_SAFixLoopType">GalSS_SAFixLoopType</a>). If <i>allow_listener</i> 
+ is 0, it also disables the  <tt>-port,</tt>   <tt>-assert</tt> and <tt>-maxconns</tt>. 
+ Finally, once it digests the remaining permitted command line arguments, 
+it extracts any values provided by <tt>-contact_hub</tt> and <tt>-session_id</tt> 
+ and returns them in <i>client_string_ptr</i> and <i>session_id_ptr</i>, respectively.
+ Once all these modifications are complete, it creates the server object.
+The <i>client_poll_flags</i> are used to configure the behavior of the server
+ for listening for connections or polling to connect to the Hub (see&nbsp;<a
+ href="file:///afs/rcf/project/communicator/users/sam/GalaxyCommunicator2/docs/manual/reference/server_structure.html#GalIO_ServerListenStatus">GalIO_ServerListenStatus</a> 
+ for details); the default value -1 sets the flags to be <tt>GAL_HUB_CLIENT 
+ | GAL_HUB_CLIENT_CONNECT_FAILURE_NOOP | GAL_HUB_CLIENT_DISCONNECT_NOOP</tt>.
+    </p>
+         
+<p>GalIO_CommStruct *<a name="GalSS_SetupConnection"></a><b><big>GalSS_SetupConnection</big></b>(const 
+  char *<i>host</i>, unsigned short <i>port</i>, char *<i>retrieved_contact_info</i>, 
+  int <i>shutdown_after</i>, GalIO_ServerStruct *<i>scomm</i>)<br>
+   Contacts a Hub at <i>host</i> and <i>port</i>, or, if <i>host</i> is NULL 
+ and <i>port</i> is 0, at the location represented in <i>retrieved_contact_info</i>, 
+ which should be the value recovered from the command line argument <tt>-contact_hub</tt> 
+ via the <i>client_string_ptr</i> argument to GalSS_CmdlineSetupServerForHubContact. 
+ The configuration and polling information in <i>scomm</i> is used. This server
+ can be a server created via normal means, or one created via GalSS_CmdlineSetupServerForHubContact. 
+ If <i>shutdown_after</i> is not 0, the server main loop will shut down when 
+ the connection disconnects.&nbsp;  </p>
+         
+<p>GalSS_Environment *<a name="GalSS_SetupEnvironment"></a><b><big>GalSS_SetupEnvironment</big></b>(const 
+  char *<i>host</i>, unsigned short <i>port</i>, const char *<i>session_id</i>, 
+  char *<i>retrieved_contact</i>, char *<i>retrieved_session</i>, int <i>shutdown_after</i>, 
+  GalIO_ServerStruct *<i>scomm</i>)<br>
+   Similar to GalSS_SetupConnection, except that an environment is returned 
+ instead. This function also allows the environment to be configured with 
+a session ID via the <i>session_id</i> argument, or, if <i>session_id</i> 
+is NULL, the <i>retrieved_session</i> argument, which should be the value 
+recovered from the command line argument <tt>-session_id</tt> via the <i>session_id_ptr</i> 
+ argument to GalSS_CmdlineSetupServerForHubContact. If both are NULL, a unique 
+ session ID based on the current universal time is created and used.&nbsp; 
+ &nbsp;  </p>
+         
+<h3>Other API functions</h3>
+     Programmers will seldom need to use the functions in this section; we
+ provide  them for reference and completeness.<br>
+     <br>
+            
+<p>GalIO_CommStruct *<a name="GalIO_ContactHub"></a><b><big>GalIO_ContactHub</big></b>(const
+   char *<i>host</i>, unsigned short <i>port</i>, GalIO_ServerStruct *<i>scomm</i>,
+   const char *<i>session_id</i>, int <i>client_poll_flags</i>) <br>
+      This function is used to contact a Hub on the given <i>host</i> and 
+<i>port</i>,   and associate the resulting connection with the given server 
+<i>scomm</i>.   If the <i>session_id</i> argument is not NULL, the connection 
+will use the   given session ID instead of the default provided to <a
+ href="#GalSS_InitializeServerToplevel">GalSS_InitializeServerToplevel</a>() 
+   (also accessible via the function GalIO_ServerSessionID()). This function 
+   can be used to add new connections to a server after the server starts 
+up.  The new connection will be processed according to the listener status 
+associated  with the server (see <a href="#GalIO_ServerListenStatus">GalIO_ServerListenStatus</a>()). 
+   If the <i>client_poll_flags</i> are not -1, they provide specific control 
+   over whether this connection is restarted or retried (see GalIO_ServerListenStatus). 
+   </p>
+           
+<p>void&nbsp;<a name="GalIO_OperateOnConnections"></a><b><big>GalIO_OperateOnConnections</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>, void *<i>arg</i>, void (*<i>op</i>)(GalIO_CommStruct *, 
+void  *)) <br>
+      This function applies the operation <i>op</i> to each connection associated
+   with the server <i>scomm</i>. The operation is also passed <i>arg</i>.
+</p>
+           
+<p>int&nbsp;<a name="GalIO_ServerListenStatus"></a><b><big>GalIO_ServerListenStatus</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>) <br>
+      The listener status is an integer whose bits correspond to various
+aspects    of the server behavior. One set of bits control whether the server
+is listening    for connections and/or brokers from the Hub and/or connecting
+as a client    to the Hub; another set of bits is whether, as a Hub client,
+the server  should  retry an connection if it fails to connect; and a final
+set of bits  control  whether, as a Hub client the server should attempt
+to reconnect after a disconnect,  do nothing, or shutdown when the last Hub
+disconnects. You can set this status  using <a
+ href="#GalSS_SAFixServerListenStatus">GalSS_SAFixServerListenStatus</a>(). 
+   The constants and their masks are as follows: <br>
+      &nbsp;       
+<table border="1" nosave="">
+       <tbody>
+          <tr>
+       <td>Constant</td>
+        <td>Mask</td>
+        <td>Description</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_CONNECTION_LISTENER</tt></td>
+        <td><tt>GAL_SERVER_TYPE_MASK</tt></td>
+        <td>Server listens for connections</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_BROKER_LISTENER</tt></td>
+        <td><tt>GAL_SERVER_TYPE_MASK</tt></td>
+        <td>Server listens for brokers</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_HUB_CLIENT</tt></td>
+        <td><tt>GAL_SERVER_TYPE_MASK</tt></td>
+        <td>Server connects to Hub</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_HUB_CLIENT_CONNECT_FAILURE_RETRY</tt></td>
+        <td><tt>GAL_HUB_CLIENT_CONNECT_FAILURE_MASK</tt></td>
+        <td>Server connecting to Hub retries if it can't establish an initial 
+  connection</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_HUB_CLIENT_CONNECT_FAILURE_SHUTDOWN</tt></td>
+        <td><tt>GAL_HUB_CLIENT_CONNECT_FAILURE_MASK</tt></td>
+        <td>Server connecting to Hub shuts down if it can't establish an
+initial    connection</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_HUB_CLIENT_CONNECT_FAILURE_NOOP</tt></td>
+        <td><tt>GAL_HUB_CLIENT_CONNECT_FAILURE_MASK</tt></td>
+        <td>Server connecting to Hub does nothing if it can't establish an
+ initial   connection</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_HUB_CLIENT_DISCONNECT_RETRY</tt></td>
+        <td><tt>GAL_HUB_CLIENT_DISCONNECT_MASK</tt></td>
+        <td>Server connecting to Hub retries after disconnect</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_HUB_CLIENT_DISCONNECT_SHUTDOWN</tt></td>
+        <td><tt>GAL_HUB_CLIENT_DISCONNECT_MASK</tt></td>
+        <td>Server connecting to Hub exits after last disconnect</td>
+       </tr>
+        <tr>
+       <td><tt>GAL_HUB_CLIENT_DISCONNECT_NOOP</tt></td>
+        <td><tt>GAL_HUB_CLIENT_DISCONNECT_MASK</tt></td>
+        <td>Server connecting to Hub does nothing after disconnect</td>
+       </tr>
+                         
+  </tbody>      
+</table>
+        </p>
+           
+<p>Typically, you won't need to probe these flags directly, if you need them
+   at all. The functions <a
+ href="libgalaxy_io.html#GalIO_ServerIsClient">GalIO_ServerIsClient</a>(), 
+   <a href="libgalaxy_io.html#GalIO_ServerIsListener">GalIO_ServerIsListener</a>(), 
+   etc. will allow you to determine the server's status. Under some circumstances, 
+   you might need more complex information. For instance, if you want to know
+   if your server will shutdown after the last disconnect, you can use the
+ test  </p>
+           
+<blockquote><tt>(GalIO_ServerListenStatus(scomm) &amp; GAL_HUB_CLIENT_DISCONNECT_MASK) 
+   ==</tt> <br>
+        <tt>&nbsp;&nbsp; GAL_HUB_CLIENT_DISCONNECT_SHUTDOWN</tt></blockquote>
+       And so on. The default listen status is <tt>GAL_CONNECTION_LISTENER</tt>; 
+   when the server type includes <tt>GAL_HUB_CLIENT</tt>, the default client
+   bits are <tt>GAL_HUB_CLIENT_CONNECT_FAILURE_RETRY | GAL_HUB_CLIENT_DISCONNECT_RETRY.</tt>
+   If you set multiple values for the client connect and disconnect statuses 
+   (which you should never do, because it's pointless, but just in case), 
+the  precedence is <tt>SHUTDOWN &gt; NOOP &gt; RETRY</tt>.       
+<p>char *<a name="GalIO_ServerSessionID"></a><b><big>GalIO_ServerSessionID</big></b>(GalIO_ServerStruct 
+   *<i>scomm</i>) <br>
+      Returns the default session ID for the server, as determined by <a
+ href="#GalSS_InitializeServerToplevel">GalSS_InitializeServerToplevel</a>(). 
+   The actual session ID is returned, not a copy.<br>
+<br>
+    GalIO_ServerLocation *<a name="GalIO_DigestServerLocations"></a><b><big>GalIO_DigestServerLocations</big></b>(const 
+char  *<i>client_pair_string</i>) <br>
+   Digests the <i>client_pair_string</i>, which is a whitespace-separated 
+sequence  of host:port pairs, and stores the syntactically legal ones in an
+array of  locations.    </p>
+<p>int&nbsp;<a name="GalIO_NumServerLocations"></a><b><big>GalIO_NumServerLocations</big></b>(GalIO_ServerLocation
+  *<i>locs</i>) <br>
+   Returns the length of the server locations array. </p>
+     
+<p>char *<a name="GalIO_NthHostAndPort"></a><b><big>GalIO_NthHostAndPort</big></b>(GalIO_ServerLocation
+  *<i>locs</i>, int <i>i</i>, unsigned short *<i>port</i>) <br>
+   Retrieves the ith host and port in <i>locs</i>. The host is returned;
+the  port is set as an outarg. The user should not free the returned host
+value.  If i is out of range, NULL is returned. </p>
+     GalIO_ServerLocation *<a name="GalIO_GetServerLocations"></a><b><big>GalIO_GetServerLocations</big></b>(GalIO_ServerStruct
+  *<i>scomm</i>) <br>
+   Retrieves the server locations array which the server <i>scomm</i> has.
+            
+<p> </p>
+           
+<hr width="100%">       
+<h2> Deprecated functions</h2>
+       These functions will still be supported, but will be removed in a
+future    release. Any new command line arguments available to Communicator-compliant
+   servers will not be available if you use these functions.       
+<p>GalIO_ServerStruct *<a name="GalSS_CmdlineInitializeServer"></a><b><big>GalSS_CmdlineInitializeServer</big></b>(int 
+   <i>argc</i>, char **<i>argv</i>) <br>
+      Like <a href="#GalSS_CmdlineSetupServer">GalSS_CmdlineSetupServer</a>,
+  but  also starts up the appropriate listeners. </p>
+           
+<p>GalIO_ServerStruct *<a name="GalSS_InitializeServerToplevel"></a><b><big>GalSS_InitializeServerToplevel</big></b>(unsigned 
+   short <i>server_port</i>, int <i>max_conns</i>, int <i>use_color</i>, int
+   <i>do_assert</i>, int <i>loop_type</i>, int <i>validate</i>, int <i>verbosity</i>,
+   int <i>server_listen_status</i>, const char *<i>client_pair_string</i>,
+ const  char *<i>session_id</i>, int <i>new_argc</i>, char **<i>new_argv</i>)
+ <br>
+      This function was originally called internally by GalSS_CmdlineInitializeServer
+   when the server-relevant information had been extracted from the arglist,
+   but it became obvious that the signature of this function would have to
+ be  changed every time an argument was added to the servers; therefore,
+the  functionality  here has been superseded by <a
+ href="#Argument_packages">argument  packages</a>.  The arguments correspond
+to the various GalSS_SAFix* functions.  </p>
+           
+<p>GalIO_ServerStruct *<a name="GalSS_InitializeServer"></a><b><big>GalSS_InitializeServer</big></b>(unsigned 
+   short <i>server_port</i>, int <i>max_conns</i>, int <i>use_color</i>, int
+   <i>do_assert</i>, int <i>use_ttloop</i>, int <i>validate</i>, int <i>new_argc</i>,
+  char **<i>new_argv</i>) <br>
+      This function is an old version of <a
+ href="#GalSS_InitializeServerToplevel">GalSS_InitializeServerToplevel</a>() 
+   which does not provide for initialization of verbosity or listener-in-Hub 
+   support. Provided for backward compability. </p>
+           
+<p>GalIO_ServerStruct *<a name="GalSS_InitializeServerFromServerArgs"></a><b><big>GalSS_InitializeServerFromServerArgs</big></b>(GalSS_ServerArgs 
+   *<i>arg_pkg</i>, int <i>new_argc</i>, char **<i>new_argv</i>) </p>
+           
+<p>GalSS_ServerArgs *<a name="GalSS_ExtractServerArgs"></a><b><big>GalSS_ExtractServerArgs</big></b>(int 
+   <i>argc</i>, char **<i>argv</i>, int *<i>new_argc_ptr</i>, char ***<i>new_argv_ptr</i>) 
+   <br>
+      A version of <a href="#GalSS_ExtractCmdlineServerArgs">GalSS_ExtractCmdlineServerArgs</a>() 
+   which doesn't allow a default argument package. Provided for backward compatibility.
+   </p>
+           
+<p>void&nbsp;<a name="GalSS_RunServer"></a><b><big>GalSS_RunServer</big></b>(GalIO_ServerStruct 
+   *<i>server</i>) <br>
+      This function starts the <a href="../advanced/timed_tasks.html">timed 
+ task</a>  loop. <br>
+       </p>
+           
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="brokering.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="reserved_keys.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated August 8, 2002</center>
+        <br>
+      <br>
+       <br>
+  <br>
+ <br>
+</body>
+</html>

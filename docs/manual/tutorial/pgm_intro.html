@@ -1,0 +1,773 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+            
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+            
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Tutorial: Writing a Basic Hub Program File</title>
+             <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+      
+<center>   
+<h1> Galaxy Communicator Tutorial:<br>
+   <br>
+   Writing a Basic Hub Program File</h1>
+  </center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="../../../contrib/MITRE/tools/docs/unit_tester_tut.html"><img
+ src="../../arrow_left.gif" alt="" width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="errors.html"><img src="../../arrow_right.gif" alt="" width="30"
+ height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+       
+<hr width="100%">   
+<p>In our hub-and-spoke configuration, we've seen that it's the Hub which
+ maintains connections to all the servers and routes the message traffic.
+We've already learned a great deal about how Hub program files work, even
+though we haven't looked yet at the technical details. In this lesson, we'll
+learn the basics of how program files are constructed. We'll learn about
+other Hub program functionality in future lessons. </p>
+   
+<ul>
+   <li> <a href="#A_little_bit_about_Hub_program_file_syntax">A little  bit
+about Hub program file syntax</a></li>
+    <li> <a href="#Global_information_and_server_declarations">Global  information
+and server declarations</a></li>
+          
+  <ul>
+   <li> <a href="#PGM_SYNTAX:">PGM_SYNTAX:</a></li>
+    <li> <a href="#Atomic_string_values">Atomic string values</a></li>
+    <li> <a href="#Service_types_and_service_providers">Service types  and
+service providers</a></li>
+    <li> <a href="#SERVICE_TYPE:">SERVICE_TYPE:</a></li>
+    <li> <a href="#CLIENT_PORT:">CLIENT_PORT:</a></li>
+    <li> <a href="#OPERATIONS:">OPERATIONS:</a></li>
+    <li> <a href="#SERVICE_PROVIDER:">SERVICE_PROVIDER:</a></li>
+    <li> <a href="#SERVER:">SERVER:</a></li>
+    <li> <a href="#HOST:">HOST:</a></li>
+    <li> <a href="#PORT:">PORT:</a></li>
+    <li> <a href="#LOCATION:">LOCATION:</a></li>
+         
+  </ul>
+    <li> <a href="#Hub_program_directives">Hub program directives</a></li>
+          
+  <ul>
+   <li> <a href="#PROGRAM:">PROGRAM:</a></li>
+    <li> <a href="#RULE:">RULE:</a></li>
+    <li> <a href="#IN:">IN:</a></li>
+    <li> <a href="#OUT:">OUT:</a></li>
+    <li> <a href="#Summary_(rule)">Summary</a></li>
+         
+  </ul>
+    <li> <a href="#Rules_and_namespaces">Rules and namespaces</a></li>
+          
+  <ul>
+   <li> <a href="#Specifying_the_namespace_explicitly">Specifying the  namespace
+explicitly</a></li>
+    <li> <a href="#Distinguishing_between_source_and_target_namespaces">Distinguishing 
+ between source and target namespaces</a></li>
+    <li> <a href="#Using_$in_for_source_and_target">Using <tt>$in</tt>  for
+source and target</a></li>
+    <li> <a href="#Literal_values">Literal values</a></li>
+    <li> <a href="#Summary_(namespaces)">Summary</a></li>
+         
+  </ul>
+    <li> <a href="#Rule_conditions">Rule conditions</a></li>
+    <li> <a href="#Managing_flow_of_control">Managing flow of control</a></li>
+          
+  <ul>
+   <li> <a href="#The_none!_value">The <tt>none! </tt>value</a></li>
+    <li> <a href="#The_destroy!_value">The <tt>destroy! </tt>value</a></li>
+         
+  </ul>
+    <li> <a href="#Summary">Summary</a></li>
+     
+</ul>
+      
+<p><br>
+   </p>
+   
+<hr width="100%">   
+<h2> <a name="A_little_bit_about_Hub_program_file_syntax"></a>A little bit
+ about Hub program file syntax</h2>
+   A line in a Hub program file can be   
+<ul>
+   <li> a <b>directive entry</b>, which consists of a <b>directive</b> (like
+ PROGRAM: or RULE:) and its value;</li>
+    <li> a comment, which is indicated by a semicolon (;) in column 0; or</li>
+    <li> a blank line, which has no meaning except to terminate certain directive
+ entry blocks like RULE:.</li>
+     
+</ul>
+   If the final character of a physical line in a directive entry is a backslash
+ (\), the line break is ignored and the next line is treated as part of the
+ same directive entry.   
+<p>There are three types of information in the program file: </p>
+   
+<ul>
+   <li> global information</li>
+    <li> server declarations</li>
+    <li> programs</li>
+     
+</ul>
+   <img src="../../images/ProgramFile.jpg" nosave="" height="335"
+ width="695">
+     
+<p>There are lots of directives, and each directive expects a value of a
+certain type or format. We're only going to look at a few of the directives
+and values. You can consult the <a href="../reference/pgm.html">complete
+documentation</a>  if you want to know more. </p>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Global_information_and_server_declarations"></a>Global information
+ and server declarations</h2>
+   As a first example, we'll begin with the program file we used in the <a
+ href="../../../contrib/MITRE/tools/docs/unit_tester_tut.html#Starting_the_unit_tester_as_a_server">second 
+ unit tester exercise</a>. In that exercise, you'll recall, there were two 
+ servers: the Parser server from the toy travel demo, and the unit tester, 
+ acting as a server. The Hub contacted the Parser server, while the unit tester
+contacted the Hub. We discussed this process in our lesson on <a
+ href="how_it_works.html#Hub_and_servers_contact_each_other">how  the Hub
+and servers communicate</a>. Here's the relevant fragment of the program
+file <tt>parse.pgm</tt>:   
+<blockquote><b><tt>[parse.pgm]</tt></b>       
+  <p><tt><b>&nbsp;1:</b>;; Use extended syntax (new in version 3.0).</tt> 
+   <br>
+    <b><tt>&nbsp;2:</tt></b> <br>
+    <tt><b>&nbsp;3:</b>PGM_SYNTAX: extended</tt> <br>
+    <b><tt>&nbsp;4:</tt></b> <br>
+    <tt><b>&nbsp;5:</b>SERVICE_TYPE: UI</tt> <br>
+    <tt><b>&nbsp;6:</b>CLIENT_PORT: 14500</tt> <br>
+    <b><tt>&nbsp;7:</tt></b> <br>
+    <tt><b>&nbsp;8:</b>SERVER: Parser</tt> <br>
+    <tt><b>&nbsp;8:</b>HOST: localhost</tt> <br>
+    <tt><b>10:</b>PORT: 10000</tt> <br>
+    <tt><b>11:</b>OPERATIONS: Parse</tt></p>
+  </blockquote>
+   Let's look first at the syntax of this fragment.   
+<ul>
+   <li> Line 1 starts with a semicolon, and so it is a comment.</li>
+    <li> Line 2 is blank. It is ignored, because there's no block to terminate.</li>
+    <li> Line 3 is a directive entry. The directive is PGM_SYNTAX:, and the
+ value is "extended".</li>
+    <li> Line 4 is blank. It is ignored, because there's no block to terminate.</li>
+    <li> Lines 5-6 are a directive entry block. The first directive, SERVICE_TYPE:,
+ determines what type of block it is.</li>
+    <li> Line 7 is blank. It terminates the directive entry block.</li>
+    <li> Lines 8-11 are a directive entry block. The first directive, SERVER:
+ determines what type of block it is.</li>
+     
+</ul>
+   Now that we know what we're looking at, let's take a closer look at the
+ directive entries.   
+<h3> <a name="PGM_SYNTAX:"></a>PGM_SYNTAX:</h3>
+   In version 3.0 of the Galaxy Communicator infrastructure, we extended
+the  syntax of the Hub program file and made it more consistent overall.
+However,  since these modifications were not backward compatible, we chose
+to enable  them through an explicit directive entry. <b>Always begin your
+program file  with this entry</b>.   
+<h3> <a name="Atomic_string_values"></a>Atomic string values</h3>
+   The value of the PGM_SYNTAX: directive, as well as a number of the other
+ directives we'll discuss here, is a string. Typically, values for directives
+ have the same printed form as <a
+ href="frame_intro.html#What's_in_a_frame">they do in frames</a>.  So we'd
+expect line 3 to look like this:   
+<blockquote><tt>PGM_SYNTAX: "extended"</tt></blockquote>
+   However, for readability purposes, the Hub program file parser also recognizes
+ these values (and sequences of these values) without their delimiting quotation
+ marks. This is the last interpretation considered; so, for instance, a directive
+ value which is a number will be interpreted as such, rather than a string
+ consisting entirely of digit characters.   
+<h3> <a name="Service_types_and_service_providers"></a>Service types and
+service providers</h3>
+   You may recall from our lesson on the <a
+ href="../../../contrib/MITRE/demos/docs/toy-travel-tut.html#Understanding_what_you_see:_Hub_startup">toy 
+ travel demo</a> that the Hub distinguishes between <b>service types</b> and
+<b>service providers</b>. The idea is that the Hub might want or need access
+to multiple servers of the same conceptual type: multiple recognizers for
+load balancing, multiple audio servers for multiple simultaneous users. The
+conceptual type corresponds to the service type. Service types have a name
+and a set of operations; the actual servers which implement these operations
+ are the service providers.   
+<p>Each of these is defined by a separate block, terminated by a blank line
+ (or the first directive entry of another block of the same type). The two
+ directive entry blocks in this Hub program file fragment illustrate two
+dimensions  of this distinction. </p>
+   
+<h3> <a name="SERVICE_TYPE:"></a>SERVICE_TYPE:</h3>
+   Each service type has a name, which is the value of the SERVICE_TYPE:
+directive.  A block which begins with the SERVICE_TYPE: directive may also
+contain an  OPERATIONS: directive and a CLIENT_PORT: directive, <a
+ href="../reference/pgm.html#Service_types">among others</a>. The value  of
+this directive is a string.   
+<h3> <a name="CLIENT_PORT:"></a>CLIENT_PORT:</h3>
+   A service type may set up a listener to await connections from providers
+ for this service type. The CLIENT_PORT: directive is a number which specifies
+ the port to set up the listener on. So in this fragment, the UI service
+type  will set up a listener on port 14500.   
+<h3> <a name="OPERATIONS:"></a>OPERATIONS:</h3>
+   Each service type may declare a set of operations, which are dispatch
+functions  it expects the providers to implement. The Hub will choose a service
+provider  to use in a rule only if the Hub program file has declared that
+the corresponding  service type supports the operation, via the OPERATIONS:
+directive. The value  of this directive is a sequence of strings. In this
+fragment, the UI service  type declares no operations (so the only messages
+it will receive from the  Hub are replies to messages it sends).   
+<h3> <a name="SERVICE_PROVIDER:"></a>SERVICE_PROVIDER:</h3>
+   Each service provider block corresponds to a service provider the Hub
+will  contact. The provider implements a service type (sometimes more than
+one);  the value of the SERVICE_PROVIDER: directive is the name of the service
+type(s)  it implements. This block may also contain a HOST: directive, a
+PORT: directive,  and a LOCATION: directive, <a
+ href="../reference/pgm.html#Service_providers">among others</a>.   
+<p>Since each service type defines a set of supported operations, all providers
+ for a given service type must support the same operations (i.e., define
+the  appropriately named dispatch function). So in the following example,
+both  providers must define the <tt>Parse</tt> dispatch function: </p>
+   
+<blockquote><tt>SERVICE_TYPE:&nbsp;Parser</tt> <br>
+    <tt>OPERATIONS:&nbsp;Parse</tt><tt></tt>       
+  <p><tt>SERVICE_PROVIDER:&nbsp;Parser</tt> <br>
+    <tt>HOST: localhost</tt> <br>
+    <tt>PORT:&nbsp;15000</tt><tt></tt> </p>
+       
+  <p><tt>SERVICE_PROVIDER:&nbsp;Parser</tt> <br>
+    <tt>HOST:&nbsp;localhost</tt> <br>
+    <tt>PORT:&nbsp;16007</tt></p>
+  </blockquote>
+   Multiple service types can define the same operation. So, for instance,
+ you might choose to distinguish between parsers for French and parsers for
+ Chinese by classifying them as different service types (there are better
+ways to do this, but let's assume it for the moment). They can both define
+the <tt>Parse</tt> operation, and any providers for these types must support
+that operation:   
+<blockquote><tt>SERVICE_TYPE:&nbsp;ChineseParser</tt> <br>
+    <tt>OPERATIONS:&nbsp;Parse</tt><tt></tt>       
+  <p><tt>SERVICE_TYPE:&nbsp;FrenchParser</tt> <br>
+    <tt>OPERATIONS:&nbsp;Parse</tt></p>
+  </blockquote>
+      
+<h3> <a name="SERVER:"></a>SERVER:</h3>
+   The SERVER: block is almost identical to the SERVICE_TYPE: block, except
+ it may also contain the locations of various service providers for that
+type.  In other words, lines 8-11 of this fragment are equivalent to   
+<blockquote><tt>SERVICE_TYPE: Parser</tt> <br>
+    <tt>OPERATIONS: Parse</tt>       
+  <p><tt>SERVICE_PROVIDER: Parser</tt> <br>
+    <tt>HOST: localhost</tt> <br>
+    <tt>PORT: 10000</tt></p>
+  </blockquote>
+      
+<h3> <a name="HOST:"></a>HOST:</h3>
+   Each service provider needs to specify the location of the listener that
+ the Hub will contact. The value of the HOST: directive is a string naming
+ the machine where the service provider's listener is.   
+<h3> <a name="PORT:"></a>PORT:</h3>
+   The value of the PORT: directive is an integer corresponding to the port
+ number that the service provider's listener is listening on. So in this
+fragment,  the Hub expects to find a service provider for the Parser service
+type listening  on port 10000 on the local host.   
+<h3> <a name="LOCATION:"></a>LOCATION:</h3>
+   A shorthand for specifying HOST: and PORT: simultaneously. The value of
+ this directive is a string <tt>&lt;host&gt;:&lt;port&gt;</tt>.   
+<p>So this fragment declares two service types, UI and Parser. It tells the
+ Hub to set up a listener for the UI service type, and to contact a service
+ provider for the Parser service type at the local host, port 10000. Here's
+ an illustration: </p>
+   
+<center>   
+<p><img src="../../images/Pgm1.jpg" nosave="" height="119" width="455">
+  </p>
+  </center>
+      
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Hub_program_directives"></a>Hub program directives</h2>
+   For a quick introduction to programs in Hub program files, let's consider
+ the program in <tt>parse.pgm</tt>:   
+<blockquote><tt>PROGRAM: UserInput</tt>       
+  <p><tt>RULE: :input_string --&gt; Parser.Parse</tt> <br>
+    <tt>IN: :input_string</tt> <br>
+    <tt>OUT: :frame</tt></p>
+  </blockquote>
+   In many ways, this is about a simple as programs ever get. It corresponds
+ approximately to a small subsection of the toy travel demo.   
+<center>   
+<p><img src="../../images/ParsePgm.jpg" nosave="" height="455"
+ width="623">
+  </p>
+  </center>
+      
+<h3> <a name="PROGRAM:"></a>PROGRAM:</h3>
+   You should remember from the basics lesson that <a
+ href="how_it_works.html#When_the_Hub_receives_a_new_message">when  the Hub
+receives a new message</a>, it tries to match the name of the incoming  frame
+with the name of a Hub program. This directive entry begins a Hub program,
+and the value of the directive is a string which is the name of the program.
+Programs are terminated by the end of the Hub program file or by another
+PROGRAM: directive entry.   
+<h3> <a name="RULE:"></a>RULE:</h3>
+   Each Hub program is a sequence of rules. Each rule is a directive entry
+ block terminated by a blank line. The RULE: directive entry indicates the
+ beginning of a rule. This block may also contain IN: and OUT: directive
+entries,  <a href="../reference/pgm.html#Rules">among others</a>. The value
+of the RULE: directive is fairly complicated; it consists of a (possibly
+empty) set of conditions, an implication arrow (<tt>--&gt;</tt>), and an
+operation name, which can be specified either as <tt>&lt;operation&gt;</tt>
+or <tt>&lt;service_type&gt;.&lt;operation&gt;</tt>.  <br>
+  <img src="../../images/ProgramFileRule.jpg" nosave="" height="215"
+ width="623">
+   <br>
+  The set of conditions is evaluated against the state of the <a
+ href="how_it_works.html#When_the_Hub_receives_a_new_message:_tokens_and_rules">current 
+ token</a>. The condition here is a simple atomic condition requiring the 
+presence of the <tt>:input_string</tt> key (with any value) in the frame comprising
+the token state. If this condition is satisfied, the Hub fires the rule,
+which means that the Hub finds a service provider for a service type which
+implements the named operation (in this case, <tt>Parse</tt>) and sends the
+provider an appropriate message. If the service type is specified in the
+operation name (in this case, <tt>Parser</tt>), only providers for the named
+service type will be considered.   
+<h3> <a name="IN:"></a>IN:</h3>
+   When the Hub decides to fire a rule, it must construct a message to send.
+ The name of the message will be the name of the operation (in this case,
+<tt>Parser.Parse</tt>). The value of the IN: directive describes how to construct
+the message given the current token. In this example, the instruction <tt>:input_string</tt> 
+ means that the Hub will look for a key-value pair in the token whose key 
+is <tt>:input_string</tt>, and, if present, copy it into the message.   
+<h3> <a name="OUT:"></a>OUT:</h3>
+   When the server has finished executing the operation, it typically returns
+ the result to the Hub. The value of the OUT: directive describes how to
+update  the current token given the message return. In this example, the
+<tt>:frame</tt>  instruction means that the Hub will look for a key-value
+pair in the message  return whose key is <tt>:frame</tt>, and, if present,
+copy it into the current  token.   
+<h3> <a name="Summary_(rule)"></a>Summary</h3>
+   Here's an illustration of the overall process: <br>
+  <img src="../../images/TokenUpdate.jpg" nosave="" height="479"
+ width="839">
+   <br>
+     
+<hr width="100%">   
+<h2> <a name="Rules_and_namespaces"></a>Rules and namespaces</h2>
+   In order to understand the possible complexity of rules (and other program
+ file directives that we won't be discussing here), it's important to understand
+ the notion of <b>namespace</b>. We've seen that the Hub uses frames to maintain
+ at least two distinct types of information states: tokens and messages.
+These  types are interrelated:   
+<ul>
+   <li> incoming messages constitute the initial state of tokens</li>
+    <li> the token state is used to construct new messages to be sent to
+servers  (the IN: directive)</li>
+    <li> the token state is updated based on message returns from servers 
+(the OUT: directive)</li>
+     
+</ul>
+   We'll refer to these types of information states as <b>namespaces</b>. 
+In addition to the message and token namespaces, there are two others which
+ we'll encounter:   
+<ul>
+   <li> the <b>session</b> namespace, which is the set of key-value pairs 
+specific to the current user's dialogue with the system (more on this later)</li>
+    <li> the <b>global</b> namespace, which is a globally-accessible set
+of  key-value pairs</li>
+     
+</ul>
+   For more on namespaces, see the <a
+ href="../reference/pgm.html#Key-value_pairs">program file reference</a>. 
+  
+<p>Each directive in a rule directive entry block has a namespace or namespaces
+ associated with it. The RULE: directive is associated with the token namespace,
+ for instance. The IN: and OUT: directives have both a source namespace (the
+ memory state from which the pairs are drawn) and a target namespace (the
+memory state which is updated). The IN: directive's source namespace is the
+token namespace (that is, that's where the values come from), and its target
+namespace is the message namespace (that is, that's where the values go).
+For OUT:, it's the other way around. </p>
+   
+<p>For this discussion, let's assume a situation where our new <tt>UserInput</tt>
+ message arrives at the Hub in a context where the global namespace contains
+ the key-value pair <tt>:fragments_permitted 1</tt> and the session namespace
+ contains the key-value pair <tt>:language "English"</tt>: </p>
+   
+<center>   
+<p><img src="../../images/Namespace1.jpg" nosave="" height="431"
+ width="551">
+  </p>
+  </center>
+      
+<h3> <a name="Specifying_the_namespace_explicitly"></a>Specifying the namespace
+ explicitly</h3>
+   It's possible to specify a namespace explicitly, using an operator named
+ <tt>$in</tt>. You can use this operator to override the namespace defaults
+ associated with a directive. So, for instance, the following two RULE: directive
+ entries are equivalent, since the default namespace associated with the
+RULE:  directive is the token namespace:   
+<blockquote><tt>RULE: :input_string --&gt; Parser.Parse</tt>       
+  <p><tt>RULE: $in(:input_string token) --&gt; Parser.Parse</tt></p>
+  </blockquote>
+   If we want to fire a rule only if the global namespace contains a key-value
+ pair whose key is <tt>:fragments_permitted</tt>, as in our example, we can
+ write this rule as follows:   
+<blockquote><tt>RULE: $in(:fragments_permitted global) --&gt; Parser.Parse</tt></blockquote>
+   So essentially, a frame key in a directive is a shorthand for a reference
+ to that key in the default namespace.   
+<h3> <a name="Distinguishing_between_source_and_target_namespaces"></a>Distinguishing 
+ between source and target namespaces</h3>
+   For those directives like IN: and OUT: which have both source and target
+ namespaces, it's possible to distinguish between the source and target using
+ a list of length two, where the first element is the target and the second
+ element is the source. So the following two directives are equivalent: 
+ 
+<blockquote><tt>IN: :input_string</tt> <br>
+    <tt>IN: (:input_string :input_string)</tt></blockquote>
+   In both cases, the directive looks for a key-value pair with the key <tt>:input_string</tt> 
+ in the source namespace and inserts the value in the target namespace under 
+ the key :<tt>input_string</tt>.   
+<p>As you may have guessed at this point, you can use this syntax to refer
+ to different keys in the source and target. So let's suppose that the Parse
+ dispatch function expects the key <tt>:string</tt>, rather than <tt>:input_string</tt>, 
+ and returns the result in a key <tt>:parse,</tt> rather than <tt>:frame</tt>.
+ If we wish to preserve the token state shown <a
+ href="#Summary_(rule)">previously</a>, we could rewrite our rule as
+ follows: </p>
+   
+<blockquote><tt>RULE: :input_string --&gt; Parser.Parse</tt> <br>
+    <tt>IN: (:string :input_string)</tt> <br>
+    <tt>OUT: (:frame :parse)</tt></blockquote>
+   The value of <tt>:input_string</tt> in the source namespace for IN: (namely,
+ the token) will be copied to <tt>:string</tt> in the target namespace (namely,
+ the message), and the value of <tt>:parse</tt> in the source namespace for
+ OUT: (namely, the message return) will be copied to <tt>:frame</tt> in the
+ target namespace (namely, the token). Here's an illustration:   
+<center>   
+<p><img src="../../images/Namespace2.jpg" nosave="" height="407"
+ width="623">
+  </p>
+  </center>
+      
+<h3> <a name="Using_$in_for_source_and_target"></a>Using <tt>$in</tt> for
+ source and target</h3>
+   Unsurprisingly, you can put these two things together, by overriding either
+ the source or the target in the mapping list. Let's say we want to copy
+the  value of the <tt>:language</tt> key in the session namespace to the
+<tt>:lang</tt>  key in the message. The IN: directive entry would look like
+this:   
+<blockquote><tt>IN: (:lang $in(:language session))</tt></blockquote>
+   If the <tt>$in</tt> operator isn't part of a pair in IN: or OUT:, it's 
+treated as the source key and namespace. The key is also used as the key for
+the target namespace, and the target namespace is the default. So the following
+directive entries are equivalent:   
+<blockquote><tt>IN $in(:language session)</tt> <br>
+    <tt>IN: (:language $in(:language session))</tt> <br>
+    <tt>IN: ($in(:language message) $in(:language session))</tt></blockquote>
+      
+<h3> <a name="Literal_values"></a>Literal values</h3>
+   The pair notation for IN: and OUT: can also be used to specify literal 
+values. These literal values appear in the source position. If, for example, 
+we want to insert a literal confidence threshold in the message sent to the 
+parser, we can do it as follows:   
+<blockquote><tt>IN: (:threshold .8)</tt></blockquote>
+   These literal values can be any frame key value, just like the <a
+ href="#Atomic_string_values">values of directives</a>, and the keys can be
+explicit namespace references.   
+<h3> <a name="Summary_(namespaces)"></a>Summary</h3>
+   This illustration unifies all these principles.   
+<p><img src="../../images/Namespace3.jpg" nosave="" height="503"
+ width="791">
+   </p>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Rule_conditions"></a>Rule conditions</h2>
+   So far, the only rule condition we've encountered is an existence condition,
+ i.e., whether or not there's a key-value pair for the given key in the appropriate
+ namespace:   
+<blockquote><tt>RULE: :input_string --&gt; Parser.Parse</tt></blockquote>
+   The existence condition can be negated:   
+<blockquote><tt>RULE: !:parse_completed --&gt; Parser.Parse</tt></blockquote>
+   The basic conditions also include numeric comparisons (<tt>&gt;, &lt;, 
+=</tt>) and string equality (<tt>=</tt>) and their negations:   
+<blockquote><tt>RULE: :threshold &gt; .8 --&gt; Parser.Parse</tt> <br>
+    <tt>RULE: :input_string != "ignore" --&gt; Parser.Parse</tt></blockquote>
+   These conditions can be recursively combined using conjunction (<tt>&amp;</tt>) 
+ and disjunction (|):   
+<blockquote><tt>RULE: :input_string &amp; (:threshold &gt; .8) --&gt; Parser.Parse</tt> 
+   <br>
+    <tt>RULE: (:threshold &gt; .8) | (:input_string != "ignore") --&gt; Parser.Parse</tt></blockquote>
+   The <a href="../reference/pgm.html#Rule_conditions">program file reference</a>
+ discusses rule conditions in considerably more detail.   
+<p>Let's do a simple example to illustrate what happens when conditions don't
+ match. Remember our simple program: </p>
+   
+<blockquote><tt>PROGRAM: UserInput</tt>       
+  <p><tt>RULE: :input_string --&gt; Parser.Parse</tt> <br>
+    <tt>IN: :input_string</tt> <br>
+    <tt>OUT: :frame</tt></p>
+  </blockquote>
+   Now let's send a message that doesn't match.   
+<blockquote><tt><b>[Hub program exercise 1]</b><br>
+  <br>
+  <b>Unix:</b><br>
+  </tt>       
+  <p><tt>% process_monitor $GC_HOME/tutorial/program_file/nomatch.config<br>
+  </tt></p>
+  <p><tt><b>Windows:</b><br>
+  </tt></p>
+  <p><tt>c:\&gt; python %PM_DIR%\process_monitor.py %GC_HOME%\tutorial\program_file\nomatch.config</tt><br>
+  </p>
+  </blockquote>
+   Start the Parser, then the Hub, then finally the unit tester. (When you
+ start the unit tester server, you won't be asked for a reply for the <tt>reinitialize</tt> 
+ message, as you were in the <a
+ href="../../../contrib/MITRE/tools/docs/unit_tester_tut.html#Starting_the_unit_tester_as_a_server">unit 
+ tester tutorial</a>. This is because the unit tester is being started with 
+ the <tt>--ignore_reinitialize</tt> flag. See the <a
+ href="../../../contrib/MITRE/tools/docs/unit_tester_ref.html">unit tester
+ reference</a> for more details.) Select "Send new message", select the frame
+ named <tt>UserInput</tt>, press "Reply Required" and then OK. You'll see
+the following in the Hub pane:   
+<blockquote><b><tt>[Hub pane]</tt></b>       
+  <p><tt>---------------- [ 1] ----------------------</tt> <br>
+    <tt>{c UserInput</tt> <br>
+    <tt>&nbsp;&nbsp; :string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"</tt> 
+   <br>
+    <tt>&nbsp;&nbsp; :session_id "Default"</tt> <br>
+    <tt>&nbsp;&nbsp; :tidx 1 }</tt> <br>
+    <tt>--------------------------------------------</tt> </p>
+       
+  <p><tt>Done with token 1 --&gt; returning to owner UI@&lt;remote&gt;:-1<br>
+  Destroying token 1 <br>
+    </tt></p>
+  </blockquote>
+   And the unit tester interaction history will show that the result is almost
+ identical to what was sent:   
+<blockquote><b><tt>[Interaction History pane]</tt></b>       
+  <p><tt>[Sending: new message]</tt> <br>
+    <tt>{c UserInput</tt> <br>
+    <tt>&nbsp;&nbsp; :string "I WANT TO FLY FROM BOSTON TO LOS ANGELES" }</tt> 
+   <br>
+    <tt>[Received: reply message]</tt> <br>
+    <tt>{c UserInput</tt> <br>
+    <tt>&nbsp;&nbsp; :string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"</tt> 
+   <br>
+    <tt>&nbsp;&nbsp; :session_id "Default" }</tt></p>
+  </blockquote>
+   It should be clear what has happened. The <tt>UserInput</tt> program has
+ a single rule, which fires if the token contains the <tt>:input_string</tt> 
+ key. The message we sent contains the <tt>:string</tt> key, but not the <tt>:input_string</tt>
+ key, and so the token which is instantiated from the new message doesn't
+contain the <tt>:input_string</tt> key. As a result, the rule in the program
+doesn't fire, which means that the Parser server isn't invoked, and there
+are no updates to the token state. When the program ends (trivially, since
+it didn't fire the only rule), it returns the token state to the unit tester,
+since it asked for a reply.   
+<p>Select "File --&gt; Quit" to end this exercise. </p>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Managing_flow_of_control"></a>Managing flow of control</h2>
+   Typically, the Hub evaluates a Hub program by considering each rule in 
+turn. When a rule condition is satisfied, the Hub fires the rule and waits 
+for the response from the server. When the Hub receives the response, it resumes
+the process at the rule immediately after the rule it fired, until it reaches
+the end of the program.   
+<p>However, it's possible both to ignore the response from the server and
+ to terminate the program before the final rule is considered. The simplest
+ way to do this is through two special values of the OUT: directive, <tt>none!</tt> 
+ and <tt>destroy!</tt>. </p>
+   
+<h3> <a name="The_none!_value"></a>The <tt>none! </tt>value</h3>
+   If the value of OUT: is <tt>none!</tt>, then the Hub will not wait for 
+the server to respond, and will immediately move on to consider the next rule.
+If the server does respond, the response will be ignored. In essence, then,
+this rule and any subsequent rules which match will be fired simultaneously.
+ We've already seen an example of this behavior.   
+<p>You may recall from the <a
+ href="../../../contrib/MITRE/demos/docs/toy-travel-tut.html">toy travel
+demo</a> that the input string was printed out by the IOMonitor server immediately
+ before it was passed to the Parser server. The corresponding program file
+ fragment looks like this: </p>
+   
+<blockquote><tt>PROGRAM: UserInput</tt>       
+  <p><tt>RULE: :input_string --&gt; IOMonitor.ReportIO</tt> <br>
+    <tt>IN: (:utterance :input_string) (:who "user")</tt> <br>
+    <tt>OUT: none!</tt> </p>
+       
+  <p><tt>RULE: :input_string --&gt; Parser.Parse</tt> <br>
+    <tt>IN: :input_string</tt> <br>
+    <tt>OUT: :frame</tt></p>
+  </blockquote>
+   By now, we can read the IN: directive entry for the first rule. The value
+ for the <tt>:input_string</tt> key in the source (token) namespace is copied
+ to the <tt>:utterance</tt> key in the target (message) namespace, and the
+ <tt>:who</tt> key in the target namespace is given the literal string value
+ <tt>"user"</tt>. The value OUT: directive informs us that the response from
+ the server will be ignored. So if the token has an <tt>:input_string</tt> 
+ key-value pair, both these rules will be fired at the same time.   
+<p>We can see this behavior in action in the following exercise: </p>
+   
+<blockquote><b><tt>[Hub program exercise 2]<br>
+  <br>
+Unix:<br>
+  </tt></b>       
+  <p><tt>% process_monitor $GC_HOME/tutorial/program_file/none.config<br>
+  </tt></p>
+  <p><tt><b>Windows:</b><br>
+  </tt></p>
+  <p><tt>C:\&gt; python %PM_DIR%\process_monitor.py %GC_HOME%\tutorial\program_file\none.config</tt><br>
+   </p>
+     </blockquote>
+   You'll see a process monitor with four panes. Start the Parser, IOMonitor,
+ Hub and finally the unit tester server. Select "Send new message", and select
+ the frame named <tt>UserInput</tt>, as before. Press "Reply required", and
+ then OK.   
+<p>Now take a look at the Hub pane. You should see something like this: </p>
+   
+<blockquote><b><tt>[Hub pane]</tt></b>       
+  <p><tt>----------------[&nbsp; 1]----------------------<br>
+  {c UserInput<br>
+  &nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"<br>
+  &nbsp;&nbsp; :session_id "Default"<br>
+  &nbsp;&nbsp; :tidx 1 }<br>
+  --------------------------------------------<br>
+    <br>
+  Found operation for token 1: IOMonitor.ReportIO<br>
+  Found operation for token 1: Parser.Parse<br>
+  Serving message with token index 1 to provider for IOMonitor @ localhost:10050<br>
+  ---- Serve(IOMonitor@localhost:10050, token 1 op_name ReportIO)<br>
+  Serving message with token index 1 to provider for Parser @ localhost:10000<br>
+  ---- Serve(Parser@localhost:10000, token 1 op_name Parse)<br>
+  Got reply from provider for Parser @ localhost:10000 : token 1<br>
+    <br>
+  ----------------[&nbsp; 1]----------------------<br>
+  {c UserInput<br>
+  &nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"<br>
+  &nbsp;&nbsp; :session_id "Default"<br>
+  &nbsp;&nbsp; :tidx 1<br>
+  &nbsp;&nbsp; :frame {c flight ... } }<br>
+  --------------------------------------------<br>
+    <br>
+  Done with token 1 --&gt; returning to owner UI@&lt;remote&gt;:-1<br>
+  Destroying token 1</tt></p>
+  </blockquote>
+   You can see that the two operations in the program matched essentially 
+at the same time, and were sent to their respective servers at essentially 
+the same time. The Parser server provided a response, and the token state 
+is updated as before.   
+<p>Select "File --&gt; Quit" to end this exercise. </p>
+   
+<h3> <a name="The_destroy!_value"></a>The <tt>destroy! </tt>value</h3>
+   The <tt>destroy!</tt> value also tells the Hub to ignore the response
+from  the server, but it also tells the Hub to terminate executing the program.
+ For instance, we might want to notify the IOMonitor and abort the execution
+ of the <tt>UserInput</tt> program if the <tt>:input_string</tt> key was
+not  present:   
+<blockquote><tt>PROGRAM: UserInput</tt>       
+  <p><tt>RULE: !:input_string --&gt; IOMonitor.ReportIO</tt> <br>
+    <tt>IN: (:utterance "&lt;no input string found&gt;") (:who "user")</tt> 
+   <br>
+    <tt>OUT: destroy!</tt> </p>
+       
+  <p><tt>RULE: :input_string --&gt; IOMonitor.ReportIO</tt> <br>
+    <tt>IN: (:utterance :input_string) (:who "user")</tt> <br>
+    <tt>OUT: none!</tt> </p>
+       
+  <p><tt>RULE: :input_string --&gt; Parser.Parse</tt> <br>
+    <tt>IN: :input_string</tt> <br>
+    <tt>OUT: :frame</tt></p>
+  </blockquote>
+   If there's no operation you want to fire, there are other ways of destroying
+ the token; we'll talk about these when we talk about the Builtin server
+and  building end-to-end systems.   
+<p>The program file reference has more details about <a
+ href="../reference/pgm.html#Special_control_directives">flow of control</a>. 
+ </p>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Summary"></a>Summary</h2>
+   In this lesson, we learned about the following Hub program directives: 
+  
+<ul>
+   <li> <a href="#PGM_SYNTAX:">PGM_SYNTAX:</a></li>
+    <li> <a href="#SERVICE_TYPE:">SERVICE_TYPE:</a></li>
+    <li> <a href="#CLIENT_PORT:">CLIENT_PORT:</a></li>
+    <li> <a href="#OPERATIONS:">OPERATIONS:</a></li>
+    <li> <a href="#SERVICE_PROVIDER:">SERVICE_PROVIDER:</a></li>
+    <li> <a href="#SERVER:">SERVER:</a></li>
+    <li> <a href="#HOST:">HOST:</a></li>
+    <li> <a href="#PORT:">PORT:</a></li>
+    <li> <a href="#LOCATION:">LOCATION:</a></li>
+    <li> <a href="#PROGRAM:">PROGRAM:</a></li>
+    <li> <a href="#RULE:">RULE:</a></li>
+    <li> <a href="#IN:">IN:</a></li>
+    <li> <a href="#OUT:">OUT:</a></li>
+     
+</ul>
+   Now that we understand the basics of writing both servers and Hub program
+ files, we can move on to study functionality which involves both additional
+ server capabilities and corresponding functionality in the Hub program file. 
+  
+<p><b>Next</b>: <a href="errors.html">Error handling</a> </p>
+   
+<p> </p>
+   
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="../../../contrib/MITRE/tools/docs/unit_tester_tut.html"><img
+ src="../../arrow_left.gif" alt="" width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="errors.html"><img src="../../arrow_right.gif" alt="" width="30"
+ height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated August 8, 2002</center>
+    <br>
+  <br>
+ <br>
+</body>
+</html>

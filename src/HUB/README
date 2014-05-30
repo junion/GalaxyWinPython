@@ -1,0 +1,172 @@
+
+setenv SLS_VERBOSE 2  -- much less verbose
+
+How we handle servers which time out or are down:
+
+If there is a "system_error" program:
+
+
+Server down
+
+:server_down 1
+:server_name "nl"
+:server_host "sls.lcs.mit.edu"
+:server_port "21354"
+:session_error_count 1
+:session_id "session_identifier"
+:utterance_id 5
+
+Alarm expiration
+
+:alarm_expired 1
+:alarm_name
+:session_error_count 1
+:session_id "session_identifier"
+:utterance_id 5
+
+
+:session_error_count can be use to detect repeated errors.  An example might be that
+normally we use generation to generate a msg. to be read to the user.... however,
+if generation server or synthesis server were down, then we want to catch this and
+treat it as a fatal error.
+
+
+
+
+
+
+If there is a "system_warning" program:
+
+Server unavailable (e.g., request for audio but all audio servers are handling
+exclusive sessions)
+
+:server_unavailable 1
+:server_name "audio"
+:operation "call_phonenumber"
+:session_id "session_identifier"
+
+
+
+
+How we do abort on DTMF:
+
+
+There is now a builtin.abort_main.  What this does is mark
+the utterance_id being work on.  Any tokens which belong to
+the program main and which have an :utterance_id marked for
+abort will not be passed on.  Although not necessary,
+we also will not dispatch_to_main anything with an aborted
+:utterance_id.  The exception is when the :no_abort key is
+set.  This passes the token on anyway, so that we can handle
+increment_utterance, etc.
+
+Note that there is now a builtin.new_session which will reset
+the utt ids to start at zero, purge all abort flags, but will NOT
+clear history.
+
+
+The audio_abort function in audio server has also been debugged
+to shut things up, etc. properly.  A subtlety is that
+it sets a flag to squelch synthesizer input bec. there's no
+easy way to tell the synthesize to shut up that I know of.
+
+
+
+
+
+
+In IN: vars:
+
+   :hub_logdir is LOG_DIR/uid/YYYYMMDD/<session_under_day>
+   :hub_log_prefix is uid-YYYYMMDD-session_under_day
+
+   Note: we may want to make these readable in the rule antecedents as well.
+
+
+ALARM: line
+
+	alarm_name enable | disable | <num_secs>
+
+	At start, all alarms are enabled but they are not set unless you set them with <num_secs>
+	<num_secs> of zero means alarm is not set.
+	disable means that <num_secs> is set to zero AND will not change from zero until the next enable
+	enable means that a future change of <num_secs> to non-zero will be honored
+
+	The same line may contain enable/disable and <num_secs> for the same alarm.
+	The enable/disables are processed first, then the <num_secs>.  Left to right in each case.
+
+
+
+Instead of HOST:/PORT:, you can now use LOCATION: host:port. However, LOCATION: must
+be the last line in a series of lines for defining a SERVER. This allows for multiple
+LOCATION: lines if multiple servers are running for the same operations. For now,
+this functionality only works for stateless servers.
+
+Note -- as a result, we don't really like the syntax of shared OPERATIONS: lines anymore.
+
+
+
+SESSIONS
+
+session_id:  Normally, builtin.new_session will create the session with
+session_id under .pgm control.  However, other session initiators
+like audio or gui are permitted to as well.  They may do so by
+specifying a non-zero int :hub_new_session.  This has the same effect
+as the .pgm calling new_session.  You'd want to do this if you
+immediately need a session lock (likely for an initiator)
+
+builtin.end_session can be used to destroy a session when we're done.
+We don't do this hub_turn_management close_off because we may need to send messages
+to various servers to clean up.
+
+:session_id is now assumed as an IN var.
+
+LOCKS:
+
+LOCK: :hub_get_session_lock :hub_serve_this_session_only
+:hub_get_session_lock
+:hub_release_session_lock
+:hub_serve_this_session_only
+:hub_serve_any_session
+
+
+LOGGING:
+
+Timestamps are now always in sequential order rather than in listed order.
+Logging is per session, in the same place as the logdir/prefix we send
+    to servers for their logging.
+
+Special timestamps:
+
+:hub_all_operations -- timestamp every operation...
+
+:hub_get_session_lock -- activity to obtain/release session locks
+:hub_release_session_lock
+
+:hub_serve_this_session_only -- activity to mark a server exclusive to a session, and to unmark
+:hub_serve_any_session
+
+:hub_alarm -- set/enable/disable
+:hub_system_error -- system errors
+
+
+
+
+PARAM:
+
+Analogous to SET: but on the input side is PARAM:.
+
+
+
+Simplified M-M protocol:
+
+A server has two indepedent busy states: processing a token, and waiting for a response to a M-M.
+When a server is making a M-M call rather than just invoking a call, i.e., it wants a response,
+  it must now set :hub_reply_requested 1.  DispatchViaHub will do this.
+At the end of a non-main prgm execution, if the token was originally from an M-M call,
+  the token is returned to the caller.
+Note that when a server is processing a token, the hub will not send it any other token until
+  it replies.  (unless none! is set.)
+
+If a server is processing a token that is part of a M-M dialogue and it dies, a token
+with a system_error frame for server_down will be returned to the requestor of the M-M.

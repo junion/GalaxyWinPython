@@ -1,0 +1,88 @@
+# This file (c) Copyright 1998 - 2000 The MITRE Corporation
+# 
+# This file is part of the Galaxy Communicator system. It is licensed
+# under the conditions described in the file LICENSE in the root 
+# directory of the Galaxy Communicator system.
+
+# This Makefile stub derived from the original MIT Makefile stub.
+
+# SAM 9/27/99: Modified to handle the new Makefile format.
+
+MAKEFILE = Makefile
+
+# Modify this to point to the package root directory
+ROOT_DIR = 
+
+# archos.make sets ARCH, OS, and other variables to be used
+# with makefile conditionals (ifdef, ifndef, ifeq, ifneq)
+#TEMPLATES = $(ROOT_DIR)/templates
+#include $(TEMPLATES)/archos.make
+
+# Add any special CPP/LD flags here.
+CPPFLAGS = 
+LDFLAGS  = 
+
+# The order of objects for linking is as follows:
+#  - object files (from SOURCES)
+#  - SPECIAL_LIBS (defined below)
+#    SPECIAL_LIBS are libraries with variants (_debug, _profile)
+#    which are particular to the current executable.  If any of the
+#    variants are non-standard, set SPECIAL_LIBS_D and/or SPECIAL_LIBS_P.
+#  - LIBS (defined in <package>.make)
+#    LIBS are libraries with variants which every executable in the
+#    package requires.
+#  - COMMON_LIBS (defined below and in <package>.make)
+#    COMMON_LIBS are third party libraries without variants.
+#  - SYSLIBS (defined in sysdep.make and <package>.make)
+#    SYSLIBS are operating system libraries.
+COMMON_LIBS =
+SPECIAL_LIBS =
+LIBDEPS = 
+SPECIAL_LIBS_D =
+SPECIAL_LIBS_P =
+
+# NOTE: ONLY SPECIFY ONE OF THE FOLLOWING THREE TYPES OF TARGETS:
+# LIBTARGET, EXECTARGETS, SERVER, APPLET
+
+# If you're making a library, give the name here.
+#LIBTARGET = libutil.a
+
+# By default, compilation goes into $(ROOT_DIR)/bin. Change this
+# if you're outside the Communicator distribution and you don't want
+# your executables stored inside the Communicator distribution.
+
+# EXECDIR = bin/
+
+# If you're making executables, list them here.
+#EXECTARGETS = exec_name
+
+# If making an executable that uses the ServerStubs mechanism, 
+# give the name here.
+#SERVER = server_name
+
+# If this is a C application which is thread safe, uncomment
+# this line in order to be able to enable "make thread" to 
+# generate a threaded library or executable. C only.
+
+#THREAD_SAFE = 1
+
+# List subdirectories below so that OBJ subdirectories get made.
+SUBDIRS = \
+	subdir1 \
+	subdir2
+
+# List all .c files here, including those in subdirectories:
+SOURCES = \
+	for.c \
+	example.c \
+	subdir1/foo.c \
+	subdir2/bar.c
+
+# Include the package rules file (make variable settings and targets)
+# in the package templates directory (See rules.make.stub)
+include ${ROOT_DIR}/templates/rules.make
+
+# Include automatically generated source dependency file
+ifneq ($(findstring clean,$(MAKECMDGOALS)),clean)
+include $(MAKEFILE).depend
+endif

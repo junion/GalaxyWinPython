@@ -1,0 +1,4 @@
+(
+{c Synthesizer.Synthesize
+   :output_string "Welcome to Communicator. How may I help you?" }
+)

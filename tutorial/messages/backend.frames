@@ -1,0 +1,6 @@
+(
+{c DBQuery
+   :sql_query "select airline, flight_number, departure_datetime from flight_table where departure_aiport = 'BOS' and arrival_airport = 'LAX'" }
+{c DBQuery
+   :sql_query "select airline, flight_number, departure_datetime from flight_table where departure_aiport = 'BOS' and arrival_airport = 'SFO'" }
+)

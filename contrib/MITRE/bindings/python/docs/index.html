@@ -1,0 +1,4017 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                        
+  <meta name="GENERATOR"
+ content="Mozilla/4.78 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>MITRE Python Bindings</title>
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+            
+<center>      
+<h1> Galaxy Communicator Documentation:<br>
+      <br>
+      MITRE Python Bindings</h1>
+     </center>
+   
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+     <tbody>
+       <tr>
+         <td valign="middle" align="left" width="10%"><a
+ href="../../java/index.html"><img
+ src="../../../../../docs/arrow_left.gif" alt="" width="30" height="30">
+       </a></td>
+         <td valign="middle" align="center">          <a
+ href="../../../../../LICENSE">License</a> / <a
+ href="../../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+        </td>
+         <td valign="middle" align="right" width="10%"><a
+ href="../../clisp/docs/index.html"><img
+ src="../../../../../docs/arrow_right.gif" alt="" width="30" height="30">
+       </a></td>
+       </tr>
+          
+  </tbody>   
+</table>
+             
+<hr width="100%">      
+<h2> Enabling Python bindings</h2>
+      See the <a
+ href="../../../../../docs/manual/admin/install.html#config">installation
+   documentation</a> for how to enable the Python bindings. Python 1.5 or
+later  is required. On Windows, Python 2.0 or later is required.<br>
+ <br>
+ On Windows, the GC_HOME environment variable must be set.<br>
+       
+<p> </p>
+         
+<hr width="100%">      
+<h2> Documentation Summary</h2>
+      The bindings are divided into files which correspond approximately
+to  subdirectories  of libGalaxy: Galaxy.py (galaxy), GalaxyIO.py (io and
+ServerStub),  MGalaxy.py  (MITRE's libMITREgalaxy), and SLSUtil.py (util).
+There is a final  module,  cGalaxy, which is implemented in C and provides
+a wrapper around  the core  Galaxy Communicator library.      
+<p>The following demos contain Python server examples. All examples can be 
+  found in the python/ subdirectory of these demos: </p>
+         
+<ul>
+      <li> <a href="../../../examples/double/main.html">Basic server example: 
+  double</a></li>
+       <li> <a href="../../../examples/audio/main.html">Audio and brokering</a></li>
+       <li> <a href="../../../examples/binary_data/main.html">Binary objects
+  for audio and data</a></li>
+           
+</ul>
+      The Python versions in these examples are, to the greatest extent possible, 
+  exact parallels of the C versions, so you can study the two versions side 
+  by side.      
+<p>Among the major differences from the C bindings are: </p>
+         
+<ul>
+      <li> Frames are implemented as a subclass of the UserDict class, which
+  means that most of the frame manipulation can be handled by the Python
+mapping   interface.</li>
+       <li> Servers require <a
+ href="../../../../../docs/manual/reference/adding.html#GalSS_AddDispatchFunction">explicit
+   mappings for dispatch functions</a></li>
+           
+</ul>
+      At the moment, the source code and examples will serve as the primary 
+ documentation.  However, we provide details and a table of equivalences as
+ a guide.      
+<p> </p>
+         
+<hr width="100%">      
+<h2> Details</h2>
+      We will follow the general outline of the <a
+ href="../../../../../docs/manual/index.html#Tutorial">tutorial</a>. Most 
+  of the lessons apply just as well to the Python bindings as to the core 
+C  library. We address the important differences here.      
+<h3> <a href="../../../../../docs/manual/tutorial/frame_intro.html">Introducing
+   frames and objects</a></h3>
+      In general, because Python is a dynamically typed language and supports 
+  dictionaries whose objects can be of heterogeneous types, the wrappers for
+  building objects are superfluous.      
+<ul>
+      <li> GAL_FRAME objects are instances of the Galaxy.Frame class, which 
+ inherits  from the UserDict class, which is a class customization of the 
+basic dictionary  type and handles the appropriate dictionary syntax</li>
+       <li> GAL_STRING objects are objects of type types.StringType</li>
+       <li> GAL_INT objects are objects of type types.IntType</li>
+       <li> GAL_LIST objects are objects of type types.ListType, and the
+elements   of the list can be any of the types specified here</li>
+           
+</ul>
+      Here are some of the examples from the frame tutorial, translated into
+  Python:      
+<blockquote><tt>import Galaxy</tt>                
+  <p><tt># {c output :output_string "hello" }</tt> </p>
+                   
+  <p><tt>f = Galaxy.Frame("output", Galaxy.GAL_CLAUSE)</tt> <br>
+       <tt>f[":output_string"] = "hello"</tt> </p>
+                   
+  <p><tt># or</tt> </p>
+                   
+  <p><tt>f = Galaxy.Frame("output", Galaxy.GAL_CLAUSE, {":output_string":
+   "hello"})</tt> </p>
+                   
+  <p><tt># {c listframe :list ( 5 6 7 ) }</tt> </p>
+                   
+  <p><tt>f = Galaxy.Frame("listframe", Galaxy.GAL_CLAUSE)</tt> <br>
+       <tt>f[":list"] = [5, 6, 7]</tt> </p>
+                   
+  <p><tt># or</tt> </p>
+                   
+  <p><tt>f = Galaxy.Frame("listframe", Galaxy.GAL_CLAUSE, {":list": [5, 6,
+   7]})</tt></p>
+     </blockquote>
+            
+<h3> <a href="../../../../../docs/manual/tutorial/basic_server.html">Server
+   basics</a></h3>
+      In order to access the Python bindings, we recommend the following
+idiom:        
+<blockquote><tt>import sys, os</tt>                
+  <p><tt>sys.path.insert(0, os.path.join(os.environ["GC_HOME"],</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   "contrib", "MITRE", "templates"))</tt> </p>
+                   
+  <p><tt>import GC_py_init</tt> </p>
+                   
+  <p><tt>import Galaxy, GalaxyIO, SLSUtil</tt></p>
+     </blockquote>
+      Alternatively, instead of assuming the presence of <tt>GC_HOME</tt> 
+in  your environment, you could find another way to make the GalaxyCommunicator
+  root directory available to your program.      
+<p>Each dispatch function takes an environment object and a frame and returns 
+  a dictionary or frame. In the case of Python, the call environment is the 
+  first argument, so that methods on classes inherited from <tt>GalaxyIO.CallEnvironment</tt>
+   also have the same signature. </p>
+         
+<p>Here's a Python equivalent of the <tt>Parse</tt> dispatch function: </p>
+         
+<blockquote><tt>def Parse(env, frame):</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; input_string = frame[":input_string"]</tt>
+  <br>
+       <tt>&nbsp;&nbsp;&nbsp; p = ParseSentence(input_string)</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; return {":frame": ParseTreeToFrame(p)}</tt></blockquote>
+      Note that we can return a dictionary, instead of a named frame, since 
+ the  name of the reply is ignored anyway. The dictionary will be coerced 
+into an appropriate reply frame.      
+<p>Python doesn't use macros to generate the declaration of dispatch functions 
+  or the name and default port information for the server. This is all handled 
+  via explicit function calls: </p>
+         
+<blockquote><tt>class ParseServer(GalaxyIO.Server):</tt> <br>
+       <tt>&nbsp;&nbsp; ...</tt>                
+  <p><tt>s = ParseServer(sys.argv, "Parser", default_port = 10000)</tt> <br>
+       <tt>s.AddDispatchFunction("Parse", Parse)</tt></p>
+     </blockquote>
+      Note that because the dispatch functions are explicitly associated
+with   their names, the name of the function and the name of the message
+that invokes   it can differ.      
+<p>Here's another way to set up your server, by using methods as dispatch 
+  functions: </p>
+         
+<blockquote><tt>class ParseEnvironment(GalaxyIO.CallEnvironment):</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; def Parse(self, frame):</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; input_string = frame[":input_string"]</tt>
+     <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; p = ParseSentence(input_string)</tt>
+     <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return {":frame": ParseTreeToFrame(p)}</tt>
+                 
+  <p><tt>...</tt> </p>
+                   
+  <p><tt>s = ParseServer(sys.argv, "Parser", default_port = 10000,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   env_class = ParseEnvironment)</tt> <br>
+       <tt>s.AddDispatchFunction("Parse", ParseEnvironment.Parse)</tt></p>
+     </blockquote>
+      You can use the specialized classes for the call environment or for 
+the   server to store arbitrary data as instance variables.      
+<p>By default, Python servers accept approximately the same set of <a
+ href="../../../../../docs/manual/reference/adding.html#_GalSS_init_server">default
+   arguments</a> as C servers. The differences are: </p>
+         
+<ul>
+      <li> The <tt>-color</tt> argument is not supported.</li>
+       <li> The <tt>-thread</tt> argument is not supported.</li>
+       <li> Neither the <tt>-nottloop</tt> nor the <tt>-ttloop</tt> argument
+  is  supported</li>
+       <li> The <tt>-debug</tt> argument provides for a complete printout 
+of  any errors captured by the Python server, instead of simply reporting 
+them  back in an error frame</li>
+           
+</ul>
+      The Python bindings include a set of functionality equivalent to the
+ core  C <a
+ href="../../../../../docs/manual/advanced/util.html#Command_line_argument_parsing">argument
+   parsing library</a>. This functionality is exemplified in the Python version
+   of the <a href="../../../examples/double/main.html">double server</a>:
+     
+<blockquote><tt>OAS = [("-increment i", "initial increment")]</tt>       
+       
+  <p><tt># Write a wrapper for the usage check.</tt> </p>
+                   
+  <p><tt>class DoubleServer(GalaxyIO.Server):</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; def CheckUsage(self, oas_list, args):</tt>
+  <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; global InitialIncrement</tt>
+     <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; data, out_args = GalaxyIO.Server.CheckUsage(self,
+   OAS + oas_list, args)</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if data.has_key("-increment"):</tt>
+     <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  InitialIncrement = data["-increment"][0]</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  del data["-increment"]</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return data, out_args</tt></p>
+     </blockquote>
+      Note that we check command line arguments by creating a wrapper around
+  the <tt>CheckUsage</tt> method of the server object. This method returns
+ a dictionary whose keys are the argument names and whose values are a list
+ of elements, as well as a sequence of unanalyzed arguments. If the argument
+ list does not parse (if, for instance, some expected parameters of a given
+ command line argument are missing), the server will exit. Here's a more
+complex  example of an initialization string:      
+<blockquote><tt>OAS = [("-utts utts_file num", "text utterance file for sequencing",</tt>
+     <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (types.StringType, types.IntType),
+   (Utterance_File, 0)]</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ("-stdin", "Read sentences
+ from  stdin instead of a file")]</tt></blockquote>
+      The first element is the argument, with spaces delimiting the parameters. 
+  The second is a description. Both of these elements are as in the the <a
+ href="../../../../../docs/manual/advanced/util.html#Command_line_argument_parsing">oa
+   library</a>. The third element, if present, is a sequence of&nbsp; types,
+   and the fourth element, if present, is a sequence of defaults. If there
+ aren't enough types, types.StringType is used; if there is a defaults list
+ but not enough defaults, the appropriate null value is used (0, 0.0, or
+"").  If the fourth element is present, the return dictionary will contain
+the defaults if the argument is not present in the arglist.      
+<h3> <a href="../../../../../docs/manual/tutorial/errors.html">Error handling</a></h3>
+      Unlike C, Python has try/except for raising and catching errors. If 
+you   raise an error in a dispatch function (intentionally or otherwise), 
+the Python  bindings will catch the error and convert it to an error reply. 
+Here's the  <tt>Parse</tt> function again:      
+<blockquote><tt>import types</tt>                
+  <p><tt>ParseError = "ParseError"</tt> </p>
+                   
+  <p><tt>def Parse(env, frame):</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; try:</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; input_string = frame[":input_string"]</tt>
+     <br>
+       <tt>&nbsp;&nbsp;&nbsp; except KeyError:</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; input_string = None</tt>
+     <br>
+       <tt>&nbsp;&nbsp;&nbsp; if (type(input_string) is not type("")):</tt> 
+   <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; raise ParseError, "no 
+ input  string"</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; p = ParseSentence(input_string)</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; if not p:</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; raise ParseError, "no 
+ parse"</tt>    <br>
+       <tt>&nbsp;&nbsp;&nbsp; p_frame = ParseTreeToFrame(p)</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; if not p_frame:</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; raise ParseError, "can't
+   convert parse to frame"</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; return {":frame": p_frame}</tt></p>
+     </blockquote>
+            
+<h3> <a href="../../../../../docs/manual/tutorial/new_messages.html">Sending
+   new messages to the Hub</a></h3>
+      Sending asynchronous and synchronous messages to the Hub works pretty 
+ much  as you might anticipate. Let's start with the <tt>DoGreeting</tt> case:
+      
+<blockquote><tt>def DoGreeting(env, frame):</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; s = "{c FromDialogue :output_frame {c greeting
+  } :is_greeting 1 }"</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; greeting = Galaxy.Frame(str = s)</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; env.WriteFrame(greeting)</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; return None</tt></blockquote>
+      If you want to return no frame to the Hub, you must return <tt>None</tt>; 
+  an empty dictionary will return an empty frame.      
+<p>Now, here's the DoDialogue example: </p>
+         
+<blockquote><tt>def DoDialogue(env, frame):</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; msg_frame = Galaxy.Frame("DBQuery", Galaxy.GAL_CLAUSE)</tt>
+                 
+  <p><tt>&nbsp;&nbsp;&nbsp; # ...</tt> </p>
+                   
+  <p><tt>&nbsp;&nbsp;&nbsp; msg_frame[":sql_query"] = sql_query</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; try:</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; response_frame = env.DispatchFrame(msg_frame)</tt>
+     <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # Equivalent of GAL_REPLY_MSG_TYPE.</tt>
+     <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # Construct presentation
+   of database response</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # ...</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; except GalaxyIO.DispatchError:</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # Equivalent of GAL_ERROR_MSG_TYPE</tt>
+     <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # Relay error back
+to  Hub</tt>    <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # ...</tt></p>
+     </blockquote>
+      If the Hub relays an error back to the server, the Python bindings
+will   raise the error locally. The error raised will be <tt>GalaxyIO.DispatchError</tt>,
+   as shown here.      
+<h3> <a href="../../../../../docs/manual/tutorial/broker_tutorial.html">Setting
+   up a brokered audio connection</a></h3>
+      In order to set up a broker server, you can use the class <tt>GalaxyIO.BrokerProxyOut</tt>
+   directly, most of the time. For the broker client, if you use callbacks
+ instead of just unproxifying the object directly, you should subclass <tt>GalaxyIO.AudioProxyInStream</tt>.
+   The methods <tt>HandleObject</tt>, <tt>AbortCallback</tt> and <tt>DataDoneCallback</tt> 
+  for this class can be specialized on the broker client to handle the incoming 
+  data. Outgoing data is handled using the <tt>Write</tt> method.      
+<p>Here's the equivalent of the <tt>Synthesize</tt> dispatch function, exemplifying 
+  the source server setup. If the broker setup fails, an error is raised: 
+</p>
+         
+<blockquote><tt>def Synthesize(env, frame): <br>
+     &nbsp;&nbsp;&nbsp; # ... <br>
+     &nbsp;&nbsp;&nbsp; try: <br>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; p = GalaxyIO.BrokerProxyOut(env,
+   10, type = Galaxy.GAL_INT_16) <br>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; output_f = Galaxy.Frame("FromSynthesizer",
+   Galaxy.GAL_FRAME, <br>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   {":sample_rate": s.sample_rate, <br>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   ":encoding_format": s.encoding_format,<br>
+     &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+ &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;":proxy":
+p}) &nbsp;     <br>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; env.WriteFrame(output_f)
+  <br>
+     &nbsp;&nbsp;&nbsp; except GalaxyIO.BrokerInitError, m: <br>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # ....</tt></blockquote>
+      Now, here's the setup for the client:      
+<blockquote><tt>class AudioProxyInStream(GalaxyIO.BrokerProxyInStream):</tt>
+     <br>
+       <tt>&nbsp;&nbsp;&nbsp; # ...</tt>                
+  <p><tt>def Play(env, frame):</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; bp = frame[":proxy"]</tt><br>
+       <tt>&nbsp;&nbsp;&nbsp; p = AudioPkg()</tt> </p>
+                   
+  <p><tt>&nbsp;&nbsp;&nbsp; # ...</tt> </p>
+                   
+  <p><tt>&nbsp;&nbsp;&nbsp; try:</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; p.in_broker = bp<br>
+     &nbsp; &nbsp; &nbsp; &nbsp; bp.Unproxify(env, AudioProxyInStream, immediate 
+  = 1)</tt><br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # ...</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; except GalaxyIO.BrokerInitError, m:</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # ...</tt></p>
+     </blockquote>
+      The data exchange works as follows. First, on the source server:  
+   
+<blockquote><tt>data = PollSynthesis(s)</tt>                
+  <p><tt>while data:</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; p.Write(data)</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; data = PollSynthesis(s)</tt> <br>
+       <tt>if SynthesisIsDone(s):</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; p.DataDone()</tt></p>
+     </blockquote>
+      On the client, it's handled as methods associated with the specialized
+  broker class. The environment is an attribute of the proxy stream:    
+ 
+<blockquote><tt>class AudioProxyInStream(GalaxyIO.BrokerProxyInStream)</tt><tt>:</tt>
+     <br>
+       <tt>&nbsp;&nbsp;&nbsp; def HandleObject(self, obj):</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; print "[Audio data
+to  user  (%d samples)]" % len(obj)<br>
+     &nbsp; &nbsp; def DataDoneCallback(self):<br>
+     &nbsp; &nbsp; &nbsp; &nbsp; print "[Audio data to user is finalized.]"<br>
+       </tt></blockquote>
+     The original brokering API is also still available; see the audio example 
+  for details of its use.<br>
+           
+<p> </p>
+         
+<hr width="100%">      
+<h2> Equivalences</h2>
+      These functions are arranged in alphabetical order of the corresponding 
+  C functions, arranged by the documents in the <a
+ href="../../../../../docs/manual/index.html#Advanced_topics">advanced</a>
+   and <a href="../../../../../docs/manual/index.html#Reference">reference</a>
+   sections of the documentation which describe those functions.       
+<table border="0">
+  <tbody>
+     <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+     <tr>
+       <td><a href="../../../../../docs/manual/reference/frame.html"><big>Frames, 
+Property Lists, and Typed Objects</big></a></td>
+       <td>&nbsp;</td>
+     </tr>
+     <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#GalUtil_CPPFrame">GalUtil_CPPFrame</a>(sls_verbose_level, 
+fore, back, fr)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#GalUtil_CPPObject">GalUtil_CPPObject</a>(sls_verbose_level, 
+fore, back, to)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#GalUtil_PPFrame">GalUtil_PPFrame</a>(sls_verbose_level, 
+fr)</p>
+       </td>
+       <td>SLSUtil.OStream().write_level(fr.PPrint(), verbose_level)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#GalUtil_PPObject">GalUtil_PPObject</a>(sls_verbose_level, 
+to)</p>
+       </td>
+       <td>SLSUtil.OStream().write_level(Galaxy.OPr(o, PP_TYPE), verbose_level)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#GalUtil_PrObject">GalUtil_PrObject</a>(sls_verbose_level, 
+to)</p>
+       </td>
+       <td>SLSUtil.OStream().write_level(Galaxy.OPr(o), verbose_level)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#GalUtil_PrintObject">GalUtil_PrintObject</a>(gal_verbose_level, 
+to, how)</p>
+       </td>
+       <td>SLSUtil.OStream().write_level(Galaxy.OPr(o, how), verbose_level)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_AddPred">Gal_AddPred</a>(fr, 
+pred)</p>
+       </td>
+       <td>fr.preds.append(pred)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ArrayObjectAdd">Gal_ArrayObjectAdd</a>(obj, 
+data, size)</p>
+       </td>
+       <td>obj = obj + data</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ArrayObjectExpandable">Gal_ArrayObjectExpandable</a>(obj)</p>
+       </td>
+       <td>[not implemented; always true]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_BinaryObject">Gal_BinaryObject</a>(data, 
+size)</p>
+       </td>
+       <td>Galaxy.BinaryObject(Galaxy.GAL_BINARY, data)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_BinarySize">Gal_BinarySize</a>(to)</p>
+       </td>
+       <td>len(obj)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_BinaryValue">Gal_BinaryValue</a>(obj, 
+size)</p>
+       </td>
+       <td>Galaxy.ValueWarn(obj, Galaxy.GAL_BINARY)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Binaryp">Gal_Binaryp</a>(obj)</p>
+       </td>
+       <td>Galaxy.GetObjectType(obj) == Galaxy.GAL_BINARY</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ClauseFramep">Gal_ClauseFramep</a>(fr)</p>
+       </td>
+       <td>Galaxy.GetDetailedType(fr) == Galaxy.GAL_CLAUSE</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ClauseValue">Gal_ClauseValue</a>(to)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Clausep">Gal_Clausep</a>(obj)</p>
+       </td>
+       <td>Galaxy.GetDetailedType(obj) == Galaxy.GAL_CLAUSE</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ClearPreds">Gal_ClearPreds</a>(fr)</p>
+       </td>
+       <td>fr.preds = []</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_CopyFrame">Gal_CopyFrame</a>(fr)</p>
+       </td>
+       <td>fr.Copy()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_CopyObject">Gal_CopyObject</a>(obj)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_CreateBinaryObject">Gal_CreateBinaryObject</a>(data, 
+size, manage_memory)</p>
+       </td>
+       <td>Galaxy.BinaryObject(Galaxy.GAL_BINARY, data)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_CreateFloat32Object">Gal_CreateFloat32Object</a>(data, 
+num_float_32, manage_memory)</p>
+       </td>
+       <td>Galaxy.BinaryObject(Galaxy.GAL_FLOAT_32, data)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_CreateFloat64Object">Gal_CreateFloat64Object</a>(data, 
+num_float_64, manage_memory)</p>
+       </td>
+       <td>Galaxy.BinaryObject(Galaxy.GAL_FLOAT_64, data)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_CreateFloatObject">Gal_CreateFloatObject</a>(value, 
+manage_memory)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_CreateFrameObject">Gal_CreateFrameObject</a>(value, 
+manage_memory)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_CreateInt16Object">Gal_CreateInt16Object</a>(data, 
+num_int_16, manage_memory)</p>
+       </td>
+       <td>Galaxy.BinaryObject(Galaxy.GAL_INT_16, data)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_CreateInt32Object">Gal_CreateInt32Object</a>(data, 
+num_int_32, manage_memory)</p>
+       </td>
+       <td>Galaxy.BinaryObject(Galaxy.GAL_INT_32, data)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_CreateInt64Object">Gal_CreateInt64Object</a>(data, 
+num_int_64, manage_memory)</p>
+       </td>
+       <td>Galaxy.BinaryObject(Galaxy.GAL_INT_64, data)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_CreateListObject">Gal_CreateListObject</a>(values, 
+n,  free_fn , manage_memory)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_CreateProxyObject">Gal_CreateProxyObject</a>(p, 
+manage_memory)</p>
+       </td>
+       <td>[not needed]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_CreateStringObject">Gal_CreateStringObject</a>(cp, 
+manage_memory)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_CreateVarMapping">Gal_CreateVarMapping</a>(num_pairs, 
+...)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_DelPred">Gal_DelPred</a>(fr, 
+i)</p>
+       </td>
+       <td>del f.preds[i]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_DelPredByName">Gal_DelPredByName</a>(fr, 
+name)</p>
+       </td>
+       <td>p = f.GetPredByName(name); f.preds.remove(p)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_DelProp">Gal_DelProp</a>(fr, 
+key)</p>
+       </td>
+       <td>del f[key]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_DeletePreds">Gal_DeletePreds</a>(fr, 
+pred_name)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_DoPreds">Gal_DoPreds</a>(fr, 
+ pred_fn , caller_data)</p>
+       </td>
+       <td>map(pred_fn, fr.preds)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_DoProperties">Gal_DoProperties</a>(fr, 
+ prop_fn , caller_data)</p>
+       </td>
+       <td>map(prop_fn, fr.items())</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_FindKey">Gal_FindKey</a>(fr, 
+key_name)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_FindPred">Gal_FindPred</a>(fr, 
+pred_name)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_FindPredParent">Gal_FindPredParent</a>(frame, 
+name, parent, findpar, nth)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_FindTopic">Gal_FindTopic</a>(fr, 
+topic_name)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Float32Size">Gal_Float32Size</a>(to)</p>
+       </td>
+       <td>len(o)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Float32Value">Gal_Float32Value</a>(obj, 
+size)</p>
+       </td>
+       <td>Galaxy.ValueWarn(obj, Galaxy.GAL_FLOAT_32)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Float32p">Gal_Float32p</a>(to)</p>
+       </td>
+       <td>Galaxy.GetObjectType(o) == Galaxy.GAL_FLOAT_32</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Float64Size">Gal_Float64Size</a>(to)</p>
+       </td>
+       <td>len(o)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Float64Value">Gal_Float64Value</a>(obj, 
+size)</p>
+       </td>
+       <td>Galaxy.ValueWarn(obj, Galaxy.GAL_FLOAT_64)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Float64p">Gal_Float64p</a>(to)</p>
+       </td>
+       <td>Galaxy.GetObjectType(o) == Galaxy.GAL_FLOAT_64</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_FloatObject">Gal_FloatObject</a>(val)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_FloatValue">Gal_FloatValue</a>(to)</p>
+       </td>
+       <td>Galaxy.ValueWarn(o, Galaxy.GAL_FLOAT)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Floatp">Gal_Floatp</a>(obj)</p>
+       </td>
+       <td>Galaxy.GetObjectType(obj) == Galaxy.GAL_FLOAT OR type(obj) is
+ types.FloatType</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_FrameEqual">Gal_FrameEqual</a>(sf1, 
+sf2)</p>
+       </td>
+       <td>sf1.Equal(sf2)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_FrameIsType">Gal_FrameIsType</a>(fr, 
+type)</p>
+       </td>
+       <td>fr.type == type</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_FrameName">Gal_FrameName</a>(fr)</p>
+       </td>
+       <td>fr.name</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_FrameNameEq">Gal_FrameNameEq</a>(fr, 
+name)</p>
+       </td>
+       <td>fr.name == name</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_FrameNamesEq">Gal_FrameNamesEq</a>(fr1, 
+fr2)</p>
+       </td>
+       <td>fr1.name == fr2.name</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_FrameObject">Gal_FrameObject</a>(val)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_FrameValue">Gal_FrameValue</a>(to)</p>
+       </td>
+       <td>Galaxy.ValueWarn(o, Galaxy.GAL_FRAME)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Framep">Gal_Framep</a>(obj)</p>
+       </td>
+       <td>Galaxy.GetObjectType(obj) == Galaxy.GAL_FRAME</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_FreeFrame">Gal_FreeFrame</a>(fr)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_FreeObject">Gal_FreeObject</a>(obj)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_FreeWrapper">Gal_FreeWrapper</a>(to)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetBinary">Gal_GetBinary</a>(fr, 
+key, size)</p>
+       </td>
+       <td>fr.GetValue(key, Galaxy.GAL_BINARY)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetDetailedType">Gal_GetDetailedType</a>(to)</p>
+       </td>
+       <td>Galaxy.GetDetailedType(o)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetFloat">Gal_GetFloat</a>(fr, 
+key)</p>
+       </td>
+       <td>fr.GetValue(key, Galaxy.GAL_FLOAT)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetFloat32">Gal_GetFloat32</a>(fr, 
+key, size)</p>
+       </td>
+       <td>Galaxy.ValueWarn(obj, Galaxy.GAL_FLOAT_32)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetFloat64">Gal_GetFloat64</a>(fr, 
+key, size)</p>
+       </td>
+       <td>Galaxy.ValueWarn(obj, Galaxy.GAL_FLOAT_64)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetFrame">Gal_GetFrame</a>(fr, 
+key)</p>
+       </td>
+       <td>fr.GetValue(key, Galaxy.GAL_FRAME)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetFrameType">Gal_GetFrameType</a>(fr)</p>
+       </td>
+       <td>fr.type</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetInt">Gal_GetInt</a>(fr, 
+key)</p>
+       </td>
+       <td>fr.GetValue(key, Galaxy.GAL_INT)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetInt16">Gal_GetInt16</a>(fr, 
+key, size)</p>
+       </td>
+       <td>Galaxy.ValueWarn(obj, Galaxy.GAL_INT_16)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetInt32">Gal_GetInt32</a>(fr, 
+key, size)</p>
+       </td>
+       <td>Galaxy.ValueWarn(obj, Galaxy.GAL_INT_32)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetInt64">Gal_GetInt64</a>(fr, 
+key, size)</p>
+       </td>
+       <td>Galaxy.ValueWarn(obj, Galaxy.GAL_INT_64)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetList">Gal_GetList</a>(fr, 
+key, length)</p>
+       </td>
+       <td>fr.GetValue(key, GAL_LIST)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetListObject">Gal_GetListObject</a>(obj, 
+n)</p>
+       </td>
+       <td>obj[n]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetListValue">Gal_GetListValue</a>(to, 
+n, type)</p>
+       </td>
+       <td>Galaxy.ValueWarn(o[n], type)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetObject">Gal_GetObject</a>(fr, 
+key)</p>
+       </td>
+       <td>fr[key]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetObjectType">Gal_GetObjectType</a>(to)</p>
+       </td>
+       <td>Galaxy.GetObjectType(o)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetObjectTypeString">Gal_GetObjectTypeString</a>(to)</p>
+       </td>
+       <td>Galaxy.ObjectTypeString(Galaxy.GetObjectType(o))</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetPred">Gal_GetPred</a>(fr, 
+i)</p>
+       </td>
+       <td>fr.preds[i]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetPredByName">Gal_GetPredByName</a>(fr, 
+name)</p>
+       </td>
+       <td>fr.GetPredByName(name)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetProperties">Gal_GetProperties</a>(fr, 
+nkeys)</p>
+       </td>
+       <td>fr.keys()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetProxy">Gal_GetProxy</a>(fr, 
+key)</p>
+       </td>
+       <td>fr.GetValue(key, Galaxy.GAL_PROXY)<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetString">Gal_GetString</a>(fr, 
+key)</p>
+       </td>
+       <td>fr.GetValue(key, Galaxy.GAL_STRING)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_GetTopicFrame">Gal_GetTopicFrame</a>(fr, 
+key)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Int16Size">Gal_Int16Size</a>(to)</p>
+       </td>
+       <td>len(o)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Int16Value">Gal_Int16Value</a>(obj, 
+size)</p>
+       </td>
+       <td>Galaxy.ValueWarn(obj, Galaxy.GAL_INT_16)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Int16p">Gal_Int16p</a>(to)</p>
+       </td>
+       <td>Galaxy.GetObjectType(o) == Galaxy.GAL_INT_16</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Int32Size">Gal_Int32Size</a>(to)</p>
+       </td>
+       <td>len(o)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Int32Value">Gal_Int32Value</a>(obj, 
+size)</p>
+       </td>
+       <td>Galaxy.ValueWarn(obj, Galaxy.GAL_INT_32)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Int32p">Gal_Int32p</a>(to)</p>
+       </td>
+       <td>Galaxy.GetObjectType(o) == Galaxy.GAL_INT_32</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Int64Size">Gal_Int64Size</a>(to)</p>
+       </td>
+       <td>len(o)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Int64Value">Gal_Int64Value</a>(obj, 
+size)</p>
+       </td>
+       <td>Galaxy.ValueWarn(obj, Galaxy.GAL_INT_64)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Int64p">Gal_Int64p</a>(to)</p>
+       </td>
+       <td>Galaxy.GetObjectType(o) == Galaxy.GAL_INT_64</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_IntObject">Gal_IntObject</a>(val)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_IntValue">Gal_IntValue</a>(to)</p>
+       </td>
+       <td>Galaxy.ValueWarn(obj, Galaxy.GAL_INT)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Intp">Gal_Intp</a>(obj)</p>
+       </td>
+       <td>Galaxy.GetObjectType(obj) == Galaxy.GAL_INT OR type(obj) is types.IntType</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ListLength">Gal_ListLength</a>(obj)</p>
+       </td>
+       <td>len(obj)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ListObject">Gal_ListObject</a>(values, 
+n)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ListObjectAdd">Gal_ListObjectAdd</a>(obj, 
+elt)</p>
+       </td>
+       <td>obj.append(elt)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ListObjectExpandable">Gal_ListObjectExpandable</a>(obj)</p>
+       </td>
+       <td>[not needed; always true]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ListObjectFromElements">Gal_ListObjectFromElements</a>(n, 
+...)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ListValue">Gal_ListValue</a>(obj, 
+n)</p>
+       </td>
+       <td>Galaxy.ValueWarn(obj, Galaxy.GAL_LIST)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Listp">Gal_Listp</a>(obj)</p>
+       </td>
+       <td>Galaxy.GetObjectType(obj) == Galaxy.GAL_LIST OR type(obj) is types.ListType</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_MakeClauseFrame">Gal_MakeClauseFrame</a>(name)</p>
+       </td>
+       <td>Galaxy.Frame(name = name, type = Galaxy.GAL_CLAUSE)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_MakeFrame">Gal_MakeFrame</a>(name, 
+type)</p>
+       </td>
+       <td>Galaxy.Frame(name = name, type = type)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_MakePredFrame">Gal_MakePredFrame</a>(name)</p>
+       </td>
+       <td>Galaxy.Frame(name = name, type = Galaxy.GAL_PRED)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_MakeTopicFrame">Gal_MakeTopicFrame</a>(name)</p>
+       </td>
+       <td>Galaxy.Frame(name = name, type = Galaxy.GAL_TOPIC)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_MatchFrame">Gal_MatchFrame</a>(sf1, 
+sf2)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_MatchKeyValue">Gal_MatchKeyValue</a>(fr, 
+key_name, match)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_NumNonNullProperties">Gal_NumNonNullProperties</a>(fr)</p>
+       </td>
+       <td>len(fr)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_NumPreds">Gal_NumPreds</a>(fr)</p>
+       </td>
+       <td>len(fr.preds)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_NumProperties">Gal_NumProperties</a>(fr)</p>
+       </td>
+       <td>len(fr)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ObjectByteCount">Gal_ObjectByteCount</a>(obj)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ObjectCaseEqual">Gal_ObjectCaseEqual</a>(obj1, 
+obj2)</p>
+       </td>
+       <td>Galaxy.ObjectEqual(obj1, obj2, ignore_case = 1)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ObjectEqual">Gal_ObjectEqual</a>(obj1, 
+obj2)</p>
+       </td>
+       <td>Galaxy.ObjectEqual(obj1, obj2)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ObjectToString">Gal_ObjectToString</a>(to)</p>
+       </td>
+       <td>Galaxy.OPr(o)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ObjectTypeString">Gal_ObjectTypeString</a>(object_type)</p>
+       </td>
+       <td>Galaxy.ObjectTypeString(object_type)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_OutlineFrame">Gal_OutlineFrame</a>(fr, 
+sls_verbose_level)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_OutlineObject">Gal_OutlineObject</a>(to, 
+sls_verbose_level)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_PPFrame">Gal_PPFrame</a>(fr)</p>
+       </td>
+       <td>print fr.PPrint() OR fr.PP()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_PPFrameToFile">Gal_PPFrameToFile</a>(fr, 
+fp)</p>
+       </td>
+       <td>fp.write(fr.PPrint())</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_PPFrameToString">Gal_PPFrameToString</a>(fr, 
+buf, bufsizeptr)</p>
+       </td>
+       <td>fr.PPrint()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_PPObject">Gal_PPObject</a>(to)</p>
+       </td>
+       <td>print Galaxy.OPr(o, Galaxy.PP_TYPE)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_PPObjectToFile">Gal_PPObjectToFile</a>(to, 
+fp)</p>
+       </td>
+       <td>fp.write(Galaxy.OPr(o, Galaxy.PP_TYPE))</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_PrFrame">Gal_PrFrame</a>(fr)</p>
+       </td>
+       <td>print fr.Print() OR f.rPr()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_PrFrameToFile">Gal_PrFrameToFile</a>(fr, 
+fp)</p>
+       </td>
+       <td>fp.write(fr.Print())</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_PrFrameToString">Gal_PrFrameToString</a>(fr, 
+buf, bufsizeptr)</p>
+       </td>
+       <td>fr.Print()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_PrObject">Gal_PrObject</a>(obj)</p>
+       </td>
+       <td>print Galaxy.OPr(obj) OR Galaxy.PrObject(obj)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_PrObjectToFile">Gal_PrObjectToFile</a>(obj, 
+fp)</p>
+       </td>
+       <td>fp.write(Galaxy.OPr(obj))</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_PredFramep">Gal_PredFramep</a>(fr)</p>
+       </td>
+       <td>Galaxy.GetDetailedType(obj) == Galaxy.GAL_PRED</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_PredValue">Gal_PredValue</a>(to)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Predp">Gal_Predp</a>(obj)</p>
+       </td>
+       <td>Galaxy.GetDetailedType(obj) == Galaxy.GAL_PRED</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_PrintFrameToFile">Gal_PrintFrameToFile</a>(fr, 
+fp, how)</p>
+       </td>
+       <td>fp.write(fr._Print(how))</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_PrintFrameToString">Gal_PrintFrameToString</a>(fr, 
+irpbuf, bufsizeptr, how)</p>
+       </td>
+       <td>fr._Print(how)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ProxyObject">Gal_ProxyObject</a>(p)</p>
+       </td>
+       <td>[not needed]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ProxyObjectBroker">Gal_ProxyObjectBroker</a>(obj)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ProxyObjectObject">Gal_ProxyObjectObject</a>(obj)</p>
+       </td>
+       <td>obj.obj (only for outbound proxies)<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ProxyObjectType">Gal_ProxyObjectType</a>(obj)</p>
+       </td>
+       <td>obj.type<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ProxyValue">Gal_ProxyValue</a>(o)</p>
+       </td>
+       <td>Galaxy.ValueWanr(o, Galaxy.GAL_PROXY)<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Proxyp">Gal_Proxyp</a>(obj)</p>
+       </td>
+       <td>Galaxy.GetObjectType(obj) == Galaxy.GAL_PROXY<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ReadFrameFromFile">Gal_ReadFrameFromFile</a>(fp)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ReadFrameFromString">Gal_ReadFrameFromString</a>(buf)</p>
+       </td>
+       <td>Galaxy.Frame(str = buf)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ReadObjectFromFile">Gal_ReadObjectFromFile</a>(fp)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ReadObjectFromString">Gal_ReadObjectFromString</a>(buf)</p>
+       </td>
+       <td>Galaxy._read_irp_value(buf)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ReadVarFrameFromString">Gal_ReadVarFrameFromString</a>(buf, 
+map)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_ReadVarObjectFromString">Gal_ReadVarObjectFromString</a>(buf, 
+map)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_RemPred">Gal_RemPred</a>(fr, 
+i)</p>
+       </td>
+       <td>p = fr.preds[i]; del fr.preds[i]; return p</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_RemPredByName">Gal_RemPredByName</a>(fr, 
+name)</p>
+       </td>
+       <td>p = fr.GetPredByName(name); fr.preds.remove(p); return p</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_RemProp">Gal_RemProp</a>(fr, 
+key)</p>
+       </td>
+       <td>p = fr[key]; del fr[key]; return p</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_SetFrameName">Gal_SetFrameName</a>(fr, 
+name)</p>
+       </td>
+       <td>fr.name = name</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_SetFrameType">Gal_SetFrameType</a>(fr, 
+type)</p>
+       </td>
+       <td>fr.type = type</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_SetListObject">Gal_SetListObject</a>(obj, 
+n, elt)</p>
+       </td>
+       <td>obj[n] = elt<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_SetProp">Gal_SetProp</a>(fr, 
+key, obj)</p>
+       </td>
+       <td>fr[key] = obj</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_StringObject">Gal_StringObject</a>(val)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_StringValue">Gal_StringValue</a>(to)</p>
+       </td>
+       <td>Galaxy.ValueWarn(obj, Galaxy.GAL_STRING)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Stringp">Gal_Stringp</a>(obj)</p>
+       </td>
+       <td>Galaxy.GetObjectType(obj) == Galaxy.GAL_STRING OR type(obj) is 
+ types.StringType</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_TopicFramep">Gal_TopicFramep</a>(fr)</p>
+       </td>
+       <td>Galaxy.GetDetailedType(obj) == Galaxy.GAL_TOPIC</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_TopicValue">Gal_TopicValue</a>(to)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_Topicp">Gal_Topicp</a>(obj)</p>
+       </td>
+       <td>Galaxy.GetDetailedType(obj) == Galaxy.GAL_TOPIC</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_VAReadVarFrameFromString">Gal_VAReadVarFrameFromString</a>(buf, 
+num_pairs, ...)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#Gal_VAReadVarObjectFromString">Gal_VAReadVarObjectFromString</a>(buf, 
+num_pairs, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/frame.html#_gal_free_object">_gal_free_object</a>(obj)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+     <tr>
+       <td><a href="../../../../../docs/manual/reference/adding.html"><big>Building 
+a Communicator-Compliant Server</big></a></td>
+       <td>&nbsp;</td>
+     </tr>
+     <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/adding.html#GalIO_GetError">GalIO_GetError</a>(f, 
+err_desc)</p>
+       </td>
+       <td>[not needed; just catch GalaxyIO.DispatchError]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/adding.html#GalSS_AddDispatchFunction">GalSS_AddDispatchFunction</a>(i, 
+name, fn, in_key_array, allow_other_in_keys, reply_provided, out_key_array, 
+allow_other_out_keys)</p>
+       </td>
+       <td>i.AddDispatchFunction(...)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/adding.html#GalSS_EnvDestroyToken">GalSS_EnvDestroyToken</a>(env)</p>
+       </td>
+       <td>env.DestroyToken()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a>(env, 
+frame, t)</p>
+       </td>
+       <td>env.DispatchFrame(frame)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/adding.html#GalSS_EnvError">GalSS_EnvError</a>(env, 
+description)</p>
+       </td>
+       <td>[not needed; just raise an error]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/adding.html#GalSS_EnvGetClientData">GalSS_EnvGetClientData</a>(env, 
+name)</p>
+       </td>
+       <td>[not needed; use instance attributes]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/adding.html#GalSS_EnvGetCommData">GalSS_EnvGetCommData</a>(env)</p>
+       </td>
+       <td>[not needed; use instance attributes]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/adding.html#GalSS_EnvReply">GalSS_EnvReply</a>(env, 
+f)</p>
+       </td>
+       <td>env.Reply(f)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/adding.html#GalSS_EnvSetCommData">GalSS_EnvSetCommData</a>(env, 
+data,  free_fn )</p>
+       </td>
+       <td>[not needed; use instance attributes]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/adding.html#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame</a>(env, 
+frame, do_block)</p>
+       </td>
+       <td>env.WriteFrame(frame)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/adding.html#GalSS_InitializeServerDefaults">GalSS_InitializeServerDefaults</a>(scomm, 
+name, port)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/adding.html#Gal_CreateDispatchFnKeyArray">Gal_CreateDispatchFnKeyArray</a>(ignore, 
+...)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/adding.html#Gal_FreeDispatchFnKeyArray">Gal_FreeDispatchFnKeyArray</a>(entry)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/adding.html#_GalSS_InitializeDefaults">_GalSS_InitializeDefaults</a>(scomm)</p>
+       </td>
+       <td>[not needed; provided to scomm during initialization]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/adding.html#_GalSS_init_server">_GalSS_init_server</a>(server, 
+argc, argv)</p>
+       </td>
+       <td>[not needed; perform operations after initialization and before 
+  starting server]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/adding.html#_GalSS_print_usage">_GalSS_print_usage</a>(argc, 
+argv)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+    <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+     <tr>
+       <td><a href="../../../../../docs/manual/reference/brokering.html"><big>Brokering 
+and Audio Data</big></a></td>
+       <td>&nbsp;</td>
+     </tr>
+     <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerDataDone">GalIO_BrokerDataDone</a>(b)</p>
+       </td>
+       <td>b.DataDone()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerDataInInit">GalIO_BrokerDataInInit</a>(host, 
+port, frame, fnptr, caller_data, poll_ms)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerDataOutDone">GalIO_BrokerDataOutDone</a>(b)</p>
+       </td>
+       <td>b.DataDone()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerDataOutInit">GalIO_BrokerDataOutInit</a>(gcomm, 
+poll_ms, timeout_seconds)</p>
+       </td>
+       <td>b = GalaxyIO.BrokerDataOut(gcomm, timeout_seconds)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerIsDone">GalIO_BrokerIsDone</a>(b)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerPopulateFrame">GalIO_BrokerPopulateFrame</a>(b, 
+f, host_key, port_key)</p>
+       </td>
+       <td>b.PopulateFrame(f, host_key, port_key)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerSetFinalizer">GalIO_BrokerSetFinalizer</a>(b, 
+finalizer)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerStructDequeue">GalIO_BrokerStructDequeue</a>(b, 
+bqueue)</p>
+       </td>
+       <td>[not needed; no broker queues in Python]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerStructQueueAppend">GalIO_BrokerStructQueueAppend</a>(b, 
+bqueue)</p>
+       </td>
+       <td>[not needed; no broker queues in Python]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerStructQueuePop">GalIO_BrokerStructQueuePop</a>(bqueue)</p>
+       </td>
+       <td>[not needed; no broker queues in Python]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerWriteBinary">GalIO_BrokerWriteBinary</a>(b, 
+data, n_bytes)</p>
+       </td>
+       <td>b.Write(data)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerWriteFloat">GalIO_BrokerWriteFloat</a>(b, 
+f)</p>
+       </td>
+       <td>b.Write(f)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerWriteFloat32">GalIO_BrokerWriteFloat32</a>(b, 
+data, n_floats)</p>
+       </td>
+       <td>b.Write(data)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerWriteFloat64">GalIO_BrokerWriteFloat64</a>(b, 
+data, n_floats)</p>
+       </td>
+       <td>b.Write(data)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerWriteFrame">GalIO_BrokerWriteFrame</a>(b, 
+frame)</p>
+       </td>
+       <td>b.Write(f)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerWriteInt">GalIO_BrokerWriteInt</a>(b, 
+i)</p>
+       </td>
+       <td>b.Write(i)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerWriteInt16">GalIO_BrokerWriteInt16</a>(b, 
+data, n_ints)</p>
+       </td>
+       <td>b.Write(data)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerWriteInt32">GalIO_BrokerWriteInt32</a>(b, 
+data, n_ints)</p>
+       </td>
+       <td>b.Write(data)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerWriteInt64">GalIO_BrokerWriteInt64</a>(b, 
+data, n_ints)</p>
+       </td>
+       <td>b.Write(data)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerWriteList">GalIO_BrokerWriteList</a>(b, 
+elts, n_elts)</p>
+       </td>
+       <td>b.Write(elts)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerWriteObject">GalIO_BrokerWriteObject</a>(b, 
+o)</p>
+       </td>
+       <td>b.Write(o)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_BrokerWriteString">GalIO_BrokerWriteString</a>(b, 
+str)</p>
+       </td>
+       <td>b.Write(s)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_CommBrokerDataInInit">GalIO_CommBrokerDataInInit</a>(host_gcomm, 
+host, port, frame, fnptr, poll_ms, caller_data,  caller_data_free_fn )</p>
+       </td>
+       <td>b = GalaxyIO.BrokerDataIn(host_gcomm, host, port, frame)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_CommStartBroker">GalIO_CommStartBroker</a>(gcomm, 
+b, poll_ms)</p>
+       </td>
+       <td>[not needed[<br>
+       </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_ForceBrokerExpiration">GalIO_ForceBrokerExpiration</a>(b)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_FrameSetBrokerCallID">GalIO_FrameSetBrokerCallID</a>(f, 
+call_id)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_GetBrokerCallID">GalIO_GetBrokerCallID</a>(b)</p>
+       </td>
+       <td>b.call_id</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_GetBrokerCallerData">GalIO_GetBrokerCallerData</a>(b)</p>
+       </td>
+       <td>[not needed; use instance attributes]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_GetBrokerData">GalIO_GetBrokerData</a>(b)</p>
+       </td>
+       <td>[not needed; use instance attributes]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_GetBrokerFrame">GalIO_GetBrokerFrame</a>(b)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_GetBrokerListenPort">GalIO_GetBrokerListenPort</a>(b)</p>
+       </td>
+       <td>b.port</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_IPAddress">GalIO_IPAddress</a>()</p>
+       </td>
+       <td>GalaxyIO.IPAddress()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_SetBrokerActive">GalIO_SetBrokerActive</a>(b)</p>
+       </td>
+       <td>[not needed; no broker queues in Python]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalIO_SetBrokerData">GalIO_SetBrokerData</a>(b, 
+caller_data,  free_fn )</p>
+       </td>
+       <td>[not needed; use instance attributes]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_BrokerGetEnvironment">GalSS_BrokerGetEnvironment</a>(b)</p>
+       </td>
+       <td>b.env</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_BrokerProxyBroker">GalSS_BrokerProxyBroker</a>(bp)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_BrokerProxyObject">GalSS_BrokerProxyObject</a>(bp)</p>
+       </td>
+       <td>bp.obj<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_BrokerProxyObjectType">GalSS_BrokerProxyObjectType</a>(bp)</p>
+       </td>
+       <td>bp.type<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_BrokerSetEnvironment">GalSS_BrokerSetEnvironment</a>(b, 
+env)</p>
+       </td>
+       <td>[not needed; pass environment to BrokerDataIn]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_CopyBrokerProxy">GalSS_CopyBrokerProxy</a>(bp)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_CreateBrokerProxy">GalSS_CreateBrokerProxy</a>(host, 
+port, call_id, object_type, obj_data)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_EnvBrokerDataInInit">GalSS_EnvBrokerDataInInit</a>(env, 
+host, port, frame, fnptr, poll_ms, refptr,  free_fn )</p>
+       </td>
+       <td>b = GalaxyIO.BrokerDataIn(env, host, port, frame)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_EnvBrokerProxyInInit">GalSS_EnvBrokerProxyInInit</a>(env, 
+p, fnptr, poll_ms, refptr,  free_fn )</p>
+       </td>
+       <td>b = GalaxyIO.BrokerDataIn(env, proxy = p)<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_EnvBrokerProxyObjInInit">GalSS_EnvBrokerProxyObjInInit</a>(env, 
+proxy, fnptr, poll_ms, refptr,  free_fn )</p>
+       </td>
+       <td>b = GalaxyIO.BrokerDataIn(env, proxy = p)<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_EnvStartBroker">GalSS_EnvStartBroker</a>(env, 
+b, poll_ms)</p>
+       </td>
+       <td>[not needed]<br>
+       </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ForceProxyExpiration">GalSS_ForceProxyExpiration</a>(bp)</p>
+       </td>
+       <td>bp.Expire()<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_FreeBrokerProxy">GalSS_FreeBrokerProxy</a>(p)</p>
+       </td>
+       <td>[not needed]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_GetBrokerProxySocket">GalSS_GetBrokerProxySocket</a>(bp)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ObjProxifyObject">GalSS_ObjProxifyObject</a>(env, 
+obj, poll_ms, timeout_seconds)</p>
+       </td>
+       <td>b = GalaxyIO.BrokerProxyOut(env, timeout_seconds, obj = obj)<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ObjProxifyObjectType">GalSS_ObjProxifyObjectType</a>(env, 
+t, poll_ms, timeout_seconds)</p>
+       </td>
+       <td>b = GalaxyIO.BrokerProxyOut(env, timeout_seconds, type = t)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ObjProxyArrayAdd">GalSS_ObjProxyArrayAdd</a>(obj, 
+data, size)</p>
+       </td>
+       <td>obj.Write(data)<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ObjProxyDone">GalSS_ObjProxyDone</a>(obj)</p>
+       </td>
+       <td>obj.DataDone()<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ObjProxyListAdd">GalSS_ObjProxyListAdd</a>(obj, 
+elt)</p>
+       </td>
+       <td>obj.Write(elt)<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ObjProxySelfTerminates">GalSS_ObjProxySelfTerminates</a>(obj)</p>
+       </td>
+       <td>obj.SelfTerminates()<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ObjProxyWrite">GalSS_ObjProxyWrite</a>(proxy_obj, 
+obj, manage_memory)</p>
+       </td>
+       <td>proxy_obj.Write(obj)<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ObjUnproxify">GalSS_ObjUnproxify</a>(env, 
+obj, fn, done_fn, abort_fn, immediate, poll_ms, caller_data,  caller_data_free_fn 
+)</p>
+       </td>
+       <td>obj.Unproxify(env, immediate = immediate, proxy_stream_type =
+ &lt;class  w/callbacks&gt;)<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ObjUnproxifyObject">GalSS_ObjUnproxifyObject</a>(env, 
+obj)</p>
+       </td>
+       <td>obj.UnproxifyObject(env)<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ProxifyObject">GalSS_ProxifyObject</a>(env, 
+obj, poll_ms, timeout_seconds)</p>
+       </td>
+       <td>b = GalaxyIO.BrokerProxyOut(env, timeout_seconds, obj = obj)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ProxifyObjectType">GalSS_ProxifyObjectType</a>(env, 
+t, poll_ms, timeout_seconds)</p>
+       </td>
+       <td>b = GalaxyIO.BrokerProxyOut(env, timeout_seconds, type = t)<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ProxyArrayAdd">GalSS_ProxyArrayAdd</a>(p, 
+data, size)</p>
+       </td>
+       <td>p.Write(data)<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ProxyDone">GalSS_ProxyDone</a>(p)</p>
+       </td>
+       <td>p.DataDone()<br>
+       </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ProxyListAdd">GalSS_ProxyListAdd</a>(p, 
+elt)</p>
+       </td>
+       <td>p.Write(elt)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ProxySelfTerminates">GalSS_ProxySelfTerminates</a>(p)</p>
+       </td>
+       <td>p.SelfTerminates()<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_ProxyWrite">GalSS_ProxyWrite</a>(p, 
+obj, manage_memory)</p>
+       </td>
+       <td>pj.Write(obj)<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_Unproxify">GalSS_Unproxify</a>(env, 
+p, fn, done_fn, abort_fn, immediate, poll_ms, caller_data,  caller_data_free_fn 
+)</p>
+       </td>
+       <td>p.Unproxify(env, immediate = immediate, proxy_stream_type = &lt;class 
+  w/callbacks&gt;)<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/brokering.html#GalSS_UnproxifyObject">GalSS_UnproxifyObject</a>(env, 
+p)</p>
+       </td>
+       <td>p.UnproxifyObject(env)</td>
+     </tr>
+  <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+     <tr>
+       <td><a
+ href="../../../../../docs/manual/reference/server_structure.html"><big>Server 
+Architecture</big></a></td>
+       <td>&nbsp;</td>
+     </tr>
+     <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_AddBrokerCallback">GalIO_AddBrokerCallback</a>(b, 
+callback_event, fn, callback_data)</p>
+       </td>
+       <td>b.AddCallback(callback_event, fn)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_AddConnectionBrokerCallback">GalIO_AddConnectionBrokerCallback</a>(gcomm, 
+callback_event, connect_callback, callback_data)</p>
+       </td>
+       <td>[not needed; specialize __init__ method]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_AddConnectionCallback">GalIO_AddConnectionCallback</a>(gcomm, 
+callback_event, connect_callback, callback_data)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_AddConnectionDispatchFnCallback">GalIO_AddConnectionDispatchFnCallback</a>(gcomm, 
+dispatch_callback, callback_data)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_AddServerCallback">GalIO_AddServerCallback</a>(scomm, 
+callback_event, fn, callback_data)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_AddServerConnectCallback">GalIO_AddServerConnectCallback</a>(scomm, 
+connect_callback, callback_data)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_CommValidating">GalIO_CommValidating</a>(gcomm)</p>
+       </td>
+       <td>gcomm.Validating()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_CommWriteFrame">GalIO_CommWriteFrame</a>(gcomm, 
+frame, do_block)</p>
+       </td>
+       <td>gcomm.WriteFrame(frame)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_ContactHub">GalIO_ContactHub</a>(host, 
+port, scomm, session_id, client_poll_flags)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_DigestServerLocations">GalIO_DigestServerLocations</a>(client_pair_string)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_DispatchViaHub">GalIO_DispatchViaHub</a>(gcomm, 
+frame, msg_type_ptr)</p>
+       </td>
+       <td>gcomm.DispatchFrame(frame)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_EnableDispatchFnValidation">GalIO_EnableDispatchFnValidation</a>(scomm)</p>
+       </td>
+       <td>scomm.EnableValidation()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_GetCommClientData">GalIO_GetCommClientData</a>(gcomm, 
+name)</p>
+       </td>
+       <td>[not needed; use instance attributes]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_GetCommData">GalIO_GetCommData</a>(gcomm)</p>
+       </td>
+       <td>[not needed; use instance attributes]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_GetCommServerData">GalIO_GetCommServerData</a>(gcomm)</p>
+       </td>
+       <td>[not needed; use instance attributes]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_GetCommServerName">GalIO_GetCommServerName</a>(gcomm)</p>
+       </td>
+       <td>gcomm.server.ServerName()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_GetServerClientData">GalIO_GetServerClientData</a>(server, 
+name)</p>
+       </td>
+       <td>[not needed; use instance attributes]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_GetServerData">GalIO_GetServerData</a>(scomm)</p>
+       </td>
+       <td>[not needed; use instance attributes]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_GetServerDefaultPort">GalIO_GetServerDefaultPort</a>(scomm)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_GetServerListenPort">GalIO_GetServerListenPort</a>(scomm)</p>
+       </td>
+       <td>scomm.ListenPort()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_GetServerLocations">GalIO_GetServerLocations</a>(scomm)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_GetServerMaxConnections">GalIO_GetServerMaxConnections</a>(scomm)</p>
+       </td>
+       <td>scomm.MaxConnections()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_GetServerName">GalIO_GetServerName</a>(scomm)</p>
+       </td>
+       <td>scomm.ServerName()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_GetServerNumConnections">GalIO_GetServerNumConnections</a>(scomm)</p>
+       </td>
+       <td>len(scomm.conns)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_GetUniqueConnection">GalIO_GetUniqueConnection</a>(scomm)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_NthHostAndPort">GalIO_NthHostAndPort</a>(locs, 
+i, port)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_NumServerLocations">GalIO_NumServerLocations</a>(locs)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_OperateOnConnections">GalIO_OperateOnConnections</a>(scomm, 
+arg,  op )</p>
+       </td>
+       <td>map(op, scomm.conns.values())</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_RemoveBrokerCallback">GalIO_RemoveBrokerCallback</a>(b, 
+cb)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_RemoveConnectionCallback">GalIO_RemoveConnectionCallback</a>(gcomm, 
+cb)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_RemoveServerCallback">GalIO_RemoveServerCallback</a>(scomm, 
+cb)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_ServerListenStatus">GalIO_ServerListenStatus</a>(scomm)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_ServerSessionID">GalIO_ServerSessionID</a>(scomm)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_ServerUsesTimedTasks">GalIO_ServerUsesTimedTasks</a>(server)</p>
+       </td>
+       <td>[not implemented; polling by select]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_SetCommClientData">GalIO_SetCommClientData</a>(gcomm, 
+name, client_data)</p>
+       </td>
+       <td>[not needed; use instance attributes]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_SetCommData">GalIO_SetCommData</a>(gcomm, 
+data,  free_fn )</p>
+       </td>
+       <td>[not needed; use instance attributes]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_SetServerClientData">GalIO_SetServerClientData</a>(server, 
+name, client_data)</p>
+       </td>
+       <td>[not needed; use instance attributes]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_SetServerData">GalIO_SetServerData</a>(scomm, 
+data,  free_fn )</p>
+       </td>
+       <td>[not needed; use instance attributes]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_SetServerDefaultPort">GalIO_SetServerDefaultPort</a>(scomm, 
+port)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_SetServerMaxConnections">GalIO_SetServerMaxConnections</a>(scomm, 
+max)</p>
+       </td>
+       <td>scomm.MaxConnections(max)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalIO_SetServerName">GalIO_SetServerName</a>(scomm, 
+name)</p>
+       </td>
+       <td>scomm.ServerName(name)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_CmdlineInitializeServer">GalSS_CmdlineInitializeServer</a>(argc, 
+argv)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_CmdlineSetupServer">GalSS_CmdlineSetupServer</a>(argc, 
+argv)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_CmdlineSetupServerForHubContact">GalSS_CmdlineSetupServerForHubContact</a>(argc, 
+argv, client_string_ptr, session_id_ptr, allow_listener, client_poll_flags, 
+loop_type)</p>
+       </td>
+       <td>[not implemented]<br>
+       </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_DefaultServerArgs">GalSS_DefaultServerArgs</a>()</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_EnvComm">GalSS_EnvComm</a>(env)</p>
+       </td>
+       <td>env.conn</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_ExtractCmdlineServerArgs">GalSS_ExtractCmdlineServerArgs</a>(arg_pkg, 
+argc, argv, new_argc_ptr, new_argv_ptr)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_ExtractServerArgs">GalSS_ExtractServerArgs</a>(argc, 
+argv, new_argc_ptr, new_argv_ptr)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_FreeArgPkg">GalSS_FreeArgPkg</a>(arg_pkg)</p>
+       </td>
+       <td>[not needed]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_FreeArgv">GalSS_FreeArgv</a>(argc, 
+argv)</p>
+       </td>
+       <td>[not needed]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_InitializeServer">GalSS_InitializeServer</a>(server_port, 
+max_conns, use_color, do_assert, use_ttloop, validate, new_argc, new_argv)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_InitializeServerFromServerArgs">GalSS_InitializeServerFromServerArgs</a>(arg_pkg, 
+new_argc, new_argv)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_InitializeServerToplevel">GalSS_InitializeServerToplevel</a>(server_port, 
+max_conns, use_color, do_assert, loop_type, validate, verbosity, server_listen_status, 
+client_pair_string, session_id, new_argc, new_argv)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_RunServer">GalSS_RunServer</a>(server)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_SAFixAssert">GalSS_SAFixAssert</a>(arg_pkg, 
+assert)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_SAFixColor">GalSS_SAFixColor</a>(arg_pkg, 
+color)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_SAFixContactHubInfo">GalSS_SAFixContactHubInfo</a>(arg_pkg, 
+client_pair_status, session_id, old_session_id_ptr)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_SAFixLoopType">GalSS_SAFixLoopType</a>(arg_pkg, 
+loop_type)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_SAFixMaxConns">GalSS_SAFixMaxConns</a>(arg_pkg, 
+max_conns)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_SAFixPort">GalSS_SAFixPort</a>(arg_pkg, 
+port)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_SAFixServerListenStatus">GalSS_SAFixServerListenStatus</a>(arg_pkg, 
+server_listen_status)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_SAFixServerLocations">GalSS_SAFixServerLocations</a>(arg_pkg, 
+server_locations_file)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_SAFixValidate">GalSS_SAFixValidate</a>(arg_pkg, 
+validate)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_SAFixVerbosity">GalSS_SAFixVerbosity</a>(arg_pkg, 
+verbosity)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_SetupConnection">GalSS_SetupConnection</a>(host, 
+port, retrieved_contact_info, shutdown_after, scomm)</p>
+       </td>
+       <td>[not implemented]<br>
+       </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_SetupEnvironment">GalSS_SetupEnvironment</a>(host, 
+port, session_id, retrieved_contact, retrieved_session, shutdown_after, scomm)</p>
+       </td>
+       <td>[not implemented]<br>
+       </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_SetupServer">GalSS_SetupServer</a>(arg_pkg, 
+new_argc, new_argv)</p>
+       </td>
+       <td>GalaxyIO.Server(...)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/reference/server_structure.html#GalSS_StartAndRunServer">GalSS_StartAndRunServer</a>(server)</p>
+       </td>
+       <td>s.RunServer()</td>
+     </tr>
+  <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+     <tr>
+       <td><a
+ href="../../../../../docs/manual/advanced/synch_vs_asynch.html"><big>Synchronous 
+vs. asynchronous interaction and continuations</big></a></td>
+       <td>&nbsp;</td>
+     </tr>
+     <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/synch_vs_asynch.html#GalSS_EnvDispatchFrameToProviderWithContinuation">GalSS_EnvDispatchFrameToProviderWithContinuation</a>(env, 
+frame, provider, fn, continuation_state,  continuation_state_free_fn )</p>
+       </td>
+       <td>env.DispatchFrameWithContinuation(frame, fn, provider = provider)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/synch_vs_asynch.html#GalSS_EnvDispatchFrameWithContinuation">GalSS_EnvDispatchFrameWithContinuation</a>(env, 
+frame, fn, continuation_state,  continuation_state_free_fn )</p>
+       </td>
+       <td>env.DispatchFrameWithContinuation(frame, fn)<br>
+          </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/synch_vs_asynch.html#GalSS_EnvPostponeReply">GalSS_EnvPostponeReply</a>(env)</p>
+       </td>
+       <td>[not implemented]<br>
+          </td>
+     </tr>
+  <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+     <tr>
+       <td><a
+ href="../../../../../docs/manual/advanced/provider_id.html"><big>Provider 
+Names and Provider Selection</big></a></td>
+       <td>&nbsp;</td>
+     </tr>
+     <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/provider_id.html#GalSS_EnvDispatchFrameToProvider">GalSS_EnvDispatchFrameToProvider</a>(env, 
+frame, provider_id, t)</p>
+       </td>
+       <td>env.DispatchFrame(frame, provider = provider_id)<br>
+          </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/provider_id.html#GalSS_EnvGetOriginatingProvider">GalSS_EnvGetOriginatingProvider</a>(env)</p>
+       </td>
+       <td>env.GetOriginatingProvider()<br>
+          </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/provider_id.html#GalSS_EnvWriteFrameToProvider">GalSS_EnvWriteFrameToProvider</a>(env, 
+frame, provider_id, do_block)</p>
+       </td>
+       <td>env.WriteFrame(frame, provider = provider_id)</td>
+     </tr>
+  <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+     <tr>
+       <td><a href="../../../../../docs/manual/advanced/timestamps.html"><big>Timestamps</big></a></td>
+       <td>&nbsp;</td>
+     </tr>
+     <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timestamps.html#GalSS_EnvGetTokenTimestamp">GalSS_EnvGetTokenTimestamp</a>(env)</p>
+       </td>
+       <td>env.GetTokenTimestamp()<br>
+          </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timestamps.html#GalSS_EnvInheritTokenTimestamp">GalSS_EnvInheritTokenTimestamp</a>(env)</p>
+       </td>
+       <td>env.InheritTokenTimestamp()<br>
+          </td>
+     </tr>
+  <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+     <tr>
+       <td><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html"><big>The Timed
+Task Loop</big></a></td>
+       <td>&nbsp;</td>
+     </tr>
+     <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_AddIdleFunction">Gal_AddIdleFunction</a>(func, 
+client_data)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_AddTask">Gal_AddTask</a>( 
+task , refcon, num_millisecs, read_blocking_available,  cleanup_fn )</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_AddTaskExtended">Gal_AddTaskExtended</a>( 
+task , caller_data, num_millisecs, read_blocking_available, read_socket, write_socket,
+err_socket, read_file, write_file, err_file, condition,  cleanup_fn )</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_AddTaskWithFileIO">Gal_AddTaskWithFileIO</a>( 
+task , refcon, num_millisecs, read_blocking_available, read_file, write_file, 
+ cleanup_fn )</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_AddTaskWithSocketIO">Gal_AddTaskWithSocketIO</a>( 
+task , refcon, num_millisecs, read_blocking_available, read_socket, write_socket, 
+ cleanup_fn )</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_AddTimedTask">Gal_AddTimedTask</a>(task, 
+refcon, num_millisecs)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_AddTimedTaskWithFileIO">Gal_AddTimedTaskWithFileIO</a>(task, 
+refcon, num_millisecs, read_file, write_file)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_AddTimedTaskWithSocketIO">Gal_AddTimedTaskWithSocketIO</a>(task, 
+refcon, num_millisecs, read_socket, write_socket)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_EnableTimedTaskThreads">Gal_EnableTimedTaskThreads</a>()</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_EndTasks">Gal_EndTasks</a>(immediate)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_MaybeEndTask">Gal_MaybeEndTask</a>(immediate, 
+deferred)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_ReAddTask">Gal_ReAddTask</a>(p, 
+refcon, num_millisecs, read_blocking_available,  cleanup_fn )</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_ReAddTaskExtended">Gal_ReAddTaskExtended</a>(p, 
+caller_data, num_millisecs, read_blocking_available, read_socket, write_socket, 
+err_socket, read_file, write_file, err_file, condition,  cleanup_fn )</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_ReAddTaskWithFileIO">Gal_ReAddTaskWithFileIO</a>(p, 
+refcon, num_millisecs, read_blocking_available, read_file, write_file,  cleanup_fn 
+)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_ReAddTaskWithSocketIO">Gal_ReAddTaskWithSocketIO</a>(p, 
+refcon, num_millisecs, read_blocking_available, read_socket, write_socket, 
+ cleanup_fn )</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_RemoveIdleFunction">Gal_RemoveIdleFunction</a>(func)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_RemoveTask">Gal_RemoveTask</a>(task_id)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_RemoveTimedTask">Gal_RemoveTimedTask</a>(task, 
+refcon)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_RunIdleFunctions">Gal_RunIdleFunctions</a>()</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_StartTask">Gal_StartTask</a>(pkg, 
+num_millisecs)</p>
+       </td>
+       <td>&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_TaskPkgBlocking">Gal_TaskPkgBlocking</a>(pkg)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_TaskPkgData">Gal_TaskPkgData</a>(pkg)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_TaskPkgRunReasons">Gal_TaskPkgRunReasons</a>(pkg)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_TimedTaskLoopThreadWaiter">Gal_TimedTaskLoopThreadWaiter</a>()</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_TimedTaskThreadsEnabled">Gal_TimedTaskThreadsEnabled</a>()</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_TimedTasksLoop">Gal_TimedTasksLoop</a>()</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_TimedTasksLoopExit">Gal_TimedTasksLoopExit</a>()</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/timed_tasks.html#Gal_TimedTasksLoopHandler">Gal_TimedTasksLoopHandler</a>(tv)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+     <tr>
+       <td><a href="../../../../../docs/manual/advanced/session.html"><big>Managing 
+Session Information</big></a></td>
+       <td>&nbsp;</td>
+     </tr>
+     <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/session.html#GalSS_EnvGetSessionID">GalSS_EnvGetSessionID</a>(env)</p>
+       </td>
+       <td>env.GetSessionID()</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/session.html#GalSS_EnvUpdateSessionID">GalSS_EnvUpdateSessionID</a>(env, 
+session_id)</p>
+       </td>
+       <td>env.UpdateSessionID(session_id)</td>
+     </tr>
+  <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+     <tr>
+       <td><a
+ href="../../../../../docs/manual/advanced/hub_properties.html"><big>Controlling 
+Hub Server and Session Properties from the Server</big></a></td>
+       <td>&nbsp;</td>
+     </tr>
+     <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/hub_properties.html#GalIO_AddServiceType">GalIO_AddServiceType</a>(server, 
+stype)</p>
+       </td>
+       <td>server.AddServiceType(stype)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/hub_properties.html#GalIO_ServerModifyProperties">GalIO_ServerModifyProperties</a>(server, 
+new_properties, delete_properties)</p>
+       </td>
+       <td>server.ModifyProperties(new_properties, delete_properties)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/hub_properties.html#GalIO_ServerProperties">GalIO_ServerProperties</a>(server)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/hub_properties.html#GalSS_EnvDeleteServerProperties">GalSS_EnvDeleteServerProperties</a>(env, 
+keys)</p>
+       </td>
+       <td>env.ModifyServerProperties(properties_to_delete = keys)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/hub_properties.html#GalSS_EnvDeleteSessionProperties">GalSS_EnvDeleteSessionProperties</a>(env, 
+keys)</p>
+       </td>
+       <td>env.ModifySessionProperties(properties_to_delete = keys)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/hub_properties.html#GalSS_EnvGetServerProperties">GalSS_EnvGetServerProperties</a>(env, 
+keys)</p>
+       </td>
+       <td>env.GetServerProperties(keys)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/hub_properties.html#GalSS_EnvGetSessionProperties">GalSS_EnvGetSessionProperties</a>(env, 
+keys)</p>
+       </td>
+       <td>env.GetSessionProperties(keys)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/hub_properties.html#GalSS_EnvModifyServerProperties">GalSS_EnvModifyServerProperties</a>(env, 
+properties_to_set, properties_to_delete)</p>
+       </td>
+       <td>env.ModifyServerProperties(properties_to_set, properties_to_delete)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/hub_properties.html#GalSS_EnvModifySessionProperties">GalSS_EnvModifySessionProperties</a>(env, 
+properties_to_set, properties_to_delete)</p>
+       </td>
+       <td>env.ModifySessionProperties(properties_to_set, properties_to_delete)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/hub_properties.html#GalSS_EnvSetServerProperties">GalSS_EnvSetServerProperties</a>(env, 
+properties)</p>
+       </td>
+       <td>env.ModifyServerProperties(properties_to_set = properties)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/hub_properties.html#GalSS_EnvSetSession">GalSS_EnvSetSession</a>(env, 
+session_name, lock_info)</p>
+       </td>
+       <td>env.SetSession(session_name, lock_info)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/hub_properties.html#GalSS_EnvSetSessionProperties">GalSS_EnvSetSessionProperties</a>(env, 
+properties)</p>
+       </td>
+       <td>env.ModifySessionProperties(properties_to_set = properties)</td>
+     </tr>
+  <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+     <tr>
+       <td><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html"><big>Special 
+Main Loops</big></a></td>
+       <td>&nbsp;</td>
+     </tr>
+     <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalIO_BrokerDataInCallbackHandler">GalIO_BrokerDataInCallbackHandler</a>(b, 
+read_blocking)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalIO_BrokerDataOutCallbackHandler">GalIO_BrokerDataOutCallbackHandler</a>(b)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalIO_BrokerReadReady">GalIO_BrokerReadReady</a>(b)</p>
+       </td>
+       <td>[implemented but not visible]&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalIO_BrokerWriteReady">GalIO_BrokerWriteReady</a>(b)</p>
+       </td>
+       <td>[implemented but not visible]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalIO_CommReadReady">GalIO_CommReadReady</a>(gcomm)</p>
+       </td>
+       <td>[implemented but not visible]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalIO_CommWriteReady">GalIO_CommWriteReady</a>(gcomm)</p>
+       </td>
+       <td>[implemented but not visible]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalIO_ConnectionCallbackHandler">GalIO_ConnectionCallbackHandler</a>(gcomm, 
+read_blocking)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalIO_ServerCallbackHandler">GalIO_ServerCallbackHandler</a>(scomm, 
+read_blocking, new_conn_ptr)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalIO_ServerCheckHubContacts">GalIO_ServerCheckHubContacts</a>(scomm)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_BrokerProxyInCallbackHandler">GalSS_BrokerProxyInCallbackHandler</a>(bp)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_BrokerProxyOutCallbackHandler">GalSS_BrokerProxyOutCallbackHandler</a>(bp)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_BrokerProxyReadReady">GalSS_BrokerProxyReadReady</a>(bp)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_BrokerProxyWriteReady">GalSS_BrokerProxyWriteReady</a>(bp)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRBroker">GalSS_ELRBroker</a>(elr)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRCopy">GalSS_ELRCopy</a>(source)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRCreate">GalSS_ELRCreate</a>(scomm, 
+timer_set_fn, timer_unset_fn, fd_set_fn, fd_unset_fn, behavior_fn, timer_is_persistent)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRDestroy">GalSS_ELRDestroy</a>(elr)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRDoCallback">GalSS_ELRDoCallback</a>(elr, 
+timer_or_fd)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRGComm">GalSS_ELRGComm</a>(elr)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRGetLoopData">GalSS_ELRGetLoopData</a>(elr)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRSComm">GalSS_ELRSComm</a>(elr)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRSetBrokerInCallback">GalSS_ELRSetBrokerInCallback</a>(elr, 
+fn)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRSetBrokerOutCallback">GalSS_ELRSetBrokerOutCallback</a>(elr, 
+fn)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRSetConnectionCallback">GalSS_ELRSetConnectionCallback</a>(elr, 
+fn)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRSetLoopData">GalSS_ELRSetLoopData</a>(elr, 
+loop_data,  loop_data_free_fn )</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRSetServerClientCallback">GalSS_ELRSetServerClientCallback</a>(elr, 
+fn)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRSetServerListenerCallback">GalSS_ELRSetServerListenerCallback</a>(elr, 
+fn)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRSetupServer">GalSS_ELRSetupServer</a>(external_arg_pkg, 
+argc, argv, timer_set_fn, timer_unset_fn, fd_set_fn, fd_unset_fn, behavior_fn, 
+loop_data,  loop_data_free_fn , timer_is_persistent)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRShutdown">GalSS_ELRShutdown</a>(elr)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/special_mainloop.html#GalSS_ELRUpdatePollIntervals">GalSS_ELRUpdatePollIntervals</a>(elr, 
+server_client_poll_ms, conn_ms, broker_ms)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+     <tr>
+       <td><a href="../../../../../docs/manual/advanced/signal.html"><big>Signal 
+Handling</big></a></td>
+       <td>&nbsp;</td>
+     </tr>
+     <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/signal.html#Gal_AddSignalHandler">Gal_AddSignalHandler</a>(sig, 
+ handler )</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/signal.html#Gal_InitializeSignals">Gal_InitializeSignals</a>()</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/signal.html#Gal_SignalsInitialized">Gal_SignalsInitialized</a>()</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+     <tr>
+       <td><a href="../../../../../docs/manual/advanced/util.html"><big>Command 
+Line Argument Parsing and Printing Utilities</big></a></td>
+       <td>&nbsp;</td>
+     </tr>
+     <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_Assert">GalUtil_Assert</a>(truth, 
+format, ...)</p>
+       </td>
+       <td>env.ostream.p_assert(truth, msg)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_CPInfo1">GalUtil_CPInfo1</a>(fore, 
+back, format, ...)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_CPInfo1WithLocation">GalUtil_CPInfo1WithLocation</a>(fn, 
+fore, back, fmt, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_CPInfo2">GalUtil_CPInfo2</a>(fore, 
+back, format, ...)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_CPrint">GalUtil_CPrint</a>(level, 
+fore, back, format, ...)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_CreatePrintPkg">GalUtil_CreatePrintPkg</a>(fatal_func, 
+error_func, warn_func, level_func, clevel_func, pinfo1_func, pinfo2_func, 
+cpinfo1_func, cpinfo2_func, debug1_func, debug2_func, client_data)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_Debug1">GalUtil_Debug1</a>(format, 
+...)</p>
+       </td>
+       <td>env.ostream.debug1(msg)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_Debug2">GalUtil_Debug2</a>(format, 
+...)</p>
+       </td>
+       <td>env.ostream.debug2(msg)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_Error">GalUtil_Error</a>(format, 
+...)</p>
+       </td>
+       <td>env.ostream.error(msg)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_Fatal">GalUtil_Fatal</a>(format, 
+...)</p>
+       </td>
+       <td>env.ostream.fatal(msg)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_OACheckUsage">GalUtil_OACheckUsage</a>(argc, 
+argv, oas, first_real_arg)</p>
+       </td>
+       <td>GalaxyIO.Server.CheckUsage(scomm, oas, argv)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_OAExtract">GalUtil_OAExtract</a>(argc, 
+argv, oas, key, ...)</p>
+       </td>
+       <td>SLSUtil.OAExtract(oas, argv, ostream)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_OAExtractAsserting">GalUtil_OAExtractAsserting</a>(argc, 
+argv, oas, key, ...)</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_OAPrintUsage">GalUtil_OAPrintUsage</a>(argc, 
+argv, oas)</p>
+       </td>
+       <td>SLSUtil.OAPrintUsage(oas)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_PInfo1">GalUtil_PInfo1</a>(format, 
+...)</p>
+       </td>
+       <td>env.ostream.pinfo1(msg)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_PInfo1WithLocation">GalUtil_PInfo1WithLocation</a>(fn, 
+fmt, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_PInfo2">GalUtil_PInfo2</a>(format, 
+...)</p>
+       </td>
+       <td>env.ostream.pinfo2(msg)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_PkgAssert">GalUtil_PkgAssert</a>(pkg, 
+truth, format, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_PkgCPInfo1">GalUtil_PkgCPInfo1</a>(pkg, 
+fore, back, format, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_PkgCPInfo2">GalUtil_PkgCPInfo2</a>(pkg, 
+fore, back, format, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_PkgCPrint">GalUtil_PkgCPrint</a>(pkg, 
+level, fore, back, format, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_PkgDebug1">GalUtil_PkgDebug1</a>(pkg, 
+format, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_PkgDebug2">GalUtil_PkgDebug2</a>(pkg, 
+format, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_PkgError">GalUtil_PkgError</a>(pkg, 
+format, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_PkgFatal">GalUtil_PkgFatal</a>(pkg, 
+format, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_PkgPInfo1">GalUtil_PkgPInfo1</a>(pkg, 
+format, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_PkgPInfo2">GalUtil_PkgPInfo2</a>(pkg, 
+format, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_PkgPrint">GalUtil_PkgPrint</a>(pkg, 
+level, format, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_PkgWarn">GalUtil_PkgWarn</a>(pkg, 
+format, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_Print">GalUtil_Print</a>(level, 
+format, ...)</p>
+       </td>
+       <td>env.ostream.write_level(level, msg)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_PrintWithLocation">GalUtil_PrintWithLocation</a>(level, 
+fn, fmt, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_SetVerbose">GalUtil_SetVerbose</a>(verbose_level)</p>
+       </td>
+       <td>env.ostream.set_verbosity(verbose_level)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_VerboseUseBW">GalUtil_VerboseUseBW</a>()</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_VerboseUseColor">GalUtil_VerboseUseColor</a>()</p>
+       </td>
+       <td>[not implemented]</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_Warn">GalUtil_Warn</a>(format, 
+...)</p>
+       </td>
+       <td>env.ostream.warn(msg)</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_WarnLevelWithLocation">GalUtil_WarnLevelWithLocation</a>(level, 
+fn, fmt, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_WarnWithLocation">GalUtil_WarnWithLocation</a>(fn, 
+fmt, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/util.html#GalUtil_fprintf">GalUtil_fprintf</a>(fp, 
+fmt, ...)</p>
+       </td>
+       <td>[not implemented]<br>
+           </td>
+     </tr>
+  <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+     <tr>
+       <td><a href="../../../../../docs/manual/advanced/exec.html"><big>How 
+to Use the Communicator Library in Arbitrary Executables</big></a></td>
+       <td>&nbsp;</td>
+     </tr>
+     <tr>
+       <td colspan="2">&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/exec.html#GalIO_ClientConnect">GalIO_ClientConnect</a>(name, 
+host, port, silent, welcome_frame, reply_frame)</p>
+       </td>
+       <td>GalaxyIO.ClientConnection(host, port, welcome_frame)&nbsp;</td>
+     </tr>
+  <tr>
+       <td>       
+      <p><a
+ href="../../../../../docs/manual/advanced/exec.html#Gal_InitializeStatics">Gal_InitializeStatics</a>()</p>
+       </td>
+       <td>[not needed; called when the bindings are loaded]</td>
+     </tr>
+     
+  </tbody> 
+</table>
+       
+<p> </p>
+         
+<hr> 
+<center>  
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+     <tbody>
+       <tr>
+         <td valign="middle" align="left" width="10%"><a
+ href="../../java/index.html"><img
+ src="../../../../../docs/arrow_left.gif" alt="" width="30" height="30">
+       </a></td>
+         <td valign="middle" align="center">          <a
+ href="../../../../../LICENSE">License</a> / <a
+ href="../../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+        </td>
+         <td valign="middle" align="right" width="10%"><a
+ href="../../clisp/docs/index.html"><img
+ src="../../../../../docs/arrow_right.gif" alt="" width="30" height="30">
+       </a></td>
+       </tr>
+          
+  </tbody>   
+</table>
+   Last updated August 8, 2002</center>
+       <br>
+     <br>
+    <br>
+   <br>
+  <br>
+ <br>
+</body>
+</html>

@@ -1,0 +1,372 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                
+  <meta name="GENERATOR"
+ content="Mozilla/4.78 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Tutorial: Sessions</title>
+                 <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+        
+<center>    
+<h1> Galaxy Communicator Tutorial:<br>
+    <br>
+    Sessions</h1>
+   </center>
+     
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="logging_tutorial.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>  
+     </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="end_to_end.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+         
+<hr width="100%">    
+<p>Before we look at the final details of putting together an end-to-end system,
+there's a subject which we've mentioned numerous times but have yet to cover:
+sorting interactions into sessions. In this lesson, we'll learn what sessions
+are, how they're created, how they're managed, and what they can do for you.
+</p>
+     
+<ul>
+    <li> <a href="#What_sessions_are">What sessions are</a></li>
+     <li> <a href="#Why_use_sessions">Why use sessions?</a></li>
+     <li> <a href="#How_sessions_propagate">How sessions propagate</a></li>
+     <li> <a href="#Creating_sessions">Creating sessions</a></li>
+     <li> <a href="#Ending_sessions">Ending sessions</a></li>
+     <li> <a href="#Summary">Summary</a></li>
+       
+</ul>
+        
+<hr width="100%">    
+<h2> <a name="What_sessions_are"></a>What sessions are</h2>
+    At various points throughout this tutorial, we've referred to the notion 
+ of <b>session</b>:    
+<ul>
+    <li> In our toy travel interaction, we saw <a
+ href="../../../contrib/MITRE/demos/docs/toy-travel-tut.html#Starting_the_interaction">reports
+  in the IO monitor</a> which referred to input and output within a particular
+  session.</li>
+     <li> We saw that the unit tester utility has a <a
+ href="../../../contrib/MITRE/tools/docs/unit_tester_tut.html#Starting_the_unit_tester_as_a_Hub">typein
+  window</a> for session IDs, and a radio button to lock the session (whatever
+  that means)</li>
+     <li> We saw that one of the <a
+ href="pgm_intro.html#Rules_and_namespaces">namespaces</a> in the Hub refers
+ to the session.</li>
+     <li> We saw that the <a
+ href="errors.html#Environments_and_message_returns">call environment</a> 
+ argument to dispatch functions contains the current session as part of its 
+ contextual information.</li>
+     <li> We saw that the session ID turns up in the <a
+ href="logging_tutorial.html#Looking_at_the_log">Hub log</a>.</li>
+       
+</ul>
+    A session is a interaction between the user and system, with a clear
+beginning  and end. For instance, when a user calls a system on the phone
+and the system  answers, that's the beginning of that session with the user;
+when the user  or system hangs up, that's the end of the session. Sessions
+are distinguished  by strings called <b>session IDs</b>, which we've seen
+referred to in the  Hub log and the unit tester.    
+<p>Sessions distinguish users from each other and group applications associated 
+ with the same users together. So a single Hub might support multiple users, 
+ each using different dedicated channels (such as audio), and multimodal interactions
+ by each user, using multiple dedicated applications (say, a GUI and audio
+ channel): </p>
+     
+<p><img src="../../images/Sessions.jpg" nosave="" height="167"
+ width="839">
+    </p>
+     
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="Why_use_sessions"></a>Why use sessions?</h2>
+    There are a number of reasons that sessions are valuable.    
+<p>First, they provide the boundaries on separate interactions. There's a 
+ one-to-one mapping between sessions and Hub log files when logging is enabled 
+ in the Hub, and this allows us to sort out statistics about user interactions 
+ appropriately for scoring and analysis. </p>
+     
+<p>Second, they provide a, well, session-level memory state in the Hub (i.e., 
+ the session namespace) for each user interaction which spans all the tokens 
+ generated for that user interaction. So if a Hub program needs to record 
+crucial information about the interaction (say, the interaction language, 
+or the media available for output), the session is the appropriate place (and,
+perhaps, the only appropriate place) to store it. This is especially important
+if your system anticipates supporting multiple simultaneous users.  </p>
+     
+<p>Third, and most dramatic, sessions provide a way of controlling the eligibility 
+ of service providers in the Hub. Servers can lock themselves to particular 
+ sessions (we'll talk about this in a minute) so that they're constrained 
+to send messages to the Hub only for a particular session, or (more important) 
+ to receive messages associated only with a particular session. Imagine, for
+ a moment, if this were not the case, and the system had two simultaneous 
+users. If we could not use sessions to distinguish between the various UI 
+elements, and one user provided some input, we wouldn't necessarily be able 
+to guarantee which user received the response! This is because if the response 
+is a new message, rather than a message reply to the original input, the system
+would try to select an appropriate UI element to handle the output, and it
+wouldn't be able to tell which UI element was associated with which user.
+You may respond, "Well, why doesn't it just keep track?", and the answer is:
+that's what sessions do. </p>
+     
+<p>We can see this behavior by using the unit tester. The unit tester allows 
+ you to specify the session associated with a new message, and also optionally 
+ allows you to lock the session. If we don't set the lock and we have two 
+unit tester servers connected to the same Hub (say, to the toy travel demo), 
+it should be random which server receives the response to any input from either
+server. And indeed, that's exactly what happens. </p>
+     
+<blockquote><tt><b>[Sessions exercise 1]</b><br>
+    <br>
+    <b>Unix:</b><br>
+    </tt>          
+  <p><tt>% process_monitor $GC_HOME/tutorial/sessions/unit-tester.config<br>
+    </tt></p>
+       
+  <p><tt><b>Windows:</b><br>
+    </tt></p>
+       
+  <p><tt>C:\&gt; python %PM_DIR%\process_monitor.py %GC_HOME%\tutorial\sessions\unit-tester.config</tt><br>
+    </p>
+   </blockquote>
+    Select "Process Control --&gt; Restart all". Two unit testers should
+start  up. In each of them, press "Send new message", and then select the
+first message (the one named <tt>UserInput</tt>), and then OK. Repeat this
+process several times. You'll notice that the reply doesn't come back to
+the unit tester that sent the original message. In each case, the unit tester
+you interacted with will have the following in its interaction history: 
+  
+<blockquote><b><tt>[Interaction History pane]</tt></b>          
+  <p><tt>[Sending: new message]</tt> <br>
+     <tt>{c UserInput</tt> <br>
+     <tt>&nbsp;&nbsp; :input_string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"
+  }</tt></p>
+   </blockquote>
+    And one or the other of the interaction history panes will have the response 
+ in its interaction history:    
+<blockquote><b><tt>[Interaction history pane]</tt></b>          
+  <p><tt>[Received: new message]</tt> <br>
+     <tt>{c UI.Print</tt> <br>
+     <tt>&nbsp;&nbsp; :session_id "Default"</tt> <br>
+     <tt>&nbsp;&nbsp; :output_string "American Airlines flight 115 leaves 
+at  11:44 AM, and United flight 436 leaves at 2:05 PM" }</tt></p>
+   </blockquote>
+    However, which interaction history gets the response depends on which 
+one  started first, and some other factors.    
+<p>Now, repeat the procedure, but this time type "Session1" in the "Session 
+ ID" entry box of the first unit tester, and "Session 2" in the "Session ID"
+entry box of the second, and press the "Lock session" button before you press
+OK. It may already say "Default"; delete it if it does (more on this in a
+minute.) (You'll only have to type "Session1" or "Session2" the first time;
+more on this in a minute too). As long as you've provided a session ID and
+locked the session, the response should always come back to the same unit
+tester. </p>
+     
+<p>Select "File --&gt; Quit" to end this exercise. </p>
+     
+<p>Locks are a little complicated. You can control which dimensions of the 
+ message traffic are locked, and whether the lock is permanent or not. You 
+ can find more details about locks in the <a
+ href="../advanced/hub_properties.html#GalSS_EnvSetSession">Hub properties
+  documentation</a>. </p>
+     
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="How_sessions_propagate"></a>How sessions propagate</h2>
+    So why did the "Session ID" box say "Default", and why did we only have 
+ to type "Session1" or "Session2" the first time? First, <tt>Default</tt> 
+is the name of  the default session, which is used when no session is specified. 
+When a new  message arrives at the Hub, it is assigned a session to the resulting 
+token,  either one it's requested (more on this in a minute) or <tt>Default</tt>.
+  Then the Hub processes this token. If the Hub sends a message to a server,
+  and that server sends a new message as a result, the chances are overwhelming
+  that the new message ought to be associated with the same session as the
+ original message that was sent. For instance, in the toy travel demo, the
+ user input is ultimately routed to the Dialogue server which (as we saw
+in  the <a href="new_messages.html">new messages</a> lesson) sends a new
+message  to the Hub which constitutes the system's response. This response
+is part  of the same session (user interaction) as the user input:    
+<center>    
+<p><img src="../../images/PercolateSession.jpg" nosave="" height="407"
+ width="695">
+   </p>
+   </center>
+        
+<p>This is accomplished as follows. When the Hub sends a message to a server, 
+ it sends the current session ID of the current token along with the message, 
+ which is incorporated into the call environment. Whenever a user writes a
+ new message through a call environment which has a session ID, the new message
+ will automatically be associated with that session. In this way, session
+IDs automatically percolate from token to token: <br>
+   <img src="../../images/SessionSupport.jpg" nosave="" height="191"
+ width="719">
+    <br>
+   The call environment serves this purpose in multiple situations.For instance, 
+ we saw in the <a
+ href="broker_tutorial.html#Target_server:_set_up_broker_client,_establish_callback">brokering
+  lesson</a> that the broker client is set up with a call environment, just
+  in case the client has to send a new message to the Hub when it's done.
+This happens in the toy travel demo, when the Audio server sends a message
+to the recognizer, which receives the audio via a broker client and ultimately
+  sends a new message from the broker callback containing the recognized
+string.  This recognition result is part of the same session (user interaction)
+as  the audio notification, and the call environment ensures that the same
+session  is used: </p>
+     
+<center>    
+<p><img src="../../images/BrokerSession.jpg" nosave="" height="383"
+ width="623">
+   </p>
+   </center>
+        
+<p>So once a session is established, the call environment ensures that it 
+ is preserved and propagated appropriately. </p>
+     
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="Creating_sessions"></a>Creating sessions</h2>
+    So where do session IDs come from? Typically, they start with your UI 
+elements,  since it's the user interaction which the sessions are encapsulating. 
+   
+<ul>
+    <li> If your UI element is a server which the Hub has contacted, you
+can  update the session ID in the call environment using the function <a
+ href="../advanced/session.html#GalSS_EnvUpdateSessionID">GalSS_EnvUpdateSessionID</a>,
+  or <a
+ href="../advanced/hub_properties.html#GalSS_EnvModifySessionProperties">GalSS_EnvSetSession</a>
+  to update the session ID and establish the session lock.</li>
+     <li> If your UI element is a server which contacts the Hub, you can
+use  the <tt>-session_id </tt><a
+ href="../reference/adding.html#Initialization">command line argument</a> 
+ to set a session ID for a given interaction. This command line argument establishes
+ the session lock for you; you can get more details in the advanced documentation
+ on <a href="../advanced/hub_listener.html">hub listeners</a>. You can also
+ set the session ID programmatically before the server contacts the Hub;
+this  is how the Audio server works in the toy travel demo, but the procedure
+is  a little too complicated to discuss here.</li>
+       
+</ul>
+    When the Hub receives a message with a session ID, it looks for a session 
+ with that ID. If it doesn't find one, it creates it. So it's not necessary 
+ to create a session explicitly; sessions are created in the Hub by virtue 
+ of being mentioned.    
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="Ending_sessions"></a>Ending sessions</h2>
+    Once a session is created, it survives until it is explicitly ended.
+There's  no inference, for instance, that if a particular UI element sends
+a message  which causes a session to be created, and that UI element disconnects,
+the  session is over. There are obvious situations where this inference would 
+be wrong. For example, let's say the user wishes to suspend a session and 
+resume later. The user could simply disconnect now and reconnect later, perhaps 
+from a different location and a different UI element, as long as the same 
+session ID is used.    
+<p>It's important to end a session for all sorts of reasons, especially efficiency. 
+ There's a lot of memory associated with the session, including the session 
+ namespace and all the information related to session locks, and this memory 
+ can't be freed until the session ends. It's also important to close the Hub
+ log file, which remains open until the session ends. So it's important to
+ end the session. </p>
+     
+<p>You can end a session by invoking the operation <tt>Builtin.end_session</tt>
+  in the Hub. This dispatch function is implemented by the Builtin server,
+ which we're going to discuss in the next (and final) lesson. If you look
+at the Audio server, it sends a message to the Hub with this name when it
+disconnects:  </p>
+     
+<blockquote><tt>/* ... */</tt> <br>
+     <tt>&nbsp; case AUDIO_UNAVAILABLE:</tt> <br>
+     <tt>&nbsp;&nbsp;&nbsp; /* The device shut down. End the session and
+exit.  */</tt> <br>
+     <tt>&nbsp;&nbsp;&nbsp; /* We ran out of inputs. Disconnect. */</tt>
+  <br>
+     <tt>&nbsp;&nbsp;&nbsp; printf("Audio no longer available. Disconnecting.\n");</tt>
+          
+  <p><tt>&nbsp;&nbsp;&nbsp; /* First, end the session. */</tt> <br>
+     <tt>&nbsp;&nbsp;&nbsp; <b>output_f = Gal_MakeFrame("Builtin.end_session",
+  GAL_CLAUSE);</b></tt> <br>
+     <b><tt>&nbsp;&nbsp;&nbsp; GalSS_EnvWriteFrame(p-&gt;env, output_f, 0);</tt></b>
+    <br>
+     <b><tt>&nbsp;&nbsp;&nbsp; Gal_FreeFrame(output_f);</tt></b> </p>
+           
+  <p><tt>&nbsp;&nbsp;&nbsp; /* Next, shut down the connection. This ought</tt>
+    <br>
+     <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; to reset the poll. */</tt>
+  <br>
+     <tt>&nbsp;&nbsp;&nbsp; GalIO_SetCommDone(GalSS_EnvComm(p-&gt;env));</tt>
+    <br>
+     <tt>/* ... */</tt></p>
+   </blockquote>
+    Assuming the Hub doesn't have a program named <tt>Builtin.end_session</tt>,
+  when it receives this message, it will invoke the appropriate Bulitin server
+  operation.    
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="Summary"></a>Summary</h2>
+    In this lesson, we've learned all about sessions: what they are, why
+to  use them, and how to create, manage and end them. In the next (and final) 
+ lesson, we'll cover all the random odds and ends which you need to understand 
+ to finally assemble an end-to-end system.    
+<p><b>Next</b>: <a href="end_to_end.html">Assembling an end-to-end system</a>
+  </p>
+     
+<p> </p>
+     
+<hr>  
+<center>   
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="logging_tutorial.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>  
+     </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="end_to_end.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+    Last updated August 8, 2002</center>
+     <br>
+   <br>
+  <br>
+ <br>
+</body>
+</html>

@@ -1,0 +1,207 @@
+#! /bin/sh
+
+# Steal a little command line parsing from the
+# generated configure file. All we really want is the
+# host or build values. The generalization is:
+# "host" is the machine the executable will run on
+# "build" is the machine the executable is compiled on
+# --host without --build seems to be taken in autoconf
+# pre 2.5 to mean that host and build are the same.
+# May also be the case in autoconf 2.5 (check release notes).
+# I've been doing this wrong, then, since I've been
+# passing in just --host. 
+
+# Needless to say, if there's a --host, we should use it.
+# The problem is, it will be in the form of a triple.
+# Grrrrr. But since we'll have complete control over this,
+# they don't have to be! Excellent.
+
+# Problem: I use the system version in the set_arch.csh script.
+# How can we pass that in --host or --version? We'll just have
+# to assume that those have already been canonicalized.
+
+# SAM 11/20/01: New way of doing the cross compilation. I've ditched the
+# traditional way of computing host/build/target using config.guess 
+# because I want to build the appropriate subdirectory before I ever
+# get into the main configure script. So now, GC_CROSS is just a 
+# /bin/sh file which sets the appropriate variables: host, CC, CXX, AR. 
+# I no longer need to include it here. The only other place that
+# GC_CROSS is used is in archos.make, and I've written a script which
+# extracts the appropriate archos value from the GC_CROSS file.
+
+ac_use_cached_args=no
+ac_args=
+ac_prev=
+for ac_option
+do
+
+  # If the previous option needs an argument, assign it.
+  if test -n "$ac_prev"; then
+    eval "$ac_prev=\$ac_option"
+    ac_prev=
+    continue
+  fi
+
+  case "$ac_option" in
+  -*=*) ac_optarg=`echo "$ac_option" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+  *) ac_optarg= ;;
+  esac
+
+  case "$ac_option" in
+
+  -build | --build | --buil | --bui | --bu)
+    ac_prev=build ;;
+  -build=* | --build=* | --buil=* | --bui=* | --bu=*)
+    build="$ac_optarg" ;;
+
+  -host | --host | --hos | --ho)
+    ac_prev=host ;;
+  -host=* | --host=* | --hos=* | --ho=*)
+    host="$ac_optarg" ;;
+
+  -help | --help | --hel | --he)
+    # Bypass everything and invoke subscript.
+    exec /bin/sh ./configure.main --help ;;
+
+  -with-cached-args | --with-cached-args)
+    # Do the right thing with cached args.
+    ac_use_cached_args=yes ;;
+  *)
+    ac_args="$ac_args $ac_option" ;;
+  esac
+done
+
+# We want to allow the option of ignoring the vendor. So
+# we'll either accept configure's cpu-vendor-os or we'll
+# also accept cpu-os, for either build or host.
+
+# Assume, if host but no build, that host and build
+# are the same.
+
+# First, we test to see if it has two or three elements.
+# If looking for the third element gives you the same thing
+# as your input, there's no third element (sed returns
+# the modified string, and there were no modifications). 
+# Next, try two. If there aren't two, then barf. If
+# you don't barf, set the CPU.
+
+# But first, source the GC_CROSS file if it exists.
+
+if test -n "$GC_CROSS"; then
+  . "$GC_CROSS"
+  gc_cross_abs=`echo "$GC_CROSS" | grep "^/"`
+  if test -z "$gc_cross_abs"; then
+    echo "configure: GC_CROSS must be absolute pathname"
+    exit 1
+  fi
+fi
+
+if test -n "$host"; then
+  maybe_host_os=`echo $host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
+  if test "$host" = "$maybe_host_os"; then
+    maybe_host_os=`echo $host | sed 's/^\([^-]*\)-\(.*\)$/\2/'`
+    if test "$host" = "$maybe_host_os"; then
+      echo "configure: ill-formed host value (must be cpu-vendor-os or cpu-os)"
+      exit 1
+    fi
+  fi
+  host_os="$maybe_host_os"
+  maybe_host_os=
+  host_cpu=`echo $host | sed 's/^\([^-]*\)-\(.*\)$/\1/'`
+fi
+
+# Now, do the same thing for build. Except for build,
+# if there's host but no build, use the build values,
+# and if there's neither, use the scripts.
+# If there's a value for GC_CROSS, then we'll set the 
+# host_os by sourcing the GC_CROSS file and use the 
+# local build, otherwise, we treat build and host
+# as the same if one is there but not the other.
+
+if test -n "$build"; then
+  maybe_build_os=`echo $build | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
+  if test "$build" = "$maybe_build_os"; then
+    maybe_build_os=`echo $build | sed 's/^\([^-]*\)-\(.*\)$/\2/'`
+    if test "$build" = "$maybe_build_os"; then
+      echo "configure: ill-formed build value (must be cpu-vendor-os or cpu-os)"
+      exit 1
+    fi
+  fi
+  build_os="$maybe_build_os"
+  maybe_build_os=
+  build_cpu=`echo $build | sed 's/^\([^-]*\)-\(.*\)$/\1/'`
+elif test -n "$host" && test -z "$GC_CROSS"; then
+  build_os="$host_os"
+  build_cpu="$host_cpu"
+else
+  build_cpu=`./set_arch.csh`
+  build_os=`./set_os.csh`
+fi
+
+# There will always be a build at this point.
+# If there's a build but no host, then host and build are the same.
+
+if test -z "$host_os"; then
+  host_os="$build_os"
+  host_cpu="$build_cpu"
+fi
+
+# Create the appropriate subdirectory if necessary.
+
+if test ! -d "$host_cpu-$host_os"; then
+  /bin/mkdir "$host_cpu-$host_os"
+fi
+touch "$host_cpu-$host_os/.initialized"
+
+# Move into that subdirectory.
+
+cd "$host_cpu-$host_os"
+echo "moving to subdirectory $host_cpu-$host_os..."
+
+# Under some circumstances, we want to save away the 
+# command line, or retrieve it. If, for instance, configure
+# is invoked not from the Makefile, we should store the command line,
+# and if it is invoked from the Makefile, we should retrieve
+# the command line. Or, we should have a command line 
+# option to retrieve the command line.
+
+# The easiest thing would probably be adding
+# a meaningless argument to the configure.in script
+# --with-cached-args, which would add the contents of
+# an argument cache to the argument list here. The argument
+# cache would be in the subdirectory, config.args or something
+# like that. If present, retrieve args and don't store;
+# if not present, store but don't retrieve.
+
+if test "$ac_use_cached_args" = "yes"; then
+  if test -f "config.args"; then
+    echo "retrieving cached args..."
+    ac_extra_args=`cat config.args`
+    ac_args="$ac_args $ac_extra_args"
+    echo "args are $ac_extra_args"
+  else
+    echo "(no cached args)..."
+  fi
+elif test "$#" != "0"; then
+  /bin/rm -f config.args
+  echo "$*" > config.args
+fi
+
+# Create the appropriate links. 
+
+/bin/rm -f GC_config.h.in
+/bin/ln -s ../GC_config.h.in .
+
+/bin/rm -f config.make.in
+/bin/ln -s ../config.make.in .
+
+# Finally, invoke the real configure script.
+
+# We have to call configure.main, not read it, because
+# we're changing the arguments. 
+
+export host_cpu
+export host_os
+export build_cpu
+export build_os
+exec /bin/sh ../configure.main $ac_args

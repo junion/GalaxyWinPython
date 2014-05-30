@@ -1,0 +1,402 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+            
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+            
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Galaxy I/O Library</title>
+             <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+      
+<center>   
+<h1> Galaxy Communicator Documentation:<br>
+   <br>
+   I/O Library</h1>
+  </center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "libgalaxy.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "libserverstub.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+      
+<hr width="100%"> <br>
+  &nbsp;   
+<p>This documentation briefly describes functions in the directory src/libGalaxy/io
+ which are present but probably will not be used by the developer. The signatures
+ of these functions may change from release to release. </p>
+   
+<p> </p>
+   
+<hr width="100%"> <br>
+  &nbsp;   
+<ul>
+   <li> <a href="#Brokering_functions">Brokering functions</a></li>
+    <li> <a href="#Comm_structure_functions">Comm structure functions</a></li>
+    <li> <a href="#Server_structure_functions">Server structure functions</a></li>
+    <li> <a href="#Flow_of_control_functions">Flow of control functions</a></li>
+    <li> <a href="#Socket_queue_functions">Socket queue functions</a></li>
+     
+</ul>
+      
+<hr width="100%">   
+<h2> <a name="Brokering_functions"></a>Brokering functions</h2>
+   GAL_SOCKET&nbsp;<a name="GalIO_GetBrokerSocket"></a><b><big>GalIO_GetBrokerSocket</big></b>(GalIO_BrokerStruct 
+ *<i>b</i>) <br>
+  Returns the socket that the broker connection is using to transmit or receive
+ broker data.   
+<p>GAL_SOCKET&nbsp;<a name="GalIO_GetBrokerListenSocket"></a><b><big>GalIO_GetBrokerListenSocket</big></b>(GalIO_BrokerStruct 
+ *<i>b</i>) <br>
+  Returns the socket that the outgoing broker connection is using to listen
+ for connections on. </p>
+   
+<p>int&nbsp;<a name="GalIO_BrokerDataOutHandler"></a><b><big>GalIO_BrokerDataOutHandler</big></b>(GalIO_BrokerStruct 
+ *<i>b</i>) <br>
+  Once you've set up the outgoing broker connection, call this function to
+ poll it. It returns 1 if the the connection is done, 0 if it is not done,
+ -1 if there is an error. If the result is not 0, you should stop polling
+and call <a href="#GalIO_DestroyBrokerStruct">GalIO_DestroyBrokerStruct</a>
+ to clean up. </p>
+   
+<p>int&nbsp;<a name="GalIO_BrokerDataInHandler"></a><b><big>GalIO_BrokerDataInHandler</big></b>(GalIO_BrokerStruct 
+ *<i>b</i>) <br>
+  Once you've set up the incoming broker connection, call this function to
+ poll it. It returns 1 if the the connection is done, 0 if it is not done,
+ -1 if there is an error. If the result is not 0, you should stop polling
+and call <a href="#GalIO_DestroyBrokerStruct">GalIO_DestroyBrokerStruct</a>
+ to clean up. </p>
+   
+<p>void&nbsp;<a name="GalIO_DestroyBrokerStruct"></a><b><big>GalIO_DestroyBrokerStruct</big></b>(GalIO_BrokerStruct 
+ *<i>b</i>) <br>
+  Destroys the broker structure and terminates the connection. </p>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Comm_structure_functions"></a>Comm structure functions</h2>
+   void&nbsp;<a name="GalIO_DestroyCommStruct"></a><b><big>GalIO_DestroyCommStruct</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>)   
+<p>GAL_SOCKET&nbsp;<a name="GalIO_GetCommSocket"></a><b><big>GalIO_GetCommSocket</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>) </p>
+   
+<p>void&nbsp;<a name="GalIO_CloseCommSocket"></a><b><big>GalIO_CloseCommSocket</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>) </p>
+   
+<p>char *<a name="GalIO_GetCommHost"></a><b><big>GalIO_GetCommHost</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>) </p>
+   
+<p>void&nbsp;<a name="GalIO_SetCommDone"></a><b><big>GalIO_SetCommDone</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>) </p>
+   
+<p>void&nbsp;<a name="GalIO_CommFlushOutQueue"></a><b><big>GalIO_CommFlushOutQueue</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>) </p>
+   
+<p>int&nbsp;<a name="GalIO_QueueProcessOut"></a><b><big>GalIO_QueueProcessOut</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>, int <i>do_block</i>) </p>
+   
+<p>int&nbsp;<a name="GalIO_CommReadFrame"></a><b><big>GalIO_CommReadFrame</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>, Gal_Frame *<i>frame</i>, int <i>do_block</i>) </p>
+   
+<p>Gal_Frame&nbsp;<a name="GalIO_CommDispatchFrame"></a><b><big>GalIO_CommDispatchFrame</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>, Gal_Frame <i>dispatch</i>, GalIO_MsgType *<i>msg_type_ptr</i>,
+ const char *<i>reply_key</i>) <br>
+  This function implements a module-to-module subdialogue with the Hub. It
+ sends the <i>dispatch</i> and waits for a reply. This function corresponds
+ to GalSS_DispatchViaHub, which implements this functionality for the default
+ "container". This function requires the <i>reply_key</i> which will notify
+ the Hub that this a reply is expected; use :hub_reply_requested. The msg_type_ptr
+ is a pointer to one of the GalIO_MsgType values which describe the content
+ of the response. </p>
+   
+<p>int&nbsp;<a name="GalIO_CommWriteMessage"></a><b><big>GalIO_CommWriteMessage</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>, Gal_Frame <i>frame</i>, GalIO_MsgType <i>msg_type</i>, int 
+ <i>do_block</i>) <br>
+  See the discussion on <a href="adding.html#Message_types">message types</a>. 
+ </p>
+   
+<p>int&nbsp;<a name="GalIO_CommReadMessage"></a><b><big>GalIO_CommReadMessage</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>, Nframe *<i>frame</i>, GalIO_MsgType *<i>msg_type_ptr</i>, 
+int <i>do_block</i>) <br>
+  See the discussion on <a href="adding.html#Message_types">message types</a>. 
+ </p>
+   
+<p>void&nbsp;<a name="GalIO_AddCommDispatchFunctionEntry"></a><b><big>GalIO_AddCommDispatchFunctionEntry</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>, const char *<i>name</i>, Gal_FrameDataFnPtr  <i>fn_with_data</i>, 
+Gal_DispatchFnSignatureKeyEntry *<i>in_key_array</i>, int <i>allow_other_in_keys</i>, 
+int <i>reply_provided</i>, Gal_DispatchFnSignatureKeyEntry *<i>out_key_array</i>, 
+int <i>allow_other_out_keys</i>) </p>
+   
+<p>Gal_DispatchFnPkg *<a name="GalIO_GetCommDispatchFnPkg"></a><b><big>GalIO_GetCommDispatchFnPkg</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>) </p>
+   
+<p>void&nbsp;<a name="GalIO_SetCommDispatchFnPkg"></a><b><big>GalIO_SetCommDispatchFnPkg</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>, Gal_DispatchFnPkg *<i>pkg</i>) </p>
+   
+<p>void&nbsp;<a name="_GalIO_SetCommDispatchFnAccess"></a><b><big>_GalIO_SetCommDispatchFnAccess</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>, Gal_DispatchFunctionSelector <i>s</i>, Gal_DispatchFnSignatureLister 
+ <i>l</i>, Gal_DispatchFunctionInvoker <i>i</i>, void *<i>invocation_client_data</i>) 
+ </p>
+   
+<p>Gal_Frame<a name="GalIO_CreateErrorFrame"></a><b><big>GalIO_CreateErrorFrame</big></b>(int 
+ <i>errnum</i>, const char *<i>error</i>) <br>
+  Used by <a href="adding.html#GalSS_EnvError">GalSS_EnvError</a> and other
+ functions to create a well-formed error frame. </p>
+   
+<p>GalIO_ServerStruct *<a name="GalIO_CommServer"></a><b><big>GalIO_CommServer</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>) </p>
+   
+<p>char *<a name="GalIO_MsgTypeToName"></a><b><big>GalIO_MsgTypeToName</big></b>(GalIO_MsgType 
+ <i>mt</i>) </p>
+   
+<p>int&nbsp;<a name="GalIO_ConnectionPoll"></a><b><big>GalIO_ConnectionPoll</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>) <br>
+  This function handles an established connection. It returns 0 if normal 
+processing occurred (either it had no input or it processed the input it had),
+1 if the connection is finished and was terminated, and -1 when the connection
+encountered an error and was terminated. The connection object will have
+been freed by the time the error is reported, so if you need to recover any
+data from the object (such as the socket so that you can shut off a poll),
+you should do it before you call GalIO_ConnectionPoll. </p>
+   
+<p>It's also possible to set up a server which is polled at intervals instead
+ of being activated by file descriptor input. It also uses these two handlers,
+ but its structure is much simpler. The <a
+ href="../../../contrib/MITRE/examples/simple_mainloop/">main loop example</a>
+ also contains an example of this. This alternative example polls both server
+ and all its connections, using GalIO_ServerPoll. </p>
+   
+<p>void&nbsp;<a name="GalIO_SetDisconnectCallback"></a><b><big>GalIO_SetDisconnectCallback</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>, void (*<i>disconnect_callback</i>)(GalIO_CommStruct *<i>server_data</i>)) 
+ <br>
+  Associates with the connection <i>gcomm</i> a function <i>disconnect_callback</i>
+ which is called when the connection is shut down. The callback is called
+with the connection to be shut down as its sole argument. This function should
+ no longer be used; it has been superseded by the <a
+ href="server_structure.html#Event-driven_programming">event-driven programming
+ model</a>. </p>
+   
+<p> </p>
+   
+<hr width="100%"> <br>
+  &nbsp;   
+<h2> <a name="Server_structure_functions"></a>Server structure functions</h2>
+   int&nbsp;<a name="GalIO_ResetCommSockets"></a><b><big>GalIO_ResetCommSockets</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>)   
+<p>GAL_SOCKET&nbsp;<a name="GalIO_GetServerListenSocket"></a><b><big>GalIO_GetServerListenSocket</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>) </p>
+   
+<p>void&nbsp;<a name="GalIO_CloseServerListenSocket"></a><b><big>GalIO_CloseServerListenSocket</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>) </p>
+   
+<p>void&nbsp;<a name="GalIO_AddServerDispatchFunctionEntry"></a><b><big>GalIO_AddServerDispatchFunctionEntry</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>, const char *<i>name</i>, Gal_FrameDataFnPtr  <i>fn_with_data</i>, 
+Gal_DispatchFnSignatureKeyEntry *<i>in_key_array</i>, int <i>allow_other_in_keys</i>, 
+int <i>reply_provided</i>, Gal_DispatchFnSignatureKeyEntry *<i>out_key_array</i>, 
+int <i>allow_other_out_keys</i>) </p>
+   
+<p>void&nbsp;<a name="_GalIO_SetServerDispatchFnAccess"></a><b><big>_GalIO_SetServerDispatchFnAccess</big></b>(GalIO_ServerStruct 
+ *<i>server</i>, Gal_DispatchFunctionSelector <i>s</i>, Gal_DispatchFnSignatureLister 
+ <i>l</i>, Gal_DispatchFunctionInvoker <i>i</i>, void *<i>invocation_client_data</i>) 
+ </p>
+   
+<p>Gal_DispatchFnPkg *<a name="GalIO_GetServerDispatchFnPkg"></a><b><big>GalIO_GetServerDispatchFnPkg</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>) </p>
+   
+<p>void&nbsp;<a name="GalIO_SetServerDispatchFnPkg"></a><b><big>GalIO_SetServerDispatchFnPkg</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>, Gal_DispatchFnPkg *<i>pkg</i>) </p>
+   
+<p>GalIO_CommStruct *<a name="GalIO_AcceptUniqueConnection"></a><b><big>GalIO_AcceptUniqueConnection</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>) </p>
+   
+<p>void&nbsp;<a name="GalIO_SetServerListenStatus"></a><b><big>GalIO_SetServerListenStatus</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>, int <i>server_listen_status</i>, const char *<i>client_pair_string</i>,
+ const char *<i>session_id</i>) <br>
+  Sets the listener status and a variety of other information relevant to 
+the listener status. The <i>client_pair_string</i> has the same format as 
+the <tt>-contact_hub</tt> command line argument, and the session ID is the 
+name of the session the connection(s) should be locked to. </p>
+   
+<p>int&nbsp;<a name="GalIO_ServerHandler"></a><b><big>GalIO_ServerHandler</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>, GalIO_CommStruct **<i>new_conn_ptr</i>) <br>
+  This function listens for connections on the socket initialized by <a
+ href="server_structure.html#GalSS_InitializeServerToplevel">GalSS_InitializeServerToplevel</a>. 
+ It returns 1 if a connection has been established, 0 if not, -1 if error. 
+ Once the connection has been established, GalIO_ConnectionPoll should be 
+used for further handling. On error, the server should be marked as done and
+shut down. </p>
+   
+<p>void&nbsp;<a name="GalIO_SetServerDone"></a><b><big>GalIO_SetServerDone</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>) <br>
+  Marks the server as done. GalIO_DestroyServerStruct will not actually destroy
+ the server until it's marked as done. </p>
+   
+<p>void&nbsp;<a name="GalIO_DestroyServerStruct"></a><b><big>GalIO_DestroyServerStruct</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>) <br>
+  Destroys a server as soon as it's marked as done. </p>
+   
+<p>int&nbsp;<a name="GalIO_ServerPoll"></a><b><big>GalIO_ServerPoll</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>) <br>
+  Polls the server and all connections associated with it. The status returned
+ is the one associated with the server. </p>
+   
+<p>int&nbsp;<a name="GalIO_ServerIsClient"></a><b><big>GalIO_ServerIsClient</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>) <br>
+  Returns 1 if the server will contact a Hub listener to set up connections,
+ 0 otherwise. </p>
+   
+<p>int&nbsp;<a name="GalIO_ServerIsListener"></a><b><big>GalIO_ServerIsListener</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>) <br>
+  Returns 1 if the server has its own listener which the Hub will contact 
+to set up connections, 0 otherwise. </p>
+   
+<p>int&nbsp;<a name="GalIO_ServerListensForConnections"></a><b><big>GalIO_ServerListensForConnections</big></b>(GalIO_ServerStruct 
+ *<i>s</i>) <br>
+  Returns 1 if the server has its own listener and that listener is listening
+ for "regular" connections (that is, connections which will fire dispatch
+functions), 0 otherwise. </p>
+   
+<p>int&nbsp;<a name="GalIO_ServerListensForBrokers"></a><b><big>GalIO_ServerListensForBrokers</big></b>(GalIO_ServerStruct 
+ *<i>s</i>) <br>
+  Returns 1 if the server has its own listener and that listener is listening
+ for broker connections, 0 otherwise. </p>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Flow_of_control_functions"></a>Flow of control functions</h2>
+   GalIO_ServerStruct *<a name="GalIO_ServerInit"></a><b><big>GalIO_ServerInit</big></b>(unsigned 
+ short <i>port</i>, int <i>require_port</i>, GalIO_FrameHandler <i>fnptr</i>, 
+ void *<i>server_data</i>, int <i>poll_ms</i>, int <i>max_connections</i>) 
+ <br>
+  This function creates a structure which contains the appropriate information
+ for interacting with the Hub: the file descriptors, ports, appropriate buffers,
+ and information for callbacks. The <i>port</i> is the port the server should
+ start on. If <i>require_port</i> is 0, the function will start the server
+ on the first port number which is available, starting from <i>port</i>;
+otherwise,  the function will return NULL if the port is unavailable. The
+<i>fnptr </i>is  always <a href="libserverstub.html#GalSS_FrameHandler">GalSS_FrameHandler</a>. 
+  
+<p>The <i>poll_ms</i> indicate how often the state of the server should be
+ checked. If the number is 0 or greater, this function will set up a timed
+ task to check the state of the server. If the number is 0, the system uses
+ the default (100 ms, currently); positive values are taken to be poll intervals
+ in milliseconds. If the number is less than 0, no timed task is set up,
+and  the developer is responsible for polling the system. </p>
+   
+<p>Finally, the <i>server_data</i> defines the information which can be retrieved
+ using <a href="server_structure.html#GalIO_GetCommServerData">GalIO_GetCommServerData</a> 
+ and <a href="server_structure.html#GalIO_GetServerData">GalIO_GetServerData</a>. 
+ </p>
+   
+<p>GalIO_ServerStruct *<a name="GalIO_ServerCreate"></a><b><big>GalIO_ServerCreate</big></b>(unsigned 
+ short <i>port</i>, int <i>require_port</i>, GalIO_FrameHandler <i>fnptr</i>, 
+ void *<i>server_data</i>, int <i>poll_ms</i>, int <i>max_connections</i>) 
+ </p>
+   
+<p>GalIO_ServerStruct *<a name="GalIO_ServerStart"></a><b><big>GalIO_ServerStart</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>) </p>
+   
+<p>int&nbsp;<a name="GalIO_StartListener"></a><b><big>GalIO_StartListener</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>, int <i>additional_flags</i>) <br>
+  Ensures that a listener is started. Used internally by the outgoing broker
+ setup. </p>
+   
+<p>int&nbsp;<a name="GalIO_StartClient"></a><b><big>GalIO_StartClient</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>) </p>
+   
+<p>GalIO_CommStruct *<a name="GalIO_ClientInit"></a><b><big>GalIO_ClientInit</big></b>(const
+ char *<i>host</i>, unsigned short <i>port</i>, GalIO_FrameHandler <i>fnptr</i>, 
+ int <i>poll_ms</i>) </p>
+   
+<p>int<a name="GalIO_OutHandler"></a><b><big>GalIO_OutHandler</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>) </p>
+   
+<p>int&nbsp;<a name="GalIO_InHandler"></a><b><big>GalIO_InHandler</big></b>(GalIO_CommStruct 
+ *<i>gcomm</i>) </p>
+   
+<p>GalIO_ServerStruct *<a name="GalIO_ListenerCreate"></a><b><big>GalIO_ListenerCreate</big></b>(unsigned 
+ short <i>port</i>, int <i>require_port</i>, GalIO_FrameHandler <i>foo_ptr</i>, 
+ void *<i>server_data</i>, int <i>poll_ms</i>, int <i>max_connections</i>) 
+ </p>
+   
+<p>void&nbsp;<a name="GalIO_SetServerDisconnectCallback"></a><b><big>GalIO_SetServerDisconnectCallback</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>, void (*<i>disconnect_callback</i>)(GalIO_CommStruct *<i>server_data</i>)) 
+ </p>
+   
+<p>int&nbsp;<a name="GalIO_VerificationHandler"></a><b><big>GalIO_VerificationHandler</big></b>(GalIO_CommStruct 
+ *<i>gcomm)</i> </p>
+   
+<p>GalIO_ServerLocation *<a name="GalIO_AddServerLocation"></a><b><big>GalIO_AddServerLocation</big></b>(GalIO_ServerStruct 
+ *<i>scomm</i>, const char *<i>host</i>, unsigned short <i>port</i>, int <i>client_poll_flags</i>)</p>
+<p>void <a name="GalIO_FreeServerLocations"></a><b><big>GalIO_FreeServerLocations</big></b>(GalIO_ServerLocation
+*<i>loc</i>)  </p>
+<p>  </p>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Socket_queue_functions"></a>Socket queue functions</h2>
+   GalIO_SockQueueStruct *<a name="GalIO_CreateSockQueue"></a><b><big>GalIO_CreateSockQueue</big></b>(GAL_SOCKET 
+ <i>sockfd</i>, int <i>in_size</i>, int <i>out_size</i>)   
+<p>void&nbsp;<a name="GalIO_DestroySockQueue"></a><b><big>GalIO_DestroySockQueue</big></b>(GalIO_SockQueueStruct 
+ *<i>q</i>) </p>
+   
+<p>void&nbsp;<a name="GalIO_SetSockQueueComment"></a><b><big>GalIO_SetSockQueueComment</big></b>(GalIO_SockQueueStruct 
+ *<i>q</i>, char *<i>comment</i>) </p>
+   
+<p>int&nbsp;<a name="GalIO_GetSockQueueError"></a><b><big>GalIO_GetSockQueueError</big></b>(GalIO_SockQueueStruct 
+ *<i>q</i>) </p>
+   
+<p>int&nbsp;<a name="GalIO_SockQueueProcessSend"></a><b><big>GalIO_SockQueueProcessSend</big></b>(GalIO_SockQueueStruct 
+ *<i>q</i>) </p>
+   
+<p>int&nbsp;<a name="GalIO_SockQueueProcessReceive"></a><b><big>GalIO_SockQueueProcessReceive</big></b>(GalIO_SockQueueStruct 
+ *<i>q</i>) </p>
+   
+<p>int&nbsp;<a name="GalIO_SockQueueWrite"></a><b><big>GalIO_SockQueueWrite</big></b>(GalIO_SockQueueStruct 
+ *<i>q</i>, void *<i>data</i>, long <i>len</i>) </p>
+   
+<p>int&nbsp;<a name="GalIO_SockQueueRead"></a><b><big>GalIO_SockQueueRead</big></b>(GalIO_SockQueueStruct 
+ *<i>q</i>, char *<i>data</i>, int <i>max_data_len</i>, int *<i>data_len</i>) 
+ </p>
+   
+<p>int&nbsp;<a name="GalIO_SockQueueReadAtom"></a><b><big>GalIO_SockQueueReadAtom</big></b>(GalIO_SockQueueStruct 
+ *<i>q</i>, char *<i>data</i>, int <i>data_len</i>) <br>
+   </p>
+   
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "libgalaxy.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "libserverstub.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated July 5, 2002</center>
+    <br>
+  <br>
+ <br>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Introduction and Overview</title>
+     <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+  
+<center> 
+<h1> Galaxy Communicator Documentation:<br>
+ <br>
+ Introduction and Overview</h1>
+</center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="index.html"><img src="../arrow_left.gif" alt="" width="30"
+ height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../LICENSE">License</a> / <a href="./index.html">Documentation
+home</a> / <a href="./index.html#Getting_help">Help and feedback</a>    
+   </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="tutorial/getting_started.html"><img src="../arrow_right.gif"
+ alt="" width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+   
+<hr width="100%"> 
+<ul>
+ <li> <a href="#History">History</a></li>
+  <li> <a href="#What_you_get">What you get</a></li>
+  <li> <a href="#What_you_don't_get">What you don't get</a></li>
+  <li> <a
+ href="#Prerequisites:_technical_background,_hardware_and_software_requ">Prerequisites: 
+technical background, hardware and software requirements</a></li>
+  <li> <a href="#Technical_overview">Technical overview</a></li>
+ 
+</ul>
+  
+<hr width="100%"> 
+<h2> <a name="History"></a>History</h2>
+ <img src="../images/Timeline.jpg" nosave="" height="431" width="815">
+ 
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="What_you_get"></a>What you get</h2>
+ The Galaxy Communicator infrastructure is a hub-and-spoke architecture.
+The distribution contains: 
+<ul>
+ <li> A Hub, implemented in C, which mediates connections between Communicator
+servers (such as speech recognition and synthesis, parsing, dialogue management,
+etc.)</li>
+  <li> Server libraries for constructing Communicator-compliant servers in
+C (and <a href="reference/adding.html#Setting_up_the_headers">C++</a>), Java,
+Python, and Allegro Common Lisp</li>
+  <li> Examples illustrating basic and advanced functionality for creating
+servers and setting up the Hub to communicate with them</li>
+  <li> Extensive documentation (which you're now reading)</li>
+   
+</ul>
+  
+<hr width="100%"> 
+<h2> <a name="What_you_don't_get"></a>What you don't get</h2>
+  
+<h3> You don't get an end-to-end dialogue system</h3>
+ The Galaxy Communicator distribution is <b>not</b> an end-to-end dialogue
+system; it provides you with tools for constructing such a system out of
+a suite of servers. You can obtain the servers you need in a number of ways: 
+<ul>
+ <li> You may find some of them in the Galaxy Communicator distribution,
+as noted above;</li>
+  <li> You may be able to obtain some of them from willing participants in
+the Communicator program;</li>
+  <li> You may choose to write some of them yourself.</li>
+ 
+</ul>
+In FY02, MITRE released the first version of its <a
+ href="http://communicator.sourceforge.net/download/index.shtml">Open Source
+Toolkit</a>, an open-source collection of Communicator-compliant dialogue
+system components. However, this effort is in its infancy. In addition to
+(or instead of) those components, you may also want to visit some of the
+Communicator contributors on the <a
+ href="http://communicator.sourceforge.net/links.shtml">links page</a>, some
+of whom may make available their Communicator-compliant dialogue components
+or systems. 
+<h3> You don't get run-time semantic standards</h3>
+ The Galaxy Communicator infrastructure provides a sophisticated and general
+transport layer for connecting servers and Hubs, as well as a message syntax,
+but does not provide any specifications about the <b>semantics</b> of the
+messages which travel between the servers and Hubs. That is, there's no standard
+run-time API for speech recognizers, or audio devices, or parsers. While
+the MITRE team has explored adapting existing APIs or message sets for use
+with Communicator-compliant servers, nothing in the infrastructure endorses
+any of these existing APIs or message sets. 
+<h3> You don't get configuration-time semantic standards</h3>
+ The Galaxy Communicator infrastructure provides no support or specifications
+for standards for configuring individual servers. For instance, the <a
+ href="http://www.w3c.org/voice">W3C Voice Browsers</a> group is proposing
+specifications for speech recognition grammars. Such proposals are completely
+compatible with the Galaxy Communicator infrastructure, but the infrastructure
+does not endorse any particular proposal. 
+<p> </p>
+<hr width="100%"> 
+<h2> <a
+ name="Prerequisites:_technical_background,_hardware_and_software_requ"></a>Prerequisites: 
+technical background, hardware and software requirements</h2>
+  
+<h3> Technical background</h3>
+ The core Galaxy Communicator infrastructure is written in C, and detailed
+documentation is provided only for the C libraries, so familiarity with C
+is fairly important. Since the Galaxy Communicator infrastructure is a distributed
+infrastructure, some background in distributed processing is preferable (e.g.,
+RPC, CORBA, Java RMI), since distributed processing is a fairly distinct
+programming paradigm. Object-oriented programming experience is not needed
+unless you'll be using the Java or Allegro Common Lisp server bindings. Finally
+(and fairly obviously, since you're already reading this), a reasonable command
+of English is required for understanding the documentation. 
+<h3> Supported platforms</h3>
+ The current version of the Galaxy Communicator infrastructure is actively
+supported on Sparc Solaris, Intel Linux and Win32. Consult the <a
+ href="admin/install.html#supported">installation instructions</a> for more
+details. 
+<h3> Software requirements</h3>
+ The Galaxy Communicator infrastructure requires the GNU <tt>gcc</tt> compiler
+and GNU <tt>make</tt>. Consult the <a
+ href="admin/install.html#supported">installation instructions</a> for more
+details. 
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="Technical_overview"></a>Technical overview</h2>
+ <img src="../images/MessageBase.jpg" vspace="10" nosave="" height="479"
+ width="815">
+ <br>
+A Communicator-compliant dialogue system consists of a process called the
+<a href="reference/hub.html#The_Hub">Hub</a>, together with a set of servers.
+Servers and the Hub communicate with each other using named attribute-value
+structures called <a href="reference/frame.html">frames</a>. These frames
+form the basis of all structured communication in the Galaxy Communicator
+infrastructure. 
+<h3> Hub</h3>
+  
+<center><img src="../images/Hub.jpg" nosave="" height="479" width="287">
+</center>
+ Almost all communication between Communicator-compliant servers passes through
+the Hub. The Hub has a number of significant capabilities: 
+<ul>
+ <li> The Hub maintains connections to servers (parser, speech recognizer,
+backend, etc.), and routes messages among them.</li>
+  <li> The Hub can be configured to <a href="reference/logging.html">log aspects
+of this message traffic.</a></li>
+  <li> The message traffic routing in the Hub can be programmed via a scripting
+language that controls the flow through each dialogue turn; the default scripting
+language is the <a href="reference/pgm.html">MIT scripting language</a>,
+but users can opt to use no scripting language or incorporate their own.</li>
+  <li> The Hub also incorporates an internal server named <a
+ href="../servers/builtin.html">Builtin</a> to implement user-visible administrative
+tasks</li>
+ 
+</ul>
+  
+<h3> Server libraries</h3>
+  
+<center><img src="../images/Spoke.jpg" nosave="" height="431"
+ width="383">
+</center>
+ The server libraries provide a number of convenient capabilities for managing
+the data and communications. Detailed documentation is provided for the C
+bindings; the documentation for other programming language bindings contains
+representative examples and equivalence tables. 
+<ul>
+ <li> The server libraries provide a set of commonly-available <a
+ href="reference/adding.html#Initialization">command line arguments</a> and
+support for defining <a
+ href="reference/adding.html#Writing_a_Dispatch_Function">dispatch functions</a>,
+which are invoked in response to frames from the Hub.</li>
+  <li> The server libraries provide support for <a
+ href="reference/brokering.html">backchannel connections</a> for high-bandwidth
+data that can be passed directly from server to server.</li>
+ 
+</ul>
+  
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="index.html"><img src="../arrow_left.gif" alt="" width="30"
+ height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../LICENSE">License</a> / <a href="./index.html">Documentation
+home</a> / <a href="./index.html#Getting_help">Help and feedback</a>    
+   </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="tutorial/getting_started.html"><img src="../arrow_right.gif"
+ alt="" width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated August 2, 2002</center>
+  <br>
+</body>
+</html>

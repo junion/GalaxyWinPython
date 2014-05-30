@@ -1,0 +1,178 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+        
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Frequently Asked Questions</title>
+         <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+    
+<center>  
+<h1> Galaxy Communicator Documentation:<br>
+  <br>
+  Frequently Asked Questions</h1>
+ </center>
+   
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+     <tbody>
+       <tr>
+         <td valign="middle" align="left" width="10%"><a
+ href="../advanced/exec.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+       </a></td>
+         <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>    
+   </td>
+         <td valign="middle" align="right" width="10%"><a
+ href="hub.html"><img src="../../arrow_right.gif" alt="" width="30"
+ height="30">
+       </a></td>
+       </tr>
+          
+  </tbody>   
+</table>
+     
+<hr width="100%">  
+<p>We intend to expand this FAQ considerably, as people start asking us more 
+questions :-). The questions below are a rough beginning. </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> Installation</h2>
+  <b>"When I type 'make', it fails with an error like 'Unexpected end of
+line seen'.</b>  
+<p>Be sure you're using GNU make. Try "make -v" to confirm that it's GNU make.
+GNU make will print out the version; other makes will probably not even recognize
+the -v flag. </p>
+ 
+<p><b>"I'm trying to build a server in my own directory, using the MIT Makefile 
+template, but make can't find the paths."</b> </p>
+ 
+<p>In order to compile a server outside the MIT directory stack, be sure you
+do the following in your Makefile, at the top: </p>
+ 
+<blockquote><tt># Modify this to point to the package root directory</tt>
+   
+  <p><tt>ROOT_DIR = &lt;root of Communicator&gt;</tt> </p>
+   
+  <p><tt># Need these to provide something useful for MIT rules.make.</tt>
+   </p>
+   
+  <p><tt>TEMPLATES = $(ROOT_DIR)/templates</tt></p>
+ </blockquote>
+  This will establish the appropriate context for the compilation.  
+<h4> "I want to use the Python/Java/Allegro servers, but when I compile the 
+contrib/MITRE/ subdirectory, the Python/Java/Allegro servers aren't created."</h4>
+  Check templates/&lt;arch&gt;-&lt;os&gt;/config.make to see if the appropriate 
+language binding variables are uncommented and correct. Consult the <a
+ href="../admin/install.html">installation instructions</a> for details.  
+<p> </p>
+ 
+<hr width="100%">  
+<h2> Server and Hub setup</h2>
+    
+<h4> "My server won't start up on the port I request."</h4>
+  The servers are configured to search for the first available port. Most 
+likely, the port you requested is already in use. If you want to force the 
+server to start up on the request port or fail, use <tt>-assert</tt> as an 
+argument to the server.  
+<h4> "I've started up my server, but the Hub can't find it."</h4>
+  Make sure the Hub is looking for the server on the appropriate port, and 
+that the server started up on the same port.  
+<p><b>"I want to read some of the Hub output in the process monitor, but my
+Hub window keeps scrolling back to the bottom."</b><b></b> </p>
+ 
+<p>MITRE provides a process monitor to aid in controlling processes. Each 
+pane of the process monitor has a "Pause" button which pauses the output. 
+Normally, the Hub prints out a pacifier character every second when it's not
+receiving messages. So in order to review the Hub output you must press the
+"Pause" button, or restart the Hub with the <tt>-suppress_pacifier</tt>  command
+line directive. </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> Runtime</h2>
+<b>"I saved away an environment object in a dispatch function for later use,
+but when I tried to write a frame to the Hub with it later, my application
+seg faulted."</b><br>
+<br>
+Environment objects which are passed to dispatch functions are freed when
+the dispatch function exits. In order to use one later, you need to copy
+it or increment its reference count. See the advanced topic on <a
+ href="../advanced/environment.html">saving away an environment</a>.<br>
+<hr width="100%">  
+<h2> Brokering</h2>
+<b>"I've set up a callback for my incoming broker to do something when it's 
+done, but it's never doing anything."</b>  
+<p>First, make sure that your outgoing broker or proxy is calling <a
+ href="brokering.html#GalIO_BrokerDataOutDone">GalIO_BrokerDataOutDone</a> 
+or <a href="brokering.html#GalSS_ProxyDone">GalSS_ProxyDone</a>, as appropriate.
+ If it doesn't, the incoming broker will never run the appropriate callbacks.
+ Second, if you're using brokers instead of proxies on the incoming side, 
+make sure you call <a href="brokering.html#GalIO_SetBrokerActive">GalIO_SetBrokerActive</a>
+ on the incoming broker. If you don't, the broker will never read from its
+ connection. </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> MIT Hub scripting</h2>
+  <b>"I wanted my program to loop forever, so I made a single rule with identical 
+IN: and OUT: variable lists, but it exits after a single iteration."</b>
+ 
+<p>There is no looping construct in the Hub scripting language. Execution 
+resumes at the point where the message returns. Your program terminated because 
+there were no following rules. If you want to simulate an infinite loop, you
+must do it by tail recursion: introduce a new message for each "iteration". 
+See the <a href="../../../contrib/MITRE/examples/double/main.html">double
+ server</a> example. </p>
+ 
+<p><b>"Rules that shouldn't be firing are firing when the Hub starts up."</b>
+ </p>
+ 
+<p>There's probably something in your <a href="pgm.html#Initial_token">initial
+ token</a> which is causing the rules to fire. Customize either the rules
+or the initial token to rule out the offending condition. <br>
+  </p>
+ 
+<hr> 
+<center>  
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+     <tbody>
+       <tr>
+         <td valign="middle" align="left" width="10%"><a
+ href="../advanced/exec.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+       </a></td>
+         <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>    
+   </td>
+         <td valign="middle" align="right" width="10%"><a
+ href="hub.html"><img src="../../arrow_right.gif" alt="" width="30"
+ height="30">
+       </a></td>
+       </tr>
+          
+  </tbody>   
+</table>
+   Last updated July 26, 2002</center>
+   <br>
+ <br>
+</body>
+</html>

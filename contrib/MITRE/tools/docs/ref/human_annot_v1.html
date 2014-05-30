@@ -1,0 +1,83 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>Log Standard Human Annotations</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000FF" vlink="#551A8B" alink="#0000FF">
+
+<center>
+<h1>
+<b><font face="Arial,Helvetica"><font size=+4><font color="#CCCCCC">DARPA
+</font><font color="#999999">Communicator
+Testbed</font></font></font></b></h1></center>
+
+<center>
+<h1>
+
+<hr WIDTH="100%"></h1></center>
+
+<center>
+<h1>
+Human Annotations File</h1></center>
+A human annotations file consists of a top level tag <tt>GC_LOG_ANNOTATIONS</tt>,
+containing some number of <tt>GC_SESSION</tt> tags. Each <tt>GC_SESSION</tt>
+tags may contain a <tt>GC_ANNOT</tt> tag (indicating task completion),
+and some number of <tt>GC_DATA</tt> tags containing transcriptions. Here
+is a sample annotations file:
+<p><tt>&lt;GC_LOG_ANNOTATIONS></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_SESSION id="199.94.106.6:20300:0"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_ANNOT task_completion="1"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription"
+turnid="0" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i'd like a flight
+from boston to san francisco</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription"
+turnid="2" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; in the morning</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription"
+turnid="4" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; does the american
+flight serve breakfast</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription"
+turnid="6" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; what kind of plane
+is that</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription"
+turnid="8" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; goodbye</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp; &lt;/GC_SESSION></tt>
+<br><tt>&lt;/GC_LOG_ANNOTATIONS></tt>
+<br>&nbsp;
+<p>Here is an XML DTD for the above sample:
+<p><tt>&lt;?xml version="1.0"?></tt>
+<p><tt>&lt;!ELEMENT GC_LOG_ANNOTATIONS (GC_SESSION)*></tt>
+<br><tt>&lt;!ATTLIST GC_LOG_ANNOTATIONS annot_version CDATA #IMPLIED></tt>
+<p><tt>&lt;!ELEMENT GC_SESSION ( GC_ANNOT | GC_DATA )*></tt>
+<br><tt>&lt;!ATTLIST GC_SESSION id NMTOKEN #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_SESSION stime NMTOKEN #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_SESSION etime NMTOKEN #IMPLIED></tt>
+<p><tt>&lt;!ELEMENT GC_ANNOT EMPTY></tt>
+<br><tt>&lt;!ATTLIST GC_ANNOT type_task_completion CDATA #REQUIRED></tt>
+<p><tt>&lt;!ELEMENT GC_DATA (#PCDATA)></tt>
+<br><tt>&lt;!ATTLIST GC_DATA type_utt_text CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_DATA dtype NMTOKEN #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_DATA turnid NMTOKEN #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_DATA tidx NMTOKEN #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_DATA direction NMTOKEN #IMPLIED></tt>
+<br>&nbsp;
+</body>
+</html>

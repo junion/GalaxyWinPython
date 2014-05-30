@@ -1,0 +1,382 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+        
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Synchronous vs. asynchronous
+interaction and continuations</title>
+         <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+    
+<center>  
+<h1> Galaxy Communicator Documentation:<br>
+  <br>
+  Synchronous and asynchronous interaction and continuations</h1>
+ </center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "server_locations.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "provider_id.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+    
+<hr width="100%">  
+<p>One of the strengths of the Galaxy Communicator infrastructure is the way
+it allows the programmer to reconcile conflicts between synchronous and asynchronous
+models of interaction, thereby enabling developers to use servers which embrace
+different models of synchrony without needing to modify the servers themselves.
+In this section, we present an overview of the different ways the Communicator
+infrastructure accomplishes this. </p>
+ 
+<ul>
+  <li> <a href="#What_doe_we_mean_by_synchrony?">What doe we mean by synchrony?</a></li>
+   <li> <a href="#Hub/server_expectation_mismatches">Hub/server expectation 
+mismatches</a></li>
+   <li> <a href="#Continuations">Continuations</a></li>
+   
+</ul>
+  In addition to the mechanisms described here, it's also possible to use 
+<a href="provider_id.html">provider IDs</a> to guarantee that information 
+reaches the proper provider when you're not using synchronous invocations.
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="What_doe_we_mean_by_synchrony?"></a>What doe we mean by synchrony?</h2>
+  For the purposes of this discussion, we'll distinguish between <b>invocations</b> 
+and <b>interactions</b>.  
+<h3> <a name="Invocations"></a>Invocations</h3>
+  Simply put, a synchronous invocation is one where the caller blocks waiting 
+for the answer, and an asynchronous invocation is one where the caller does 
+not block. Both the Hub and servers support both types of invocations. On 
+the server side, the functions <a
+ href="../reference/adding.html#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame</a>
+ provides an asynchronous invocation, while the function <a
+ href="../reference/adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a>
+ provides a synchronous invocation:  
+<blockquote><tt>Gal_Frame message_f, reply_f; <br>
+ GalIO_MsgType t; <br>
+ GalSS_Environment *env; <br>
+ /* ... */ <br>
+ GalSS_EnvWriteFrame(env, f, 0); <br>
+ /* ... */ <br>
+ reply_f = GalSS_EnvDispatchFrame(env, f, &amp;t);</tt></blockquote>
+  On the Hub side, there are <a
+ href="../reference/pgm.html#Special_control_directives">special control directives
+and OUT: values</a> which indicate that the Hub should make an asynchronous
+invocation:  
+<blockquote><tt>SERVER: foo <br>
+ OPERATION: bar <br>
+ ;; Synchronous interaction <br>
+ RULE: --&gt; bar <br>
+ IN: :key1 <br>
+ OUT: :key2 <br>
+ ;; Asynchronous interaction <br>
+ RULE: --&gt; bar <br>
+ IN: :key1 <br>
+ OUT: none!</tt></blockquote>
+    
+<h3> <a name="Interactions"></a>Interactions</h3>
+  Interactions are a bit more global, and are most relevant to the server 
+side. Even when a server makes asynchronous invocations exclusively (which 
+corresponds, roughly, to a strict message-passing paradigm), it still may 
+need to get information back. That is, while the server only makes asynchronous 
+<b>invocations</b> (and may expect only asynchronous invocations), it will 
+still probably support synchronous <b>interactions</b>, by sending a new message
+and receiving another message which "counts" as the reply, or by sending
+a new message instead of a reply in response to a request.  
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Hub/server_expectation_mismatches"></a>Hub/server expectation 
+mismatches</h2>
+  Sometimes, the Hub programmer will have to deal with circumstances where 
+a server which the programmer either cannot or doesn't want to change has 
+different synchrony expectations than what the programmer requires. These 
+conflicts will all originate on the server side. For concreteness, we'll use
+the case of a dialogue manager requiring information from the database.  
+<h3> Asynchronous caller, synchronous callee</h3>
+  In this situation, the caller invokes <a
+ href="../reference/adding.html#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame</a>
+ and anticipates a new message in response, but the server which ultimately
+ provides the information provides the information as a reply. That is, the 
+caller's interaction is asynchronous, but the callee supports this exchange 
+with a synchronous invocation.  
+<p>This case is trivial, because the Hub scripting language can easily transform 
+a reply into a new message. Let's say the caller sends the <tt>DBQuery</tt> 
+message, and expects the <tt>DBResult</tt> message in return: </p>
+ 
+<blockquote><tt>SERVER: Dialogue <br>
+ OPERATIONS: DBResult <br>
+ SERVER: Database <br>
+ OPERATIONS: Query <br>
+ ... <br>
+ PROGRAM: DBQuery <br>
+ RULE: ... --&gt; Database.Query <br>
+ IN: :query <br>
+ OUT: :columns :tuples <br>
+ RULE: :columns &amp; :tuples --&gt; Dialogue.DBResult <br>
+ IN: :columns :tuples <br>
+ OUT: none!</tt></blockquote>
+    
+<h3> Synchronous caller, asynchronous callee</h3>
+  In this situation, the caller invokes <a
+ href="../reference/adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a>,
+ but the server which ultimately provides the information provides the information
+ as a new message instead of a reply. That is, the caller makes a synchronous
+ invocation, but the callee supports this exchange with an asynchronous interaction.
+ 
+<p>This case is a little less trivial, but still straightforward. In this 
+case, you can use the <a href="../reference/pgm.html#CONTINUE_REPLY:">CONTINUE_REPLY:</a>
+ directive to capture a new message as a reply. Let's say the caller sends
+ the <tt>DBQuery</tt> message as above, but this time expects a reply, and 
+the callee accepts the Query message and issues the <tt>DBResult</tt> message
+ in response: </p>
+ 
+<blockquote><tt>SERVER: Dialogue <br>
+ SERVER: Database <br>
+ OPERATIONS: Query <br>
+ ... <br>
+ PROGRAM: DBQuery <br>
+ RULE: ... --&gt; Database.Query <br>
+ IN: :query <br>
+ CONTINUE_REPLY: {c DBResult } <br>
+ OUT: :columns :tuples</tt></blockquote>
+  When the program ends, it will send the current token state back to the 
+caller as the reply. The programmer can use multiple <a
+ href="../reference/pgm.html#CONTINUE_REPLY:">CONTINUE_REPLY:</a> and <a
+ href="../reference/pgm.html#CONTINUE_ERROR:">CONTINUE_ERROR:</a> directives 
+in the same rule.  
+<p>For a somewhat different interface to the same functionality, you can also
+use the Hub Builtin function <a
+ href="../../servers/builtin.html#hub_continue">hub_continue</a>. This function 
+should be called immediately after a rule which <a
+ href="../reference/pgm.html#Special_control_directives">does not wait for
+a reply</a>, so it will be processed essentially simultaneously. This function
+allows the programmer to specify a list of possible reply and continuation 
+frames, as well as a service type and/or service provider to monitor. While 
+on the one hand, this mechanism allows the programmer to treat as replies 
+new messages which come from other servers, it does not allow the programmer 
+to automatically "inherit" the identity of the server the previous message 
+was sent to: </p>
+ 
+<blockquote><tt>PROGRAM: DBQuery <br>
+ RULE: ... --&gt; Recognizer.Recognize <br>
+ IN: :query <br>
+ OUT: none! <br>
+ RULE: --&gt; Builtin.hub_continue <br>
+ IN: (:reply_matches ( {c DBResult } ) ) (:service_type "Database") <br>
+ OUT: :columns :tuples</tt></blockquote>
+  The Hub will monitor any provider of the <tt>Database</tt> service for
+a new message (in the current session) named <tt>DBResult</tt>, and treat
+it as the reply to the call to <tt>Builtin.hub_continue</tt>. The processing 
+proceeds normally at that point.  
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Continuations"></a>Continuations</h2>
+  In addition to synchrony/asynchrony in invocations, the Galaxy Communicatof 
+infrastructure also supports continuations on the server side. In the case 
+of a server-side continuation, the Hub makes a synchronous invocation of a
+dispatch function. The dispatch function in the server, however, <b>postpones</b> 
+the reply. The effect of this postponement is to inform the Hub that the server
+is done processing the dispatch function (so the Hub can now send the server
+more messages), but that it will provide the reply at a later time (e.b.,
+when a particular callback fires). Let's consider a couple situations where
+this behavior may be useful.  
+<h4> <a name="Situation_1"></a>Situation 1</h4>
+  Consider a case where the Hub sends a message to a recognizer that audio 
+input is available via brokering. The recognizer server, in the appropriate 
+dispatch function, sets up an incoming broker to capture the audio and send 
+the result to the Hub. In the typical arrangement, exemplified by the example 
+for <a href="../reference/brokering.html#GalSS_EnvBrokerDataInInit">GalSS_EnvBrokerDataInInit</a>,
+ the server writes a new message to the Hub. This new message is associated
+ with a new token; that is, the recognizer server supports a this interaction
+ via asynchronous invocations:  
+<blockquote><tt>PROGRAM: FromAudio <br>
+ ... <br>
+ RULE: :audio_host &amp; :audio_port &amp; :call_id --&gt; Recognizer.Recognize
+   <br>
+ IN: :audio_host :audio_port :call_id <br>
+ OUT: none! <br>
+ PROGRAM: FromRecognizer <br>
+ RULE: :input_string --&gt; Parser.Parse <br>
+ ....</tt></blockquote>
+  However, the programmer might prefer that the call to the recognizer appear 
+to the Hub to be a <b>synchronous</b> call; that is, that the input string 
+be the reply to the <tt>Recognize</tt> message:  
+<blockquote><tt>PROGRAM: FromAudio <br>
+ ... <br>
+ RULE: :audio_host &amp; :audio_port &amp; :call_id --&gt; Recognizer.Recognize
+   <br>
+ IN: :audio_host :audio_port :call_id <br>
+ OUT: :input_string <br>
+ RULE: :input_string --&gt; Parser.Parse <br>
+ ....</tt></blockquote>
+  The programmer could implement this behavior on the Hub side using CONTINUE_REPLY:, 
+but it's also simple to do on the server side, using the function GalSS_EnvPostponeReply.
+ 
+<p>int&nbsp;<a name="GalSS_EnvPostponeReply"></a><b><big>GalSS_EnvPostponeReply</big></b>(GalSS_Environment
+ *<i>env</i>) <br>
+ Informs the Hub that the response to its message will be delayed, but that 
+in the meantime it's available for other incoming messages. It does this by
+sending a pacifier message of type GAL_POSTPONE_MSG_TYPE. </p>
+ 
+<p>The programmer would then set up the broker as follows: </p>
+ 
+<blockquote><tt>Gal_Frame Recognize(Gal_Frame f, void *server_data) <br>
+ { <br>
+ &nbsp; GalSS_Environment *env = (GalSS_Environment *) server_data;<br>
+ &nbsp; GalIO_BrokerStruct *b;<br>
+   <br>
+ &nbsp; /* ... */<br>
+ &nbsp;<br>
+ &nbsp; GalSS_EnvPostponeReply(env); <br>
+ &nbsp; b = GalSS_EnvBrokerDataInInit(env, host, port, f, env_recognition_handler,
+   <br>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ &nbsp; &nbsp; 0, (void *) NULL, NULL);<br>
+ &nbsp; if (b) {<br>
+ &nbsp; &nbsp; GalIO_AddBrokerCallback(b, GAL_BROKER_DATA_DONE_EVENT,   
+      <br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+env_recognition_finalizer, (void *) NULL);<br>
+          &nbsp;&nbsp;&nbsp; GalIO_SetBrokerActive(b);&nbsp;<br>
+          &nbsp; } &nbsp;<br>
+ &nbsp; return (Gal_Frame) NULL; <br>
+ }<br>
+ &nbsp;<br>
+ static void env_recognition_handler(GalSS_Environment *env, <br>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ GalIO_BrokerStruct *broker_struct, <br>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ void *data, Gal_ObjectType data_type, <br>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ int n_samples) <br>
+ { <br>
+ &nbsp; if (data_type == GAL_INT_16) { <br>
+ &nbsp;&nbsp;&nbsp; /* ... gather the audio ... */ <br>
+ &nbsp; } <br>
+ }<br>
+ &nbsp;<br>
+ static void env_recognition_finalizer(GalIO_BrokerStruct *broker_struct, 
+  <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; void *caller_data)
+   <br>
+ { <br>
+ &nbsp; /* Send the reply. The name doesn't matter because it will <br>
+ &nbsp;&nbsp;&nbsp;&nbsp; be set by the environment as the original name
+of the <br>
+ &nbsp;&nbsp;&nbsp;&nbsp; incoming message. */<br>
+ &nbsp; GalSS_Environment *env = GalSS_BrokerGetEnvironment(broker_struct);<br>
+ &nbsp; Gal_Frame f = Gal_MakeFrame("foo", GAL_CLAUSE);<br>
+ &nbsp;<br>
+ &nbsp; /* ... */<br>
+ &nbsp;<br>
+ &nbsp; Gal_SetProp(f, ":input_string", Gal_StringObject(recognized_string));
+   <br>
+ &nbsp; GalSS_EnvReply(env, f);<br>
+ &nbsp; Gal_FreeFrame(f); <br>
+ }</tt></blockquote>
+  Observe that the dispatch function postpones the response, and then the 
+environment-aware finalizer explicitly sends the reply when recognition is 
+done. This same strategy could be used with timed task callbacks as well, 
+if the appropriate situation arose.  
+<p>For more details about environments, see the <a href="session.html">session 
+documentation</a>. </p>
+ 
+<p><b>Note</b>: there is an important interaction between GalSS_EnvPostponeReply 
+and <a href="environment.html#GalSS_EnvCopy">GalSS_EnvCopy</a>. Inside a dispatch
+function, a call to GalSS_EnvPostponeReply <b>counts as a reply</b>.
+This is to ensure that all other replies sent from the dispatch function
+are ignored, including the return value. Once the dispatch function execution
+is completed, the environment is marked as still needing a reply, and it's
+assumed that the appropriate callback will provide it (as the recognition
+finalizer does in this example). What this means is that if you copy an environment
+after you write the postponement, the copy <b>will never send another reply</b>. 
+It's entirely possible that the right thing to do is not to copy the reply 
+flag when the postponement flag is set, but we're not willing to make that 
+assumption yet. So if you want to copy a reply when you're going to send a
+postponement, copy the environment first, and then send the postponement through
+the original environment. </p>
+ 
+<h4> Situation 2</h4>
+  Consider a case where the server sends a request to the Hub using GalSS_EnvDispatchFrame. 
+This function returns when the Hub returns a reply. However, during that time,
+the server is inaccessible for other dispatch function invocations from that
+Hub, and in addition, a deadlock will result if the Hub needs to contact
+the originating server in the course of satisfying the request (if, for instance,
+the program that is invoked by the incoming message ends up calling a dispatch
+function in the originating server). In this situation, the programmer might
+prefer to dispatch the request, and postpone the processing of the reply
+to the request using a continuation function. The programmer can accomplish
+this using the function GalSS_EnvDispatchFrameWithContinuation.  
+<p>typedef Gal_Frame (*<b><big>GalSS_ContinuationFn</big></b>)(Gal_Frame,
+ GalIO_MsgType, GalSS_Environment *, void *); <br>
+ This is the type of the continuation function. </p>
+ 
+<p>int&nbsp;<a name="GalSS_EnvDispatchFrameWithContinuation"></a><b><big>GalSS_EnvDispatchFrameWithContinuation</big></b>(GalSS_Environment
+ *<i>env</i>, Gal_Frame <i>frame</i>, GalSS_ContinuationFn <i>fn</i>, void
+ *<i>continuation_state</i>, void (*<i>continuation_state_free_fn</i>)(void
+ *)) <br>
+ This function sends <i>frame</i> to the Hub using the environment <i>env</i>, 
+and indicates that it expects a reply. It then notifies the Hub that the dispatch
+server response will be postponed using <a
+ href="#GalSS_EnvPostponeReply">GalSS_EnvPostponeReply</a>, and stores away 
+the environment, along with the continuation function <i>fn</i> and an arbitrary 
+state <i>continuation_state</i>, which the programmer can use to store arbitrary 
+data for use in the continuation function. The data will be freed using the 
+<i>continuation_state_free_fn</i>. The continuation function is invoked as 
+the continuation of the dispatch function; in particular, if the continuation 
+function returns a frame, it will be treated as the reply to the original 
+dispatch function. It is called with the frame and message type of the reply 
+to the original request to the Hub, the environment <i>env</i>, and the <i>continuation_state</i>.
+ </p>
+ 
+<p>int&nbsp;<a name="GalSS_EnvDispatchFrameToProviderWithContinuation"></a><b><big>GalSS_EnvDispatchFrameToProviderWithContinuation</big></b>(GalSS_Environment
+ *<i>env</i>, Gal_Frame <i>frame</i>, const char *<i>provider</i>, GalSS_ContinuationFn
+ <i>fn</i>, void *<i>continuation_state</i>, void (*<i>continuation_state_free_fn</i>)(void
+ *)) <br>
+ Like GalSS_EnvDispatchFrameWithContinuation, but directs the message to
+the specific provider specified by <i>provider</i> (see the documentation
+on <a href="provider_id.html">provider IDs</a> for more details). </p>
+ 
+<p> </p>
+ 
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "server_locations.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "provider_id.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated June 21, 2002</center>
+   <br>
+ <br>
+</body>
+</html>

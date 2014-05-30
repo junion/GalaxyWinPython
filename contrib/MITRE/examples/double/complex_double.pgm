@@ -1,0 +1,28 @@
+;; This file (c) Copyright 1998 - 2002 The MITRE Corporation
+;; 
+;; This file is part of the Galaxy Communicator system. It is licensed
+;; under the conditions described in the file LICENSE in the root 
+;; directory of the Galaxy Communicator system.
+
+SERVER: double
+PORT: 2800
+HOST: localhost
+OPERATIONS: complex_twice reinitialize
+
+SERVER: multiply
+PORT: 2900
+HOST: localhost
+OPERATIONS: multiply reinitialize
+INIT: :factor 4
+
+PROGRAM: main
+
+RULE: :int --> complex_twice
+IN: :int
+OUT: none!
+
+PROGRAM: multiply
+
+RULE: :int --> multiply
+IN: :int
+OUT: :int

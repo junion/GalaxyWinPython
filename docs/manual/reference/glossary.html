@@ -1,0 +1,211 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Glossary</title>
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ee" vlink="#551a8b" alink="#ff0000">
+        
+<center>    
+<h1> Galaxy Communicator Documentation:</h1>
+   </center>
+        
+<center>    
+<h1> Glossary</h1>
+   </center>
+     
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="libutil.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>  
+     </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="../../../contrib/MITRE/examples/double/description.html"><img
+ src="../../arrow_right.gif" alt="" width="30" height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+         
+<center>    
+<hr width="100%"></center>
+        
+<p><a name="broker"></a><b>broker</b> </p>
+     
+<blockquote>A server-to-server connection, unmediated by the Hub, through 
+ which typed data can be transmitted.<br>
+   </blockquote>
+     
+<p><a name="broker_proxy"></a><b>broker proxy<br>
+   </b></p>
+     
+<blockquote>An encapsulation of the connection and type information associated 
+ with a <b>broker</b>.<br>
+   </blockquote>
+    <a name="call_environment"></a><b>call environment</b>    
+<blockquote>A structure passed to every dispatch function which contains the
+environment of the invocation, such as the current session, the connection 
+ through which the message was received, and whether or not a response has 
+ been provided yet.</blockquote>
+    <a name="dispatch_function"></a><b>dispatch function</b>    
+<blockquote>A procedure invoked in a <b>server</b> in response to a <b>rule</b> 
+ in a <b>Hub program</b>.</blockquote>
+    <b>environment</b>    
+<blockquote>See <a href="#call_environment"><b>call environment</b></a>.</blockquote>
+    <a name="frame"></a><b>frame</b>    
+<blockquote>A general-purpose data object which is passed between servers 
+ and the Hub.&nbsp; It consists of a frame type, a frame name, and a collection 
+ of attributes, or <b>keys</b>, and their associated values. See the <a
+ href="frame.html">frame documentation</a>.</blockquote>
+        
+<p><br>
+   <b>global variables, program file</b> </p>
+     
+<blockquote>See <a href="#program_file_global_variables"><b>program file
+global variables</b></a>.</blockquote>
+    <a name="Hub"></a><b>Hub</b>    
+<blockquote>An executable which controls the interaction among a number of 
+   <b>servers</b>, using a <b>Hub script</b> as its controller.</blockquote>
+    <a name="Hub_script"></a><b>Hub script</b>    
+<blockquote>Initialization file for the <b>Hub</b> which contains information 
+ about available <b>servers</b> (name, location, externally accessible operations), 
+ global variables, and possibly flow of control instructions.&nbsp; Also known
+ as a <b>program file.</b></blockquote>
+    <a name="Hub_program"></a><b>Hub program</b>    
+<blockquote>A set of <b>rules</b> that describes a sequence of operations 
+ specifying the flow of control in the <b>Hub</b>.</blockquote>
+    <a name="initial_token"></a><b>initial token</b>    
+<blockquote>A <b>token</b> specified in the <b>program file</b> which is executed
+immediately after the Hub contacts its servers.</blockquote>
+    <a name="key-value_pair"></a><b>key-value pair</b>    
+<blockquote>An attribute and its associated value that describes some domain 
+ entity.&nbsp; Sets of key-value pairs are stored in <b>frames</b>.</blockquote>
+    <a name="logfile"></a><b>logfile</b>    
+<blockquote>Text file containing logs of timestamped server operations and 
+ specified key values.</blockquote>
+    <a name="message"></a><b>message</b>    
+<blockquote>A frame used as a vehicle for communication to and from servers.&nbsp; 
+ The key-value pairs which comprise the message sent to the server are drawn 
+ from the Hub program rules and the current state of the <b>token</b>.&nbsp; 
+ The message causes a <b>dispatch function </b>to be invoked in the server. 
+ Any response from the dispatch function is used to update the token state.&nbsp; 
+ See <b>frame</b>, <b>token</b>.</blockquote>
+    <a name="namespace"></a><b>namespace</b>    
+<blockquote>One of five types of <b>frames</b> comprising a memory state during
+the execution of a <b>Hub program</b>.</blockquote>
+    <a name="operation"></a><b>operation</b>    
+<blockquote>A <b>dispatch function</b> supported by a <b>server</b>, as viewed 
+ by a <b>service type</b> in a <b>program file</b>.</blockquote>
+    <b>program, Hub</b>    
+<blockquote>See <a href="#Hub_program"><b>Hub program</b></a>.</blockquote>
+    <b>program file</b>    
+<blockquote>See <a href="#Hub_script"><b>Hub script</b></a>.</blockquote>
+    <b><a name="program_file_global_variables"></a>program file global variables</b>
+    
+<blockquote>Program file declarations used to set key-value pairs in the initial
+token and to set global information about the Hub.&nbsp; Examples include
+  <tt>DOMAIN:</tt>, <tt>USER_ID:</tt>,<tt>LOG_DIR:</tt>.<br>
+  </blockquote>
+  <b>provider</b><br>
+   
+<blockquote>See <a href="#service_provider"><b>service provider</b></a>.<br>
+ </blockquote>
+ <b><a name="provider_ID"></a>provider ID</b><br>
+ 
+<blockquote>A bracket-delimited string enclosing an integer or string which 
+comprises the obligatory portion of a <b>provider name</b>.<br>
+ </blockquote>
+   <b><a name="provider_name"></a>provider name</b><br>
+   
+<blockquote>A unique string, consisting of a <b>provider ID</b> and an optional 
+  <b>service type</b>, which names a   <b>service provider</b> in a <b>Hub 
+script</b>.<br>
+  </blockquote>
+    <a name="rule"></a><b>rule</b>    
+<blockquote>An element of a <b>Hub program</b> which specifies a condition 
+ for execution and instructions for constructing a <b>message</b> to a <b>server</b> 
+ and for updating the state of the <b>token</b>.</blockquote>
+    <a name="scripted_interaction"></a><b>scripted interaction</b>    
+<blockquote>A new incoming message which the Hub processes according to the 
+ instructions in a Hub <b>program </b>whose name matches that of the incoming 
+ message.</blockquote>
+    <a name="scriptless_interaction"></a><b>scriptless interaction</b>  
+ 
+<blockquote>A new incoming message which the Hub processes by dispatching 
+ directly to a server which supports a <b>dispatch function</b> whose name 
+ matches that of the incoming message.</blockquote>
+    <a name="scripting_module"></a><b>scripting module</b>    
+<blockquote>A module compiled into the Communicator Hub which assumes responsibility 
+ for the processing of a subset of incoming new messages. MIT provides the 
+ default scripting module, which allows users to specify <b>programs</b> to
+ implement this control.</blockquote>
+    <a name="server"></a><b>server</b>    
+<blockquote>An executable configured to accept <b>messages</b> from the <b>Hub</b> 
+ and respond to <b>dispatch functions </b>invoked by these messages.</blockquote>
+    <a name="server-to-server_subdialogue"></a><b>server-to-server subdialogue</b>
+    
+<blockquote>A call to GalSS_EnvDispatchFrame, which uses the Hub to invoke 
+ operations on another server or servers and retrieves the result. The Hub 
+ may retrieve this information via a Hub program, or it may relay the request 
+ directly to another server.</blockquote>
+    <a name="service_provider"></a><b>service provider</b>    
+<blockquote>A specific process on a specific host which qualifies as an instance 
+ of a <b>service type</b>.</blockquote>
+    <a name="service_type"></a><b>service type</b>    
+<blockquote>A named collection of <b>operations</b> in a <b>program file</b>. 
+ Each operation is expected to correspond to a <b>dispatch function</b> implemented 
+ by any <b>service provider</b> which is an instance of this service type.</blockquote>
+    <a name="session"></a><b>session</b>    
+<blockquote>An instance of an interaction of a user with a Hub.</blockquote>
+    <a name="token"></a><b>token</b>    
+<blockquote>A frame which represents the evolving state of the execution of
+a <b>Hub program</b>.&nbsp; A token is similar to the local memory state of
+a function or a procedure.&nbsp; See also <b>frame</b>, <b>message</b>.</blockquote>
+    <a name="utterance_ID"></a><b>utterance ID</b>    
+<blockquote>Internal counter maintained by the builtin server.&nbsp; This 
+ counter can be updated only by calling <tt>builtin.increment_utterance</tt>.
+  This counter cannot currently be accessed except by calling this builtin
+ function.</blockquote>
+    <a name="verbosity"></a><b>verbosity</b>    
+<blockquote>A setting provided to a Hub or server which controls the amount 
+ of information printed out. Zero verbosity is silence; the highest level 
+of verbosity is 6; the default is 3.</blockquote>
+        
+<hr>  
+<center>   
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="libutil.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>  
+     </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="../../../contrib/MITRE/examples/double/description.html"><img
+ src="../../arrow_right.gif" alt="" width="30" height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+    Last updated August 13, 2002</center>
+        
+</body>
+</html>

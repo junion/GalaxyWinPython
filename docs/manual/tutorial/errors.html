@@ -1,0 +1,511 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Tutorial: Error Handling</title>
+                 <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+        
+<center>    
+<h1> Galaxy Communicator Tutorial:</h1>
+   </center>
+        
+<center>    
+<h1> Error Handling</h1>
+   </center>
+   
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+     <tbody>
+       <tr>
+         <td valign="middle" align="left" width="10%"><a
+ href="pgm_intro.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+       </a></td>
+         <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>    
+   </td>
+         <td valign="middle" align="right" width="10%"><a
+ href="new_messages.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+       </a></td>
+       </tr>
+          
+  </tbody>   
+</table>
+         
+<hr width="100%">    
+<p>So far, in almost all the examples we've run, everything has worked as 
+ expected. However, that's a very unrealistic assumption. Almost every programming 
+ language and distributed processing infrastructure has some facility for 
+error handling, and the Galaxy Communicator infrastructure does as well. In
+this lesson, we'll learn how errors are handled. </p>
+     
+<ul>
+    <li> <a href="#Environments_and_message_returns">Environments and  message 
+returns</a></li>
+     <li> <a href="#How_to_raise_an_error">How to raise an error</a></li>
+     <li> <a href="#How_to_catch_an_error">How to catch&nbsp;an error</a></li>
+              
+  <ul>
+    <li> <a href="#Passive_error_handling">"Passive"&nbsp;error handling</a></li>
+     <li> <a href="#Active_error_handling">"Active"&nbsp;error handling</a></li>
+             
+  </ul>
+     <li> <a href="#Summary">Summary</a></li>
+       
+</ul>
+        
+<hr width="100%">    
+<h2> <a name="Environments_and_message_returns"></a>Environments and message 
+ returns</h2>
+    Up to this point, we've ignored the second argument of each dispatch
+function:     
+<blockquote><tt>Gal_Frame Parse(Gal_Frame frame, <b>void *server_data</b>);</tt></blockquote>
+    This argument, although represented as a <tt>void *</tt> for historical 
+ reasons, is actually a pointer to a call environment structure, of type GalSS_Environment.
+ The call environment is the appropriate conduit for all communication with
+ the Hub, since it embodies a good deal of contextual information which the
+ communication requires, such as the current session, the connection through
+ which to communicate, and the Hub program and rule which caused the dispatch
+ function to be called.    
+<p>The environment also keeps track of whether the Hub expects a response 
+ (which we saw we could <a
+ href="pgm_intro.html#Managing_flow_of_control">control</a> via Hub  programs), 
+and whether a response has been provided. So far, the only way  we've seen 
+to provide a response is by returning a frame from the dispatch  function. 
+You can also provide a normal message response using the function  <a
+ href="../reference/adding.html#GalSS_EnvReply">GalSS_EnvReply</a>, which 
+ takes a call environment as an argument. So the Parse dispatch function we
+ studied in the <a
+ href="basic_server.html#Step_2:_Write_your_dispatch_functions">server  basics 
+lesson</a> could have also been written as follows: </p>
+     
+<blockquote><tt>Gal_Frame Parse(Gal_Frame frame, void *server_data)</tt>
+  <br>
+     <tt>{</tt> <br>
+     <tt>&nbsp; /* Message decomposition */</tt> <br>
+     <tt>&nbsp; char *input_string = Gal_GetString(frame, ":input_string");</tt>
+    <br>
+     <tt>&nbsp; ParseTree *p;</tt> <br>
+     <tt>&nbsp; Gal_Frame reply;</tt>          
+  <p><tt>&nbsp; /* Core processing */</tt> <br>
+     <tt>&nbsp; p = ParseSentence(input_string);</tt> </p>
+           
+  <p><tt>&nbsp; /* Reply construction */</tt> <br>
+     <tt>&nbsp; reply = Gal_MakeFrame("reply", GAL_CLAUSE);</tt> <br>
+     <tt>&nbsp; Gal_SetProp(reply, ":frame",</tt> <br>
+     <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  Gal_FrameObject(ParseTreeToFrame(p)));</tt> <br>
+     <tt>&nbsp; <b>GalSS_EnvReply((GalSS_Environment *) server_data, reply);</b></tt>
+    <br>
+     <b><tt>&nbsp; return (Gal_Frame) NULL;</tt></b> <br>
+     <tt>}</tt></p>
+   </blockquote>
+    Note that after we send the reply, we return NULL from the dispatch function. 
+ This isn't strictly necessary, because call environments will only send one
+ response back to the Hub; any frame returned from this dispatch function 
+would be ignored, since the response has already been sent.    
+<p>In most circumstances, there's no reason to use GalSS_EnvReply. However, 
+ it serves as a convenient introduction to call environments and explicit 
+message returns. In particular, in addition to normal returns, we can also 
+return errors. We'll explore this in the next section. </p>
+     
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="How_to_raise_an_error"></a>How to raise an error</h2>
+    We've already seen a simple error. When we <a
+ href="../../../contrib/MITRE/tools/docs/unit_tester_tut.html#Interacting_with_the_Parser_server">interacted
+  with the Parser server</a> using the unit tester, we tried sending the
+server  a frame named <tt>UserInput</tt>. Since the Parser server doesn't
+know of  any dispatch function named <tt>UserInput</tt>, it responded with
+an error,  as we saw in the output history of the unit tester:    
+<blockquote><tt><b>[Scrollable output history]</b><br>
+  <br>
+   [Sending: new message] <br>
+{c UserInput <br>
+   &nbsp;&nbsp; :input_string "I WANT  TO FLY FROM BOSTON TO LOS ANGELES"
+} <br>
+[Received: error message] <br>
+{c system_error <br>
+   &nbsp;&nbsp; :err_description "Function  UserInput does not exist" <br>
+   &nbsp;&nbsp; :errno 1 } </tt>   </blockquote>
+    
+<p>So one way to raise an error is to send a server a message it doesn't understand.
+</p>
+     
+<p>All errors in the Galaxy Communicator infrastructure originate in servers. 
+ In particular, errors are particular types of message responses. Most of 
+these errors are signalled by the programmer from a dispatch function using 
+the function <a href="../reference/adding.html#GalSS_EnvError">GalSS_EnvError</a>.
+  This function, like GalSS_EnvReply, sends an explicit message return via
+ a call environment. </p>
+     
+<p>So what sorts of errors might you want to report? You may recall that, 
+ for instance, we postponed the discussion of type checking when we discussed 
+ server basics; this was because in order to signal a type checking error, 
+ we needed to talk about environments first. So that's one type of error. 
+In fact, we might encounter errors at any point in the dispatch function processing:
+</p>
+     
+<ul>
+    <li> The <tt>:input_string</tt> key might not be present in the input,
+ or its value might not be a string (type checking)</li>
+     <li> The input string might fail to parse (core processing)</li>
+     <li> It might not be possible to convert the result into a frame (reply 
+ construction)</li>
+       
+</ul>
+    Let's look at the "real" version of the Parse dispatch function, with 
+error  handling revealed:    
+<blockquote><tt>Gal_Frame Parse(Gal_Frame frame, void *server_data)</tt>
+  <br>
+     <tt>{</tt> <br>
+     <tt>&nbsp; char *input_string;</tt> <br>
+     <tt>&nbsp; ParseTree *p;</tt> <br>
+     <tt>&nbsp; Gal_Frame reply;</tt> <br>
+     <tt>&nbsp; Gal_Frame parse_frame;</tt>          
+  <p><tt>&nbsp; /* Deconstruction and type checking */</tt> <br>
+     <tt>&nbsp; input_string = Gal_GetString(frame, ":input_string");</tt>
+   <br>
+     <tt>&nbsp; <b>if (!input_string) {</b></tt> <br>
+     <b><tt>&nbsp;&nbsp;&nbsp; GalSS_EnvError((GalSS_Environment *) server_data,</tt></b>
+    <br>
+     <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  "no input string");</tt></b> <br>
+     <b><tt>&nbsp;&nbsp;&nbsp; return (Gal_Frame) NULL;</tt></b> <br>
+     <b><tt>&nbsp; }</tt></b> </p>
+           
+  <p><tt>&nbsp; /* Core processing */</tt> <br>
+     <tt>&nbsp; p = ParseSentence(input_string);</tt> </p>
+           
+  <p><tt>&nbsp; /* Reply construction */</tt> <br>
+     <tt>&nbsp; <b>if (!p) {</b></tt> <br>
+     <b><tt>&nbsp;&nbsp;&nbsp; GalSS_EnvError((GalSS_Environment *) server_data,</tt></b>
+    <br>
+     <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  "no parse");</tt></b> <br>
+     <b><tt>&nbsp;&nbsp;&nbsp; return (Gal_Frame) NULL;</tt></b> <br>
+     <b><tt>&nbsp; }</tt></b> <br>
+     <tt>&nbsp; parse_frame = ParseTreeToFrame(p);</tt> <br>
+     <tt>&nbsp; <b>if (!parse_frame) {</b></tt> <br>
+     <b><tt>&nbsp;&nbsp;&nbsp; GalSS_EnvError((GalSS_Environment *) server_data,</tt></b>
+    <br>
+     <b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  "can't convert parse to frame");</tt></b> <br>
+     <b><tt>&nbsp;&nbsp;&nbsp; return (Gal_Frame) NULL;</tt></b> <br>
+     <b><tt>&nbsp; }</tt></b> <br>
+     <tt>&nbsp; reply = Gal_MakeFrame("reply", GAL_CLAUSE);</tt> <br>
+     <tt>&nbsp; Gal_SetProp(reply, ":frame", Gal_FrameObject(parse_frame));</tt>
+    <br>
+     <tt>&nbsp; return reply;</tt> <br>
+     <tt>}</tt></p>
+   </blockquote>
+    Now let's use the process monitor to see some of these errors in action.
+    
+<blockquote><b><tt>[Error handling exercise 1]<br>
+  <br>
+Unix:<br>
+  </tt></b>          
+  <p><tt>% process_monitor $GC_HOME/tutorial/errors/hub-error.config<br>
+  </tt></p>
+  <p><tt><b>Windows:</b><br>
+  </tt></p>
+  <p><tt>C:\&gt; python %PM_DIR%\process_monitor.py %GC_HOME%\tutorial\errors\hub-error.config<br>
+  </tt></p>
+   </blockquote>
+    Start the Parser and then the unit tester. Select "Send new message"
+in  the unit tester window, select the first frame (the one with the <tt>:string</tt>
+  key), press "Reply Required", and then press OK. You should see the following
+  exchange in the interaction history pane:    
+<blockquote><b><tt>[Interaction History pane]</tt></b>          
+  <p><tt>[Sending: new message]</tt> <br>
+     <tt>{c Parser.Parse</tt> <br>
+     <tt>&nbsp;&nbsp; :string "I WANT TO FLY FROM BOSTON TO LOS ANGELES"
+}</tt>     <br>
+     <tt>[Received: error message]</tt> <br>
+     <tt>{c system_error</tt> <br>
+     <tt>&nbsp;&nbsp; :err_description "no input string"</tt> <br>
+     <tt>&nbsp;&nbsp; :errno 0 }</tt></p>
+   </blockquote>
+    (If you're adventurous, you'll discover that when the unit tester is
+acting  as a Hub, you'll get a reply most of the time, whether or not you
+select&nbsp;  "Reply Required". This is because in the current implementation,
+the server  library forces a reply if a reply is required, but doesn't <b>suppress</b> 
+ a reply if a reply<b> isn't</b> required. This may change in a future release. 
+ If the unit tester is acting as a server, it will not get a reply if a reply 
+ isn't required.)    
+<p>Note that the error you get corresponds to the absence of an <tt>:input_string</tt>
+  key. Next, select "Send new message"&nbsp;again, and select the second
+frame  (the one with the float value for <tt>:input_string</tt>), press "Reply 
+Required",  and then OK. You'll now see the following exchange: </p>
+     
+<blockquote><b><tt>[Interaction History pane]</tt></b>          
+  <p><tt>[Sending: new message]</tt> <br>
+     <tt>{c Parser.Parse</tt> <br>
+     <tt>&nbsp;&nbsp; :input_string 5.600000e+00 }</tt> <br>
+     <tt>[Received: error message]</tt> <br>
+     <tt>{c system_error</tt> <br>
+     <tt>&nbsp;&nbsp; :err_description "no input string"</tt> <br>
+     <tt>&nbsp;&nbsp; :errno 0 }</tt></p>
+   </blockquote>
+    The error is the same; this is because the <tt>:input_string</tt> key 
+still  doesn't contain a string. You should be able to match the error description 
+ to the argument to GalSS_EnvError, as follows: <br>
+   <img src="../../images/Error1.jpg" nosave="" height="479" width="839">
+       
+<p>Finally, select "Send new message", select the third frame, press "Reply 
+ Required", and then OK. You'll now see the following exchange: </p>
+     
+<blockquote><b><tt>[Interaction History pane]</tt></b>          
+  <p><tt>[Sending: new message]</tt> <br>
+     <tt>{c Parser.Parse</tt> <br>
+     <tt>&nbsp;&nbsp; :input_string "I WANT TO FLY TO LOS ANGELES" }</tt> 
+  <br>
+     <tt>[Received: error message]</tt> <br>
+     <tt>{c system_error</tt> <br>
+     <tt>&nbsp;&nbsp; :err_description "no parse"</tt> <br>
+     <tt>&nbsp;&nbsp; :errno 0 }</tt></p>
+   </blockquote>
+    This error corresponds to the parse failure.    
+<p>Select "File --&gt;&nbsp;Quit" in the process monitor to conclude this 
+ example. </p>
+     
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="How_to_catch_an_error"></a>How to catch&nbsp;an error</h2>
+    At this point, it should be clear how errors are raised. Now, we're going 
+ to look at how to catch those errors.    
+<h3> <a name="Passive_error_handling"></a>"Passive"&nbsp;error handling</h3>
+    In normal circumstances, when the Hub sends a message to a server which 
+ results in an error being raised, the Hub treats the error as terminating 
+ the current program and token, and returns the error to the originating server
+ if a reply was required. An example will illustrate.    
+<blockquote><b><tt>[Error handling exercise 2]<br>
+  <br>
+Unix:<br>
+  </tt></b>          
+  <p><tt>%&nbsp;process_monitor $GC_HOME/tutorial/errors/server-error.config<br>
+  </tt></p>
+  <p><tt><b>Windows:</b><br>
+  </tt></p>
+  <p><tt>C:\&gt; python %PM_DIR%\process_monitor.py %GC_HOME%\tutorial\errors\server-error.config<br>
+   </tt></p>
+       </blockquote>
+    Start the Parser, then the Hub, and finally the unit tester. The program 
+ we're running is the same simple program we used in the <a
+ href="pgm_intro.html">Hub basics lesson</a>:    
+<blockquote><tt>PROGRAM: UserInput</tt>          
+  <p><tt>RULE: :input_string --&gt; Parser.Parse</tt> <br>
+     <tt>IN: :input_string</tt> <br>
+     <tt>OUT: :frame</tt></p>
+   </blockquote>
+    We're going to try two of the frames we tried in the last exercise. Select 
+ "Send new message", select the first frame, press "Reply required"&nbsp;and 
+ then OK. You'll see the following in the Hub pane:    
+<blockquote><b><tt>[Hub pane]</tt></b>          
+  <p><tt>----------------[&nbsp; 1]---------------------- <br>
+   {c UserInput <br>
+   &nbsp;&nbsp; :input_string 5.600000e+00 <br>
+   &nbsp;&nbsp; :session_id "Default" <br>
+   &nbsp;&nbsp; :tidx 1 } <br>
+   --------------------------------------------</tt> </p>
+           
+  <p><tt>Found operation for token 1: Parser.Parse<br>
+   Serving message with token index 1 to provider for Parser @ localhost:10000<br>
+   ---- Serve(Parser@localhost:10000, token 1 op_name Parse)<br>
+   Got error from provider for Parser @ localhost:10000: token 1 <br>
+   {c system_error <br>
+   &nbsp;&nbsp; :errno 0 <br>
+   &nbsp;&nbsp; :err_description "no input string" <br>
+   &nbsp;&nbsp; :session_id "Default" <br>
+   &nbsp;&nbsp; :tidx 1 } <br>
+   Done with token 1 --&gt; returning to owner UI@&lt;remote&gt;:-1<br>
+   Destroying token 1</tt> </p>
+   </blockquote>
+    So the Hub recognizes that the Parser server returned an error. It terminates 
+ the program (which was about to terminate anyway) and instead of sending 
+the token state back to the unit tester as the reply, it sends the error: 
+   
+<blockquote><b><tt>[Interaction History pane]</tt></b>          
+  <p><tt>[Sending: new message]</tt> <br>
+     <tt>{c UserInput</tt> <br>
+     <tt>&nbsp;&nbsp; :input_string 5.600000e+00 }</tt> <br>
+     <tt>[Received: error message]</tt> <br>
+     <tt>{c system_error</tt> <br>
+     <tt>&nbsp;&nbsp; :session_id "Default"</tt> <br>
+     <tt>&nbsp;&nbsp; :err_description "no input string"</tt> <br>
+     <tt>&nbsp;&nbsp; :errno 0 }</tt></p>
+   </blockquote>
+    Here's an illustration of the process:    
+<center>    
+<p><img src="../../images/Error2.jpg" nosave="" height="407" width="623">
+   </p>
+   </center>
+        
+<p>If you press "Send new message"&nbsp;again, select the second frame, press 
+ "Reply required"&nbsp;and then OK, you'll see the analogous behavior with 
+ the <tt>"no parse"</tt>&nbsp;error description as a result. </p>
+     
+<p>Select "File --&gt;&nbsp;Quit"&nbsp;to end this exercise. </p>
+     
+<h3> <a name="Active_error_handling"></a>"Active"&nbsp;error handling</h3>
+    It's also possible to explicitly catch an error, using the ERROR:&nbsp;directive 
+ in the program file. So let's use a slightly different program:    
+<blockquote><tt>PROGRAM: UserInput</tt>          
+  <p><tt>RULE: :input_string --&gt; Parser.Parse</tt> <br>
+     <tt>IN: :input_string</tt> <br>
+     <tt>OUT: :frame</tt> <br>
+     <tt>ERROR:&nbsp;(:encountered_error 1) :err_description</tt></p>
+   </blockquote>
+    The interpretation of OUT:&nbsp;and ERROR:&nbsp;are almost identical:&nbsp;they 
+ have the same source (message)&nbsp;and target (token)&nbsp;namespaces, and
+ they're processed after the message return. The difference is that OUT:&nbsp;is 
+ evaluated when there's a normal reply, and ERROR:&nbsp;is evaluated when 
+there's an error reply. If ERROR:&nbsp;is present, it also serves to "catch"&nbsp;the 
+ error; the program doesn't terminate, but rather proceeds normally. We expect, 
+ then, that if we redo the last exercise, the unit tester will receive a normal
+ message reply. So let's check that.    
+<blockquote><b><tt>[Error handling exercise 3]<br>
+  <br>
+Unix:<br>
+  </tt></b>          
+  <p><tt>%&nbsp;process_monitor $GC_HOME/tutorial/errors/catch-server-error.config<br>
+  </tt></p>
+  <p><tt><b>Windows:</b><br>
+  </tt></p>
+  <p><tt>C:\&gt; </tt><tt>python %PM_DIR%\process_monitor.py %GC_HOME%\tutorial\errors\catch-server-error.config</tt><br>
+  </p>
+   </blockquote>
+    As before, start the Parser, Hub and unit tester. Select "Send new message", 
+ select the first frame, press "Reply required"&nbsp;and then OK. You'll see
+ the following in the Hub pane:    
+<blockquote><b><tt>[Hub pane]</tt></b>          
+  <p><tt>----------------[&nbsp; 1]----------------------<br>
+   {c UserInput<br>
+   &nbsp;&nbsp; :input_string 5.600000e+00<br>
+   &nbsp;&nbsp; :session_id "Default"<br>
+   &nbsp;&nbsp; :tidx 1 }<br>
+   --------------------------------------------<br>
+     <br>
+   Found operation for token 1: Parser.Parse<br>
+   Serving message with token index 1 to provider for Parser @ localhost:10000<br>
+   ---- Serve(Parser@localhost:10000, token 1 op_name Parse)<br>
+   Got error from provider for Parser @ localhost:10000: token 1<br>
+   {c system_error<br>
+   &nbsp;&nbsp; :errno 0<br>
+   &nbsp;&nbsp; :err_description "no input string"<br>
+   &nbsp;&nbsp; :session_id "Default"<br>
+   &nbsp;&nbsp; :tidx 1 }<br>
+     <br>
+   ----------------[&nbsp; 1]----------------------<br>
+   {c UserInput<br>
+   &nbsp;&nbsp; :input_string 5.600000e+00<br>
+   &nbsp;&nbsp; :session_id "Default"<br>
+   &nbsp;&nbsp; :tidx 1<br>
+   &nbsp;&nbsp; :encountered_error 1<br>
+   &nbsp;&nbsp; :err_description "no input string" }<br>
+   --------------------------------------------<br>
+     <br>
+   Done with token 1 --&gt; returning to owner UI@&lt;remote&gt;:-1<br>
+   Destroying token 1</tt><br>
+     </p>
+   </blockquote>
+    So in this case, the Hub printed the resulting token state (which it
+does  at every normal step in a Hub program). The token state is returned
+to the  unit tester:    
+<blockquote><b><tt>[Interaction History pane]</tt></b>          
+  <p><tt>[Sending: new message]</tt> <br>
+     <tt>{c UserInput</tt> <br>
+     <tt>&nbsp;&nbsp; :input_string 5.600000e+00 }</tt> <br>
+     <tt>[Received: reply message]</tt> <br>
+     <tt>{c UserInput</tt> <br>
+     <tt>&nbsp;&nbsp; :encountered_error 1</tt> <br>
+     <tt>&nbsp;&nbsp; :session_id "Default"</tt> <br>
+     <tt>&nbsp;&nbsp; :err_description "no input string"</tt> <br>
+     <tt>&nbsp;&nbsp; :input_string 5.600000e+00 }</tt></p>
+   </blockquote>
+    Note that the unit tester states that it received a normal reply, rather 
+ than an error. Note also that as in other normal replies, the name of the 
+ reply frame is identical to the original message sent, and the original contents
+ of the message are preserved in the message reply. Finally, the ERROR: directive
+ entry has updated the token state with a setting for <tt>:encountered_error</tt>
+  and for <tt>:err_description</tt>. Here's an illustration of the process:
+    
+<center>    
+<p><img src="../../images/Error3.jpg" nosave="" height="407" width="623">
+   </p>
+   </center>
+        
+<p>If you're curious, you can confirm this behavior by sending a second new 
+ message. </p>
+     
+<p>Select "File --&gt; Quit"&nbsp;to end this exercise. </p>
+     
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="Summary"></a>Summary</h2>
+    In this lesson, you've learned about the following concepts and components:
+    
+<ul>
+    <li> Call environment structures</li>
+     <li> Error replies</li>
+     <li> The functions <a
+ href="../reference/adding.html#GalSS_EnvReply">GalSS_EnvReply</a>   and
+    <a href="../reference/adding.html#GalSS_EnvError">GalSS_EnvError</a></li>
+     <li> The <a href="#Active_error_handling">ERROR:</a> program file directive</li>
+       
+</ul>
+    Up to this point, we've been able to send new messages to servers either 
+ from the Hub or by using the unit tester. However, we don't know yet how 
+to program dispatch functions to send new messages to the Hub. In the next 
+lesson, we'll learn how to do this.    
+<p><b>Next</b>: <a href="new_messages.html">Sending new messages to the Hub</a>
+  </p>
+     
+<p> </p>
+     
+<hr> 
+<center>  
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+     <tbody>
+       <tr>
+         <td valign="middle" align="left" width="10%"><a
+ href="pgm_intro.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+       </a></td>
+         <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>    
+   </td>
+         <td valign="middle" align="right" width="10%"><a
+ href="new_messages.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+       </a></td>
+       </tr>
+          
+  </tbody>   
+</table>
+   Last updated August 8, 2002</center>
+     <br>
+   <br>
+  <br>
+ 
+</body>
+</html>

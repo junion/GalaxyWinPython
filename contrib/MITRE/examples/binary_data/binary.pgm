@@ -1,0 +1,30 @@
+;; This file (c) Copyright 1998 - 2002 The MITRE Corporation
+;; 
+;; This file is part of the Galaxy Communicator system. It is licensed
+;; under the conditions described in the file LICENSE in the root 
+;; directory of the Galaxy Communicator system.
+
+;;
+;; this is a sample control file for the darpa hub
+;; using various MIT servers
+;;
+
+;; -------------------------------------------------
+;;   SERVERS
+;; -------------------------------------------------
+
+SERVER: data_binary
+HOST:localhost
+PORT:17900
+OPERATIONS: receive_binary reinitialize
+INIT: :test_first 5 :test_last 8 :test_msg "Hello_there"
+
+PROGRAM: main
+
+;; -------------------------------------------------
+;;   CONDITIONS  (default order)
+;; -------------------------------------------------
+
+RULE: :binary_data  --> receive_binary
+IN: :binary_data
+OUT: none!

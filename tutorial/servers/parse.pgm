@@ -1,0 +1,18 @@
+;; Use extended syntax (new in version 3.0).
+
+PGM_SYNTAX: extended
+
+SERVICE_TYPE: UI
+CLIENT_PORT: 14500
+
+SERVER: Parser
+HOST: localhost
+PORT: 10000
+OPERATIONS: Parse
+
+PROGRAM: UserInput
+
+RULE: :input_string --> Parser.Parse
+IN: :input_string
+OUT: :frame
+

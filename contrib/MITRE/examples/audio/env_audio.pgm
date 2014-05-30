@@ -1,0 +1,60 @@
+;; This file (c) Copyright 1998 - 2002 The MITRE Corporation
+;; 
+;; This file is part of the Galaxy Communicator system. It is licensed
+;; under the conditions described in the file LICENSE in the root 
+;; directory of the Galaxy Communicator system.
+
+;;
+;; this is a sample control file for the darpa hub
+;; using various MIT servers
+;;
+
+;; -------------------------------------------------
+;;   SERVERS
+;; -------------------------------------------------
+
+SERVER: testaudio_send
+HOST:localhost
+PORT:12345
+OPERATIONS: reinitialize notify
+
+SERVER: env_testaudio_receive
+HOST:localhost
+PORT:12346
+OPERATIONS: receive_audio
+
+SERVER: builtin
+OPERATIONS: new_session
+
+INITIAL_TOKEN: {c ignore }
+
+PROGRAM: ignore
+
+PROGRAM: main
+
+;; -------------------------------------------------
+;;   CONDITIONS  (default order)
+;; -------------------------------------------------
+
+;; We create a session here so that it will be passed
+;; to env_testaudio_receive. This server will store the
+;; session ID and return it automatically when it
+;; sends the notification message, by virtue of using
+;; the environment. If you use the testaudio_receive
+;; server, you'll see that it doesn't forward the session
+;; ID, because it uses the bare connection.
+
+RULE: --> builtin.new_session
+IN: ( :session_id "Session 1" )
+
+;; We test for both here, so we can use this program
+;; file in all modes.
+
+RULE: :binary_port & :binary_host & :call_id  --> receive_audio
+IN: :binary_port :binary_host :call_id
+OUT: none!
+
+RULE: :binary_proxy --> receive_audio
+IN: :binary_proxy
+OUT: none!
+

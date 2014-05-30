@@ -1,0 +1,224 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                          
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                          
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: The Hub and Server Executables</title>
+                             <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+  -->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+            
+<center>     
+<h1> Galaxy Communicator Documentation:<br>
+       <br>
+       The Hub and Server Executables</h1>
+      </center>
+       
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+       <tbody>
+         <tr>
+           <td valign="middle" align="left" width="10%"><a
+ href="faq.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+         </a></td>
+           <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+           <td valign="middle" align="right" width="10%"><a
+ href="frame.html"><img src="../../arrow_right.gif" alt="" width="30"
+ height="30">
+         </a></td>
+         </tr>
+                  
+  </tbody>     
+</table>
+             
+<hr width="100%">     
+<h2> <a name="The_Hub"></a>The Hub</h2>
+       The Hub executable manages the interactions among the Communicator 
+servers.         
+<h4> Command line</h4>
+       <tt>&lt;GALAXY_ROOT&gt;/bin/hub ...</tt>     
+<h4> Command line arguments</h4>
+            
+<ul>
+        <tt>static char *oas[] = {</tt> <br>
+        <tt>&nbsp; "-debug", "run in debug mode",</tt> <br>
+        <tt>&nbsp; "-color", "color output",</tt> <br>
+        <tt>&nbsp; "-pgm_file file", "specify hub program file", NULL,</tt> 
+   <br>
+        <tt>&nbsp; "-init string", "hub variables to be added to welcome
+frame:    -init \":domain \\\"Pegasus\\\"\"", NULL,</tt> <br>
+        <tt>&nbsp; "-validate", "validate server operation lists and message
+  sends  and returns against message signatures",</tt> <br>
+        <tt>&nbsp; "-locations locs", "space-delimited sequence of name@host(:location) 
+   overrides", NULL,</tt> <br>
+        <tt>&nbsp; "-server_locations_file file", "a <a
+ href="../advanced/server_locations.html">server locations file</a> of lines
+   server host:port [hub|server]", NULL,</tt> <br>
+        <tt>&nbsp; "-verbosity level", "set the verbosity of the Hub", NULL,</tt> 
+    <br>
+        <tt>&nbsp; "-gui host:port", "optional gui (host is &lt;listener&gt;
+  to  set up Hub listener)", NULL,</tt> <br>
+        <tt>&nbsp; "-suppress_pacifier", "don't print the pacifier dots",</tt> 
+    <br>
+        <tt>&nbsp; NULL</tt> <br>
+        <tt>};</tt>     
+</ul>
+            
+<p><br>
+      The <tt>-debug</tt> argument will cause the Hub to enter a loop which 
+ allows  the user to explore the state of the Hub, each time the Hub is about 
+ to dispatch  a message to a server. </p>
+          
+<p>The <tt>-pgm_file</tt> should be the user's program file. </p>
+          
+<p>The <tt>-init </tt>argument will add key-value pairs to the frame which
+   seeds the <a href="pgm.html#Initial_token">initial token</a>., and also
+  contribute to the key-value pairs in the <a
+ href="adding.html#Welcome_message">welcome message</a> passed to the <a
+ href="adding.html#reinitialize">reinitialize</a> dispatch function in each
+   server. </p>
+          
+<p>The <tt>-validate</tt> key will use the message signatures reported by
+   the servers and dynamically validate each message call.<br>
+ </p>
+ 
+<p>The <tt>-server_locations_file</tt> key allows overrides of some of the 
+server declaration information   in the Hub script, in a <a
+ href="../advanced/server_locations.html">file format</a> that servers also
+   understand. The location of each listener can be overriden (host and port), 
+as well as whether the Hub or server is the listener.&nbsp;The rules for matching
+the overrides to the Hub script declarations can be found <a
+ href="../advanced/server_locations.html#The_Hubs_view_of_the_server_locations">here</a>. 
+   </p>
+ 
+<p> </p>
+          
+<p>The <tt>-locations</tt> key supports the same override rules as the server 
+locations file, but on the command line. The <tt>name</tt> corresponds to 
+the <tt>&lt;entry_name&gt;</tt> component of a file entry, while the segment 
+after the at-sign ("@") corresponds to second component of a file entry. If
+you provide a host name, the Hub assumes that the server contains the listener
+(i.e., it's equivalent to having the token <tt>server</tt> as the third component
+of the file entry). So as a special case, the token <tt>&lt;listener&gt;</tt> 
+used as in the host position indicates that the Hub should create the listener 
+(i.e., it's equivalent to having the token <tt>hub</tt> as the third component 
+of the file entry).   </p>
+         
+<ul>
+          
+</ul>
+          
+<p> </p>
+                  
+<p>The <tt>-verbosity</tt> key controls how much information is printed out
+   when the Hub executable runs. See the section on <a
+ href="#The_servers">running the executables</a>. </p>
+          
+<p>The <tt>-gui</tt> key allows the user to specify the location of the listener
+for a server which will receive    a series of messages indicating the status
+of the Hub. This server can be used   for visualization and profiling. As
+in the <tt>-locations</tt> argument, the <tt>&lt;listener&gt;</tt> token
+is used to indicate that the Hub should be listening. We've implemented a
+simple C server illustrating    this <a
+ href="../../servers/hub_gui.html">message set</a>. </p>
+          
+<p>The <tt>-suppress_pacifier</tt> key suppresses the printing of the pacifier
+   dot which is usually printed for every 1-second interval the Hub doesn't
+  receive any messages. </p>
+          
+<p> </p>
+          
+<hr width="100%">     
+<h2> <a name="The_servers"></a>The servers</h2>
+       If you build Communicator servers in the <a href="adding.html">default 
+  way</a>, they will accept a range of <a
+ href="adding.html#_GalSS_init_server">common  arguments</a>. Among these 
+  arguments are:       
+<blockquote><tt>static char *oas[] = {</tt> <br>
+        <tt>&nbsp; ...</tt> <br>
+        <tt>&nbsp; "-verbosity level", "set the verbosity of this server",
+ NULL,</tt>    <br>
+        <tt>&nbsp; "-server_locations_file file", "a <a
+ href="../advanced/server_locations.html">server locations file</a> of lines
+   server host:port [hub|server]", NULL,</tt> <br>
+        <tt>&nbsp; ...</tt> <br>
+        <tt>&nbsp; NULL</tt> <br>
+        <tt>};</tt></blockquote>
+       Note that these arguments have correspondences in the Hub executable.
+        
+<p>The <tt>-server_locations_file</tt> key allows overrides of some of the 
+server information, in a <a href="../advanced/server_locations.html">file 
+format</a> that the Hub also   understands. The port for the server's listener&nbsp; 
+can be overriden (host and port), as well as whether the Hub or server is 
+the listener. This argument is identical to the <tt>-server_locations_file</tt> 
+argument  of the Hub executable. </p>
+          
+<p>The <tt>-verbosity</tt> key controls how much information is printed out
+   when the server executable runs. See the section on <a
+ href="#The_servers">running the executables</a>. </p>
+          
+<p> </p>
+          
+<hr width="100%">     
+<h2> <a name="Running_the_executables"></a>Running the executables</h2>
+       Neither the Hub nor the server executables require any shell environment
+   variables to be set. However, it is possible to control the verbosity
+(i.e.,    the amount of run-time information presented) using the GAL_VERBOSE
+environment    variable, in addition to the <tt>-verbosity</tt> key on the
+command line   of the Hub or servers. See the documentation on <a
+ href="../advanced/util.html#Printing">printing utilities</a> for more details. 
+        
+<p>It is also possible to use the MITRE <a
+ href="../../../contrib/MITRE/tools/docs/process_monitor_ref.html">process 
+   monitor</a> to help control the execution of arbitrary programs, including 
+   the Hub and servers. There is a shell version of this tool, but the version 
+   that's strongly preferred is written in Python, using Python's Tk support. 
+   The process monitor is used in almost all the MITRE examples. </p>
+          
+<p> </p>
+          
+<hr>   
+<center>    
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+       <tbody>
+         <tr>
+           <td valign="middle" align="left" width="10%"><a
+ href="faq.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+         </a></td>
+           <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+           <td valign="middle" align="right" width="10%"><a
+ href="frame.html"><img src="../../arrow_right.gif" alt="" width="30"
+ height="30">
+         </a></td>
+         </tr>
+                  
+  </tbody>     
+</table>
+     Last updated August 23, 2002</center>
+        <br>
+      <br>
+     <br>
+    <br>
+   <br>
+  <br>
+ <br>
+</body>
+</html>

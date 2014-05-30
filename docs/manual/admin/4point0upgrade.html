@@ -1,0 +1,734 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                                                       
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                                                       
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Upgrading from 3.3 to 4.0</title>
+                                                             <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+                         
+<center>          
+<h1> Galaxy Communicator Documentation:<br>
+               <br>
+               Upgrading from 3.3 to&nbsp; 4.0</h1>
+              </center>
+       
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+       <tbody>
+         <tr>
+           <td valign="middle" align="left" width="10%"><a
+ href="new_features.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+         </a></td>
+           <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+           <td valign="middle" align="right" width="10%"><a
+ href="release_notes.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+         </a></td>
+         </tr>
+                  
+  </tbody>     
+</table>
+                          
+<hr width="100%">          
+<p>Upgrading to Galaxy Communicator 4.0 is simple. Most of the obligatory
+       upgrades are restricted to very recent or obscure functionality. </p>
+                      
+<p>This document describes only the steps required or recommended to upgrade
+       existing features of Galaxy Communicator. You can find a list of new
+  features     <a href="new_features.html">here</a>. You can find the complete
+  release   notes  <a href="release_notes.html">here</a>. <br>
+              &nbsp; <br>
+              &nbsp;          
+<table border="1" cols="3" width="100%" nosave="">
+               <tbody>
+                  <tr>
+               <td><b>Step</b></td>
+                <td><b>Who's affected</b></td>
+                <td><b>Status</b></td>
+               </tr>
+                <tr>
+               <td><a href="#Updating_logging_support">Step 1: Updating logging 
+     support</a></td>
+                <td>All users of the TIMESTAMP: Hub directive and <a
+ href="../reference/logging.html#Parameters_within_the_Scope_of_a_Program_or_Message">LOG_IN:
+      and LOG_OUT:  directives in the scope of the PROGRAM: or MESSAGE:</a>
+  directives    who may be  relying on a sloppy 3.3 implementation</td>
+                <td>Obligatory</td>
+               </tr>
+                <tr>
+               <td><a href="#Update_use_of_-gui">Step 2:&nbsp;Update use
+of         <tt>-gui</tt></a></td>
+                <td>All users of the <a
+ href="../../servers/hub_gui.html"><tt>-gui</tt>     Hub command line argument</a></td>
+                <td>Obligatory</td>
+               </tr>
+                  <tr>
+                    <td valign="middle"><a
+ href="#Update_use_of_variable">Step    3:  Update   use of variable substitution</a><br>
+                    </td>
+                    <td valign="middle">All users of <a
+ href="../reference/frame.html#Gal_VAReadVarFrameFromString">Gal_VAReadVarFrameFromString</a>
+    and <a href="../reference/frame.html#Gal_ReadVarFrameFromString">Gal_ReadVarFrameFromString</a><br>
+                    </td>
+                    <td valign="middle">Obligatory<br>
+                    </td>
+                  </tr>
+                <tr>
+                  <td valign="middle"><a
+ href="#Update_expectations_for_missing">Step   4: Update expectations for 
+   missing Hub programs and operations</a><br>
+                  </td>
+                  <td valign="middle">All users of <a
+ href="../reference/adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a>
+    and its relatives<br>
+                  </td>
+                  <td valign="middle">Obligatory<br>
+                  </td>
+                </tr>
+              <tr>
+                <td valign="middle"><a href="#Upgrade_to_broker_proxies">Step 
+  5:  Upgrade  to broker proxies</a><br>
+                </td>
+                <td valign="middle">All users of brokering<br>
+                </td>
+                <td valign="middle">Optional<br>
+                </td>
+              </tr>
+             <tr>
+               <td valign="middle"><a
+ href="#Upgrade_references_to_verbosity">Step   6: Upgrade references to
+verbosity constants</a><br>
+               </td>
+               <td valign="middle">All C programmers who refer to the undocumented 
+    constants <tt>GAL_FATAL_LEVEL</tt>, etc. <br>
+               </td>
+               <td valign="middle">Obligatory<br>
+               </td>
+             </tr>
+            <tr>
+              <td valign="middle"><a href="#Upgrade_use_of_hub_continue">Step 
+  7:  Upgrade use of hub_continue</a><br>
+              </td>
+              <td valign="middle">All Hub program writers who use the <tt>:service_provider</tt>
+    key of the Builtin server function <a
+ href="../../servers/builtin.html#hub_continue">hub_continue</a><br>
+              </td>
+              <td valign="middle">Obligatory<br>
+              </td>
+            </tr>
+           <tr>
+          <td valign="top"><a href="#Update_broker_startup">Step 8: Update
+ broker  startup</a><br>
+          </td>
+          <td valign="top">All C programmers who use brokers in threaded
+Communicator   servers<br>
+          </td>
+          <td valign="middle">Recommended<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top"><a href="#Update_broker_callback_setup">Step 9:
+ Update  broker callback setup</a><br>
+          </td>
+          <td valign="top">All C programmers who refer to the events <tt>GAL_CONNECTION_BROKER_OUT_STARTUP_EVENT</tt>
+  and <tt>GAL_CONNECTION_BROKER_IN_STARTUP_EVENT</tt><br>
+          </td>
+          <td valign="middle">Obligatory<br>
+          </td>
+        </tr>
+        <tr>
+             <td valign="top"><a href="#Upgrade_Java_servers">Step 10: Upgrade 
+  Java  servers</a><br>
+             </td>
+             <td valign="top">All users of Java bindings.<br>
+             </td>
+             <td valign="middle">Obligatory<br>
+             </td>
+           </tr>
+       <tr>
+         <td valign="top"><a href="#Upgrade_use_of_EXPAND:">Step 11: Upgrade 
+ use of <tt>EXPAND:</tt> in process monitor configuration files</a><br>
+         </td>
+         <td valign="top">All users of the <tt>EXPAND:</tt> process monitor 
+ configuration file directive who used it to generate unique temporary file 
+ names<br>
+         </td>
+         <td valign="middle">Obligatory<br>
+         </td>
+       </tr>
+      <tr>
+        <td valign="top"><a
+ href="#Upgrade_argument_lists_of_Server_class">Step 12: Upgrade argument 
+lists of Server class in Python</a><br>
+        </td>
+        <td valign="top">All users of the Server class in Python who rely 
+on order-based arguments to the constructor<br>
+        </td>
+        <td valign="middle">Obligatory<br>
+        </td>
+      </tr>
+     <tr>
+       <td valign="top"><a href="#Upgrade_use_of_host_and_port">Step 13:
+Upgrade use of host and port override rules for <tt>-locations</tt> and <tt>-server_locations_file</tt></a><br>
+       </td>
+       <td valign="top">All users of the <tt>-locations</tt> and <tt>-server_locations_file</tt>
+      <a href="../reference/hub.html#The_Hub">Hub command line arguments</a><br>
+       </td>
+       <td valign="middle">Obligatory<br>
+       </td>
+     </tr>
+                                                    
+  </tbody>         
+</table>
+                </p>
+                      
+<p> </p>
+                      
+<hr width="100%">          
+<h2> <a name="Updating_logging_support"></a>Step 1: Updating logging support</h2>
+               In version 3.3 and previous, the implementation of the TIMESTAMP:
+    directive    and of the implicit timestamp associated with LOG_IN:/LOG_OUT:
+    in PROGRAM:    or MESSAGE: blocks was carelessly done; it arranged for
+ timestamps   in situations    where it shouldn't have. We have clarified
+the <a href="../reference/logging.html">rules under which this happens</a>
+to ensure      that TIMESTAMP: applies anywhere, but only to messages which
+match the   provided   description, and that LOG_IN:/LOG_OUT: in PROGRAM:
+or MESSAGE:   <b>only</b> apply to new messages received by the Hub and replies
+it sends   to the originating   server. This limitation is <b>not a change</b>,
+merely   a clean implementation   of a previously documented limitation.
+If you're   inadvertantly relying on   the previous implementation, you may
+need to upgrade  your Hub programs. <b>Please</b> check your Hub programs
+and log output.               
+<p> </p>
+                      
+<hr width="100%">          
+<h2> <a name="Update_use_of_-gui"></a>Step 2:&nbsp;Update use of <tt>-gui</tt></h2>
+                   
+<p>    In version 3.3, we introduced, but did not document, the ability of 
+     the  Hub to contact remote servers for visualization and profiling. The
+   location   of this remote server is provided to the Hub via the <a
+ href="../reference/hub.html#The_Hub"><tt>-gui</tt> command line argument</a>.
+  In     version 3.3, the format of this argument was <tt>direction@host:port</tt>, 
+       where <tt>direction</tt> was either <tt>server</tt> (i.e., the server 
+   has    the listener) or <tt>hub</tt> (i.e., the Hub should set up the listener).
+      When the Hub had the listener, the <tt>host</tt> argument was ignored.
+      </p>
+                   
+<p>In the context of cleaning up references to provider names and documenting
+       the Hub GUI&nbsp;functionality, we decided that this format was not
+ particularly      informative. So in 4.0, the format is <tt>host:port</tt>,
+ where <tt>host</tt>    can be the distinguished string <tt>&lt;listener&gt;</tt>,
+ indicating the     Hub should set up the listener.</p>
+                      
+<hr width="100%" size="2">         
+<h2><a name="Update_use_of_variable"></a>Step 3: Update use of variable substitution</h2>
+              In version 3.3, we made an incorrect assumption having to do
+ with   <a href="../reference/frame.html#Gal_VAReadVarFrameFromString">Gal_VAReadVarFrameFromString</a>
+    and <a href="../reference/frame.html#Gal_ReadVarFrameFromString">Gal_ReadVarFrameFromString</a>&nbsp;which
+       could lead to memory leaks. In particular, our example looked like
+this:<br>
+                      
+<blockquote><tt>Gal_VAReadVarFrameFromString("{c foo :string $a :int $b }",
+       2,</tt> <br>
+                <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+     "$a",&nbsp;</tt><tt>Gal_StringObject("bar")</tt><tt>, <br>
+              &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp;   &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;"$b", </tt><tt>Gal_IntObject(5)</tt><tt>);</tt><br>
+               </blockquote>
+              This invocation would have led to memory leaks if there were
+ no  references     to some of the variables in the frame string. In version 
+ 4.0,  these functions     now assume that the programmer will manage the 
+memory  for the variable  values,   and copy the variable values before substitution. 
+  This both enables  the programmer  to &nbsp;ensure that &nbsp;newly-created 
+  elements are freed,  and also eliminates  the possibility of multiple references 
+  to the same Gal_Object   in a single  frame, which is currently not supported. 
+  In 4.0, the equivalent   invocation  should look like this:<br>
+                      
+<blockquote><tt>Gal_Object o1 = </tt><tt>Gal_StringObject("bar")</tt><tt>;<br>
+               Gal_Object o2 = </tt><tt>Gal_IntObject(5)</tt>;<br>
+                 <br>
+                 <tt>Gal_VAReadVarFrameFromString("{c foo :string $a :int 
+$b  }",   2,</tt>    <br>
+                <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+     "$a", o1, "$b", o2);<br>
+               Gal_FreeObject(o1);<br>
+               Gal_FreeObject(o2);<br>
+              </tt></blockquote>
+                    
+<hr width="100%" size="2">         
+<h2><a name="Update_expectations_for_missing"></a>Step 4: Update expectations
+      for missing Hub programs and operations</h2>
+                   
+<p> In &nbsp;version 3.3, a call to&nbsp;<a
+ href="../reference/adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a>
+    would do something somewhat unintuitive when the Hub could neither find
+  a    matching Hub program nor identify a matching service type which supported
+      the specified operation. The Hub would create a new message named <tt>system-error</tt>
+    and process it as an incoming message. However, it would not return any
+  error    to the caller. This behavior differs from the behavior of service
+  providers    which are sent messages by the Hub which they don't support:
+  they raise  an  error directly back to the Hub.<br>
+           </p>
+                   
+<p>In version 4.0, we have augmented this behavior to be more consistent. 
+     The Hub still generates its new message, in case Hub script programmers 
+   rely  on this feature; however, instead of a normaly reply, the caller 
+of   GalSS_EnvDispatchFrame  or its relatives receives an error. We highlight 
+  this change in case programmers  have been inadvertantly careless about 
+checking   the message type of the reply,  which should be done as follows:</p>
+                    
+<blockquote><tt>GalIO_MsgType t;<br>
+            Gal_Frame msg, reply;<br>
+              <br>
+            /* ... */<br>
+            reply = GalSS_EnvWriteFrame(env, msg, &amp;t);<br>
+            switch (t) {<br>
+            case GAL_REPLY_MSG_TYPE:<br>
+            &nbsp; /* normal reply */<br>
+            &nbsp; break;<br>
+            case GAL_ERROR_MSG_TYPE;<br>
+            &nbsp; /* error */<br>
+            &nbsp; break;<br>
+            default:<br>
+            &nbsp; break;<br>
+            }<br>
+            </tt></blockquote>
+          <br>
+                  
+<hr width="100%" size="2">         
+<h2><a name="Upgrade_to_broker_proxies"></a>Step 5: Upgrade to broker proxies</h2>
+          This &nbsp;upgrade is optional, but highly recommended. Broker
+proxies     are  a considerable improvement on the original broker API.,
+both because     the new broker proxies encapsulate all the broker contact
+information in   a single  key whose value has a distinguished type, and
+because the broker   stream can  be restricted by object type. The semantics
+of the elements  flowing  over the broker connecting are also clearer; if
+you receive an array  of integers,   the proxy encodes whether it's a component
+of a larger array,   or an element   of a list, or just a random object transmitted
+over the connection.  <br>
+                  
+<p>Here's a comparison of the use of brokers for streaming data, using proxies
+     and raw brokers:<br>
+          </p>
+                  
+<p><b>Writing through a raw broker</b></p>
+                  
+<blockquote>     <tt>static Gal_Frame prepare_audio_frame(GalSS_Environment
+     *env,<br>
+          &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;char
+*filename)         <br>
+               { <br>
+               &nbsp; Gal_Frame f = Gal_MakeFrame("main", GAL_CLAUSE); <br>
+               &nbsp; int total = 0; <br>
+               &nbsp; char *buf = (char *) NULL; <br>
+               &nbsp; GalIO_BrokerStruct *b;<br>
+          &nbsp;<br>
+               &nbsp; /* In the code omitted here, the data from the named
+ file    is    <br>
+                  &nbsp;&nbsp;&nbsp;&nbsp; read into buf, and total is the
+ number    of  bytes  in buf */<br>
+          &nbsp;<br>
+               &nbsp; /* .... */<br>
+          &nbsp;<br>
+               &nbsp; /* Now that we have the audio, we write the binary
+data        <br>
+                  &nbsp;&nbsp;&nbsp;&nbsp; through the broker. */<br>
+          &nbsp;<br>
+               &nbsp; b = GalIO_BrokerDataOutInit(GalSS_EnvComm(env), 0,
+10);     <br>
+                  &nbsp; if (b &amp;&amp; (GalIO_GetBrokerListenPort(b) &gt;
+  0))   {       <br>
+                  &nbsp;&nbsp;&nbsp; GalIO_BrokerPopulateFrame(b, f, ":binary_host",
+      ":binary_port");     <br>
+                  &nbsp;&nbsp;&nbsp; GalIO_BrokerWriteBinary(b, buf, total);
+    <br>
+                  &nbsp;&nbsp;&nbsp; GalIO_BrokerDataOutDone(b); <br>
+                  &nbsp; } <br>
+                  &nbsp; free(buf);<br>
+          &nbsp;<br>
+                  &nbsp; return f; <br>
+                  } <br>
+                &nbsp;</tt>                           </blockquote>
+                  
+<p><b>Writing through a proxy<br>
+          </b></p>
+                  
+<blockquote><tt>static Gal_Frame prepare_audio_frame(GalSS_Environment *env,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      char *filename)<br>
+                {<br>
+                &nbsp; Gal_Frame f = Gal_MakeFrame("main", GAL_CLAUSE);<br>
+                &nbsp; int total = 0;<br>
+                &nbsp; char *buf = (char *) NULL;<br>
+                &nbsp; Gal_Object proxy;<br>
+                &nbsp; <br>
+                &nbsp; /* In the code omitted here, the data from the named 
+ file   is    <br>
+                &nbsp; &nbsp; &nbsp;read into buf, and total is the number
+ of  bytes    in  buf  */<br>
+                &nbsp;<br>
+                &nbsp; /* .... */<br>
+            <br>
+                &nbsp; proxy = GalSS_ObjProxifyObjectType(env, GAL_BINARY,
+ 0,  10);<br>
+                &nbsp; if (proxy) {<br>
+              &nbsp; &nbsp; GalSS_ObjProxyArrayAdd(proxy,  buf, total);<br>
+                &nbsp; &nbsp; /* Because the data object is a streaming object, 
+   it  must<br>
+                &nbsp; &nbsp; &nbsp; &nbsp;be marked as done. */<br>
+                &nbsp;&nbsp;&nbsp; GalSS_ObjProxyDone(proxy);<br>
+                &nbsp;&nbsp;&nbsp; Gal_SetProp(f, ":binary_proxy", proxy);<br>
+                &nbsp; }<br>
+                &nbsp;<br>
+                &nbsp; return f;<br>
+                }<br>
+            </tt></blockquote>
+                  
+<p><b>Reading from a raw broker</b></p>
+                  
+<blockquote>      <tt>Gal_Frame receive_audio(Gal_Frame f, void *server_data)
+          <br>
+                 { <br>
+                 &nbsp; DataHandler *d = (DataHandler *) malloc(sizeof(DataHandler)); 
+        <br>
+                 &nbsp; GalIO_BrokerStruct *b; <br>
+                 &nbsp; char *host = Gal_GetString(f, ":binary_host"); <br>
+                 &nbsp; int port = Gal_GetInt(f, ":binary_port"); <br>
+                 &nbsp; d-&gt;data_buf = (char *) NULL; <br>
+                 &nbsp; d-&gt;size = 0; <br>
+                 &nbsp; if (host &amp;&amp; port) { <br>
+                 &nbsp;&nbsp;&nbsp; b = GalSS_EnvBrokerDataInInit((GalSS_Environment
+      *)  server_data,      <br>
+                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       host, port, f, <br>
+                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       env_audio_handler, 0, d, __FreeDataHandler); <br>
+                 &nbsp;&nbsp;&nbsp; if (b) { &nbsp;<br>
+                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_AddBrokerCallback(b,
+ GAL_BROKER_ABORT_EVENT,             <br>
+                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       __report_abort, (void *) NULL); <br>
+                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_AddBrokerCallback(b,
+ GAL_BROKER_DATA_DONE_EVENT,             <br>
+                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       __report_done, (void *) NULL);<br>
+                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_SetBrokerActive(b);&nbsp;<br>
+                 &nbsp;&nbsp;&nbsp; } <br>
+                 &nbsp; } else { <br>
+                 &nbsp;&nbsp;&nbsp; free(d); <br>
+                 &nbsp; } <br>
+                 &nbsp; return (Gal_Frame) NULL; <br>
+                 }</tt>  </blockquote>
+                  
+<p><b>Reading from a proxy</b></p>
+                  
+<blockquote><tt>Gal_Frame receive_audio(Gal_Frame f, void *server_data) 
+  <br>
+                 { &nbsp;<br>
+                  &nbsp; GalSS_Environment *env = (GalSS_Environment *) server_data;<br>
+            &nbsp; GalSS_BrokerProxy *proxy;<br>
+              <br>
+              &nbsp; /* We get the proxy object, and proceed asynchronously.
+  The<br>
+            &nbsp;&nbsp;&nbsp;&nbsp; object passed into the callback is owned 
+  by  the   callback.<br>
+            &nbsp;&nbsp;&nbsp;&nbsp; We use a non-immediate callback, which 
+ will   cache   all the<br>
+            &nbsp;&nbsp;&nbsp;&nbsp; data for us and call the data handler
+ when   it's   done. */<br>
+              &nbsp; proxy = Gal_GetObject(f, ":binary_proxy");<br>
+              <br>
+              &nbsp; if (Gal_Proxyp(proxy)) {<br>
+              &nbsp;&nbsp;&nbsp; GalSS_ObjUnproxify(env, proxy, proxy_audio_handler,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    __proxy_report_done, __proxy_report_abort,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    0, 0, NULL, NULL);<br>
+              <br>
+              &nbsp; &nbsp; }<br>
+              &nbsp; }<br>
+                  &nbsp; return (Gal_Frame) NULL; <br>
+                  }<br>
+              </tt>                              </blockquote>
+          Note that especially on the receiving end, there's much less to 
+do,   and   the callback infrastructure is handled for you, as is the assembly 
+ of streaming   data into a single object. In addition to these benefits, 
+and the fact that   the contact information is encapsulated and typed, it's 
+also possible to  read objects from proxies without using callbacks, if you 
+so choose. In general,   the new API is much more flexible and powerful. For
+more information, see   the <a href="../reference/brokering.html">broker documentation</a>.<br>
+         <br>
+                 
+<hr width="100%" size="2">         
+<h2><a name="Upgrade_references_to_verbosity"></a>Step 6: Upgrade references 
+    to verbosity constants</h2>
+         In versions 3.3 and previous, the undocumented constants <tt>GAL_FATAL_LEVEL</tt>, 
+    <tt>GAL_WARNING_LEVEL</tt>, <tt>GAL_PINFO1_LEVEL</tt>, <tt>GAL_PINFO2_LEVEL</tt>, 
+    <tt>GAL_DEBUG1_LEVEL</tt> and <tt>GAL_DEBUG2_LEVEL</tt> matched up awkwardly 
+    with the values for <a href="../advanced/util.html#Printing"><tt>GAL_VERBOSE</tt></a>. 
+    These constants were interpreted as the threshold above which printing 
+ could   occur, rather than the thresholds themselves. As we upgraded printing 
+ to  rationalize the print levels, this mismatch became more and more of a
+ problem.  In 4.0, then, the meaning of the level constants now match the 
+meaning of  <tt>GAL_VERBOSE</tt>.<br>
+                 
+<p>So let's say you want to print something out if GAL_VERBOSE corresponds 
+    to the default level of printing, which is the level for <a
+ href="../advanced/util.html#GalUtil_PInfo1">GalUtil_PInfo1</a>. Here's the 
+    difference:</p>
+                 
+<p><b>Version 3.3<br>
+         </b></p>
+                 
+<blockquote><tt>if (GAL_VERBOSE &gt; GAL_PINFO1_LEVEL) {<br>
+         &nbsp; /* ... */<br>
+         }<br>
+           </tt></blockquote>
+                 
+<p><b>Version 4.0</b></p>
+                 
+<blockquote><tt>if (GAL_VERBOSE &gt;= GAL_PINFO1_LEVEL) {<br>
+          &nbsp; /* ... */<br>
+          }</tt><br>
+         </blockquote>
+                  
+<hr width="100%" size="2">        
+<h2><a name="Upgrade_use_of_hub_continue"></a>Step 7: Upgrade use of hub_continue<br>
+        </h2>
+        Before version 4.0, it was exceptionally hard to refer to service 
+providers.    The best you could do, in a number of contexts, was refer to 
+the host and    port the provider had been contacted at. This was particularly 
+important   if you were using the Builtin dispatch function <a
+ href="../../servers/builtin.html#hub_continue">hub_continue</a>. However,
+    now that we've introduced <a
+ href="../advanced/provider_id.html#The_syntax_of_provider_names">provider
+    names</a>, it is no longer necessary to resort to this, and support for
+  this  sort of reference has been removed, in the interests of consistency.<br>
+               
+<p>Here's a minimal pair for those of you who need to upgrade:<br>
+        </p>
+               
+<p><b>Version 3.3</b><br>
+        </p>
+               
+<blockquote><tt>SERVER: Parser<br>
+        LOCATION: localhost:5003<br>
+        OPERATIONS: Parse<br>
+          <br>
+        ...<br>
+          <br>
+        RULE: --&gt; Parser.Parse<br>
+        IN: :string<br>
+        OUT: none!<br>
+          <br>
+        RULE: --&gt; Builtin.hub_continue<br>
+        IN: (:reply_matches ( {c ParseResult } )) (:service_provider "localhost:5003")<br>
+        OUT: :frame<br>
+          </tt></blockquote>
+               
+<p><b>Version 4.0<br>
+        </b></p>
+               
+<blockquote><tt>SERVER: Parser<br>
+        LOCATION: localhost:5003<br>
+        OPERATIONS: Parse<br>
+        PROVIDER_ID: [myparser]<br>
+          <br>
+        ...<br>
+          <br>
+        RULE: --&gt;Parser.Parse<br>
+        IN: :string<br>
+        OUT: none!<br>
+          <br>
+        RULE: --&gt; Builtin.hub_continue<br>
+        IN: (:reply_matches ( {c ParseResult } )) (:service_provider "[myparser]")<br>
+        OUT: :frame</tt><br>
+        </blockquote>
+               
+<p><br>
+       </p>
+             
+<hr width="100%" size="2"><br>
+       
+<h2><a name="Update_broker_startup"></a>Step 8: Update broker startup</h2>
+    If you're using threads, and you add broker callbacks or other properties
+  to your brokers or broker proxies after you create them, there's a chance
+  that the broker thread will start up (and possibly finish) before the callbacks
+  are added. In 4.0, we've added functionality which allows the programmer
+ to create a broker without starting it up. See the new section on <a
+ href="../reference/brokering.html#Delaying_broker_activation">delaying broker
+  activation</a> for instructions on how to do this.<br>
+    <br>
+       
+<hr width="100%" size="2">    
+<h2><a name="Update_broker_callback_setup"></a>Step 9: Update broker callback
+  setup</h2>
+    Adding the functionality to <a
+ href="../reference/brokering.html#Delaying_broker_activation">delay broker
+  activation</a> has required an incompatible change in the semantics of
+two   of the <a
+ href="../reference/server_structure.html#Event-driven_programming">events</a>
+  associated with brokers. These events are accepted by the function <a
+ href="../reference/server_structure.html#GalIO_AddConnectionBrokerCallback">GalIO_AddConnectionBrokerCallback</a>.
+  In versions 3.3 and previous, the events&nbsp;<tt>GAL_CONNECTION_BROKER_OUT_STARTUP_EVENT</tt>
+  and <tt>GAL_CONNECTION_BROKER_IN_STARTUP_EVENT</tt> were documented as
+being   fired when a broker was created. In version 4.0, these events have
+been redefined  as being fired when a broker is started. Before 4.0, it was
+not possible to create a broker without starting it; now that this is possible,
+we've added two new events,&nbsp;<tt>GAL_CONNECTION_BROKER_OUT_CREATION_EVENT</tt>
+ and&nbsp;<tt>GAL_CONNECTION_BROKER_IN_CREATION_EVENT</tt>, which are fired
+ when the broker is created.<br>
+    &nbsp; &nbsp;      
+<hr width="100%" size="2">        
+<h2><a name="Upgrade_Java_servers"></a>Step 10: Upgrade Java servers</h2>
+       There are a number of changes in the 4.0 Java bindings that are incompatible 
+   with earlier releases. <br>
+             
+<ul>
+         <li>The Java&nbsp; <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/server/DataInBroker.html">DataInBroker</a></tt> 
+    constructors now throw <tt>IOException</tt>.&nbsp;</li>
+         <li>The Java <tt>galaxy.lang.BinaryObject</tt>  class  has  been 
+removed    (it had been deprecated since 3.0). The various Galaxy Communicator 
+ array    objects are now implemented as <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/lang/ArrayObject.html">ArrayObjects</a></tt> 
+    in the Java bindings. Related to this, the deprecated byte[]-based constructors 
+       for the numerical array objects have been removed, as has the <tt><a
+ href="../../../contrib/MITRE/bindings/java/docs/galaxy/io/GalaxyOutputStream.html">GalaxyOutputStream</a> 
+   write(BinaryObject, int)</tt> method.</li>
+         <li>The Java bindings now encode/decode   XDR  strings using the 
+ISO-8859-1    encoding. Previously, UTF-8 was used, but  this  is not compatible 
+with  the  encoding/decoding support used by the other  language  bindings. 
+This  change  should be transparent to the developer unless strings that require
+ UTF-8 encoding were being exchanged between Java servers.&nbsp;</li>
+         <li>All Java code that was deprecated  in  Galaxy Communicator 3.0 
+ has   been removed. See the <a href="release_notes.html">release notes</a> 
+ for  details.&nbsp;</li>
+         <li>As an optional upgrade, support for broker proxies is provided 
+ in  the Java bindings. See the <a
+ href="../../../contrib/MITRE/bindings/java/index.html#Using_Broker_Proxies">Java 
+   notes</a> for details.</li>
+             
+</ul>
+     
+<hr width="100%" size="2">   
+<h2><a name="Upgrade_use_of_EXPAND:"></a>Step 11: Upgrade use of <tt>EXPAND:</tt> 
+ in process monitor configuration files</h2>
+   In version 3.3, the <a
+ href="../../../contrib/MITRE/tools/docs/process_monitor_ref.html#Configuration_file">process 
+ monitor configuration file</a> permitted directives such as the following:<br>
+     
+<blockquote><tt>EXPAND: $TEMP</tt><br>
+   </blockquote>
+   The interpretation of this entry is that <tt>$TEMP</tt> would be bound,
+ in each process block, to a unique temporary file name which could be passed 
+ around in that process block. However, as a result, it was impossible to 
+define an empty expansion. This latter functionality became desirable in the
+context of defining configuration files which could run on either Unix or
+Windows. Therefore, &nbsp;in 4.0, the entry shown here does expand to the
+empty string, and we've introduced the <tt>TEMPFILE:</tt> directive to provide
+explicit temporary file substitutions.<br>
+  <br>
+   
+<hr width="100%" size="2">  
+<h2><a name="Upgrade_argument_lists_of_Server_class"></a>Step 12: Upgrade
+ argument lists of Server class in Python</h2>
+  As part of the upgrade to <a href="../advanced/server_locations.html">server
+ location files</a>, we've added an argument to the Server class in Python
+ for the name of the entry in the server location file, analogous to the
+<tt>-slf_name</tt>  argument in C. For coherence, we've added this argument
+immediately after  the argument for the server location file, which means
+that anyone who relies  on the order of the arguments to the Server class
+constructor will need to  add an additional argument. This should only affect
+programmers who are inheriting  from the Server class, since there are so
+many arguments to the constructor  which are seldom overwritten that relying
+on ordered arguments would be counterproductive  in most cases. If you encounter
+the problem, you'll recognize it because you'll suddenly start getting <tt>TypeError:
+not a string</tt> when the internal  function cGalaxy._GBGalSS_EncapsulateArguments
+is called.<br>
+ <br>
+ 
+<hr width="100%" size="2"> 
+<h2><a name="Upgrade_use_of_host_and_port"></a>Step 13: Upgrade use of host 
+and port override rules for <tt>-locations</tt> and <tt>-server_locations_file</tt><br>
+ </h2>
+ As part of upgrading references to provider names, we encountered some inconsistencies 
+in the server locations file <a
+ href="../advanced/server_locations.html#The_Hubs_view_of_the_server_locations">override 
+rules</a> in the Hub. Among other things, it was possible to change where
+the listener was in the file but not on the command line. These rules have
+now been rationalized. However, this rationalization appears to have introduced
+some incompatible changes. We can't reconstruct all of them, but one of them
+appears to be that the way to override a Hub listener port has changed. Previously,
+the following declaration <br>
+<blockquote><tt>SERVICE_TYPE: foo<br>
+CLIENT_PORT: 2700</tt><br>
+</blockquote>
+could have its CLIENT_PORT: value overridden by this command line argument:<br>
+<blockquote><tt>... -locations "foo@ignore:2900" ...</tt><br>
+</blockquote>
+However, in 4.0, the assumption is that any host name which is present indicates
+that the Hub should expect the listener to be on that host; so in 4.0, this
+declaration would remove the listener and add a service provider for <tt>foo</tt>
+which is expected to be found on the host <tt>ignore</tt> at port 2900. In
+order to achieve the intended effect in 4.0, you should use the special <tt>&lt;listener&gt;</tt>
+token:<br>
+<blockquote><tt>... -locations "foo@&lt;listener&gt;:2900" ...</tt><br>
+</blockquote>
+This syntax is also consistent with the <a href="#Update_use_of_-gui">upgraded
+format for the <tt>-gui</tt> Hub argument</a>.<br>
+&nbsp;&nbsp;  
+<hr>   
+<center>    
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+       <tbody>
+         <tr>
+           <td valign="middle" align="left" width="10%"><a
+ href="new_features.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+         </a></td>
+           <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+           <td valign="middle" align="right" width="10%"><a
+ href="release_notes.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+         </a></td>
+         </tr>
+                  
+  </tbody>     
+</table>
+     Last updated August 23, 2002</center>
+                  <br>
+              <br>
+            <br>
+           <br>
+          <br>
+         <br>
+        <br>
+       <br>
+       <br>
+    <br>
+   <br>
+  <br>
+ 
+</body>
+</html>

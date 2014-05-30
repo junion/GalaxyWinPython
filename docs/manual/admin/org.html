@@ -1,0 +1,185 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.73 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>Galaxy Communicator Documentation: Directory Structure</title>
+<!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+<body style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#0000FF">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:<br><br>
+Directory Structure</h1></center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "release_notes_v1.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "make.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+
+<hr WIDTH="100%">
+<h2>
+Top Level</h2>
+Here we describe the relevant organization
+beneath the top level Galaxy Communicator directory.
+<br>&nbsp;
+<ul><a href="#MIT_docs">docs/</a>
+<br><a href="#bin_and_lib_Subdirectories">bin/</a>
+<br><a href="#bin_and_lib_Subdirectories">lib/</a>
+<br>src/
+<ul><a href="#libGalaxy/">libGalaxy/</a>
+<br><a href="#HUB/">HUB/</a></ul>
+<a href="#Templates">templates/</a>
+<br>contrib/
+<ul><a href="#The_MITRE_Subdirectory">MITRE/</a>
+<ul>bindings/
+<br>demos/
+<br>docs/
+<br>examples/
+<br>servers/
+<br>templates/
+<br>tools/
+<br>utilities/</ul>
+MIT/
+<ul><a href="#The_Galaxy_Subdirectory">galaxy/</a>
+<ul><a href="#galaxy/src">src/</a>
+<ul><a href="#verify_program/">verify_program/,
+verify_dctl/</a>
+<br><a href="#libGalaxyEnhancements/">libGalaxyEnhancements/</a>
+<br><a href="#libGalaxyHubControl/">libGalaxyHubControl/</a></ul>
+</ul>
+</ul>
+</ul>
+</ul>
+
+<hr WIDTH="100%">
+<h2>
+<a NAME="bin_and_lib_Subdirectories"></a>bin
+and lib Subdirectories</h2>
+<i>bin/ </i>and <i>lib/</i> directories are
+created at compile time as are <i>bin/</i> and <i>lib/</i> directories
+in all the subdirectories.&nbsp; <i>bin/</i> and <i>lib/</i> directories
+contain executables and libraries respectively.&nbsp; There's a little
+more to the <i>bin/</i> and <i>lib/</i> directories which is described
+more fully <a href="#ARCH-OS_Support">below</a> in the section on ARCH-OS.
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="MIT_docs"></a>The docs Subdirectory</h2>
+This subdirectory contains MITRE-produced
+documentation on the distribution, the core libraries, and the Hub.
+<p>
+<hr WIDTH="100%">
+<h2>
+The src Subdirectory</h2>
+This subdirectory contains the sources for
+the core of the Communicator distribution.
+<ul>
+<li>
+<a NAME="HUB/"></a><i>HUB/</i></li>
+
+<br>C code for the Hub itself. The <a
+     href="../reference/hub.html#The_Hub">Hub</a>
+acts as an intelligent router whose behavior can be controlled by a <a href="../reference/pgm.html">script</a>.
+<li>
+<a NAME="libGalaxy/"></a><i>libGalaxy/</i>
+
+<br>C code for the core Communicator support
+library, including frame processing, HUB-server communication, printing,
+command line argument parsing, and the default server wrapper.</li></ul>
+
+<p><br>
+<hr WIDTH="100%">
+<h2>
+<a NAME="The_MITRE_Subdirectory"></a>The MITRE
+Subdirectory</h2>
+The MITRE subdirectory includes examples of&nbsp;
+Communicator functionality and utilities which use the Communicator libraries
+in illustrative ways. MITRE also provides a set of programming language
+bindings (for Python, Java, and Allegro Common Lisp), servers (DB, UI,
+frame transducer), and tools (process monitor, tools for parsing MIT log
+files, scripts for running MIT servers). See the <a href="../index.html">main
+index</a> for a comprehensive list of these resources.
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="The_Galaxy_Subdirectory"></a>The
+Galaxy Subdirectory</h2>
+Here's an overview of the directories under&nbsp;<a NAME="galaxy/src"></a><i>galaxy/src/</i>.
+<ul>
+<li>
+<a NAME="verify_program/"></a><i>verify_program/,
+verify_dctl_file/</i></li>
+
+<br>Hub script and dialogue control file verifiers.
+<li>
+<a NAME="libGalaxyEnhancements/"></a>libGalaxyEnhancements/</li>
+
+<br>MIT enhancements to the Communicator core,
+including <a href="../../servers/turn_management.html">turn management.</a>
+<li>
+<a NAME="libGalaxyHubControl/"></a>libGalaxyHubControl/
+
+<br>MIT Hub scripting module (used by the
+Hub by default)</li>
+</ul>
+
+<hr WIDTH="100%">
+<h2>
+<a NAME="Templates"></a>Templates</h2>
+The <i>templates/</i> subdirectory contains
+configuration and support files which are included in the various Makefiles.&nbsp;
+Essentially that's where we consolidate stuff which is common to all the
+Makefiles.
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="ARCH-OS_Support"></a>ARCH-OS Support</h2>
+The only thing to note is that the Makefiles
+will put things under subdirectories of the form $ARCH-OS (e.g. sparc-sunos,
+sparc-solaris). The <i>bin/</i> directory also contains a csh script called
+<i>fat_binary</i>,
+which determines the correct executable to exec. For example, making an
+executable named <i>a.out</i> will create a symbolic link in <i>bin/</i>
+to <i>fat_binary</i> (i.e. <i>bin/a.out</i> -> <i>bin/fat_binary</i>).
+<i>fat_binary</i>
+determines the $ARCH-OS of the machine it's running on, looks at the name
+by which it was called, and invokes the correct executable.
+
+<p>
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "release_notes_v1.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "make.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated June 29, 2000</center>
+<br>
+<center><i>Copyright (c) 1998, 1999, 2000</i>
+<br><i>The <a href="http://www.mitre.org">MITRE</a>
+Corporation</i>
+<br><i>ALL RIGHTS RESERVED</i></center>
+
+</body>
+</html>

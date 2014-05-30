@@ -1,0 +1,1147 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Release Notes for Version 2.x</title>
+     <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+  
+<center> 
+<h1> Galaxy Communicator Documentation:<br>
+ <br>
+ Release Notes for Version 2.x</h1>
+</center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="upgrade.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="release_notes_v1.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+   
+<hr width="100%"> 
+<p>This document briefly lists all the changes from one Galaxy Communicator
+distribution to the next for versions 2.x. </p>
+<p>Version 2.x is not the current version of Galaxy Communicator. </p>
+<p> </p>
+<hr width="100%"> 
+<h2> August 2000: Version 2.1</h2>
+  
+<h3> <a name="2.1_Core_distribution"></a>Core distribution</h3>
+  
+<ul>
+ <li> Shared object compilation is now supported. See the <a
+ href="install.html">installation notes</a>. As a result, you may need to
+do something slightly different if you're <a
+ href="../advanced/external_makefile.html">not using Communicator Makefile
+templates</a>. See the <a
+ href="2point1upgrade.html#Upgrade_your_local_Makefile_(advanced)">upgrade 
+notes</a>.</li>
+  <li> The distribution is now provided under an <a
+ href="../../../LICENSE">open source license</a>. All copyright notices have
+been updated.</li>
+  <li> We have dramatically simplified and reorganized the internal Makefile
+templates. This change should be completely transparent to existing applications.</li>
+  <li> The dispatch server functionality is now deprecated, and should be
+replaced by the new <a href="../advanced/hub_listener.html">listener-in-Hub</a> 
+capability. Dispatch servers will probably be removed in the 3.0 distribution.</li>
+  <li> It is now possible to control the built-in command line argument parsing
+in a much more fine-grained manner when you're writing your own <tt>main</tt>().
+See <a href="../reference/server_structure.html#GalSS_DefaultServerArgs">GalSS_DefaultServerArgs</a>() 
+and the <a
+ href="2point1upgrade.html#Upgrade_your_own_main_loop_(advanced,_optional)">upgrade 
+notes</a>.</li>
+  <li> A number of utility functions inherited from the MIT <tt>sls_util</tt>
+library which are not used in the core distribution have been removed.</li>
+  <li> Thanks to MIT, the Hub logger now uses an API call <a
+ href="../reference/libutil.html#GalUtil_Mkdirp">GalUtil_Mkdirp</a> instead
+of a shell call to <tt>mkdir</tt>.</li>
+  <li> MIT fixed a bug in <tt>#include</tt> ordering which was leading to
+incorrect macro expansions.</li>
+  <li> MIT made changes to the socket code which ensure that servers on machines
+which are assigned IP addresses via DHCP will work correctly.</li>
+  <li> AT&amp;T helped debug a problem involving the configuration of MITRE's
+Windows NT libraries. Substitution functions such as <tt>close()</tt> are
+now defined in Win32 only if the __STDC__ flag is present when the Galaxy
+core library is compiled; this helps ensure that these functions are not
+defined when other NT libraries define them.</li>
+  <li> The timed task loop now supports the notion of <a
+ href="../advanced/timed_tasks.html#Gal_AddIdleFunction">idle functions</a>, 
+which are invoked periodically when there are no tasks to fire.</li>
+  <li> MIT has repaired a large number of memory leaks in the Hub executable
+involving frames and frame elements which were not being freed. As part of
+this fix, the function <a href="../reference/frame.html#Gal_DelProp">Gal_DelProp</a>() 
+now returns a value indicating whether it found an element to delete or not.</li>
+  <li> An insidious bug in the Hub under which queued messages would sometimes
+be sent to the wrong server has now been fixed.</li>
+  <li> MIT fixed a bug in the Hub under which messages in server connection
+output buffers were sometimes not being written out in a timely manner (or
+being lost).</li>
+  <li> The Hub executable now takes the <a
+ href="../reference/hub.html#The_Hub">-verbosity command line argument.</a></li>
+  <li> MIT added better support for handling SIGPIPE.</li>
+  <li> Servers now support the notion of <a
+ href="../reference/server_structure.html#GalIO_SetCommClientData">client 
+data</a>, which is data associated with a particular dispatch function rather
+than a particular connection.</li>
+  <li> A bug in incoming brokering which was causing the finalizer not to
+be run in some cases has been fixed.</li>
+  <li> MIT has added support for automatic logging when the Hub loses its
+connection with servers and when it reestablishes it.</li>
+  <li> <b>Enhancement</b>. As a consequence of support for the listener-in-Hub
+capability, the function <a
+ href="../reference/server_structure.html#GalSS_InitializeServer">GalSS_InitializeServer</a>() 
+should be replaced by <a
+ href="../reference/server_structure.html#GalSS_InitializeServerToplevel">GalSS_InitializeServerToplevel</a>(). 
+Similarly, the function <a
+ href="../reference/server_structure.html#GalSS_ExtractServerArgs">GalSS_ExtractServerArgs</a>() 
+should be replaced by <a
+ href="../reference/server_structure.html#GalSS_ExtractCmdlineServerArgs">GalSS_ExtractCmdlineServerArgs</a>(). 
+See the <a
+ href="2point1upgrade.html#Upgrade_your_own_main_loop_(advanced,_optional)">upgrade 
+notes</a>.</li>
+  <li> <b>Incompatible change</b>. MITRE and AT&amp;T discovered a major
+logic mistake in the interaction of sockets and the <a
+ href="../advanced/timed_tasks.html">timed task loop</a> on Win32. As a result,
+the function GalIO_AddTimedTaskWithIO has been removed, because the timed
+task loop needs to distinguish clearly between file I/O and socket I/O. Furthermore,
+since select() can't poll file descriptors on Win32, file I/O polling is
+not available on Win32. See the new functions <a
+ href="../advanced/timed_tasks.html#Gal_AddTimedTaskWithSocketIO">Gal_AddTimedTaskWithSocketIO</a>, 
+    <a href="../advanced/timed_tasks.html#Gal_AddTimedTaskWithFileIO">Gal_AddTimedTaskWithFileIO</a>, 
+and the <a
+ href="2point1upgrade.html#Upgrade_timed_task_invocation_(advanced)">upgrade 
+notes</a>.</li>
+ 
+</ul>
+  
+<h3> <a name="2.1_MIT_contributions"></a>MIT contributions</h3>
+  
+<ul>
+ <li> The program file setting <a href="../reference/pgm.html#MODE:">MODE: 
+singlethread</a> is now the default. Since MITRE has always recommended using
+this setting, this change should not affect any code.</li>
+  <li> <b>Incompatible change</b>. In order to ensure the consistency and
+timeliness of MIT software, MIT and MITRE have agreed that MITRE will no
+longer distribute any MIT servers or application libraries. MITRE will continue
+to distribute MIT open source code, such as the Hub scripting library. One
+attractive consequence of this new arrangement is that the entire Galaxy
+Communicator distribution is now open source.</li>
+  <li> <b>Incompatible change</b>. MIT has <a
+ href="../reference/pgm.html#Special_control_directives">clarified and slightly
+modified</a> the semantics of the special tokens <tt>destroy!</tt> and <tt>none!</tt>.
+See the <a
+ href="2point1upgrade.html#Check_your_use_of_none!_and_destroy!">upgrade 
+notes</a>.</li>
+  <li> <b>Incompatible change</b>. The effect of <a
+ href="../reference/pgm.html#SET:">SET:</a> and <a
+ href="../reference/pgm.html#DEL:">DEL:</a> directives in program file rules
+no longer are transmitted in&nbsp; <a
+ href="../../servers/builtin.html#dispatch_to_main">dispatch_to_main</a>. 
+See the upgrade notes.</li>
+ 
+</ul>
+  
+<h3> <a name="2.1_MITRE_contributions"></a>MITRE contributions</h3>
+  
+<ul>
+ <li> The <a
+ href="../../../contrib/MITRE/tools/docs/process_monitor_ref.html">MITRE process
+monitor</a> has been significantly enhanced for 2.0, with options for run-time
+screen real estate management and built-in support for automatic restarting
+of dead servers (so-called "keepalive" functionality).</li>
+  <li> Thanks to a number of sites, a number of bugs in the MITRE Oracle
+server have been fixed.</li>
+  <li> As a consequence of clarifying the distinction between file I/O and
+socket I/O polling in the timed task loop, the <a
+ href="../../../contrib/MITRE/utilities/docs/stdin_poll.html">MITRE stdin
+polling utility</a> is now disabled under Win32.</li>
+  <li> The <a href="../../../contrib/MITRE/examples/double/main.html">double 
+example</a> now exemplified the new listener-in-Hub capability.</li>
+  <li> Since the new listener-in-Hub capability supersedes the old dispatch
+function capability, the dispatch function support in the MITRE utilities
+has been deprecated for 2.1, to be removed in 3.0.</li>
+  <li> The <a href="../../../contrib/MITRE/bindings/java/index.html">Java 
+bindings</a> have been modified to work with the new listener-in-Hub capability. 
+In particular, support for the <tt>-contact_hub</tt> and <tt>-session_id</tt>
+command line arguments has been added.</li>
+  <li> Various changes to Java bindings implementation to improve thread
+synchronization.</li>
+  <li> <b>Incompatible change</b>. The header update utility, which updated
+server headers from version 1.2 to version 1.3, has been removed.</li>
+  <li> <b>Incompatible change</b>. To avoid conflicts with the new listener-in-Hub
+capability, the (previously undocumented) <tt>-session_id</tt> command line
+argument to the MITRE dispatch server has been changed to <tt>-dispatch_session_id</tt>.</li>
+  <li> <b>Incompatible change</b>. In the Java bindings, references to the
+Thread.stop() method have been removed from Server.java and MainServer.java.
+Also, the serverClassName field has been added to ServerUI.java. See the
+    <a href="../../../contrib/MITRE/bindings/java/index.html">Java bindings</a>.</li>
+  <li> <b>Incompatible change</b>. The command line of the (not very well
+documented) MITRE frame transducer has been changed, and the (undocumented)
+rule format has been completely redone.</li>
+  <li> <b>Incompatible change</b>. The <a
+ href="../../../contrib/MITRE/tools/docs/log_tools.html">MITRE log analysis
+tools</a> were completely rewritten and significantly enhanced for 2.0.1p2,
+and further bug fixes were added for 2.1.</li>
+  <li> <b>Incompatible change</b>. The <a
+ href="../../../contrib/MITRE/bindings/java/index.html">Java bindings</a>&nbsp;
+now require the use of JDK 1.2.x (previously, some versions of JDK 1.1.x
+with Swing support could be used).</li>
+ 
+</ul>
+  
+<h3> <a name="Full_list_of_deprecations_scheduled_for_3.0"></a>Full list
+of deprecations scheduled for 3.0</h3>
+ Some of these deprecations have been pending since 2.0. All will be removed
+in 3.0. 
+<ul>
+ <li> GalSS_ReadFrameFromHub (use <a
+ href="../reference/libgalaxy_io.html#GalIO_CommReadFrame">GalIO_CommReadFrame</a> 
+instead)</li>
+  <li> GalSS_GetServerSock (apparently unused; use <a
+ href="../reference/libgalaxy_io.html#GalIO_GetCommSocket">GalIO_GetCommSocket 
+    </a>instead)</li>
+  <li> GalSS_CloseServerSock (apparently unused; use <a
+ href="../reference/libgalaxy_io.html#GalIO_CloseCommSocket">GalIO_CloseCommSocket</a> 
+instead)</li>
+  <li> GalSS_SetHubDisconnect (use <a
+ href="../reference/libgalaxy_io.html#GalIO_SetDisconnectCallback">GalIO_SetDisconnectCallback</a> 
+instead)</li>
+  <li> GalSS_CloseHubConnection (use <a
+ href="../reference/libgalaxy_io.html#GalIO_DestroyCommStruct">GalIO_DestroyCommStruct</a> 
+instead)</li>
+  <li> GalSS_FlushHubWriteQueue (use <a
+ href="../reference/libgalaxy_io.html#GalIO_CommFlushOutQueue">GalIO_CommFlushOutQueue</a> 
+instead)</li>
+  <li> GalSS_GetServerName (use <a
+ href="../reference/server_structure.html#GalIO_GetServerName">GalIO_GetServerName</a> 
+and <a href="../reference/server_structure.html#GalIO_GetCommServerName">GalIO_GetCommServerName</a> 
+instead)</li>
+  <li> The functions sls_pp_frame, sls_cpp_frame, sls_pp_object, sls_cpp_object,
+and sls_pr_object have been deprecated in favor of <a
+ href="../reference/frame.html#GalUtil_PPFrame">GalUtil_PPFrame</a>, <a
+ href="../reference/frame.html#GalUtil_CPPFrame">GalUtil_CPPFrame</a>, <a
+ href="../reference/frame.html#GalUtil_PPObject">GalUtil_PPObject</a>, <a
+ href="../reference/frame.html#GalUtil_CPPObject">GalUtil_CPPObject</a>, and
+    <a href="../reference/frame.html#GalUtil_PrObject">GalUtil_PrObject</a>.</li>
+  <li> GalSS_WriteFrameToHub (use <a
+ href="../reference/adding.html#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame</a> 
+instead)</li>
+  <li> GalSS_DispatchViaHub (use <a
+ href="../reference/adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a> 
+instead)</li>
+  <li> GalSS_GetServerData (use <a
+ href="../reference/server_structure.html#GalIO_GetCommServerData">GalIO_GetCommServerData</a> 
+instead)</li>
+  <li> The functionality represented by GalSS_ForceReturn and GalSS_EnvForceReturn
+will be removed.</li>
+  <li> All functionality relating to dispatch servers will be removed, including</li>
+  
+  <ul>
+ <li> contrib/MITRE/servers/bin/dispatcher</li>
+  <li> MGal_InitializeDispatchServer</li>
+  <li> MGal_DispatchServerProcessHubConn</li>
+  <li> __MGal_HandleConnection</li>
+  <li> MGal_FindDispatchUIArgs</li>
+  <li> MGal_SetupDispatchUI</li>
+  <li> MGal_DispatchUIMain</li>
+  <li> GalIO_ReconnectInit</li>
+  <li> GalIO_ServerReconnect</li>
+  <li> GalSS_HubReconnectInit</li>
+ 
+  </ul>
+  <li> Gal_Value</li>
+  <li> Gal_ValueWarnWithKey</li>
+  <li> Gal_UnwrapValue</li>
+  <li> Gal_GetValue</li>
+  <li> Gal_ValueWarn</li>
+  <li> Gal_ValueSilent</li>
+  <li> Gal_GetServerName, GalSS_GetServerName (use <a
+ href="../reference/server_structure.html#GalIO_GetServerName">GalIO_GetServerName</a> 
+and <a href="../reference/server_structure.html#GalIO_GetCommServerName">GalIO_GetCommServerName</a> 
+instead)</li>
+  <li> Gal_SetServerName</li>
+  <li> GalSS_GetServerSock (use <a
+ href="../reference/libgalaxy_io.html#GalIO_GetCommSocket">GalIO_GetCommSocket</a> 
+instead)</li>
+  <li> GalSS_CloseServerSock (use <a
+ href="../reference/libgalaxy_io.html#GalIO_CloseCommSocket">GalIO_CloseCommSocket</a> 
+instead)</li>
+  <li> GalSS_SetHubDisconnect (se <a
+ href="../reference/libgalaxy_io.html#GalIO_SetDisconnectCallback">GalIO_SetDisconnectCallback</a> 
+instead)</li>
+ 
+</ul>
+  
+<hr width="100%"> 
+<h2> February 14, 2000: Version 2.0.1</h2>
+ This distribution contains a number of bug fixes and small enhancements
+which resulted from the use of 2.0. 
+<h3> Core distribution</h3>
+  
+<ul>
+ <li> MIT identified and fixed a bug in the socket code which accidently
+permitted a server to contact itself in Linux. This fix has also been made
+in the MIT socket library.</li>
+  <li> AT&amp;T reported a bug in which the Hub would fail ungracefully if
+a new token arrived with the <tt>:tidx</tt> slot already set. This bug has
+been fixed; <tt>:tidx</tt> values on new messages are now ignored, as they
+should be.</li>
+  <li> A bug where dispatch functions were able to overwrite administrative
+information has been fixed.</li>
+  <li> A small typo in <tt>templates/Makefile.stub</tt> has been fixed (<tt>init.make</tt> 
+-&gt; <tt>archos.make</tt>).</li>
+  <li> Some small errors in the <a href="../reference/logging.html">logging 
+documentation</a> have been fixed, and it has been slightly reorganized for
+clarity.</li>
+  <li> The deprecated comparison operator <tt>%</tt> in Hub scripting rules
+was unintentionally removed in 2.0. It has been replaced.</li>
+  <li> Due to an oversight, the evaluation of parenthesized expressions in
+Hub program conditions was never implemented correctly. This has been fixed.
+Negations of conditions grouped by parentheses also works.</li>
+  <li> Thanks to MIT, the core Communicator library is now thread-safe on
+Windows NT.</li>
+  <li> Thanks to MIT, a number of tiny inconsistencies in the NT port have
+been fixed.</li>
+  <li> All references to ftime() have been removed from the distributed source
+code, and the compatibility code kindly provided by AT&amp;T has been removed
+as well.</li>
+  <li> The bug where clean_headers.pl was not being specialized to platforms
+correctly has been fixed.</li>
+  <li> MIT copyrights have been changed to open source copyrights in the
+appropriate places.</li>
+  <li> The <a href="../reference/adding.html#_GalSS_init_server">standard 
+server arguments</a> now include <tt>-verbosity</tt>, which is the command-line
+equivalent of setting the <a href="../advanced/util.html#Printing">GAL_VERBOSE 
+environment variable</a>.</li>
+  <li> The function <a
+ href="../reference/server_structure.html#GalSS_RunServer">GalSS_RunServer</a>() 
+previously called exit() when the timed task loop exits, which defeated the
+opportunity for the caller to do cleanups, etc. This call to exit() has been
+removed. The equivalent problem in the threaded case has also been fixed.
+Thanks to MIT for pointing this out.</li>
+  <li> The function <a
+ href="../advanced/timed_tasks.html#Gal_TimedTasksLoopExit">Gal_TimedTasksLoopExit</a>() 
+was not fine-grained enough, because some of the pending tasks were being 
+executed after this function was called. This has been fixed, and the <a
+ href="../advanced/timed_tasks.html#Gal_EndTasks">Gal_EndTasks</a>() has
+been added for the threaded case. In addition, thread cancellation is now
+    <b>enabled</b> during the execution of tasks in threaded mode, so that
+blocking reads can be interrupted by Gal_EndTasks().</li>
+  <li> All Win32 projects define _REENTRANT when compiling executables and
+libraries. A new toplevel workspace named GC.dsw has been created for easier
+maintainability.</li>
+ 
+</ul>
+  
+<h3> MIT contributions</h3>
+  
+<ul>
+ <li> MIT identified and fixed a bug in the socket code which accidently
+permitted a server to contact itself in Linux. This fix has also been made
+in the core socket library.</li>
+  <li> MIT has provided minor updates to their GUI server and the dialogue
+management library.</li>
+  <li> Two toplevel MIT program files, pegasus.pgm and hub.pgm, are no longer
+being distributed because they are outdated.</li>
+  <li> There is a new <tt>MODE:</tt> value in the program file, <tt>pedantic</tt>, 
+which will force the Hub to exit if it encounters a missing server or operation. 
+Default behavior is still to warn and continue.</li>
+ 
+</ul>
+  
+<h3> MITRE contributions</h3>
+  
+<ul>
+ <li> Support for MIT's new FST recognizer has been added to the MITRE <a
+ href="../../../contrib/MITRE/tools/docs/index.html#Server_scripts">run_summit_server</a> 
+script.</li>
+  <li> The <a
+ href="../../../contrib/MITRE/tools/docs/process_monitor_ref.html">process 
+monitor</a> now interpolates stdout and stderr better.</li>
+  <li> The <a href="../reference/pgm.html">Hub scripting documentation</a>
+has been updated to reflect the fact that the test <tt>:foo 3</tt> now interprets
+the unquoted sequence of digits as a number, not a string.</li>
+  <li> Java bindings are now known to compile under JDK 1.2. The distribution
+now ships with pre-compiled byte code and galaxy.jar. The system is still
+compatible with jdk1.1.x and now uses Swing 1.1, instead of 1.0 - the import
+headers have been modified to javax.swing.</li>
+  <li> The <a
+ href="../../../contrib/MITRE/tools/docs/log_tools.html#XML_log_generation">XML 
+logfile generation tool</a> has been improved in a number of ways.</li>
+  
+  <ul>
+ <li> It now does the right thing with multiline string data</li>
+  <li> It now recurses on lists in frames correctly</li>
+  <li> It now compensates as much as possible for missing operation invocations.</li>
+  <li> It has an expanded argument list, and takes either a pathname or a
+directory as input - note that the command line has changed substantially</li>
+  <li> It now works on logs generated with Communicator versions previous
+to 2.0.</li>
+  <li> If the user did not provide a <a
+ href="../reference/logging.html#LOG_VERSION:">LOG_VERSION:</a>, there is
+no longer an empty version attribute produced.</li>
+  <li> It can now write to a file as well as stdout.</li>
+ 
+  </ul>
+  <li> Fixed a number of bugs in processing message signatures in the Python
+and Allegro bindings.</li>
+  <li> Fixed a bug in Python, Allegro and C where if reinitialize wasn't
+defined, the message signatures weren't reported to the Hub.</li>
+  <li> MITRE has provided an <a
+ href="../../../contrib/MITRE/tools/docs/log_tools.html">expanded suite of
+log manipulation tools</a>.</li>
+  <li> The new <tt>-verbosity</tt> argument has been added to the Python
+and Allegro bindings (the Java bindings don't have verbosity levels).</li>
+ 
+</ul>
+  
+<h3> Known bugs</h3>
+  
+<ul>
+ <li> All <a href="#Known_bugs_in_2.0">2.0 bugs</a> remain with the exception
+of the clean_headers.pl bug, which has been fixed. This status report includes
+Java audio clipping, which is now a bit more important to fix because there's
+genuine interest in Java audio. We'll work with interested sites to fix this.</li>
+  <li> Servers and connections do not shut down their sockets when they exit
+due to thread cancellation in threaded mode. This should not be too much
+of a problem, since the application should exit almost immediately afterward,
+but this should be cleaned up eventually.</li>
+ 
+</ul>
+  
+<h3> Omissions and yet-to-be-honored requests</h3>
+  
+<ul>
+ <li> All <a href="#Installing_the_distribution">2.0 omissions</a> remain,
+with the exception of progress on threading in NT. While the NT port is now
+thread-safe, the <tt>-thread</tt> server argument is not yet supported.</li>
+  <li> IBM reported problems with logging resulting from their audio server
+not reporting events in real time.</li>
+  <li> CMU has requested more transparent access to <a
+ href="../reference/pgm.html#Session_keys">session keys</a>, and AT&amp;T 
+has requested better support for retrieving the session's log directory.</li>
+  <li> We will soon issue a revised set of <a
+ href="../../../contrib/MITRE/tools/docs/log_tools.html">logging tools</a>
+which expand the annotation rule language, provide for tab-delimited score
+output, introduce support for the <tt>type_dialogue_state</tt> attribute,
+support interpolation of human annotations into the automated annotation
+file, and introduce new scoring columns for quantity and percentage of silence
+within the system turn.</li>
+ 
+</ul>
+  
+<p><br>
+ </p>
+<hr width="100%"> 
+<h2> October 30, 1999: Version 2.0</h2>
+ This distribution of Galaxy Communicator features a number of modifications
+requested by the community. In addition, it reflects a reorganization of
+the archive to support an anticipated open source development effort. This
+version of the release notes is organized by section of the documentation,
+instead of by section of the code. 
+<h4> <a name="Directory_organization"></a>"Directory organization"</h4>
+  
+<ul>
+ <li> All core Communicator libraries and executables are now in the toplevel
+src/ and include/ directories. These include the libGalaxy library (an amalgamation
+of the three MIT Galaxy Communicator libraries libgalaxy, libgalaxy_io and
+libserverstub, as well as the subset of libsls_util which is used in Communicator)
+and the Hub executable (excluding MIT scripting).</li>
+  <li> The MITRE documentation is now in the toplevel doc/ directory.</li>
+  <li> MITRE-specific contributions besides the documentation are now in
+contrib/MITRE.</li>
+  <li> MIT-specific servers and support libraries (dialogue control, scripting)
+are now in contrib/MIT, the directory structure of which corresponds to the
+directory structure of the MIT slice of the 1.3 distribution.</li>
+  <li> A range of functions originally in libgalaxy have been moved into
+the MIT-specific library libGalaxyEnhancements. These functions deal with
+the MIT dialogue mechanism.</li>
+  <li> A range of functions originally in the Hub have been moved into the
+MIT-specific library libGalaxyHubControl. These functions deal with the MIT
+scripting control.</li>
+ 
+</ul>
+  
+<h4> <a name="Installing_the_distribution"></a>"Installing the distribution"</h4>
+  
+<ul>
+ <li> If you don't set PERL in your configuration file, make will now fail
+clearly instead of mysteriously.</li>
+  <li> <b>Incompatible change</b>: the core distribution now uses <a
+ href="install.html#config">GNU configure</a>, in part, to generate its configuration
+files for each platform. The settings you need to modify have been aggregated
+into a single file, instead of the three previously required, and users now
+have clearer access to a wider range of customizations.</li>
+ 
+</ul>
+  
+<h4> <a name="Running_a_configuration_of_servers"></a>"Running a configuration
+of servers"</h4>
+  
+<ul>
+ <li> <b>Incompatible change</b>: the locations of the executables and MITRE
+servers have changed due to the directory reorganization. Also, the GAL_VERBOSE
+environment variable supersedes the SLS_VERBOSE environment variable due
+to moving a copy of the <a
+ href="../advanced/util.html#Command_line_argument_parsing">MIT command line
+argument parsing library</a> into the Communicator core library.</li>
+ 
+</ul>
+  
+<h4> <a name="Thread_notes"></a>"Thread notes"</h4>
+  
+<ul>
+ <li> The core library is now <a href="threads.html">thread-safe</a>.</li>
+ 
+</ul>
+  
+<h4> <a name="Overview:_invocation,_execution_summary"></a>"Overview: invocation,
+execution summary"</h4>
+  
+<ul>
+ <li> There is a new command line argument <tt>-locations</tt> for the <a
+ href="../reference/hub.html#The_Hub">Hub executable</a> which is a string
+which is a space-delimited sequence of server declarations of the form <tt>&lt;server&gt;@&lt;host&gt;(:&lt;port&gt;)</tt>, 
+which override the host (and perhaps port) declarations in the Hub script.</li>
+  <li> The Hub also accepts the <tt>-validate</tt> command line argument,
+which dynamically validates each message sent to servers, as well as the
+status of messages to be returned to servers.</li>
+  <li> <b>Incompatible change</b>: the handling of the construction of the
+    <a href="../reference/pgm.html#Initial_token">initial token</a> and <a
+ href="../reference/adding.html#Welcome_message">reinitialize message</a>
+has been rationalized. In general, the <a
+ href="../reference/hub.html#The_Hub">-init command line argument</a> now
+takes precedence over <a href="../reference/pgm.html#INIT:">INIT:</a> and
+    <a href="../reference/pgm.html#Initial_token">INITIAL_TOKEN:</a>, which 
+takes precedence over default global information in the program file. In 1.3,
+the precedence order for the two was inconsistent.</li>
+  <li> <b>Incompatible change</b>: the Hub no longer has a default for the
+program file. The -pgm_file argument is now obligatory.</li>
+ 
+</ul>
+  
+<h4> <a name="How_to_write_Hub_scripts"></a>"How to write Hub scripts"</h4>
+  
+<blockquote> <li> MIT program files now accept the syntax <tt>&lt;server&gt;@&lt;host&gt;(:&lt;port&gt;)</tt> 
+as an argument of the <a href="../reference/pgm.html#SERVER:">SERVER:</a> 
+declaration.</li>
+  <li> It is no longer necessary to use DISPATCH_PORT: to identify a server
+as a dispatch server. You can pass the :is_dispatch key from the server to
+the Hub.</li>
+  <li> <b>Incompatible change</b>: the handling of the construction of the
+    <a href="../reference/pgm.html#Initial_token">initial token</a> and <a
+ href="../reference/adding.html#Welcome_message">reinitialize message</a>
+has been rationalized. In general, the <a
+ href="../reference/hub.html#The_Hub">-init command line argument</a> now
+takes precedence over <a href="../reference/pgm.html#INIT:">INIT:</a> and
+    <a href="../reference/pgm.html#Initial_token">INITIAL_TOKEN:</a>, which 
+takes precedence over default global information in the program file.</li>
+ </blockquote>
+  
+<h4> <a name="Using_the_Hub_in_scriptless_mode"></a>"Using the Hub in scriptless
+mode"</h4>
+  
+<ul>
+ <li> MIT program files <a href="../advanced/scriptless.html">no longer require
+programs</a>. Any messages sent to the Hub which are not handled by the scripting
+module are sent to whatever servers implement them. This implements scriptless
+interaction (and partial scripting). As a corollary, the <a
+ href="../reference/pgm.html#Initial_token">initial token</a> is no longer
+created implicitly if there is no program named <tt>main</tt>.</li>
+ 
+</ul>
+  
+<h4> <a name="(How_to...)_Add_a_server"></a>"(How to...) Add a server"</h4>
+  
+<ul>
+ <li> The header <a
+ href="../reference/adding.html#Setting_up_the_headers">galaxy/galaxy_all.h</a> 
+now includes all relevant headers and C++ conditionalizations, and is now 
+the preferred way of specifying Communicator headers.</li>
+  <li> Servers now accept multiple simultaneous connections. Server declaration
+files now recognize the GAL_SERVER_MAX_CONNECTIONS() macro, and servers accept
+the <tt>-maxconns</tt> command line argument. See the documentation on <a
+ href="../reference/adding.html">adding a server</a>.</li>
+  <li> Server declaration files now recognize the GAL_SERVER_OP_SIGNATURE()
+macro to specify the array of input and output keys, value types, etc. for
+dispatch functions, and servers accept the <tt>-validate</tt> command line
+argument which will check each call to a dispatch function against its signature.
+See the documentation on <a href="../reference/adding.html">adding a server</a>.</li>
+  <li> The function <a
+ href="../reference/adding.html#_GalSS_init_server">_GalSS_init_server</a>() 
+no longer needs to be defined, since there is now a default in the core library.</li>
+  <li> The <a href="../reference/adding.html#reinitialize">reinitialize</a> 
+message no longer is required to return a frame; this requirement is now enforced
+by the server library. If the reinitialize message does not provide a frame,
+a dummy frame will be sent instead.</li>
+  <li> The administrative information (token index, session ID, etc.) in
+the frame sent to a dispatch function is now cached and inserted into the
+response. It is no longer necessary to return the same frame that was passed
+in in order for this information to be passed back to the Hub correctly.</li>
+  <li> The Hub now supports remote error reporting (see the function <a
+ href="../reference/adding.html#GalSS_EnvError">GalSS_EnvError</a>). This
+necessitates some slight complications in server-to-server subdialogues, supported
+by the new function <a
+ href="../reference/adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a>.</li>
+  <li> <b>Incompatible change:</b> relevant MIT functions in libsls_util
+have been imported into the core libGalaxy library. These symbols include
+the <a href="../reference/libutil.html#Sockets">MIT socket library</a> (sock_...),
+the <a href="../advanced/util.html#Command_line_argument_parsing">MIT command
+line argument parsing library</a> (oa_...), and the <a
+ href="../advanced/util.html#Printing">MIT printing library</a> (sls_...).
+Servers no longer link against libsls_util by default, and as a result all
+such symbols must be changed. The equivalence table can be found <a
+ href="upgrade.html#Updating_your_command_line_argument_parsing_and_printing">here</a>. 
+Also, the environment variable which controls the verbosity of printing is
+now called GAL_VERBOSE, not SLS_VERBOSE. If you choose, you may also link
+against the MIT libsls_util library and keep the old functionality; the symbols
+will not clash, and SLS_VERBOSE still controls the verbosity in MIT libsls_util.</li>
+  <li> <b>Incompatible change</b>: the header file sls/util.h will no longer
+be in the default Communicator include path, because it's<a
+ href="../reference/adding.html#Setting_up_the_headers"> no longer used</a>.
+Replace it with galaxy/util.h, or better yet, just use galaxy/galaxy_all.h
+and remove the headers galaxy.h, galaxy_io.h and serverstub.h.</li>
+  <li> <b>Incompatible change</b>: the second argument of dispatch functions
+is now reliably a <tt>GalSS_Environment *</tt> object. See the documentation
+on <a href="../reference/adding.html#Writing_a_Dispatch_Function">adding a
+server</a>, as well as the upgrade guide on <a
+ href="upgrade.html#Upgrading_server_access_inside_a_dispatch_function">accessing 
+the Hub from dispatch functions</a> and <a
+ href="upgrade.html#Upgrading_server_access_from_broker_handlers">setting 
+up broker callbacks</a>. <b>Note</b>: this change has analogous effects on
+the <a href="../../../contrib/MITRE/bindings/python/docs/index.html">Python</a>, 
+    <a href="../../../contrib/MITRE/bindings/java/docs/index.html">Java</a> 
+and <a href="../../../contrib/MITRE/bindings/clisp/docs/index.html">Common 
+Lisp</a> bindings.</li>
+  <li> <b>Incompatible change</b>: the <tt><a
+ href="../reference/adding.html#reinitialize">reinitialize</a></tt> message
+no longer behaves idiosyncratically with respect to sending new messages.
+See the <a
+ href="upgrade.html#Upgrading_server_access_inside_the_reinitialize_message">upgrade 
+guide</a>. <b>Note</b>: this change has analogous effects on the <a
+ href="../../../contrib/MITRE/bindings/python/docs/index.html">Python</a>, 
+    <a href="../../../contrib/MITRE/bindings/java/docs/index.html">Java</a> 
+and <a href="../../../contrib/MITRE/bindings/clisp/docs/index.html">Common 
+Lisp</a> bindings.</li>
+  <li> <b>Incompatible change</b>: because administrative information is
+now cached by the server bindings, it is no longer possible to send a new
+message to the Hub by returning a frame from a dispatch function which has
+the administrative information deleted. Use <a
+ href="../reference/adding.html#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame</a> 
+instead.</li>
+  <li> <b>Incompatible change</b>: the old method of declaring server and
+dialogue function information, which was deprecated in 1.3, is now no longer
+supported. See the <a href="upgrade.html#Updating_your_header_files">upgrade 
+guide</a>.</li>
+  <li> <b>Incompatible change and deprecation</b>: the function GalSS_GetServerName
+has been changed (and deprecated). It is now restricted for use with server
+objects, not with connections. This is to support backward compability for
+its use, which was almost exclusively in the server startup phase. Use <a
+ href="../reference/server_structure.html#GalIO_GetServerName">GalIO_GetServerName</a> 
+and <a href="../reference/server_structure.html#GalIO_GetCommServerName">GalIO_GetCommServerName</a> 
+instead.</li>
+  <li> <b>Deprecation</b>: in the context of standardizing the names for
+printing, the functions sls_pp_frame, sls_cpp_frame, sls_pp_object, sls_cpp_object,
+and sls_pr_object have been deprecated in favor of <a
+ href="../reference/frame.html#GalUtil_PPFrame">GalUtil_PPFrame</a>, <a
+ href="../reference/frame.html#GalUtil_CPPFrame">GalUtil_CPPFrame</a>, <a
+ href="../reference/frame.html#GalUtil_PPObject">GalUtil_PPObject</a>, <a
+ href="../reference/frame.html#GalUtil_CPPObject">GalUtil_CPPObject</a>, and
+    <a href="../reference/frame.html#GalUtil_PrObject">GalUtil_PrObject</a>.</li>
+  <li> <b>Deprecation</b>: The following functions have been deprecated because
+dispatch functions are now reliably passed connection arguments. See the
+    <a
+ href="upgrade.html#Upgrading_server_access_inside_a_dispatch_function">upgrade 
+guide</a>. These functions will be removed in a future release.</li>
+  
+  <ul>
+ <li> GalSS_WriteFrameToHub (use <a
+ href="../reference/adding.html#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame</a> 
+instead)</li>
+  <li> GalSS_DispatchViaHub (use <a
+ href="../reference/adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a> 
+instead)</li>
+  <li> GalSS_GetServerData (use <a
+ href="../reference/server_structure.html#GalIO_GetCommServerData">GalIO_GetCommServerData</a> 
+instead)</li>
+ 
+  </ul>
+ 
+</ul>
+  
+<h4> <a name="(How_to...)_Use_the_frame_library"></a>"(How to...) Use the
+frame library"</h4>
+  
+<ul>
+ <li> The function <a
+ href="../reference/frame.html#Gal_ListObjectFromElements">Gal_ListObjectFromElements</a> 
+has been added. This function accepts a variable number of arguments.</li>
+ 
+</ul>
+  
+<h4> <a name="(How_to...)_Use_the_timed_task_loop"></a>"(How to...) Use the
+timed task loop"</h4>
+  
+<ul>
+ <li> The timed task loop now supports <a
+ href="../advanced/timed_tasks.html#Threads">thread-based connection management</a>.</li>
+  <li> The timed task loop now fully exploits an optimization based on <tt>select()</tt> 
+which MIT had implemented but not used aggressively, with the result that 
+server message handling is significantly faster.</li>
+ 
+</ul>
+  
+<h4> <a name="(How_to...)_Use_MIT_logging"></a>"(How to...) Use MIT logging"</h4>
+  
+<ul>
+ <li> It is now possible to log program invocations and returns using LOG_IN:
+and/or LOG_OUT: at the program level.</li>
+  <li> In scriptless mode, it is possible to log when the Hub receives a
+message and returns a reply using the MESSAGE: declaration together with
+the LOG_IN: and/or LOG_OUT: declarations.</li>
+  <li> It is now possible to invoke the logger directly from a server using
+the <a href="../../servers/builtin.html#log_keys">log_keys</a> builtin function.
+The operation must be declared in your program file.</li>
+  <li> It is now possible to timestamp program invocations and scriptless
+message arrivals using the TIMESTAMP: declaration.</li>
+  <li> It is now possible to log Hub events like alarm expiration, server
+access errors, etc., using the LOG_HUB_ACTIVITY: declaration.</li>
+  <li> It is now possible to log an arbitrary string to track versions of
+your logfiles using the LOG_VERSION: declaration.</li>
+  <li> <b>Deprecation</b>: the (:timestamp &lt;key&gt;) entry for LOG_IN:
+and LOG_OUT: has been deprecated, because all keys will be logged with an
+operation.</li>
+  <li> <b>Incompatible change</b>: the deprecated keys LOG_FIRST:, LOG_LAST:
+and LOG_ALL: have been removed.</li>
+  <li> <b>Incompatible change</b>: the format of the MIT logfiles has been
+modified.</li>
+  
+  <ul>
+ <li> Format version number and optional user version number have been added.</li>
+  <li> No keys are logged without a timestamped operation.</li>
+  <li> The operations now contain the <a
+ href="../reference/adding.html#Message_types">message type</a> and the token
+index.</li>
+  <li> The form of the data has been rationalized to conform with the format
+of data inside frames. In particular, strings now are delimited by double
+quotes.</li>
+ 
+  </ul>
+ 
+</ul>
+  
+<h4> <a name="(How_to...)_Set_up_a_brokered_audio_connection"></a>"(How to...)
+Set up a brokered audio connection"</h4>
+  
+<ul>
+ <li> <b>Incompatible change</b>: if you refer to your connection in your
+broker callbacks, you'll probably have to make a small change due to the
+change in the type of the second argument of dispatch functions. See the
+section on <a
+ href="upgrade.html#Upgrading_server_access_from_broker_handlers">setting 
+up broker callbacks</a> in the upgrade guide.</li>
+  <li> <b>Deprecation</b>: the reserved keys required for brokering can now
+be set and accessed using the functions GalIO_FrameGetBrokerPort and <a
+ href="../reference/brokering.html#GalIO_FrameSetBrokerCallID">GalIO_FrameSetBrokerCallID</a>. 
+Users are encouraged to modify their code. See the <a
+ href="upgrade.html#Upgrading_outgoing_brokering_creation">upgrade guide</a>.</li>
+ 
+</ul>
+  
+<h4> <a name="(How_to...)_Understand_the_structure_of_a_server"></a>"(How 
+to...) Understand the structure of a server"</h4>
+  
+<ul>
+ <li> <b>Incompatible change</b>: the underlying structure of the toplevel
+loop has been revised extensively to accommodate multiple connection servers.
+If you have written servers with their own main loops, see the <a
+ href="upgrade.html#Updating_your_own_main_loop">upgrade guide</a>.</li>
+ 
+</ul>
+  
+<h4> <a name="(How_to...)_Use_a_different_main_loop"></a>"(How to...) Use
+a different main loop"</h4>
+  
+<ul>
+ <li> <b>Incompatible change</b>: due to the requirements of multiple connection
+servers, the behavior of the functions <a
+ href="../reference/libgalaxy_io.html#GalIO_ServerInit">GalIO_ServerInit</a>, 
+    <a href="../reference/libgalaxy_io.html#GalIO_ServerHandler">GalIO_ServerHandler</a>, 
+and <a href="../reference/libgalaxy_io.html#GalIO_ConnectionPoll">GalIO_ConnectionPoll</a> 
+have changed in subtle and important ways. If you have written servers which
+have their <a href="../advanced/special_mainloop.html">own main loop</a>, 
+you should consult the <a
+ href="upgrade.html#Updating_your_own_main_loop">upgrade guide</a>. Note
+also that the function GalIO_ConnectionPoll is now restricted to contexts
+in which the timed task loop is not used, since it no longer resets its own
+timed task. This is an internal change which should not be visible to any
+users.</li>
+  <li> <b>Incompatible change</b>: the behavior of Hub disconnects has changed.
+Previously, if a server set a function to run when the Hub disconnected,
+the server data would be passed to the function. For complex reasons, it
+must be the connection object which is passed in the current release. This
+affects a single MIT server, and we doubt it affects anyone else. The functions
+have changed their signatures to reflect the fact that a GalIO_CommStruct
+* is the argument of the disconnect function: <a
+ href="../reference/libgalaxy_io.html#GalIO_SetServerDisconnectCallback">GalIO_SetServerDisconnectCallback</a>, 
+    <a href="../reference/libgalaxy_io.html#GalIO_SetDisconnectCallback">GalIO_SetDisconnectCallback</a>, 
+GalIO_ReconnectInit, GalIO_ServerReconnect, GalSS_SetHubDisconnect, GalSS_HubReconnectInit.</li>
+ 
+</ul>
+  
+<h4> <a name="(How_to...)_Use_non-MIT_Makefiles"></a>"(How to...) Use non-MIT
+Makefiles"</h4>
+  
+<ul>
+ <li> <b>Incompatible change</b>: because the Communicator support code has
+been aggregated into a single library and include directory, the include
+and link directives have changed slightly.</li>
+ 
+</ul>
+  
+<h4> <a
+ name="(How_to...)_Use_the_command-line_argument_parsing_and_printing"></a>"(How 
+to...) Use the command-line argument parsing and printing facilities"</h4>
+  
+<ul>
+ <li> <b>Incompatible change:</b> as noted in the release notes for <a
+ href="#(How_to...)_Add_a_server">adding a server</a>, these utilities
+have been newly introduced into the Communicator library from the MIT sls_util
+library. Their names have been changed in order to avoid symbol clashes.</li>
+ 
+</ul>
+  
+<h4> <a name="(How_to...)_Do_signal_handling"></a>"(How to...) Do signal
+handling"</h4>
+  
+<ul>
+ <li> <b>Incompatible change</b>: due to the requirements of signal handling
+in threads, Communicator now has a special <a
+ href="../advanced/signal.html">signal handler</a> installation function.
+It is strongly recommended that you use this function to install signal handlers.</li>
+ 
+</ul>
+  
+<h4> <a name="(How_to...)_Connect_multiple_users_using_dispatch_servers"></a>"(How 
+to...) Connect multiple users using dispatch servers"</h4>
+  
+<ul>
+ <li> MITRE has finally documented this facility.</li>
+ 
+</ul>
+  
+<h4> <a name="Reserved_frame_keys_in_GalaxyCommunicator"></a>"Reserved frame
+keys in Galaxy Communicator"</h4>
+  
+<ul>
+ <li> MITRE has introduced #defines for the C versions of these keys, and
+documented the list of keys.</li>
+ 
+</ul>
+  
+<h4> <a name="Basic_server_example:_double"></a>"Basic server example: double"</h4>
+  
+<ul>
+ <li> The double example now halts when it reaches the largest integer, thanks
+to remote error reporting.</li>
+  <li> The double example now demonstrates run-time validation of Hub scripts,
+scriptless interaction, and logging.</li>
+ 
+</ul>
+  
+<h4> <a name="MITRE_utilities"></a>"MITRE utilities"</h4>
+  
+<ul>
+ <li> A bug has been fixed in the MITRE stdin utility which caused it to
+fail when the Hub halted and reconnected.</li>
+  <li> <b>Incompatible change</b>: MITRE's dispatch function utility has
+been incorporated into the core distribution. The functions MGal_CreateServerInfo(),
+MGal_AddDispatchFunction(), MGal_InitializeServerDefaults() have been removed.</li>
+  <li> <b>Incompatible change</b>: MITRE's multiple connection server utility
+has been incorporated into the core distribution. The functions MGal_PollMultiConnServer(),
+MGal_CreateMultiConnServer(), MGal_SetCommWrapperData(), MGal_GetCommWrapperData(),
+MGal_GetCommWrapperComm(), MGal_GetMultiConnServerData() have been removed.</li>
+  <li> <b>Incompatible change</b>: the way the <a
+ href="../../../contrib/MITRE/utilities/docs/stdin_poll.html">stdin utility</a>
+is used has changed fairly substantially, since it used to store its information
+in the server/connection but now needs to store its information as connection-specific
+data. See the <a href="upgrade.html#Updating_your_use_of_stdin_polling">upgrade 
+guide</a>.</li>
+  <li> <b>Incompatible change</b>: the utility which implements the Hub as
+an output device has been temporarily removed, because it is not thread-safe
+and did not interact appropriately with multiple connection servers. The
+supporting example has been removed as well.</li>
+  <li> <b>Incompatible change</b>: MITRE's hub stream utility, which compensated
+for the unusual behavior of the reinitialize dispatch function, has been
+incorporated into the core distribution. The functions MGalIO_CreateHubStream,
+MGal_HSSendFrame, MGal_HSSendMessage, MGal_HSReturnFrame, and&nbsp; MGal_HSReturn
+have been removed. The supporting example has been removed.</li>
+ 
+</ul>
+  
+<h4> <a name="Tools_for_constructing_dispatch_servers_and_UIs"></a>"Tools 
+for constructing dispatch servers and UIs"</h4>
+  
+<ul>
+ <li> MITRE has documented and enhanced the dispatch server protocol and
+provided library facilities for constructing for using it. MITRE has also
+provided a general-purpose dispatch server proxy for use with dispatch server
+UI elements, and enhanced its UI server with dispatch protocol capabilities.</li>
+ 
+</ul>
+  
+<h4> <a name="MITRE_tools"></a>"MITRE tools"</h4>
+  
+<ul>
+ <li> The MITRE <a
+ href="../../../contrib/MITRE/tools/docs/process_monitor_ref.html">process 
+monitor</a> now provides a typein window which allows one to edit the command 
+line before restarting.</li>
+  <li> An extremely evil bug in the process monitor has now been fixed in
+which the CPU consumption of an idle Hub slowly climbed to almost 100% of
+the CPU.</li>
+  <li> The MITRE <a
+ href="../../../contrib/MITRE/tools/docs/index.html#Server_scripts">run_server</a> 
+script now takes a <tt>-verbosity</tt> argument.</li>
+  <li> MITRE now provides a <a
+ href="../../../contrib/MITRE/tools/docs/log_tools.html#XML_log_generation">utility</a> 
+which translates MIT logs into XML.</li>
+ 
+</ul>
+  
+<h4> Other</h4>
+ Unless you've been seriously messing with the guts of the Communicator library,
+none of these changes should be visible to you. 
+<ul>
+ <li> The function <a href="../reference/libgalaxy.html#Gal_CopyHash">Gal_CopyHash</a> 
+has been added.</li>
+  <li> The syntax &lt;<tt>server&gt;.&lt;opname&gt;</tt> as the name of a
+new message is now recognized by the Hub in the same way it is recognized
+in MIT scripting. When MIT scripting claims the message, the server dimension
+is ignored; in the scriptless case, it is taken as a directive to forward
+the message to the specified server.</li>
+  <li> The bug in Allegro 5.0 having to do with brokering in the Allegro
+bindings seems not to arise in Solaris 2.7.</li>
+  <li> The (undocumented) HUB_stub Python class in tools/lib/python has been
+moved into GalaxyIO.py and renamed ClientConnection.</li>
+  <li> <b>Internal deprecation</b>: the function GalSS_ForceReturn has been
+simultaneously introduced and deprecated. Use GalSS_EnvForceReturn instead.</li>
+  <li> <b>Internal deprecation</b>: the following functions have been deprecated
+because dispatch functions are now reliably passed connection arguments.
+See the <a
+ href="upgrade.html#Upgrading_server_access_inside_a_dispatch_function">upgrade 
+guide</a>.These functions will be removed in a future release.</li>
+  
+  <ul>
+ <li> GalSS_ReadFrameFromHub (use <a
+ href="../reference/libgalaxy_io.html#GalIO_CommReadFrame">GalIO_CommReadFrame</a> 
+instead)</li>
+  <li> GalSS_GetServerSock (apparently unused; use <a
+ href="../reference/libgalaxy_io.html#GalIO_GetCommSocket">GalIO_GetCommSocket 
+      </a>instead)</li>
+  <li> GalSS_CloseServerSock (apparently unused; use <a
+ href="../reference/libgalaxy_io.html#GalIO_CloseCommSocket">GalIO_CloseCommSocket</a> 
+instead)</li>
+  <li> GalSS_SetHubDisconnect (use <a
+ href="../reference/libgalaxy_io.html#GalIO_SetDisconnectCallback">GalIO_SetDisconnectCallback</a> 
+instead)</li>
+  <li> GalSS_CloseHubConnection (use <a
+ href="../reference/libgalaxy_io.html#GalIO_DestroyCommStruct">GalIO_DestroyCommStruct</a> 
+instead)</li>
+  <li> GalSS_FlushHubWriteQueue (use <a
+ href="../reference/libgalaxy_io.html#GalIO_CommFlushOutQueue">GalIO_CommFlushOutQueue</a> 
+instead)</li>
+ 
+  </ul>
+  <li> <b>Incompatible internal change</b>: the (apparently unused) function
+Gal_GetServerPort has been removed. It has been replaced by <a
+ href="../reference/server_structure.html#GalIO_GetServerDefaultPort">GalIO_GetServerDefaultPort</a>, 
+which requires a server object argument.</li>
+  <li> <b>Incompatible internal change</b>: the function Gal_GetServerName
+is now deprecated, and its use has been restricted to contexts in which the
+programmer has called Gal_SetServerName directly. In the vast majority of
+circumstances, it will no longer work. Use <a
+ href="../reference/server_structure.html#GalIO_GetServerName">GalIO_GetServerName</a> 
+instead.</li>
+  <li> <b>Incompatible internal change</b>: the following internal functions
+have been removed.</li>
+  
+  <ul>
+ <li> GalIO_GetCommListenSocket (use <a
+ href="../reference/libgalaxy_io.html#GalIO_GetServerListenSocket">GalIO_GetServerListenSocket</a> 
+instead)</li>
+  <li> GalIO_GetCommListenPort (use <a
+ href="../reference/server_structure.html#GalIO_GetServerListenPort">GalIO_GetServerListenPort</a> 
+instead)</li>
+  <li> Gal_FileRewind (now internal)</li>
+  <li> Gal_MakeStringStream (use <a
+ href="../reference/libgalaxy.html#Gal_MakeStringInputStream">Gal_MakeStringInputStream</a> 
+instead)</li>
+  <li> Gal_StringStreamString (use <a
+ href="../reference/libgalaxy.html#Gal_StringInputStreamString">Gal_StringInputStreamString</a> 
+instead)</li>
+  <li> Gal_FileNextChar (now internal)</li>
+  <li> GalIO_CloseCommListenSocket (use <a
+ href="../reference/libgalaxy_io.html#GalIO_CloseServerListenSocket">GalIO_CloseServerListenSocket</a> 
+instead)</li>
+  <li> Gal_StringNextChar (now internal)</li>
+  <li> Gal_StringRewind (now internal)</li>
+  <li> Gal_MakeFileStream (use <a
+ href="../reference/libgalaxy.html#Gal_MakeFileInputStream">Gal_MakeFileInputStream</a> 
+instead)</li>
+  <li> Gal_InitializeServerDefaults (use <a
+ href="../reference/adding.html#GalSS_InitializeServerDefaults">GalSS_InitializeServerDefaults</a> 
+instead)</li>
+ 
+  </ul>
+  <li> <b>Incompatible internal change</b>: the arglists of the internal
+functions Gal_ReadObject, Gal_ReadFrame, Gal_ReadString, Gal_ReadList, Gal_ReadBinary,
+Gal_ReadObjectLine, <a
+ href="../reference/libgalaxy.html#Gal_ObjectString">Gal_ObjectString</a>, 
+    <a href="../reference/libgalaxy.html#Gal_FileNextLine">Gal_FileNextLine</a>, 
+    <a href="../reference/libgalaxy.html#Gal_FileCurrentLine">Gal_FileCurrentLine</a>, 
+and <a href="../reference/libgalaxy.html#Gal_ReadToken">Gal_ReadToken</a> 
+have all changed due to improved encapsulation of input streams.</li>
+  <li> <b>Incompatible internal change</b>: the function Gal_CallServerFunction
+has been replaced by <a
+ href="../reference/libserverstub.html#GalSS_CallServerFunction">GalSS_CallServerFunction</a>., 
+due to a change in the API.</li>
+  <li> <b>Incompatible internal change</b>: the function <a
+ href="../reference/libgalaxy.html#Gal_GetProgramTagHash">Gal_GetProgramTagHash</a>() 
+now returns a copy of the hash table it's passed, for thread safety reasons.</li>
+  <li> <b>Incompatible internal change</b>: the name of the operation to
+be invoked in the server is now the name of the frame, instead of the contents
+of the <tt>op_name</tt> slot. Also, the name of the frame intended to invoke
+the reinitialize message has been changed from <tt>welcome</tt> to <tt>reinitialize</tt>.
+Finally, there is a special key for script-control-specific information called
+    <tt>:hub_program_info</tt> which takes the place of <tt>:ridx</tt>. All
+of these changes are intended to support the consistency of incoming and
+outgoing messages, and to make scriptless message invocation as transparent 
+as possible in the Hub.</li>
+  <li> <b>Incompatible internal change</b>: the communications protocol has
+been extended slightly to allow encoding of various metalevel message types:
+new message, reply, error, etc. If you've written native programming language
+bindings for Communicator, you'll want to pay attention to this.</li>
+  <li> <b>Incompatible internal change</b>: the communications protocol change
+now subsumes the "bounce" message which was used to reject connections above
+the maximum number permitted. If you've written native programming language
+bindings for Communicator, you'll want to pay attention to this.</li>
+ 
+</ul>
+  
+<h3> <a name="Known_bugs_in_2.0"></a>Known bugs in 2.0</h3>
+  
+<ul>
+ <li> The Java bindings sometimes truncate audio when interacting with the
+audio device. We doubt that people are planning on writing a Java audio server,
+so we're not in a terrible hurry to track this one down.</li>
+  <li> The MIT audio server sometimes exhibits repeated clicking on short
+outputs using the OSS sound drivers on Linux or X86 Solaris. We don't know
+whether this is a problem with the MIT audio server or with the OSS drivers.
+There are also some odd cases if you leave the audio server running when
+you shut down and restart the Hub where the audio server will not flush its
+output buffer.</li>
+  <li> There is a bug in logging for error replies. If there are no LOG_OUT:
+keys specified in RULE:, PROGRAM: or MESSAGE: for an incoming reply from
+a server or a server-to-server subdialogue, error replies will not be logged
+unless you put "system_error" in your TIMESTAMP: list. This bug will be fixed
+in a later release.</li>
+  <li> Because of the way the Java bindings map dispatch function names to
+method names, the Java servers will not generate correct default message
+signatures to report back to the Hub, and the -validate flag may erroneously
+report that the server isn't aware of a particular message. If you want signatures
+reported correctly, do not rely on the automatic generation of default signatures.</li>
+  <li> The Allegro bindings still "hang on" to server ports for a while if
+the server dies inelegantly. We know that this has to do with REUSEADDR in
+Allegro, but we haven't upgraded to the new socket library in 5.0 which makes
+it easy to fix this problem.</li>
+  <li> It's not a particularly good idea to try to compile multiple platforms
+simultaneously in the same distribution. In particular, clean_headers.pl
+must refer directly to your Perl executable, which may be in different places
+on different platforms. There are other clashes that might arise as well.</li>
+ 
+</ul>
+  
+<h3> <a name="Significant_omissions"></a>Significant omissions</h3>
+ There are a number of things which we had hoped to get to but didn't, which
+render the distribution somewhat inconsistent. 
+<ul>
+ <li> Although we are fairly certain that the core Communicator library is
+thread-safe, it will not work without modifications on Windows NT, at least
+at the moment. There is a <a
+ href="http://sourceware.cygnus.com/pthreads-win32/">Cygnus-supplied DLL</a>
+which one can obtain which provides a POSIX threads wrapper around the Windows
+native threading, but we haven't had a chance to download and test it; furthermore,
+as of October 1999 there were a couple functions we use (such as sigwait())
+which they've documented as not working yet.</li>
+  <li> Although we have invested a great deal of effort into segmenting the
+Communicator Hub and MIT Hub scripting, we haven't had a chance to try writing
+our own scripting module, nor have we documented the API for those who wish
+to try writing their own scripting module. Our best advice is to examine
+the MIT scripting module in contrib/MIT/galaxy/src/libGalaxyHubControl.</li>
+  <li> Although we made signfiicant progress in segmenting the Communicator
+Hub and MIT Hub scripting, the job isn't quite finished. The builtin server,
+in particular, most likely still has MIT-specific functionality in it.</li>
+  <li> Although we've finally provided documentation for dispatch functions,
+we still haven't documented the MIT gui server, nor have we provided well-supported
+scripts for setting it up (it's not at all obvious).</li>
+  <li> We have still not had the chance to upgrade our documentation on how
+to build an end-to-end system.</li>
+ 
+</ul>
+  
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="upgrade.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="release_notes_v1.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last modified September 28, 2001</center>
+  
+<p><br>
+ </p>
+<br>
+</body>
+</html>

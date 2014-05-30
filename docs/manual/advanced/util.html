@@ -1,0 +1,381 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Command Line Argument Parsing
+and Printing Utilities</title>
+     <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+  
+<center> 
+<h1> Galaxy Communicator Documentation:<br>
+ <br>
+ Command Line Argument Parsing and Printing Utilities</h1>
+</center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "binary_data.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "exec.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+  
+<hr width="100%"> 
+<p>As part of establishing a single Communicator library, we have provided
+copies of MIT functionality for command line argument parsing and printing.
+This documentation has been largely adapted from the MIT documentation, and
+we've included their copyright below. </p>
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="Command_line_argument_parsing"></a>Command line argument parsing</h2>
+ The SLS online argument (oa) facility provides a simple interface to standard
+online argument parsing. It allows easy specification of program usage and
+easy extraction of the actual options specified by the user at runtime. It
+performs some simple usage checking, and also provides documentation of the
+program by printing out the usage line along describing each program option.
+This documentation has been broken down into the following areas: 
+<ul>
+ <li> <a href="#model">Program Model</a></li>
+  <li> <a href="#overview">Overview</a></li>
+  <li> <a href="#arguments">Variable Arguments</a></li>
+  <li> <a href="#help">Help</a></li>
+ 
+</ul>
+  
+<h2> <a name="model"></a>Program Model</h2>
+ The program model is as follows: 
+<pre>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; program [options] [variable arguments]</pre>
+ When a program is invoked, first options (if any) are specified, and then
+variable arguments (if any) are specified. Their is a finite set of options,
+and each option consists of a key (a string that starts with a `-') followed
+by a fixed number of arguments for that key. For example, an option might
+be <tt>"-copy from to"</tt>. Here the key is -copy, and the two arguments
+are from and to. The variable arguments must appear after all options, and
+is just an arbitrarily long list of strings (often zero). 
+<p>When a program is called with no online arguments, or with the -help option,
+it should print out a help line indicating its usage. If a user of this program
+gives too few or too many arguments to a given key, the program will do its
+best to detect this and signal some kind of warning or error. </p>
+<h2> <a name="overview"></a>Overview</h2>
+ The usage of a program is specified with a single char * array, typically
+called oas and defined at the very top of a program (after the includes): 
+<blockquote> 
+  <pre>char *oas[] =<br>&nbsp; {"-lex file", "the file containing the lexicon", "default.lex",<br>&nbsp;&nbsp; "-subtract file1 file2", "remove the words in file2 from file1", NULL, NULL,<br>&nbsp;&nbsp; "-set_weight N", "word weight", "5.0",<br>&nbsp;&nbsp; "-disable", "turn off the default checking",<br>&nbsp;&nbsp; NULL<br>&nbsp; };</pre>
+ </blockquote>
+ The oas string contains one entry for each key (usually one entry per line,
+but not required), where an entry can have a variable number of strings.
+The first string in an entry is the key string, which contains the key and
+the arguments needed by the key, separated by spaces. The library determines
+how many arguments a key takes from this string. Next is the description
+of what the key does, to be used when printing out the usage line. This description
+should be succint and helpful. Following the description is a default string
+for each of the arguments of the key. These are the defaults that are to
+be used if the user doesn't specify the key on the command line. Each default
+can optionally be NULL, meaning that argument does not have a default. There
+must be as many default strings as there are arguments to the key. The oas
+string must be terminated with a single NULL in the slot where the next key
+would otherwise be. 
+<p>Before calling any other OA functions, the program should first call <a
+ href="#GalUtil_OACheckUsage">GalUtil_OACheckUsage</a>(). This function checks
+first the programmer's usage in writing the oas list, and second the user's
+usage (i.e., whether the user used a key with too few arguments, or whether
+an extra argument was inserted between keys, etc). This function will print
+out the usage line, and return 0 if the usage failed, and return 1 otherwise.
+If it returns zero, the program should just exit (since <a
+ href="#GalUtil_OACheckUsage">GalUtil_OACheckUsage</a>() will print the usage
+line). The function <a href="#GalUtil_OAPrintUsage">GalUtil_OaPrintUsage</a>() 
+prints the usage help line. </p>
+<p>To actually extract arguments, use the function <a
+ href="#GalUtil_OAExtract">GalUtil_OAExtract</a>(). This function takes arc,
+argv, and the oas list, followed by the key you'd like to extract, followed
+by pairs of a type specification, and a pointer to where the argument should
+be stored. For each argument of the key, oa_extract will set the variables
+according to the requested type. For example, using the above oas one could
+call: </p>
+<blockquote><tt>GalUtil_OAExtract(argc, argv, oas, "-set_weight", GAL_OA_INT, 
+&amp;n);</tt></blockquote>
+  
+<h2> <a name="arguments"></a>Variable Arguments</h2>
+ Variable arguments must appear after all of the keys when the program is
+invoked. The function GalUtil_OACheckUsage() can be used to determine the
+argc where the variable arguments first begin. It will check to be sure that
+the variable arguments are not intermingled with program options. 
+<p>To specify a description of variable arguments, use the special key "REST".
+This is the only legal key without a `-', and the OA library treats is specially. 
+</p>
+<h2> <a name="help"></a>Help</h2>
+ The program should detect if argc is 1 and print the usage line, if that
+is appropriate. The OA library will automatically detect when the user specifies
+-help, and print the usage line accordingly (GalUtil_OACheckUsage() does
+this). Furthermore, this will automatically be printed in the usage line
+(the -help key), and need not be specified in the oas list. Also, if there
+is an error in GalUtil_OACheckUsage(), it will print the usage line and return
+0. 
+<p>int&nbsp;<a name="GalUtil_OACheckUsage"></a><b><big>GalUtil_OACheckUsage</big></b>(int 
+<i>argc</i>, char **<i>argv</i>, char **<i>oas</i>, int *<i>first_real_arg</i>) 
+<br>
+This function quickly looks through the <i>oas</i> list and through the actual
+online arguments specified, and verifies that the usage is correct (to a
+first approximation). It checks that arguments are not missing nor that there
+are extra arguments, and also verifies that the oas list is formatted correctly.
+This function must be called once at the start of the program before GalUtil_OAExtract().
+If <i>first_real_arg</i> is non-NULL, this integer will be set to the argc
+of the first fixed argument. The function returns 0 if there is an error
+and 1 if usage is correct. </p>
+<p>void&nbsp;<a name="GalUtil_OAPrintUsage"></a><b><big>GalUtil_OAPrintUsage</big></b>(int 
+<i>argc</i>, char **<i>argv</i>, char **<i>oas</i>) <br>
+This function prints the help line of the program. It should be called when
+the user has not called the program properly. </p>
+<p>int&nbsp;<a name="GalUtil_OAExtract"></a><b><big>GalUtil_OAExtract</big></b>(int 
+<i>argc</i>, char **<i>argv</i>, char **<i>oas</i>, const char *<i>key</i>,
+... ) <br>
+This function is used to extract the arguments specified by the user. This
+function is called for a single key, and will return the arguments of that
+key casted to a specific type. The number of type/p_value pairs must be equal
+to the number of arguments specified by the key. For example, for the key
+"-copy from to", there must be <b>two</b> pairs of type/value. The exception
+to this is a binary key (one with zero arguments, for example "-debug").
+In this case, GalUtil_OAExtract() takes one pair of type/value, and it will
+set the value to be GAL_TRUE or GAL_FALSE depending on whether the key was
+specified. This is just an alternative to looking at the return value of
+GalUtil_OAExtract() to determine if the user specified the key. If the user
+did not specify the key, then the values are set to the defaults specified
+on the oas list. The allowed types are: </p>
+<ul>
+ <li> GAL_OA_CHAR</li>
+  <li> GAL_OA_SHORT</li>
+  <li> GAL_OA_INT</li>
+  <li> GAL_OA_FLOAT</li>
+  <li> GAL_OA_DOUBLE</li>
+  <li> GAL_OA_STRING</li>
+ 
+</ul>
+  
+<blockquote> 
+  <h4> Memory management</h4>
+ GalUtil_OAExtract() does not allocate any memory, so when the type is GAL_OA_STRING
+the pointer will be exactly the corresponding argv.</blockquote>
+  
+<p><br>
+void&nbsp;<a name="GalUtil_OAExtractAsserting"></a><b><big>GalUtil_OAExtractAsserting</big></b>(int 
+<i>argc</i>, char **<i>argv</i>, char **<i>oas</i>, const char *<i>key</i>,
+... ) <br>
+This is the same as the above, but it aborts (exits) if the user did not
+specify the argument. <br>
+&nbsp; </p>
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="Printing"></a>Printing</h2>
+ These functions provide the developer with control over how messages get
+displayed or processed, and the user with run time control over the verbosity
+of messages. This is accomplished by defining levels or classes of messages,
+each with an associated function. Developers using this facility decide at
+which level a message is printed by calling the function corresponding to
+that level (e.g. GalUtil_Error(), GalUtil_Warn(), GalUtil_Debug(), etc). 
+<p>Whether or not the message passed to that function gets printed is determined
+at runtime by the user's <b>GAL_VERBOSE</b> environment variable, or by the
+<a href="../reference/hub.html#Running_the_executables"><tt>-verbosity</tt> 
+arguments of the Hub or server</a>. This allows the user to have run time
+control over the number and nature of messages which get printed. Setting 
+<b>GAL_VERBOSE</b> to 0 turns off all printing. Incrementing it by 1 turns
+on printing of additional message classes, until 6, at which point all printing
+is turned on. Increasing <b>GAL_VERBOSE</b> beyond 6 has no effect. The default
+verbosity is 3. </p>
+<p>Note that MIT servers use the MIT equivalent of these facilities in places,
+and you should also set SLS_VERBOSE as well. </p>
+<p>For version 4.0, we've attempted to rationalize the information printed
+out at each verbosity level, as follows: </p>
+<ul>
+ <li> level 1: connection/disconnection information, fatal errors</li>
+  <li> level 2: level 1, plus indication of message traffic (no messages,
+though), non-fatal toplevel errors</li>
+  <li> level 3: level 2, plus a summary of messages in message traffic</li>
+  <li> level 4: level 3, but with full details of messages in message traffic,
+plus non-fatal error details</li>
+  <li> level 5: level 4, plus additional information about timed task and
+thread behavior</li>
+  <li> level 6: level 5, plus raw XDR data associated with message and broker
+traffic.</li>
+ 
+</ul>
+ Note that these verbosity level generalizations apply only to the Galaxy
+Communicator core. Anyone who uses these functions is encouraged to respect
+these levels (e.g., nothing but crucial errors until level 3, ordinary status
+messages at level 3, more detailed status and error messages at levels 4
+and above). 
+<p>int&nbsp;<a name="GalUtil_SetVerbose"></a><b><big>GalUtil_SetVerbose</big></b>(int 
+<i>verbose_level</i>) <br>
+This function sets the verbosity level for the executable. It can be called
+at any time. It returns the new verbosity level. Input values less than zero
+will be normalized to the default verbosity of 3. </p>
+<p>The following functions are available for increasing degrees of verbosity: 
+</p>
+<h3> <b>GAL_VERBOSE &gt; 0</b></h3>
+ void&nbsp;<a name="GalUtil_Fatal"></a><b><big>GalUtil_Fatal</big></b>(const
+char *<i>format</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_Error"></a><b><big>GalUtil_Error</big></b>(const
+char *<i>format</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_Assert"></a><b><big>GalUtil_Assert</big></b>(int 
+<i>truth</i>, const char *<i>format</i>, ... ) 
+<p>Note that GalUtil_Fatal() and GalUtil_Assert() will quit the program in
+addition to providing an error message. </p>
+<h3> <b>GAL_VERBOSE &gt; 1</b></h3>
+  void&nbsp;<a name="GalUtil_Warn"></a><b><big>GalUtil_Warn</big></b>(const
+char *<i>format</i>, ... )  
+<h3> <b>GAL_VERBOSE &gt; 2</b></h3>
+ void&nbsp;<a name="GalUtil_PInfo1"></a><b><big>GalUtil_PInfo1</big></b>(const
+char *<i>format</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_CPInfo1"></a><b><big>GalUtil_CPInfo1</big></b>(int 
+<i>fore</i>, int <i>back</i>, const char *<i>format</i>, ... ) 
+<h3> <b>GAL_VERBOSE &gt; 3</b></h3>
+ void&nbsp;<a name="GalUtil_PInfo2"></a><b><big>GalUtil_PInfo2</big></b>(const
+char *<i>format</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_CPInfo2"></a><b><big>GalUtil_CPInfo2</big></b>(int 
+<i>fore</i>, int <i>back</i>, const char *<i>format</i>, ... ) 
+<h3> <b>GAL_VERBOSE &gt; 4</b></h3>
+  void&nbsp;<a name="GalUtil_Debug1"></a><b><big>GalUtil_Debug1</big></b>(const
+char *<i>format</i>, ... )  
+<h3> <b>GAL_VERBOSE &gt; 5</b></h3>
+  void&nbsp;<a name="GalUtil_Debug2"></a><b><big>GalUtil_Debug2</big></b>(const
+char *<i>format</i>, ... )<br>
+<br>
+ In addition, there are two functions which allow the user to set a minimum
+verbose level. 
+<p>void&nbsp;<a name="GalUtil_Print"></a><b><big>GalUtil_Print</big></b>(int 
+<i>level</i>, const char *<i>format</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_CPrint"></a><b><big>GalUtil_CPrint</big></b>(int 
+<i>level</i>, int <i>fore</i>, int <i>back</i>, const char *<i>format</i>,
+... ) <br>
+Prints in color or b/w if GAL_VERBOSE exceeds <i>level</i>. </p>
+<p>void&nbsp;<a name="GalUtil_VerboseUseBW"></a><b><big>GalUtil_VerboseUseBW</big></b>(void 
+) <br>
+Print for a black and white xterm. Default. </p>
+<p>void&nbsp;<a name="GalUtil_VerboseUseColor"></a><b><big>GalUtil_VerboseUseColor</big></b>(void 
+) <br>
+Print for a color xterm. </p>
+<h3> Other utilities</h3>
+ void&nbsp;<a name="GalUtil_fprintf"></a><b><big>GalUtil_fprintf</big></b>(FILE 
+*<i>fp</i>, const char *<i>fmt</i>, ... ) <br>
+Equivalent to fprintf(), unless fp is stdout or stderr, in which case GalUtil_Print(-1,
+...)&nbsp;is called. 
+<p>void&nbsp;<a name="GalUtil_WarnWithLocation"></a><b><big>GalUtil_WarnWithLocation</big></b>(const
+char *<i>fn</i>, const char *<i>fmt</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_WarnLevelWithLocation"></a><b><big>GalUtil_WarnLevelWithLocation</big></b>(int 
+<i>level</i>, const char *<i>fn</i>, const char *<i>fmt</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_PrintWithLocation"></a><b><big>GalUtil_PrintWithLocation</big></b>(int 
+<i>level</i>, const char *<i>fn</i>, const char *<i>fmt</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_PInfo1WithLocation"></a><b><big>GalUtil_PInfo1WithLocation</big></b>(const
+char *<i>fn</i>, const char *<i>fmt</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_CPInfo1WithLocation"></a><b><big>GalUtil_CPInfo1WithLocation</big></b>(const
+char *<i>fn</i>, int <i>fore</i>, int <i>back</i>, const char *<i>fmt</i>,
+... ) <br>
+These functions are mostly for internal use, but may prove useful to others.
+In all these cases, the <i>fn</i> is the name of the function where the printout
+is called. This string is printed as a prefix to the printed message, when
+GAL_VERBOSE&nbsp;is 4 or greater. </p>
+<h3> <a name="Print_packages"></a>Print packages</h3>
+ For 4.0, we've added the capability of managing your own printing. The default
+system prints to stdout and stderr; you can set up your print package to
+direct output anywhere you want. You can accomplish this by using the function
+GalUtil_CreatePrintPkg, and setting the result to the value of the global
+variable GalUtil_CurrentPrintPkg. You can also use your print package directly,
+using functions like GalUtil_PkgFatal. 
+<p>typedef void (*<b><big>GalVLevelFunc</big></b>)(int <i>level</i>, const
+char *<i>fmt</i>, va_list <i>args</i>, void *<i>client_data</i>); <br>
+typedef void (*<b><big>GalVCLevelFunc</big></b>)(int <i>level</i>, int <i>fore</i>,
+int <i>back</i>, const char *<i>fmt</i>, va_list <i>args</i>, void *<i>client_data</i>); 
+<br>
+typedef void (*<b><big>GalVPrintfFunc</big></b>)(const char *<i>fmt</i>,
+va_list <i>args</i>, void *<i>client_data</i>); <br>
+typedef void (*<b><big>GalVCPrintfFunc</big></b>)(int <i>fore</i>, int <i>back</i>,
+const char *<i>fmt</i>, va_list <i>args</i>, void *<i>client_data</i>); </p>
+<p>extern GalUtil_PrintPkg *<b><big>GalUtil_CurrentPrintPkg</big></b>; </p>
+<p>GalUtil_PrintPkg *<a name="GalUtil_CreatePrintPkg"></a><b><big>GalUtil_CreatePrintPkg</big></b>(GalVPrintfFunc 
+<i>fatal_func</i>, GalVPrintfFunc <i>error_func</i>, GalVPrintfFunc <i>warn_func</i>,
+GalVLevelFunc <i>level_func</i>, GalVCLevelFunc <i>clevel_func</i>, GalVPrintfFunc 
+<i>pinfo1_func</i>, GalVPrintfFunc <i>pinfo2_func</i>, GalVCPrintfFunc <i>cpinfo1_func</i>,
+GalVCPrintfFunc <i>cpinfo2_func</i>, GalVPrintfFunc <i>debug1_func</i>, GalVPrintfFunc 
+<i>debug2_func</i>, void *<i>client_data</i>) <br>
+Produces a print package which is used when the various print functions are
+called, as follows: </p>
+<ul>
+ <li> <i>fatal_func</i>: GalUtil_Fatal, GalUtil_Assert</li>
+  <li> <i>error_func</i>: GalUtil_Error</li>
+  <li> <i>warn_func</i>: GalUtil_Warn</li>
+  <li> <i>level_func</i>: GalUtil_Print</li>
+  <li> <i>clevel_func</i>: GalUtil_CPrint</li>
+  <li> <i>pinfo1_func</i>: GalUtil_PInfo1</li>
+  <li> <i>pinfo2_func</i>: GalUtil_Pinfo2</li>
+  <li> <i>cpinfo1_func</i>: GalUtil_CPInfo1</li>
+  <li> <i>cpinfo2_func</i>: GalUtil_CPInfo2</li>
+  <li> <i>debug1_func</i>: GalUtil_Debug1</li>
+  <li> <i>debug2_func</i>: GalUtil_Debug2</li>
+ 
+</ul>
+ Finally, the <i>client_data</i> is passed to each of these functions, as
+arbitrary data each function can use when printing. 
+<p>void&nbsp;<a name="GalUtil_PkgFatal"></a><b><big>GalUtil_PkgFatal</big></b>(GalUtil_PrintPkg 
+*<i>pkg</i>, const char *<i>format</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_PkgWarn"></a><b><big>GalUtil_PkgWarn</big></b>(GalUtil_PrintPkg 
+*<i>pkg</i>, const char *<i>format</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_PkgError"></a><b><big>GalUtil_PkgError</big></b>(GalUtil_PrintPkg 
+*<i>pkg</i>, const char *<i>format</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_PkgPrint"></a><b><big>GalUtil_PkgPrint</big></b>(GalUtil_PrintPkg 
+*<i>pkg</i>, int <i>level</i>, const char *<i>format</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_PkgCPrint"></a><b><big>GalUtil_PkgCPrint</big></b>(GalUtil_PrintPkg 
+*<i>pkg</i>, int <i>level</i>, int <i>fore</i>, int <i>back</i>, const char
+*<i>format</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_PkgPInfo1"></a><b><big>GalUtil_PkgPInfo1</big></b>(GalUtil_PrintPkg 
+*<i>pkg</i>, const char *<i>format</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_PkgPInfo2"></a><b><big>GalUtil_PkgPInfo2</big></b>(GalUtil_PrintPkg 
+*<i>pkg</i>, const char *<i>format</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_PkgCPInfo1"></a><b><big>GalUtil_PkgCPInfo1</big></b>(GalUtil_PrintPkg 
+*<i>pkg</i>, int <i>fore</i>, int <i>back</i>, const char *<i>format</i>,
+... ) <br>
+void&nbsp;<a name="GalUtil_PkgCPInfo2"></a><b><big>GalUtil_PkgCPInfo2</big></b>(GalUtil_PrintPkg 
+*<i>pkg</i>, int <i>fore</i>, int <i>back</i>, const char *<i>format</i>,
+... ) <br>
+void&nbsp;<a name="GalUtil_PkgDebug1"></a><b><big>GalUtil_PkgDebug1</big></b>(GalUtil_PrintPkg 
+*<i>pkg</i>, const char *<i>format</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_PkgDebug2"></a><b><big>GalUtil_PkgDebug2</big></b>(GalUtil_PrintPkg 
+*<i>pkg</i>, const char *<i>format</i>, ... ) <br>
+void&nbsp;<a name="GalUtil_PkgAssert"></a><b><big>GalUtil_PkgAssert</big></b>(GalUtil_PrintPkg 
+*<i>pkg</i>, int <i>truth</i>, const char *<i>format</i>, ... ) <br>
+Identical to GalUtil_Fatal, etc., except that <i>pkg</i> is a print package
+to use. </p>
+<p> </p>
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "binary_data.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "exec.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated June 21, 2002</center>
+  <br>
+</body>
+</html>

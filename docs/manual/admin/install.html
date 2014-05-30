@@ -1,0 +1,871 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                        
+  <meta name="GENERATOR"
+ content="Mozilla/4.78 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Installing the DARPA Communicator</title>
+                         <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+            
+<center>      
+<h1> Galaxy Communicator Documentation:<br>
+      <br>
+      Installing the Galaxy Communicator Distribution</h1>
+     </center>
+       
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+       <tbody>
+         <tr>
+           <td valign="middle" align="left" width="10%"><a
+ href="../../../contrib/MITRE/bindings/clisp/docs/index.html"><img
+ src="../../arrow_left.gif" alt="" width="30" height="30">
+         </a></td>
+           <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+           <td valign="middle" align="right" width="10%"><a
+ href="new_features.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+         </a></td>
+         </tr>
+                  
+  </tbody>     
+</table>
+             
+<hr width="100%">      
+<ul>
+      <li> <a href="#Preliminaries">Preliminaries</a></li>
+           
+  <ul>
+       <li><a href="#supported">Supported and semi-supported platforms</a></li>
+       <li><a href="#Unsupported_platforms">Unsupported platforms</a></li>
+       <li><a href="#ARCHOS">ARCHOS</a><br>
+       </li>
+           
+  </ul>
+       <li><a href="#config">Unix configuration and build</a><br>
+    </li>
+           
+  <ul>
+       <li><a href="#ARCHOS_on_Unix">ARCHOS on Unix</a></li>
+       <li><a href="#Third-party_applications">Third-party applications</a><br>
+       </li>
+       <li><a href="#New_configuration_method">New configuration method</a></li>
+       <li><a href="#Old_configuration_method">Old configuration method</a></li>
+       <li><a href="#Arguments_to_configure_and_contents_of_config.make">Arguments
+   to <tt>configure</tt> and contents of config.make</a></li>
+       <li><a href="#Storing_and_reusing_your_configuration_information">Storing
+   and reusing your configuration information</a><br>
+       </li>
+       <li> <a href="#compilation">Compilation</a></li>
+       <li><a href="#Setting_up_the_tutorial_Unix">Setting up the tutorial</a><br>
+       </li>
+           
+  </ul>
+     <li><a href="#Windows_configuration_and_build">Windows configuration 
+and  build</a></li>
+           
+  <ul>
+       <li><a href="#ARCHOS_on_Windows">ARCHOS on Windows</a></li>
+       <li><a href="#Third-party_applications_Windows">Third-party applications</a></li>
+       <li><a href="#Configuration_and_compilation">Configuration and compilation</a></li>
+       <li><a href="#Setting_up_the_tutorial_Windows">Setting up the tutorial</a><br>
+       </li>
+           
+  </ul>
+     <li><a href="#Installation">Installation</a><br>
+     </li>
+     <li><a href="#Cross_compilation">Cross compilation (Unix)</a></li>
+                   
+</ul>
+            
+<hr width="100%">      
+<h2> <a name="Preliminaries"></a>Preliminaries</h2>
+            
+<h3> <a name="supported"></a>Supported and semi-supported platforms</h3>
+      The Galaxy Communicator distribution is actively supported on the following 
+  platforms:      
+<ul>
+      <li> Sparc Solaris version 2.7 (sparc-solaris)</li>
+       <li> Red Hat Linux for x86 6.2 (x86-linux)</li>
+       <li> <a href="ntport.html">Win32</a> (x86-nt) (NT 4.0; also tested 
+on Windows 2000 Professional)</li>
+           
+</ul>
+      Labels in parentheses correspond to the <a href="#ARCHOS">ARCHOS values</a> 
+  described below.      
+<p>The Galaxy Communicator distribution has also been recently tested to some
+degree or another on the following platforms: </p>
+         
+<ul>
+      <li> SGI IRIX 32- and 64-bit (mips-irix, mips64-irix)</li>
+       <li> FreeBSD 4.3 (x86-FreeBSD)</li>
+       <li> MacOS X 10.1/Darwin 1.4 (powerpc-Darwin)</li>
+           
+</ul>
+      These platforms are not actively supported, but we will continue to 
+test   on these platforms when possible and incorporate appropriate fixes. 
+     
+<p>To the best of our knowledge, the following table reflects the status of
+the distribution on these six platforms. In all cases, the Hub and core C
+libraries, compiled statically, are known to work and pass our test suite.
+   <br>
+     &nbsp;      
+<table border="1" cols="8" width="100%" nosave="">
+      <tbody>
+         <tr>
+      <td><br>
+           </td>
+       <td><b>Static libraries</b></td>
+       <td><b>Shared libraries</b></td>
+       <td><b>Python bindings</b></td>
+       <td><b>Allegro bindings</b></td>
+       <td><b>Java bindings</b></td>
+       <td><b>Threads</b></td>
+       <td><b>64-bit integer XDR encode/decode</b></td>
+      </tr>
+       <tr>
+      <td>Sparc Solaris 2.7</td>
+       <td>yes</td>
+       <td>yes</td>
+       <td>yes</td>
+       <td>yes</td>
+       <td>yes</td>
+       <td>yes</td>
+       <td>not tested</td>
+      </tr>
+       <tr>
+      <td>Red Hat Linux for x86</td>
+       <td>yes</td>
+       <td>yes</td>
+       <td>yes</td>
+       <td>unknown</td>
+       <td>yes</td>
+       <td>yes</td>
+       <td>not tested</td>
+      </tr>
+       <tr>
+      <td>Win32</td>
+       <td>yes</td>
+       <td>no</td>
+       <td>yes</td>
+       <td>unknown</td>
+       <td>yes</td>
+       <td>yes</td>
+       <td>not tested</td>
+      </tr>
+       <tr>
+      <td>SGI IRIX</td>
+       <td>yes</td>
+       <td>yes</td>
+       <td>no (don't know how to do dynamic loading yet)</td>
+       <td>unknown</td>
+       <td>unknown</td>
+       <td>yes</td>
+       <td>not tested</td>
+      </tr>
+       <tr>
+      <td>FreeBSD</td>
+       <td>yes</td>
+       <td>yes</td>
+       <td>yes</td>
+       <td>unknown</td>
+       <td>unknown</td>
+       <td>unknown</td>
+       <td>no (xdr_hyper missing)</td>
+      </tr>
+       <tr>
+      <td>MacOS X/Darwin</td>
+       <td>yes</td>
+       <td>no</td>
+       <td>no (don't know how to do dynamic loading yet)</td>
+       <td>unknown</td>
+       <td>yes</td>
+       <td>no (pthread implementation incomplete)</td>
+       <td>no (xdr_hyper missing)</td>
+      </tr>
+                     
+  </tbody>     
+</table>
+       </p>
+         
+<p>For more details on how to configure these various options, see the <a
+ href="#config">configuration</a> section. </p>
+         
+<h3><a name="Unsupported_platforms"></a> Unsupported platforms</h3>
+      The Galaxy Communicator distribution is not yet supported on the following 
+  current platforms, because we don't have access to them, but we have reports 
+  from users that these distributions work just fine:      
+<ul>
+      <li> Sparc Solaris 2.8</li>
+       <li> Red Hat Linux for x86 7.0 and later</li>
+           
+</ul>
+      The Galaxy Communicator distribution, at one point or another, has
+also   worked on the following platforms, and may still work, although these
+platforms   are no longer tested or supported.      
+<ul>
+      <li> Sparc SunOS 4.3.1_U1 (sparc-sunos)</li>
+       <li> Alpha OSF V3.2 (alpha-osf)</li>
+       <li> Red Hat Linux for x86 4.2, 6.0, 6.1</li>
+       <li> Solaris for x86 2.5, 2.6 (x86-solaris)</li>
+       <li> mkLinux and LinuxPPC (ppc-linux)</li>
+       <li> SPARC Solaris version 2.5.1</li>
+           
+</ul>
+            
+<h3><a name="ARCHOS"></a>ARCHOS</h3>
+     
+<p>The Galaxy Communicator infrastructure uses an MIT-developed system for 
+  maintaining libraries and binaries for multiple architectures and operating 
+  systems under a single source tree. There are values for the  machine architecture 
+ (ARCH), the operating system (OS), and their combination  (ARCHOS = $(ARCH)-$(OS)). 
+ At compile time, object files, libraries, and binaries  are created in ARCHOS 
+ subdirectories. For more details, see the <a href="org.html">directory structure</a> 
+ documentation.<br>
+   <br>
+   The computation of ARCHOS differs depending on the platform, as described 
+ in the remainder of the installation notes.<br>
+   </p>
+     
+<ul>
+           
+</ul>
+            
+<hr width="100%">      
+<h2> <a name="config"></a>Unix configuration and build</h2>
+      In 2.0, we began a slow migration toward GNU <tt>configure</tt>. As 
+of  version 3.3, this migration is finally complete. The old configuration 
+method  still works, but there are new options which make it even easier to
+preserve  configuration information, and all aspects of the configuration 
+can be controlled  by arguments to GNU <tt>configure</tt>. On Win32, we've 
+provided header files  which reflect the values which GNU configure would 
+have generated for Windows.  The instructions here are for Unix.      
+<h3> <a name="ARCHOS_on_Unix"></a>ARCHOS on Unix</h3>
+      [This information is also provided in file <tt>config.make</tt>, described 
+  <a href="#Arguments_to_configure_and_contents_of_config.make">below</a>.]
+       
+<p>On Unix, environment/make variables provide ARCH, OS and ARCHOS. For each 
+ C executable, there's a corresponding platform-independent shell script&nbsp; 
+ which determines the appropriate ARCHOS-dependent binary  to call at run 
+time based on the name of the script and the value of ARCHOS. The values for
+ARCH and OS are determined by the scripts <tt>templates/set_arch.cmd</tt> 
+  and <tt>templates/set_os.cmd</tt>. These values will be used both in shell 
+environments and in Makefiles.&nbsp;  The C files in the distribution will 
+also be compiled with the preprocessor  flags <tt>-D__$(ARCH)__ -D__$(OS)__</tt> 
+if you use the MIT Makefile templates  and these flags aren't already provided 
+by the preprocessor; if you don't  use the MIT Makefile templates, you may 
+still find these settings useful (if you don't use GNU <tt>configure</tt> 
+and you're trying to&nbsp; do cross-platform  development, for instance).<br>
+   </p>
+     
+<p>Here are the settings for ARCHOS: </p>
+         
+<ul>
+      <li> Solaris 2/Solaris 7 (SunOS 5):</li>
+                      
+  <ul>
+      <li> on Sparc: sparc-solaris</li>
+       <li> on x86/Pentium: x86-solaris</li>
+                     
+  </ul>
+       <li> Solaris 1 (SunOS 4):</li>
+                      
+  <ul>
+      <li> on Sparc: sparc-sunos</li>
+       <li> on x86/Pentium: x86-sunos</li>
+                     
+  </ul>
+       <li> Linux:</li>
+                      
+  <ul>
+      <li> on x86/Pentium: x86-linux</li>
+                     
+  </ul>
+       <li> SGI Irix:</li>
+                      
+  <ul>
+      <li> 32-bit: mips-irix</li>
+       <li> 64-bit: mips64-irix</li>
+                     
+  </ul>
+       <li> MacOS X/Darwin:</li>
+                      
+  <ul>
+      <li> on PowerPC: powerpc-Darwin</li>
+                     
+  </ul>
+           
+</ul>
+      In almost all other cases, ARCH = `uname -m` and OS = `uname -s`. You 
+ can run the two scripts by hand to verify that the ARCH, OS, and  ARCHOS 
+variables will be set correctly.<br>
+     
+<h3><a name="Third-party_applications"></a> Third-party applications</h3>
+       The Galaxy Communicator distribution requires gcc and GNU make. We 
+also   recommend using GNU mkdir and GNU ar for best results. Sources for 
+the GNU   libraries and tools can be obtained from <a
+ href="http://www.gnu.org">GNU</a>:       
+<ul>
+     <li> gcc: on Sparc Solaris, we currently use <a
+ href="ftp://prep.ai.mit.edu/pub/gnu/gcc/gcc-2.95.3.tar.gz">gcc-2.95.3</a>,
+   but we believe gcc 2.8.1 and later will work, as will egcs <a
+ href="http://egcs.cygnus.com/egcs-1.1/egcs-1.1.1.html">1.1.1</a> or later</li>
+     <li> GNU make: <a
+ href="ftp://prep.ai.mit.edu/pub/gnu/make-3.75.tar.gz">make-3.75.tar.gz</a>
+   or later</li>
+     <li> GNU ar: <a
+ href="ftp://prep.ai.mit.edu/pub/gnu/binutils-2.9.1.tar.gz">binutils-2.9.1.tar.gz</a>
+   or later</li>
+     <li> GNU mkdir: <a
+ href="ftp://prep.ai.mit.edu/pub/gnu/fileutils-3.16.tar.gz">fileutils-3.16.tar.gz</a>
+   or later</li>
+     
+</ul>
+      Python 1.5 or later with Tkinter support is recommended for a number
+ of  the MITRE demos, examples and utilities. Python is available from <a
+ href="http://www.python.org">www.python.org</a>:      
+<ul>
+     <li> <a href="http://www.python.org/1.5/">version 1.5</a></li>
+     
+</ul>
+      We have tested the Python bindings with distributions up to 2.2, and
+ we  believe that they still work, but we haven't upgraded our day-to-day
+development  to the current versions of Python yet.         
+<h3><a name="New_configuration_method"></a> New configuration method</h3>
+      The new configuration method works basically like this:      
+<blockquote><tt>% cd templates <br>
+    % ./configure &lt;args&gt; <br>
+    % cd .. <br>
+    % make</tt>         </blockquote>
+      The possible arguments to <tt>configure</tt> are described below. 
+    
+<p>The first thing the <tt>configure</tt> script will do is compute the appropriate 
+  values for your <a href="#ARCHOS_on_Unix">architecture   and operating system</a>.
+Then, the configure script will check your environment   for a range of features,
+and generate two files which it will place in <tt>templates/&lt;arch&gt;-&lt;os&gt;</tt>. 
+  The first, <tt>config.make</tt>, contains compilation and configuration 
+settings which you may change after you run <tt>configure</tt>, if you have 
+to (for example, you may want to enable the Python bindings, but forget to 
+pass the appropriate arguments to <tt>configure</tt> to do so). The second, 
+<tt>GC_config.h</tt>,  is a header file which sets the appropriate compilation 
+flags for your platform;  do not edit this file. </p>
+         
+<h3> <a name="Old_configuration_method"></a>Old configuration method</h3>
+      The old method does not allow you to pass arguments to configure, at
+ least  in its simplest form (there's a way to do it which we'll describe
+<a href="#Storing_and_reusing_your_configuration_information">below</a>).
+ The old configuration method works as follows:      
+<blockquote><tt>% cd templates # optional</tt> <br>
+       <tt>% make site-init # invokes the configure script, among other things</tt>
+     <br>
+       <tt>% cd .. # if you did cd templates</tt> <br>
+       <tt>% make</tt></blockquote>
+      After it runs configure, <tt>make site-init</tt> will exit to allow 
+you   to make your changes to <tt>templates/&lt;arch&gt;-&lt;os&gt;/config.make</tt>
+   before system compilation.      
+<h3> <a name="Arguments_to_configure_and_contents_of_config.make"></a>Arguments
+   to <tt>configure</tt> and contents of config.make</h3>
+      The file <tt>config.make</tt> contains all the configuration information 
+  you will need. It is organized into two main sections, one for the core 
+distribution  and the other for MITRE extensions such as the examples and 
+programming language  bindings. Each section is arranged into a series of 
+steps. All the documentation  for these steps is also found in <tt>config.make</tt>. 
+ All of the settings  which are user-settable are also controllable using 
+the <tt>configure</tt>  script.      
+<h4> Core distribution</h4>
+            
+<table border="1" width="100%" nosave="">
+      <tbody>
+         <tr>
+      <td><b>Step</b></td>
+       <td><b><tt>config.make</tt> variables</b></td>
+       <td><b><tt>configure</tt> arguments</b></td>
+       <td><b>description</b></td>
+      </tr>
+       <tr nosave="">
+      <td>Configure your csh environment</td>
+       <td><tt>ARCHOS_PREFIX</tt></td>
+       <td nosave="">(none)</td>
+       <td>The Communicator system mirrors the compiler variables in some 
+of  the       <tt>csh</tt> shell scripts it uses. In some cases, the variable
+  names clash with the environment on the installed machine. By default,
+we   enable a prefix for these variables using the <tt>ARCHOS_PREFIX</tt>
+variable,   which is <tt>GALAXY_</tt> by default; this setting makes the
+csh variables         <tt>GALAXY_ARCH</tt>,        <tt>GALAXY_OS</tt>, and
+      <tt>GALAXY_ARCHOS</tt>.   Change this prefix if you prefer.</td>
+      </tr>
+       <tr>
+      <td>Configure your utilities</td>
+       <td><tt>CC, AR, MKDIR, CHMOD</tt>, etc.</td>
+       <td>(none)</td>
+       <td>Here, you have the opportunity to change the values of <tt>CC</tt>, 
+        <tt>AR</tt>, <tt>MKDIR</tt>, <tt>CHMOD</tt>, etc. based on your platform. 
+  These settings should be right in almost all cases.</td>
+      </tr>
+       <tr>
+      <td>Configure your compiler options</td>
+       <td><tt>CFLAGS_O, CFLAGS_P, CFLAGS_D</tt>, etc.</td>
+       <td>(none)</td>
+       <td>Here, you have the opportunity to modify your <tt>CPPFLAGS</tt>, 
+       <tt>CFLAGS</tt>,  etc. for your platform. Most of these settings should 
+ be correct. You may  wish to change the optimization flags for <tt>CFLAGS_O</tt> 
+ (normal compilation),        <tt>CFLAGS_D</tt> (debug compilation) and <tt>CFLAGS_P</tt> 
+ (profile  compilation).</td>
+      </tr>
+       <tr>
+      <td>Configure shared libraries</td>
+       <td><tt>SHARED_LIBS</tt></td>
+       <td><tt>--enable-shared</tt></td>
+       <td>If you want to compile the Communicator libraries as shared libraries, 
+  use the <tt>--enable-shared</tt> argument to <tt>configure</tt> or uncomment
+   this line. This will significantly reduce the size of your executables;
+ however, the executables will then depend on the presence of the shared
+libraries   to run. The location of the shared libraries is automatically
+compiled in   to the executables by the Makefile templates.</td>
+      </tr>
+       <tr>
+      <td>Configure Purify and Insure</td>
+       <td><tt>INSURE, PURIFY</tt></td>
+       <td><tt>--with-insure=&lt;insure_binary&gt;,</tt> <br>
+           <tt>--with-purify=&lt;purify_binary&gt;</tt></td>
+       <td>MIT's Makefile template has built-in support for make purify and 
+ make  insure", which will create instrumented executables for Rational's 
+Purify  tool and Parasoft's Insure tool. These settings are disabled by default. 
+ If you have either of these tools and want to make use of the MIT Makefile 
+ support, use the <tt>--with-insure</tt> or <tt>--with-purify</tt> arguments 
+  to <tt>configure</tt> or uncomment (and perhaps modify) the appropriate 
+lines.</td>
+      </tr>
+       <tr>
+      <td>Choose your Hub scripting module</td>
+       <td>(none)</td>
+       <td>(none)</td>
+       <td>By default, the distribution is configured to use the MIT Hub
+scripting   module. Currently, the Hub will not compile without at least
+some scripting   module provided. You can probably write your own, but we
+haven't documented   that process yet. If you comment out <tt>COMPILE_MIT</tt>
+in the next step,   the scripting module will still be compiled.</td>
+      </tr>
+       <tr>
+      <td>Enable contributions</td>
+       <td><tt>COMPILE_MIT, COMPILE_MITRE</tt></td>
+       <td><tt>--enable-MIT-extensions,</tt> <br>
+           <tt>--enable-MITRE-extensions</tt></td>
+       <td>MIT has contributed useful libraries, and MITRE has contributed
+ examples,  tools, etc. Both are compiled by default, if present in the distribution. 
+  You may disable either or both by using the appropriate arguments to <tt>configure</tt>
+   (e.g., <tt>--enable-MIT-extensions=no</tt> or <tt>--disable-MIT-extensions</tt>)
+   or commenting out the <tt>COMPILE_MIT</tt> or <tt>COMPILE_MITRE</tt> variables.</td>
+      </tr>
+                     
+  </tbody>     
+</table>
+            
+<h4> <b>MITRE extensions</b></h4>
+      If you have commented out COMPILE_MITRE, you may ignore this section. 
+ <br>
+     &nbsp;      
+<table border="1" width="100%" nosave="">
+      <tbody>
+         <tr>
+      <td><b>Step</b></td>
+       <td><b><tt>config.make</tt> variables</b></td>
+       <td><b><tt>configure</tt> arguments</b></td>
+       <td><b>description</b></td>
+      </tr>
+       <tr>
+      <td>Locate your xterm program</td>
+       <td><tt>XTERM</tt></td>
+       <td><tt>--with-x,</tt> <br>
+           <tt>--with-xterm=&lt;xterm_binary&gt;</tt></td>
+       <td>MITRE uses xterm for process monitoring under some circumstances.</td>
+      </tr>
+       <tr>
+      <td>Locate your Java installation</td>
+       <td><tt>JDK_HOME</tt></td>
+       <td><tt>--with-jdk=&lt;dir_above_bin/javac&gt;</tt></td>
+       <td>MITRE uses Java for the Communicator Java bindings and Java examples. 
+  The MITRE Java bindings require at least JDK 1.2.</td>
+      </tr>
+       <tr>
+      <td>Enable Python bindings and examples</td>
+       <td><tt>PYTHONBIN, PYINCLUDE</tt></td>
+       <td><tt>--with-python=&lt;python_executable&gt;,</tt> <br>
+           <tt>--with-pycppflags=&lt;cmdline_args_to_cpp&gt;</tt></td>
+       <td>If you want to enable the MITRE Python bindings, servers and demos, 
+  use with <tt>--with-python</tt> argument to <tt>configure</tt> or uncomment
+         <tt>PYTHONBIN</tt> and set it to the appropriate path. Communicator 
+  requires Python 1.5 or later. Your Python installation <b>must</b> be built 
+  with Tkinter (Python's bindings for Tcl/Tk).                           
+        
+      <p><b>Note:</b> As of 3.0, the Python bindings use C wrappers around 
+  the core Galaxy Communicator library. In order to compile Python, you must 
+  have <tt>PYINCLUDE</tt> or the <tt>--with-pycppflags</tt> argument to <tt>configure</tt> 
+  set to the include flags which provide the location of the Python header 
+ files (typically, something like <tt>-I/usr/include/python1.5</tt>).  On 
+Linux, you may have to install the <tt>python-devel</tt> RPM.</p>
+           </td>
+      </tr>
+       <tr>
+      <td>Enable Allegro CL bindings and examples</td>
+       <td><tt>ALLEGROBIN</tt></td>
+       <td><tt>--with-allegro=&lt;allegro_executable&gt;</tt></td>
+       <td>If you want to enable the MITRE Allegro Common Lisp bindings,
+servers   and demos, use the <tt>--with-allegro</tt> argument to <tt>configure</tt> 
+  or uncomment <tt>ALLEGROBIN</tt> and set it to the appropriate path. Communicator 
+  requires Allegro 5.0 or later.</td>
+      </tr>
+                     
+  </tbody>     
+</table>
+            
+<h3> <a name="Storing_and_reusing_your_configuration_information"></a>Storing
+   and reusing your configuration information</h3>
+      By default, when you run the <tt>configure</tt> script and you provide
+  arguments, those arguments are cached in the file <tt>templates/&lt;arch&gt;-&lt;os&gt;/config.args</tt>.
+   The <tt>--with-cached-args</tt> argument to the <tt>configure</tt> script 
+  will reuse these stored arguments (and also won't overwrite <tt>config.args</tt>).
+   When you call <tt>configure</tt> via <tt>make</tt> (as, for instance,
+in   the <a href="#Old_configuration_method">old configuration method</a>), 
+ the <tt>--with-cached-args</tt> argument is always used, so if you run <tt>configure</tt>
+   by hand once, the settings will be available to you no matter which configuration
+   method you use subsequently (in case you need or want to reconfigure,
+or   the compilation script detects a need to run the configuration script
+again).        
+<p>At MITRE, we cache our <tt>config.make</tt> and <tt>config.args</tt> files 
+  for each platform and insert them instead of running either configuration 
+  process. If you do this, you can use <tt>make partial-site-init</tt> in 
+the  <tt>templates</tt> subdirectory to generate the remainder of the site 
+files  without overwriting <tt>config.make</tt> or <tt>config.args</tt>. </p>
+         
+<p> </p>
+            
+<h3> <a name="compilation"></a>Compilation</h3>
+      To compile the entire distribution:      
+<blockquote>                
+  <pre><tt>% cd $ROOT_DIR (the top of the distribution tree)<br>% make</tt></pre>
+      </blockquote>
+      make will automatically stop to allow editing of newly-created site 
+configuration   files. This will compile the Hub and support libraries, all 
+the MIT servers,   and all the MITRE examples, servers, demos and tools. 
+    
+<p>Each directory supports the following targets: </p>
+         
+<ul>
+      <li> opt: the default target, makes optimized executables. Object files 
+  go in OBJ/&lt;archos&gt;/O, executables and libraries have no suffix.</li>
+       <li> debug: makes executables with -g suitable for using gdb with. 
+Object   files go in OBJ/&lt;archos&gt;/D, executables and libraries have 
+the _debug   suffix.</li>
+       <li> profile: makes executables suitable for use with gprof. Object
+ files  go in OBJ/&lt;archos&gt;/P, executables and libraries have the _profile 
+ suffix.</li>
+       <li> insure: makes executables with the Insure++ tool. In order for
+ this  target to work, you must have uncommented the INSURE settings in config.make 
+  and customized them appropriately. Object files go in OBJ/&lt;archos&gt;/I, 
+  executabes and libraries have the _insure suffix.</li>
+       <li> purify: makes executables with the Purify tool. This target only
+  works for executables, since Purify isn't needed for libraries. In order
+ for this target to work, you must have uncommented the PURIFY settings in
+ config.make and customized them appropriately. Purify relies on the "debug"
+ target for its libraries and object files. Executables have the _purify
+suffix.</li>
+           
+</ul>
+      There are also five thread-specific targets, one for each non-threaded
+  target:      
+<ul>
+      <li> thread: corresponds to opt</li>
+       <li> thread-debug: corresponds to debug</li>
+       <li> thread-profile: corresponds to profile</li>
+       <li> thread-insure: corresponds to insure</li>
+       <li> thread-purify: corresponds to purify</li>
+           
+</ul>
+      If <a href="threads.html">threads are enabled</a> in a Makefile, these
+  targets will create threaded versions of the library or executable. If
+threads   are not enabled, the targets will default to the non-threaded correspondents, 
+  in order to keep the recursive compilation from breaking.      
+<p>Additional toplevel targets are listed below: </p>
+         
+<ul>
+      <li> init: Make sure site-init, links, and Makefile dependencies have 
+ been  made.</li>
+       <li> depend: generate source file dependencies for all makefiles</li>
+       <li> libs/libs-debug: make opt/debug GALAXY libraries (libGalaxy)</li>
+       <li> hub/hub-debug: make opt/debug GALAXY binaries (verify_program,
+ hub)</li>
+       <li> contrib/contrib-MIT/contrib-MITRE: make the appropriate contrib 
+ directories</li>
+       <li> clean: remove object files for the current architecture and operating 
+  system</li>
+       <li> veryclean: clean plus</li>
+                      
+  <ul>
+      <li> remove libraries and binaries for the current architecture and 
+operating   system</li>
+                     
+  </ul>
+       <li> distclean: veryclean plus</li>
+                      
+  <ul>
+      <li> remove all OBJ directories</li>
+       <li> remove automatically generated scripts and links</li>
+       <li> remove top-level lib and bin directories and their contents</li>
+       <li> remove backup files automatically generated by emacs and CVS</li>
+       <li>clear automatically generated dependencies from all makefiles<br>
+              </li>
+           
+  </ul>
+     
+</ul>
+            
+<h3> <a name="Setting_up_the_tutorial_Unix"></a>Setting up the tutorial</h3>
+       If you intend to work through the <a
+ href="../index.html#Tutorial">tutorial</a>,    the following two points
+are crucial:      
+<ul>
+     <li> Python with Tkinter support is required rather than recommended,
+ since  the tutorial relies extensively on tools implemented in Python, such
+ as the  process monitor.</li>
+     <li>Be sure that when you configure and compile the distribution  on 
+the  platform you intend to run the tutorial on, you enable compilation  of
+the  MITRE contributions by leaving uncommented the <a href="#config">COMPILE_MITRE 
+  Makefile variable</a>.</li>
+     
+</ul>
+     
+<hr width="100%">      
+<h2><a name="Windows_configuration_and_build"></a>Windows configuration and 
+ build</h2>
+   As of version 4.0, the entire Communicator distribution works on Windows 
+ NT and later. It may or may not work on Windows 98 or 95.<br>
+     
+<h3><a name="ARCHOS_on_Windows"></a>ARCHOS on Windows</h3>
+   Since there's only one Windows, we don't need to determine the value of
+ ARCHOS programmatically. It is fixed as x86-nt. Also unlike Unix, we do
+not  provide the ARCH and OS values as compiler preprocessor flags; we use
+the  WIN32 flag, already provided.<br>
+     
+<h3><a name="Third-party_applications_Windows"></a>Third-party applications</h3>
+       The Galaxy Communicator distribution is known to build with Microsoft 
+ Visual Studio version 6.0. We do not know of any attempts to build it with, 
+ e.g., gcc under Cygwin.<br>
+   <br>
+   Python 2.0 or later with Tkinter support is recommended for a number 
+of  the MITRE demos, examples and utilities. Python is available from <a
+ href="http://www.python.org">www.python.org</a>:      
+<ul>
+     <li> <a href="http://www.python.org/2.0/">version 2.0</a></li>
+     
+</ul>
+   Note that this is a more recent version of Python than the oldest possible 
+ Unix version. This is because some crucial cross-platform improvements to 
+ Python which our Windows port relies on did not occur until version 2.0.
+If you download the precompiled binaries for Windows, you'll need Python
+2.2.<br>
+     
+<p>You'll also need to install Mark Hammond's Windows extensions:<br>
+   </p>
+     
+<ul>
+     <li><a href="http://starship.python.net/crew/mhammond/">Windows extensions</a></li>
+     
+</ul>
+     
+<p>These extensions are required by the Python process monitor.<br>
+   </p>
+     
+<h3><a name="Configuration_and_compilation"></a>Configuration and compilation</h3>
+   We strongly recommend that you download the precompiled Windows binaries 
+ for Galaxy Communicator. This package can be accessed from&nbsp; the Communicator 
+ <a href="http://communicator.sourceforge.net/download/">download page</a>, 
+ and contains all the executables for the Hub, examples, demos and utilities. 
+ However, if you would like to build the distribution yourself, we provide 
+ a Microsoft Visual Studio workspace <tt>GC.dsw</tt> at the root of the Galaxy 
+ Communicator source distribution. You should be able to build the distribution 
+ straighforwardly using it.<br>
+     
+<p><a href="threads.html">Threads</a> are enabled by default in the Windows 
+ distribution.<br>
+   </p>
+     
+<p>On Unix, we generate a large number of shell scripts to hide some of the 
+ details of execution from the user. We do not provide the analogous batch 
+ files on Windows. While this is inconvenient in some ways, it also simplifies 
+ the configuration of the distribution considerably. Here are the only required 
+ distribution steps:<br>
+   </p>
+     
+<ul>
+     <li>If you're going to use <a
+ href="../../../contrib/MITRE/bindings/python/docs/index.html">Python servers</a>, 
+ you must set your Windows GC_HOME environment variable to the root of the 
+ Galaxy Communicator distribution. You can do this in the MS-DOS window where 
+ you invoke the server, or you can put it into your <tt>autoexec.bat</tt> 
+file.</li>
+     <li>If you're going to use the <a
+ href="../../../contrib/MITRE/tools/docs/process_monitor_ref.html">process 
+ monitor</a>, you'll probably want to copy the file <tt>templates/x86-nt/config.values.in</tt> 
+ to <tt>templates/x86-nt/config.values</tt> and edit it to reflect the proper 
+ location of your Python executable and include directories, and the location 
+ of your Java installation. Once you uncomment these entries by removing the
+ leading #, these values will be used by the process monitor both to expand
+ the command lines provided to the process monitor and to evaluate the requirements
+ of each process block. See the <tt>EXPAND:</tt> and <tt>REQUIRES:</tt> 
+   <a
+ href="../../../contrib/MITRE/tools/docs/process_monitor_ref.html#Configuration_file">configuration 
+ file properties</a>. <br>
+     </li>
+     
+</ul>
+     
+<h3><a name="Setting_up_the_tutorial_Windows"></a>Setting up the tutorial</h3>
+       If you intend to work through the <a
+ href="../index.html#Tutorial">tutorial</a>,    the following two points
+are crucial:      
+<ul>
+     <li> Python with Tkinter support is required rather than recommended,
+ since  the tutorial relies extensively on tools implemented in Python, such
+ as the  process monitor.</li>
+     <li>The PYTHONBIN entry in your <tt>config.values</tt> file must be
+uncommented  and correct.<br>
+     </li>
+     
+</ul>
+     
+<hr width="100%" size="2">   
+<h2> <a name="Installation"></a>Installation</h2>
+      There's no <tt>make install</tt> for the Galaxy Communicator infrastructure. 
+Once you compile, you're done.  
+<p><b>Note</b>: In some ways this is convenient, but in other ways in can 
+  be an obstacle. This is because in some cases, it's necessary to compile 
+ absolute paths into executables. For example, if we want to avoid environment 
+ variables like <tt>GC_HOME</tt>, we must encode the location of the compiled 
+ distribution into shell scripts which run Python, Allegro or Java servers, 
+ so that these servers know where to find the various Galaxy Communicator 
+code libraries which implement the Galaxy Communicator infrastructure for 
+that language. Similarly, if we want to avoid the <tt>LD_LIBRARY_PATH</tt> 
+ environment variable for shared libraries, it's necessary to compile the 
+location of the shared libraries into Galaxy Communicator C executables. </p>
+         
+<p>What this means is that in many cases, these executables can't be moved. 
+  Any installation process would have to address these issues; it's straightforward 
+  to see how to address it for the shell scripts, but it's something of a 
+mystery  how to address it for the C executables short of relinking them. 
+And even  then, the resulting installation also couldn't be moved. Therefore, 
+we've  chosen not to worry about the complexities of <tt>make install.</tt> 
+</p>
+         
+<p> </p>
+         
+<hr width="100%">      
+<h2> <a name="Cross_compilation"></a>Cross compilation (Unix)</h2>
+      Because of the changes to the configuration process in version 3.3, 
+we've   had to make significant changes to the experimental Unix support for
+cross-compilation,   introduced in version 3.1.      
+<p>This support is now enabled via an environment variable visible to <tt>configure</tt>
+   and <tt>make</tt> called <tt>GC_CROSS</tt>. This variable is the name
+of   a <tt>/bin/sh</tt> file which contains settings for the <tt>host</tt>
+variable   (which should be the <tt>&lt;arch&gt;-&lt;os&gt;</tt> value for
+the platform   being compiled for), for any variables in <tt>config.make</tt>
+which must   be specified for the target platform and can't be derived from
+the environment   (such as CC), and for some special cross-compilation variables
+whose values   couldn't be derived without executing code. The value of <tt>GC_CROSS</tt>
+   must be an absolute pathname; <tt>configure</tt> will refuse to run otherwise.
+   </p>
+         
+<p>For instance, for compiling for the StrongARM processor running Linux, 
+  we provide the following settings. This sample configuration can be found 
+  in <tt>templates/cross_compilation/armv4l-linux-config.sh</tt>. </p>
+         
+<blockquote><tt># This is a /bin/sh file which sets variable values.    <br>
+    # It is sourced in two places.    <br>
+    # It must always have a value for host. This value should <br>
+       # be a value for ARCH-OS. <br>
+    host=armv4l-linux <br>
+    # We need to set the following tools: CC, CXX, AR. <br>
+    CC=/usr/local/arm-linux/bin/arm-linux-gcc <br>
+       CXX=/usr/local/arm-linux/bin/arm-linux-g++ <br>
+       AR="/usr/local/arm-linux/bin/arm-linux-ar crsv" <br>
+    # These variables are special cross-compilation variables which could 
+not    <br>
+       # be derived without executing code. <br>
+    ac_cc_sizeof_char=1 <br>
+       ac_cc_sizeof_short=2 <br>
+       ac_cc_sizeof_int=4 <br>
+       ac_cc_sizeof_long=4 <br>
+       ac_cc_sizeof_long_long=8 <br>
+       ac_cc_sizeof_float=4 <br>
+       ac_cc_sizeof_double=8 <br>
+       ac_cc_c_bigendian=no</tt>                   </blockquote>
+            
+<p><br>
+     The special cross-compilation variables shown here, like <tt>host</tt>,
+  are  required; if <tt>configure</tt> concludes that it's cross-compiling
+ and it doesn't find these values, it will refuse to run. As a convenience,
+ we've provided a C file, <tt>templates/cross_compilation/configure_values.c</tt>,
+   which will compute and print out these settings. Just run your cross-compiler
+   on that file, run the resulting executable on the target platform, and
+paste  the output directly into your <tt>GC_CROSS</tt> file. You only need
+to do  this once. </p>
+         
+<p>If the value of <tt>GC_CROSS</tt> is visible to <tt>configure</tt>, it
+   will create the appropriate subdirectory in <tt>templates</tt> to hold
+the  configuration information. After <tt>configure</tt> runs, you'll have
+the  usual opportunity to edit <tt>config.make</tt>. For the StrongARM, we
+edit  <tt>templates/armv4l-linux/config.make</tt> to set the <tt>STRIP</tt>
+makefile   variable to <tt>arm-linux-strip</tt> to reduce the size of the
+executables.   </p>
+         
+<p>When you compile after configuring, make sure that the value of <tt>GC_CROSS</tt>
+   is visible to <tt>make</tt>. If it is, <tt>make</tt> will use the correct
+   <tt>config.make</tt> and create and use the appropriate set of subdirectories.
+   </p>
+         
+<p> </p>
+         
+<hr>   
+<center>    
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+       <tbody>
+         <tr>
+           <td valign="middle" align="left" width="10%"><a
+ href="../../../contrib/MITRE/bindings/clisp/docs/index.html"><img
+ src="../../arrow_left.gif" alt="" width="30" height="30">
+         </a></td>
+           <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+           <td valign="middle" align="right" width="10%"><a
+ href="new_features.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+         </a></td>
+         </tr>
+                  
+  </tbody>     
+</table>
+     Last updated August 16, 2002</center>
+       <br>
+     <br>
+    <br>
+   <br>
+  <br>
+ <br>
+</body>
+</html>

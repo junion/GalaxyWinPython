@@ -1,0 +1,752 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                                               
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                                               
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Core Library</title>
+                                                 <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+                       
+<center>           
+<h1> Galaxy Communicator Documentation:<br>
+            <br>
+            Core Library</h1>
+           </center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "api_index.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "libgalaxy_io.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+                       
+<hr width="100%"> <br>
+           &nbsp;           
+<p>This documentation briefly describes functions in the directory src/libGalaxy/galaxy 
+     which are present but probably will not be used by the developer. The 
+ signatures    of these functions may change from release to release. </p>
+                     
+<p> </p>
+                     
+<hr width="100%"> <br>
+           &nbsp;           
+<ul>
+            <li> <a href="#String_Utility_Functions">String Utility Functions</a></li>
+             <li> <a href="#Print_Utility_Functions">Print Utility Functions</a></li>
+             <li> <a href="#Program_File_Parsing_Functions">Program File
+Parsing      Functions</a></li>
+             <li> <a href="#Program_File_Parsing_Functions">Stream Functions</a></li>
+             <li> <a href="#Buffer_Functions">Buffer Functions</a></li>
+             <li> <a href="#Frame_Reading_Functions">Frame Reading Functions</a></li>
+             <li> <a href="#Hash_Table_Utilities">Hash Table Utilities</a></li>
+             <li> <a href="#Dispatch_Function_Utilities">Dispatch Function
+ Utilities</a></li>
+             <li> <a href="#Random_utilities">Random utilities</a></li>
+                      
+</ul>
+                       
+<hr width="100%">           
+<h2> <a name="String_Utility_Functions"></a>String Utility Functions</h2>
+            int&nbsp;<a name="Gal_DigitStringp"></a><b><big>Gal_DigitStringp</big></b>(const 
+ char *<i>word</i>) <br>
+           Returns 1 if the string, <i>word</i>, represents an integer. 
+          
+<p>int&nbsp;<a name="Gal_FloatStringp"></a><b><big>Gal_FloatStringp</big></b>(const 
+ char *word) <br>
+           Returns 1 if the string <i>word</i> represents a float. </p>
+                     
+<p>void&nbsp;<a name="Gal_StringRightTrim"></a><b><big>Gal_StringRightTrim</big></b>(char
+      *<i>str</i>, const char *<i>trim</i>) <br>
+           Removes characters in <i>trim</i> from the right edge of <i>str</i>, 
+   inserting   a null character at the appropriate place. </p>
+                     
+<p>void&nbsp;<a name="Gal_StringLeftTrim"></a><b><big>Gal_StringLeftTrim</big></b>(char
+      *<i>str</i>, const char *<i>trim</i>) <br>
+           Removes characters in <i>trim</i> from the left edge of <i>str</i>,
+   updating   the underlying pointer. </p>
+                     
+<p>void&nbsp;<a name="Gal_StringTrim"></a><b><big>Gal_StringTrim</big></b>(char
+      *<i>str</i>, const char *<i>trim</i>) <br>
+           Removes characters in <i>trim</i> from both edges of <i>str</i>
+ using    <a href="#Gal_StringLeftTrim">Gal_StringLeftTrim</a> and <a
+ href="#Gal_StringRightTrim">Gal_StringRightTrim</a>. </p>
+                     
+<p>int&nbsp;<a name="Gal_StringEq"></a><b><big>Gal_StringEq</big></b>(const 
+ char *<i>str1</i>, const char *<i>str2</i>); <br>
+           Returns 1 if the strings, <i>str1</i> and <i>str2</i>, are equivalent
+    (using  strcmp).&nbsp; Otherwise, 0 is returned. </p>
+                     
+<p>int&nbsp;<a name="Gal_StringCaseEq"></a><b><big>Gal_StringCaseEq</big></b>(const 
+ char *<i>str1</i>, const char *<i>str2</i>); <br>
+           Returns 1 if the strings, <i>str1</i> and <i>str2</i>, are of
+the   same   case.&nbsp;  Otherwise, 0 is returned. </p>
+                     
+<p> </p>
+                     
+<hr width="100%">           
+<h2> <a name="Print_Utility_Functions"></a>Print Utility Functions</h2>
+            char *<a name="Gal_ObjectString"></a><b><big>Gal_ObjectString</big></b>(Gal_Object
+      <i>to</i>, Gal_StringBuffer **<i>buf</i>) <br>
+           A static version of <a href="frame.html#Gal_ObjectToString">Gal_ObjectToString</a>.
+      Also returns strings corresponding to keyword, symbol and tag objects.
+              
+<p>void&nbsp;<a name="Gal_ObjectStringToBuffer"></a><b><big>Gal_ObjectStringToBuffer</big></b>(Gal_Object
+      <i>to</i>, Gal_StringBuffer *<i>buf</i>) <br>
+           An alternative for working with an existing string buffer. </p>
+                     
+<p> </p>
+                     
+<hr width="100%">           
+<h2> <a name="Program_File_Parsing_Functions"></a>Program File Parsing Functions</h2>
+            Part of program files which is new in 1.3 is the notion of a
+"tag",    which   is a distinguished symbol such as RULE: or destroy!. Tags
+can be   used for   errors, directives in Hub programs, or other uses.  
+         
+<p>char *<a name="Gal_SplitOperationName"></a><b><big>Gal_SplitOperationName</big></b>(const 
+ char *<i>op_name</i>, char **<i>server_name</i>) </p>
+                     
+<p>char *<a name="Gal_SplitLocation"></a><b><big>Gal_SplitLocation</big></b>(const 
+ char *<i>location_string</i>, int *<i>port</i>) </p>
+                     
+<p>Gal_DispatchFnSignature *<a name="Gal_FindNamedSignature"></a><b><big>Gal_FindNamedSignature</big></b>(Gal_DispatchFnSignature
+      *<i>sigs</i>, const char *<i>name</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_SetTagObjectHash"></a><b><big>Gal_SetTagObjectHash</big></b>(Gal_HashTable
+      <i>ht</i>) <br>
+           Internal function to establish the hash table for tag objects. 
+</p>
+                     
+<p>Gal_HashTable&nbsp;<a name="Gal_GetTagObjectHash"></a><b><big>Gal_GetTagObjectHash</big></b>(void
+      ) <br>
+           Internal function to retrieve the tag object hash table. </p>
+                     
+<p>Gal_Object&nbsp;<a name="Gal_GetTagObject"></a><b><big>Gal_GetTagObject</big></b>(const
+  char     *<i>str</i>) <br>
+           Internal function to retrieve a tag object for <i>str</i>. Depends 
+  on  Gal_SetTagObject  having been called on the string <i>str</i>, so it 
+ is not  yet really used.   </p>
+                     
+<p>void&nbsp;<a name="Gal_SetTagObject"></a><b><big>Gal_SetTagObject</big></b>(const
+  char *<i>key</i>, Gal_Object <i>value</i>) <br>
+           Internal function to store the tag object for a given string.
+Not   yet   used.   </p>
+                     
+<p>Gal_HashTable&nbsp;<a name="Gal_InitializeTagTable"></a><b><big>Gal_InitializeTagTable</big></b>(Gal_TagMap
+      *<i>map</i>, int <i>size</i>) <br>
+           Initializes the hash table mapping from tag names to tag integers. 
+  </p>
+                     
+<p>void&nbsp;<a name="Gal_AddToTagTable"></a><b><big>Gal_AddToTagTable</big></b>(Gal_TagMap
+      *<i>map</i>, Gal_HashTable <i>ht</i>) <br>
+           Adds a set of pairs to the hash table. </p>
+                     
+<p>Gal_TagArray&nbsp;<a name="Gal_InitializeTagArray"></a><b><big>Gal_InitializeTagArray</big></b>(Gal_TagMap
+      *<i>map</i>) <br>
+           Initializes the mapping from tag integers to tag names. </p>
+                     
+<p>void&nbsp;<a name="Gal_AddToTagArray"></a><b><big>Gal_AddToTagArray</big></b>(Gal_TagMap
+      *<i>map</i>, Gal_TagArray <i>tag_array</i>) <br>
+           Adds a set of pairs to the tag array mapping. </p>
+                     
+<p>char *<a name="Gal_GetTagArrayTag"></a><b><big>Gal_GetTagArrayTag</big></b>(int
+      <i>tag</i>, Gal_TagArray <i>tag_array</i>) <br>
+           Retrievs the tag name corresponding to a given tag integer.</p>
+ 
+<p>void <a name="Gal_FreeTagArray"></a><b><big>Gal_FreeTagArray</big></b>(Gal_TagArray 
+<i>tag_array</i>)  </p>
+ 
+<p> </p>
+                     
+<p>void&nbsp;<a name="Gal_AddErrorTags"></a><b><big>Gal_AddErrorTags</big></b>(Gal_TagMap
+      *<i>map</i>) </p>
+                     
+<p>char *<a name="Gal_ErrorTagString"></a><b><big>Gal_ErrorTagString</big></b>(int
+      <i>tag</i>)</p>
+<p>void <a name="Gal_FreeErrorTags"></a><b><big>Gal_FreeErrorTags</big></b>() 
+ </p>
+<p> </p>
+                     
+<p>void&nbsp;<a name="Gal_AddProgramTags"></a><b><big>Gal_AddProgramTags</big></b>(Gal_TagMap
+      *<i>map</i>) </p>
+                     
+<p>char *<a name="Gal_ProgramTagString"></a><b><big>Gal_ProgramTagString</big></b>(int
+      <i>tag</i>) </p>
+                     
+<p>int&nbsp;<a name="Gal_GetProgramTag"></a><b><big>Gal_GetProgramTag</big></b>(const
+  char *<i>tag_name</i>) </p>
+                     
+<p>Gal_HashTable&nbsp;<a name="Gal_GetProgramTagHash"></a><b><big>Gal_GetProgramTagHash</big></b>(void
+      )</p>
+<p>void <a name="Gal_FreeProgramTags"></a><b><big>Gal_FreeProgramTags</big></b>() 
+ </p>
+<p> </p>
+                     
+<p>Gal_FileStruct *<a name="Gal_PushProgramFile"></a><b><big>Gal_PushProgramFile</big></b>(const
+  char *<i>filename</i>, FILE *<i>fp</i>, Gal_FileStruct *<i>current_files</i>)
+     </p>
+                     
+<p>Gal_FileStruct *<a name="Gal_PopProgramFile"></a><b><big>Gal_PopProgramFile</big></b>(Gal_FileStruct
+      *<i>current_files</i>) </p>
+                     
+<p>char *<a name="Gal_ProgramStringValue"></a><b><big>Gal_ProgramStringValue</big></b>(Gal_Object
+      <i>obj</i>) </p>
+                     
+<p>int&nbsp;<a name="Gal_ProgramStringp"></a><b><big>Gal_ProgramStringp</big></b>(Gal_Object
+      <i>o</i>) </p>
+                     
+<p>Gal_Object <a name="Gal_GetProgramEntity"></a><b><big>Gal_GetProgramEntity</big></b>(Gal_ProgramEntity
+     *<i>e</i>, Gal_Frame *<i>namespace_array</i>, int *<i>newly_created</i>) 
+      </p>
+                   
+<p> </p>
+                     
+<p>void <a name="Gal_SetProgramEntityLocation"></a><b><big>Gal_SetProgramEntityLocation</big></b>(Gal_ProgramEntity
+     *<i>e</i>, Gal_Object <i>o</i>, Gal_Frame *<i>namespace_array</i>, int
+  <i>newly_created</i>)    </p>
+                   
+<p> </p>
+                     
+<p>void&nbsp;<a name="Gal_DeleteProgramEntityLocation"></a><b><big>Gal_DeleteProgramEntityLocation</big></b>(Gal_ProgramEntity
+      *<i>e</i>, Gal_Frame *<i>namespace_array</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_InitializeProgramParser"></a><b><big>Gal_InitializeProgramParser</big></b>(Gal_ProgramParser
+      *<i>pp</i>, Gal_InputStream <i>gs</i>, Gal_FileStruct *<i>fs</i>, int
+  <i>default_tag</i>,    int <i>control_flags</i>) </p>
+                     
+<p>Gal_Boolean&nbsp;<a name="Gal_TestConditionInNamespaces"></a><b><big>Gal_TestConditionInNamespaces</big></b>(Gal_TestClause
+      *<i>tests</i>, Gal_Frame *<i>frame_array</i>, int <i>default_namespace</i>)
+      </p>
+                     
+<p>Gal_Object&nbsp;<a name="_Gal_ReadObjectWithTags"></a><b><big>_Gal_ReadObjectWithTags</big></b>(Gal_InputStream
+      <i>gs</i>, Gal_SpecialTokenizer <i>special_tokenizer</i>) </p>
+                     
+<p>int&nbsp;<a name="Gal_IsFullPath"></a><b><big>Gal_IsFullPath</big></b>(const
+  char *<i>path</i>) </p>
+                     
+<p>Gal_ConditionStruct *<a name="Gal_NewCondition"></a><b><big>Gal_NewCondition</big></b>(ProgramObject
+      *<i>values</i>, Gal_ProgramParser *<i>pp</i>, int *<i>error_ptr</i>)
+ </p>
+                     
+<p>ProgramObject *<a name="Gal_ReadProgramLine"></a><b><big>Gal_ReadProgramLine</big></b>(Gal_ProgramParser
+      *<i>pp</i>, int *<i>count_ptr</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_PrintProgramWarning"></a><b><big>Gal_PrintProgramWarning</big></b>(Gal_FileStruct
+      *<i>fs</i>, int <i>error</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_PrintProgramError"></a><b><big>Gal_PrintProgramError</big></b>(Gal_FileStruct
+      *<i>fs</i>, int <i>error</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_PrintProgramObject"></a><b><big>Gal_PrintProgramObject</big></b>(ProgramObject
+      *<i>obj</i>) </p>
+                     
+<p>Gal_FileStruct *<a name="Gal_OpenControlFile"></a><b><big>Gal_OpenControlFile</big></b>(const
+  char *<i>filename</i>, char *<i>directory</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_CloseControlFile"></a><b><big>Gal_CloseControlFile</big></b>(Gal_FileStruct
+      *<i>fs</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_PrintTests"></a><b><big>Gal_PrintTests</big></b>(FILE
+      *<i>fp</i>, Gal_TestClause *<i>tests</i>, int <i>pedantic</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_PrintCondition"></a><b><big>Gal_PrintCondition</big></b>(FILE
+      *<i>fp</i>, Gal_ConditionStruct *<i>condition</i>, char *<i>tag</i>,
+ int    <i>pedantic</i>)  </p>
+                     
+<p>Gal_Boolean&nbsp;<a name="Gal_TestCondition"></a><b><big>Gal_TestCondition</big></b>(Gal_Frame
+      <i>frame</i>, Gal_TestClause *<i>tests</i>) </p>
+                     
+<p>The types GAL_PTR, GAL_KEYWORD, GAL_TAG and GAL_TOKEN are used in the program
+file parser. </p>
+                     
+<p>Gal_Object&nbsp;<a name="Gal_PointerObject"></a><b><big>Gal_PointerObject</big></b>(void
+      *<i>val</i>); <br>
+           Converts the value, <i>val</i>, into a GAL_PTR object. This object 
+  is  used  internally in hash tables to deal with objects in program file 
+ parsing.   </p>
+                     
+<blockquote>                                 
+  <h4> <b>Memory management</b></h4>
+            </blockquote>
+                       
+<ul>
+                                            
+  <ul>
+            <li> Creation: the Gal_Object is allocated from an internal store 
+  of  Gal_Objects.</li>
+             <li> Freeing: the Gal_Object is returned to the internal store 
+ of  Gal_Objects.</li>
+             <li> Copying: a new object is created using Gal_PointerObject.</li>
+                                            
+  </ul>
+                      
+</ul>
+            void *<a name="Gal_PointerValue"></a><b><big>Gal_PointerValue</big></b>(Gal_Object
+      <i>to</i>) <br>
+           Extracts a void * from the object <i>to</i>.&nbsp; If the object 
+ is  not   of type GAL_PTR, a warning is printed and NULL is returned.   
+        
+<p>int&nbsp;<a name="Gal_Pointerp"></a><b><big>Gal_Pointerp</big></b>(Gal_Object
+      <i>to</i>) <br>
+           Returns 1 if the object, <i>obj</i>, is a void *, of type GAL_PTR. 
+  </p>
+                     
+<p>Gal_Object&nbsp;<a name="Gal_KeywordObject"></a><b><big>Gal_KeywordObject</big></b>(const
+  char *<i>value</i>) <br>
+           char *<a name="Gal_KeywordValue"></a><b><big>Gal_KeywordValue</big></b>(Gal_Object
+      <i>to</i>) <br>
+           int&nbsp;<a name="Gal_Keywordp"></a><b><big>Gal_Keywordp</big></b>(Gal_Object
+      <i>to</i>) <br>
+           Returns 1 if the object, <i>obj</i>, is a symbol, of type GAL_KEYWORD. 
+    </p>
+                     
+<p>Gal_Object&nbsp;<a name="Gal_TagObject"></a><b><big>Gal_TagObject</big></b>(const
+  char *<i>value</i>) <br>
+           int&nbsp;<a name="Gal_Tagp"></a><b><big>Gal_Tagp</big></b>(Gal_Object
+    <i>to</i>)   <br>
+           Returns 1 if the object, <i>obj</i>, is a symbol, of type GAL_TAG. 
+  </p>
+                     
+<p>To access the value of this object use, <a href="#Gal_KeywordValue">Gal_KeywordValue</a>.
+      </p>
+                     
+<p>Gal_Object&nbsp;<a name="Gal_TokenObject"></a><b><big>Gal_TokenObject</big></b>(const
+  char *<i>val</i>) <br>
+           Gal_Object&nbsp;<a name="Gal_CreateTokenObject"></a><b><big>Gal_CreateTokenObject</big></b>(char
+      *<i>cp</i>, int <i>manage_memory</i>) <br>
+           int&nbsp;<a name="Gal_Tokenp"></a><b><big>Gal_Tokenp</big></b>(Gal_Object
+      <i>to</i>) <br>
+           Returns 1 if the object, <i>obj</i>, is a symbol, of type GAL_TOKEN. 
+   </p>
+                     
+<p>to access the value of this object, use <a
+ href="frame.html#Gal_StringValue">Gal_StringValue</a>. </p>
+                     
+<p>Gal_Object&nbsp;<a name="Gal_SymbolObject"></a><b><big>Gal_SymbolObject</big></b>(const
+  char *<i>value</i>) <br>
+           int&nbsp;<a name="Gal_Symbolp"></a><b><big>Gal_Symbolp</big></b>(Gal_Object
+      <i>to</i>); <br>
+           Returns 1 if the object, <i>obj</i>, is a symbol, of type GAL_SYMBOL.
+    </p>
+                     
+<p>To access the value of this object use, <a href="#Gal_KeywordValue">Gal_KeywordValue</a>.
+      </p>
+                     
+<p>Gal_TestClause *<a name="Gal_NewTest"></a><b><big>Gal_NewTest</big></b>(ProgramObject
+      *<i>values</i>, int *<i>error_ptr</i>, int <i>in_group</i>, Gal_ProgramParser
+      *<i>pp</i>) </p>
+                     
+<p>Gal_ProgramEntity *<a name="Gal_CreateProgramEntity"></a><b><big>Gal_CreateProgramEntity</big></b>(ProgramObject
+      *<i>p</i>, Gal_ProgramParser *<i>pp</i>, int <i>allow_complex</i>,
+int    <i>allow_literal</i>,  int <i>allow_key</i>) </p>
+                     
+<p>int&nbsp;<a name="Gal_ProgramEntitiesEqual"></a><b><big>Gal_ProgramEntitiesEqual</big></b>(Gal_ProgramEntity
+      *<i>e1</i>, Gal_ProgramEntity *<i>e2</i>) </p>
+                     
+<p>Gal_NamespaceEntry *<a name="Gal_FindNamespaceEntry"></a><b><big>Gal_FindNamespaceEntry</big></b>(const
+  char *<i>name</i>, Gal_NamespaceEntry *<i>ne</i>) </p>
+                     
+<p>Gal_ProgramEntity *<a name="Gal_CreateNamespaceProgramEntity"></a><b><big>Gal_CreateNamespaceProgramEntity</big></b>(const
+  char *<i>key</i>, Gal_ProgramParser *<i>pp</i>) </p>
+                     
+<p>char *<a name="Gal_FormatEntity"></a><b><big>Gal_FormatEntity</big></b>(Gal_ProgramEntity
+      *<i>e</i>, int <i>pedantic</i>, Gal_StringBuffer **<i>bufptr</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_PrintEntity"></a><b><big>Gal_PrintEntity</big></b>(Gal_ProgramEntity
+      *<i>e</i>, int <i>pedantic</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_FreeConditionStruct"></a><b><big>Gal_FreeConditionStruct</big></b>(Gal_ConditionStruct
+      *<i>cond</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_FreeTests"></a><b><big>Gal_FreeTests</big></b>(Gal_TestClause
+      *<i>c</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_FreeProgramEntity"></a><b><big>Gal_FreeProgramEntity</big></b>(Gal_ProgramEntity
+      *<i>e</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_FreeProgramLine"></a><b><big>Gal_FreeProgramLine</big></b>(ProgramObject
+      *<i>p</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_ClearProgramParser"></a><b><big>Gal_ClearProgramParser</big></b>(Gal_ProgramParser
+      *<i>pp</i>) </p>
+                     
+<p>char *<a name="Gal_SplitServiceTypeName"></a><b><big>Gal_SplitServiceTypeName</big></b>(const
+  char *<i>type_name</i>, int *<i>provider_int</i>, char **<i>provider_name</i>)
+      </p>
+                     
+<p>int&nbsp;<a name="Gal_GetProgramObjectTag"></a><b><big>Gal_GetProgramObjectTag</big></b>(ProgramObject
+      *<i>p</i>, int <i>i</i>)</p>
+<p>void <a name="Gal_FreeProgramObject"></a><b><big>Gal_FreeProgramObject</big></b>(ProgramObject
+*<i>p</i>, int <i>starting_from</i>)  </p>
+<p> </p>
+                     
+<p>void&nbsp;<a name="Gal_InstantiateProgramObjectFromList"></a><b><big>Gal_InstantiateProgramObjectFromList</big></b>(Gal_Object
+      <i>list_obj</i>, ProgramObject *<i>p</i>, int <i>do_tags</i>) </p>
+                     
+<p>Gal_ProgramEntity *<a name="Gal_CopyProgramEntity"></a><b><big>Gal_CopyProgramEntity</big></b>(Gal_ProgramEntity
+      *<i>old_entity</i>) </p>
+                     
+<p>Gal_NamespaceEntry *<a name="Gal_FindProgramNamespace"></a><b><big>Gal_FindProgramNamespace</big></b>(Gal_Object
+      <i>o</i>, Gal_ProgramParser *<i>pp</i>) </p>
+                     
+<p> </p>
+                     
+<hr width="100%">           
+<h2> <a name="Stream_Functions"></a>Stream Functions</h2>
+            Gal_InputStream&nbsp;<a name="Gal_MakeStringInputStream"></a><b><big>Gal_MakeStringInputStream</big></b>(const
+  char *<i>s</i>) <br>
+           Creates a stream from a string.            
+<blockquote><b>Memory management</b>                                 
+  <p>The string is not copied.</p>
+           </blockquote>
+            int&nbsp;<a name="Gal_InputStreamNextChar"></a><b><big>Gal_InputStreamNextChar</big></b>(Gal_InputStream
+      <i>gs</i>) <br>
+           Returns the next char from an input stream.            
+<p>void&nbsp;<a name="Gal_InputStreamRewind"></a><b><big>Gal_InputStreamRewind</big></b>(Gal_InputStream
+      <i>gs</i>, int <i>i</i>) <br>
+           Rewinds the input stream by <i>count</i>. </p>
+                     
+<p>char *<a name="Gal_StringInputStreamString"></a><b><big>Gal_StringInputStreamString</big></b>(Gal_InputStream
+      <i>gs</i>) <br>
+           Returns a pointer into the string used to create the string stream.
+   </p>
+                     
+<p>Gal_InputStream&nbsp;<a name="Gal_MakeFileInputStream"></a><b><big>Gal_MakeFileInputStream</big></b>(FILE
+      *<i>fp</i>) <br>
+           Creates a stream from a file pointer. </p>
+                     
+<p>char *<a name="Gal_FileNextLine"></a><b><big>Gal_FileNextLine</big></b>(Gal_InputStream
+      <i>gs</i>, char *<i>line</i>, int <i>max</i>) <br>
+           Returns the next line from a file stream, or NULL if the stream
+ is  not   a  file stream. </p>
+                     
+<p>char *<a name="Gal_FileCurrentLine"></a><b><big>Gal_FileCurrentLine</big></b>(Gal_InputStream
+      <i>gs</i>, char *<i>line</i>, int <i>max</i>) <br>
+           Returns the current line from a file stream, or NULL if the stream 
+  is  not  a file stream. </p>
+                     
+<p>Gal_OutputStream&nbsp;<a name="Gal_MakeStringOutputStream"></a><b><big>Gal_MakeStringOutputStream</big></b>(char
+      *<i>buf</i>, int <i>bufsize</i>) <br>
+           Creates an output stream with a string as its target. It uses
+Gal_MakeStringBuffer      to construct its internal store. </p>
+                     
+<p>void&nbsp;<a name="Gal_FreeStringOutputStream"></a><b><big>Gal_FreeStringOutputStream</big></b>(Gal_OutputStream
+      <i>gs</i>) <br>
+           Frees the output stream if the stream is a string stream. Calls
+ Gal_FreeStringBuffer.      </p>
+                     
+<p>char *<a name="Gal_StringOutputStreamString"></a><b><big>Gal_StringOutputStreamString</big></b>(Gal_OutputStream
+      <i>gs</i>) <br>
+           Returns a pointer to the current contents of the string buffer,
+ or  NULL   if the stream is not a string stream. </p>
+                     
+<p>int&nbsp;<a name="Gal_StringStreamWriteString"></a><b><big>Gal_StringStreamWriteString</big></b>(Gal_OutputStream
+      <i>gs</i>, int <i>increment</i>, const char *<i>s</i>, ... ) <br>
+           Formats <i>s</i> with its arguments to the output stream. It attempts
+    to  ensure that there is at least <i>increment</i> bytes open in the
+internal      buffer. If <i>increment</i> is -1, the length of <i>s</i> is
+used. If  the    stream is not a string stream, or the string buffer does
+not have the requested    room available and can't be expanded, 0 is returned;
+otherwise,   1 is returned.    </p>
+                     
+<p> </p>
+                     
+<hr width="100%">           
+<h2> <a name="Buffer_Functions"></a>Buffer Functions</h2>
+            Gal_StringBuffer *<a name="Gal_MakeStringBuffer"></a><b><big>Gal_MakeStringBuffer</big></b>(char
+      *<i>buf</i>, int <i>bufsize</i>) <br>
+           Returns a string buffer suitable for writing to. If <i>buf</i> 
+is  NULL,    a dynamically extendable string buffer is allocated from an internal
+ store    of such buffers. If <i>buf</i> is not NULL, <i>buf</i> is used
+as  a buffer    of immutable size <i>bufsize</i>.            
+<p>void&nbsp;<a name="Gal_FreeStringBuffer"></a><b><big>Gal_FreeStringBuffer</big></b>(Gal_StringBuffer
+      *<i>buf</i>) <br>
+           Frees the string buffer. If the buffer is immutable, the structure 
+  is  freed;  if it is dynamic, the buffer is zeroed and returned to the internal
+   store  of string buffers. </p>
+                     
+<p>char *<a name="Gal_StringBufferString"></a><b><big>Gal_StringBufferString</big></b>(Gal_StringBuffer
+      *<i>buf</i>) <br>
+           Returns the string associated with the string buffer. The internal 
+  buffer    is not copied. </p>
+                     
+<p>int&nbsp;<a name="Gal_StringBufferWrite"></a><b><big>Gal_StringBufferWrite</big></b>(Gal_StringBuffer
+      *<i>b</i>, int <i>increment</i>, const char *<i>s</i>, ... ) <br>
+           Formats <i>s</i> with its arguments to the string buffer. It attempts
+    to  ensure that there is at least <i>increment</i> bytes open in the
+internal      buffer. If <i>increment</i> is -1, the length of <i>s</i> is
+used. If  the    string buffer does not have the requested room available
+and can't  be expanded,    0 is returned; otherwise, 1 is returned. </p>
+                     
+<p>int&nbsp;<a name="Gal_StringBufferWriteString"></a><b><big>Gal_StringBufferWriteString</big></b>(Gal_StringBuffer
+      *<i>b</i>, const char *<i>s</i>) <br>
+           "Safe" version of Gal_StringBufferWrite, where characters which
+ appear    to  be format directives but aren't (say, stray % characters)
+aren't  interpreted     incorrectly. </p>
+                     
+<p>Gal_StringBuffer *<a name="Gal_MakeByteBuffer"></a><b><big>Gal_MakeByteBuffer</big></b>(char
+      *<i>buf</i>, int <i>bufpos</i>, int <i>bufsize</i>, int <i>manage_memory</i>,
+      int <i>dynamic</i>, int <i>increment</i>, int <i>padding</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_FreeByteBuffer"></a><b><big>Gal_FreeByteBuffer</big></b>(Gal_StringBuffer
+      *<i>buf</i>) </p>
+                     
+<p>char *<a name="Gal_ByteBufferBytes"></a><b><big>Gal_ByteBufferBytes</big></b>(Gal_StringBuffer
+      *<i>buf</i>) </p>
+                     
+<p>int&nbsp;<a name="Gal_ByteBufferSize"></a><b><big>Gal_ByteBufferSize</big></b>(Gal_StringBuffer
+      *<i>buf</i>) </p>
+                     
+<p>int&nbsp;<a name="Gal_ByteBufferAppend"></a><b><big>Gal_ByteBufferAppend</big></b>(Gal_StringBuffer
+      *<i>b</i>, const char *<i>s</i>, int <i>size</i>) </p>
+                     
+<p>int&nbsp;<a name="Gal_ByteBufferDynamic"></a><b><big>Gal_ByteBufferDynamic</big></b>(Gal_StringBuffer
+      *<i>b</i>) </p>
+                     
+<p>Gal_StringBuffer *<a name="Gal_MakeDataBuffer"></a><b><big>Gal_MakeDataBuffer</big></b>(char
+      *<i>buf</i>, int <i>bufpos</i>, int <i>bufsize</i>, int <i>manage_memory</i>,
+      int <i>dynamic</i>, int <i>increment</i>, int <i>padding</i>, int <i>chunk_size</i>)
+      </p>
+                     
+<p>char *<a name="Gal_DataBufferData"></a><b><big>Gal_DataBufferData</big></b>(Gal_StringBuffer
+      *<i>buf</i>) </p>
+                     
+<p>int&nbsp;<a name="Gal_DataBufferSize"></a><b><big>Gal_DataBufferSize</big></b>(Gal_StringBuffer
+      *<i>buf</i>) </p>
+                     
+<p>int&nbsp;<a name="Gal_DataBufferByteCount"></a><b><big>Gal_DataBufferByteCount</big></b>(Gal_StringBuffer
+      *<i>buf</i>) </p>
+                     
+<p>int&nbsp;<a name="Gal_DataBufferAppend"></a><b><big>Gal_DataBufferAppend</big></b>(Gal_StringBuffer
+      *<i>b</i>, const char *<i>s</i>, int <i>size</i>) </p>
+                     
+<p>Gal_PointerBuffer *<a name="Gal_MakePointerBuffer"></a><b><big>Gal_MakePointerBuffer</big></b>(void
+      **<i>buf</i>, int <i>pointer_type</i>, int <i>bufpos</i>, int <i>bufsize</i>,
+      int <i>manage_memory</i>, int <i>dynamic</i>, void (*<i>free_fn</i>)(void
+      *), int <i>increment</i>, int <i>padding</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_FreePointerBuffer"></a><b><big>Gal_FreePointerBuffer</big></b>(Gal_PointerBuffer
+      *<i>buf</i>) </p>
+                     
+<p>void **<a name="Gal_PointerBufferPointers"></a><b><big>Gal_PointerBufferPointers</big></b>(Gal_PointerBuffer
+      *<i>buf</i>) </p>
+                     
+<p>int&nbsp;<a name="Gal_PointerBufferSize"></a><b><big>Gal_PointerBufferSize</big></b>(Gal_PointerBuffer
+      *<i>buf</i>) </p>
+                     
+<p>int&nbsp;<a name="Gal_PointerBufferAddMultiple"></a><b><big>Gal_PointerBufferAddMultiple</big></b>(Gal_PointerBuffer
+      *<i>b</i>, void **<i>s</i>, int <i>size</i>) </p>
+                     
+<p>int&nbsp;<a name="Gal_PointerBufferAdd"></a><b><big>Gal_PointerBufferAdd</big></b>(Gal_PointerBuffer
+      *<i>b</i>, void *<i>s</i>) </p>
+                     
+<p>Gal_PointerBuffer *<a name="Gal_PointerBufferCopy"></a><b><big>Gal_PointerBufferCopy</big></b>(Gal_PointerBuffer
+      *<i>b</i>, void *(*<i>copy_fn</i>)(void *), void (*<i>free_fn</i>)(void
+    *))  </p>
+                     
+<p>void *<a name="_gal_copy_object"></a><b><big>_gal_copy_object</big></b>(void
+      *<i>obj</i>) </p>
+                     
+<p>void *<a name="Gal_PointerBufferNthElement"></a><b><big>Gal_PointerBufferNthElement</big></b>(Gal_PointerBuffer
+      *<i>b</i>, int <i>i</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_PointerBufferRemove"></a><b><big>Gal_PointerBufferRemove</big></b>(Gal_PointerBuffer
+      *<i>b</i>, void *<i>s</i>) </p>
+                     
+<p>int&nbsp;<a name="Gal_PointerBufferDynamic"></a><b><big>Gal_PointerBufferDynamic</big></b>(Gal_PointerBuffer
+      *<i>b</i>)&nbsp;</p>
+                     
+<p>int <a name="Gal_PointerBufferSetNthElement"></a><b><big>Gal_PointerBufferSetNthElement</big></b>(Gal_PointerBuffer 
+     *<i>b</i>, int <i>i</i>, void *<i>elt</i>)<br>
+            </p>
+                     
+<p> </p>
+                     
+<hr width="100%">           
+<h2> <a name="Frame_Reading_Functions"></a>Frame Reading Functions</h2>
+            Gal_Frame&nbsp;<a name="Gal_ReadNextFrameFromFile"></a><b><big>Gal_ReadNextFrameFromFile</big></b>(FILE
+      *<i>fp</i>, int <i>bol</i>) <br>
+           Identical to Gal_ReadFrameFromFile, but <i>bol</i> controls whether
+   the   frame must start at the beginning of a line or not (so it's possible
+   to "comment  out" a frame by adding a space before the initial left curly
+   bracket).            
+<p>char *<a name="Gal_ReadToken"></a><b><big>Gal_ReadToken</big></b>(Gal_InputStream
+      <i>gs</i>, char *<i>tok</i>, int <i>toksize</i>, const char *<i>stop_chars</i>, 
+     int <i>do_rewind</i>) <br>
+           Reads a token from a stream. </p>
+                     
+<p>char *<a name="Gal_NextToken"></a><b><big>Gal_NextToken</big></b>(const
+  char *<i>sent</i>, char *<i>tok</i>, int <i>toksize</i>) <br>
+           Uses Gal_ReadToken to read a token from a string. <br>
+           &nbsp; <br>
+           &nbsp; <br>
+           &nbsp; </p>
+                     
+<p> </p>
+                     
+<hr width="100%">           
+<h2> <a name="Hash_Table_Utilities"></a>Hash Table Utilities</h2>
+            Gal_HashTable&nbsp;<a name="Gal_MakeHash"></a><b><big>Gal_MakeHash</big></b>(int
+      <i>size</i>); <br>
+           Allocates space for and returns a symbol hash table of size, <i>size</i>.&nbsp; 
+     If the operation is not successful, NULL is returned.            
+<p>Gal_Object&nbsp;<a name="Gal_GetHash"></a><b><big>Gal_GetHash</big></b>(const
+  char *<i>str</i>, Gal_HashTable <i>hp</i>); <br>
+           Looks up the symbol, <i>str</i>, in the hash table, <i>hp</i>, 
+and   returns    the value.&nbsp; If the lookup is not successful, NULL is 
+returned.   </p>
+                     
+<p>Gal_Object&nbsp;<a name="Gal_SetHash"></a><b><big>Gal_SetHash</big></b>(const
+  char *<i>str</i>, Gal_Object <i>val</i>, Gal_HashTable <i>hp</i>); <br>
+           Inserts and returns the object, <i>val</i>, identified by <i>str</i>,
+    into  the hash table.&nbsp; If the symbol already exists in the table,
+ the   function  sets the new value and returns it.&nbsp; If insertion is
+unsuccessful,   NULL  is returned. </p>
+                     
+<p>void&nbsp;<a name="Gal_ClearHash"></a><b><big>Gal_ClearHash</big></b>(Gal_HashTable
+      <i>hp</i>); <br>
+           Clears the hash table, <i>hp</i>. </p>
+                     
+<p>void&nbsp;<a name="Gal_FreeHash"></a><b><big>Gal_FreeHash</big></b>(Gal_HashTable
+      <i>hp</i>) <br>
+           Clears the hash table and frees it. </p>
+                     
+<p>Gal_HashTable&nbsp;<a name="Gal_CopyHash"></a><b><big>Gal_CopyHash</big></b>(Gal_HashTable
+      <i>old_ht</i>) <br>
+           Copies the hash table.<br>
+ </p>
+ 
+<p>void <a name="Gal_MapHash"></a><b><big>Gal_MapHash</big></b>(Gal_HashTable 
+<i>hp</i>, void (*<i>fn</i>)(char *<i>str</i>, Gal_Object <i>val</i>, Gal_HashTable 
+<i>hp</i>))  </p>
+                     
+<p>void&nbsp;<a name="Gal_HashListRewind"></a><b><big>Gal_HashListRewind</big></b>(Gal_HashTable
+      <i>hp</i>) <br>
+           Initializes a hash table for sequential search. </p>
+                     
+<p>char *<a name="Gal_HashListNext"></a><b><big>Gal_HashListNext</big></b>(Gal_HashTable
+      <i>hp</i>, Gal_Object *<i>value</i>) <br>
+           Returns the current key and sets <i>*value</i> to the current
+value.    Returns   NULL at the end. </p>
+                     
+<p>int&nbsp;<a name="Gal_HashHasKey"></a><b><big>Gal_HashHasKey</big></b>(const
+  char *<i>key</i>, Gal_HashTable <i>ht</i>) <br>
+           Returns 1 if the hash table has the given key, 0 otherwise. </p>
+                     
+<p> </p>
+                     
+<hr width="100%">           
+<h2> <a name="Dispatch_Function_Utilities"></a>Dispatch Function Utilities</h2>
+            Gal_DispatchFnSignatureKeyEntry *<a
+ name="Gal_CopyDispatchFnKeyArray"></a><b><big>Gal_CopyDispatchFnKeyArray</big></b>(Gal_DispatchFnSignatureKeyEntry
+      *<i>array</i>)            
+<p>Gal_DispatchFnPkg *<a name="Gal_AddDispatchFunctionEntry"></a><b><big>Gal_AddDispatchFunctionEntry</big></b>(Gal_DispatchFnPkg
+      *<i>table</i>, const char *<i>name</i>, Gal_FrameDataFnPtr      <i>fn_with_data</i>,
+ Gal_DispatchFnSignatureKeyEntry *<i>in_key_array</i>,     int <i>allow_other_in_keys</i>,
+ int <i>reply_provided</i>, Gal_DispatchFnSignatureKeyEntry     *<i>out_key_array</i>,
+ int <i>allow_other_out_keys</i>) </p>
+                     
+<p>int&nbsp;<a name="Gal_FindDispatchFunctionEntry"></a><b><big>Gal_FindDispatchFunctionEntry</big></b>(Gal_DispatchFnInvocation
+      *<i>i</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_ValidateDispatchFnInput"></a><b><big>Gal_ValidateDispatchFnInput</big></b>(const 
+  char    *<i>op_name</i>, Gal_Frame <i>frame</i>, Gal_DispatchFnSignature 
+ *<i>sig</i>,    char **<i>exclusions</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_ValidateDispatchFnOutput"></a><b><big>Gal_ValidateDispatchFnOutput</big></b>(const 
+  char    *<i>op_name</i>, Gal_Frame <i>frame</i>, Gal_DispatchFnSignature 
+ *<i>sig</i>,    char **<i>exclusions</i>) </p>
+                     
+<p>Gal_Object&nbsp;<a name="Gal_EncodeDispatchFnPkgSigs"></a><b><big>Gal_EncodeDispatchFnPkgSigs</big></b>(Gal_DispatchFnPkg
+      *<i>pkg</i>) </p>
+                     
+<p>Gal_Object&nbsp;<a name="Gal_EncodeDispatchFnSignatures"></a><b><big>Gal_EncodeDispatchFnSignatures</big></b>(Gal_DispatchFnPkg
+      *<i>pkg</i>) </p>
+                     
+<p>Gal_DispatchFnSignature *<a name="Gal_DecodeDispatchFnSignatures"></a><b><big>Gal_DecodeDispatchFnSignatures</big></b>(Gal_Object
+      <i>maybe_list</i>) </p>
+                     
+<p>Gal_DispatchFnSignatureKeyEntry *<a
+ name="_Gal_CreateEmptyDispatchFnKeyArray"></a><b><big>_Gal_CreateEmptyDispatchFnKeyArray</big></b>(int
+      <i>i</i>) </p>
+                     
+<p>void&nbsp;<a name="_Gal_PopulateDispatchFnKeyArrayCell"></a><b><big>_Gal_PopulateDispatchFnKeyArrayCell</big></b>(Gal_DispatchFnSignatureKeyEntry
+      *<i>array</i>, int <i>index</i>, const char *<i>key</i>, Gal_ObjectType 
+    <i>t</i>,  int <i>obligatory</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_DispatchFnPkgSetClientData"></a><b><big>Gal_DispatchFnPkgSetClientData</big></b>(Gal_DispatchFnPkg
+      *<i>pkg</i>, const char *<i>op_name</i>, void *<i>data</i>) </p>
+                     
+<p>void *<a name="Gal_DispatchFnPkgGetClientData"></a><b><big>Gal_DispatchFnPkgGetClientData</big></b>(Gal_DispatchFnPkg
+      *<i>pkg</i>, const char *<i>op_name</i>) </p>
+                     
+<p>void&nbsp;<a name="Gal_FreeDispatchFnSignature"></a><b><big>Gal_FreeDispatchFnSignature</big></b>(Gal_DispatchFnSignature
+      *<i>sigs</i>) </p>
+                     
+<p>Gal_DispatchFnSignature *<a name="Gal_CreateDispatchFnSignature"></a><b><big>Gal_CreateDispatchFnSignature</big></b>(const 
+   char   *<i>name</i>, Gal_DispatchFnSignatureKeyEntry *<i>in_key_array</i>, 
+   int <i>allow_other_in_keys</i>,  int <i>reply_provided</i>, Gal_DispatchFnSignatureKeyEntry
+    *<i>out_key_array</i>,  int <i>allow_other_out_keys</i>) </p>
+                     
+<p>Gal_DispatchFnPkg *<a name="_Gal_DispatchFnPkgSetAccess"></a><b><big>_Gal_DispatchFnPkgSetAccess</big></b>(Gal_DispatchFnPkg
+      *<i>pkg</i>, Gal_DispatchFunctionSelector <i>s</i>, Gal_DispatchFnSignatureLister
+      <i>l</i>, Gal_DispatchFunctionInvoker <i>i</i>, void *<i>invocation_client_data</i>)
+      </p>
+                     
+<p>Gal_Frame&nbsp;<a name="_Gal_InvokeDispatchFn"></a><b><big>_Gal_InvokeDispatchFn</big></b>(Gal_DispatchFnInvocation
+      *<i>i</i>) </p>
+                     
+<p>Gal_DispatchFnSignature *<a name="_Gal_ListDispatchFnSignatures"></a><b><big>_Gal_ListDispatchFnSignatures</big></b>(Gal_DispatchFnPkg
+      *<i>pkg</i>) </p>
+                     
+<p> </p>
+                     
+<hr width="100%">           
+<h2> <a name="Random_utilities"></a>Random utilities</h2>
+            void&nbsp;<a name="Gal_UpdateFrameProperties"></a><b><big>Gal_UpdateFrameProperties</big></b>(Gal_Frame
+      <i>target_frame</i>, Gal_Frame <i>source_properties</i>, char **<i>delete_properties</i>)
+                
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "api_index.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "libgalaxy_io.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated July 5, 2002</center>
+             <br>
+           <br>
+          <br>
+         <br>
+        <br>
+       <br>
+      <br>
+     <br>
+    <br>
+   <br>
+  <br>
+ <br>
+</body>
+</html>

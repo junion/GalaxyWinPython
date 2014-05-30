@@ -1,0 +1,30 @@
+;; This file (c) Copyright 1998 - 2002 The MITRE Corporation
+;; 
+;; This file is part of the Galaxy Communicator system. It is licensed
+;; under the conditions described in the file LICENSE in the root 
+;; directory of the Galaxy Communicator system.
+
+;;
+;; this is a sample control file for the darpa hub
+;; using various MIT servers
+;;
+
+;; -------------------------------------------------
+;;   SERVERS
+;; -------------------------------------------------
+
+SERVER: audio_binary
+HOST:localhost
+PORT:17800
+OPERATIONS: receive_audio reinitialize
+
+PROGRAM: main
+
+;; -------------------------------------------------
+;;   CONDITIONS  (default order)
+;; -------------------------------------------------
+
+RULE: :audio_data  --> receive_audio
+IN: :audio_data
+OUT: none!
+

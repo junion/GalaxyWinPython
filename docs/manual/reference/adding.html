@@ -1,0 +1,1232 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                        
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Building a Communicator-Compliant Server</title>
+                         <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+            
+<center>      
+<h1> Galaxy Communicator Documentation:<br>
+      <br>
+      Building a Communicator-Compliant Server</h1>
+     </center>
+     
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="frame.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>  
+     </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="pgm.html"><img src="../../arrow_right.gif" alt="" width="30"
+ height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+             
+<hr width="100%">      
+<h2> Steps to Building and Using a Communicator-Compliant Server</h2>
+            
+<ul>
+      <li> <a href="#Implement_Server_Functions">Implement the Server Functions</a></li>
+       <li> <a href="#Modify_the_Makefile_Stub_Template">Modify the Makefile 
+ Stub Template</a></li>
+       <li> <a href="#Declare_server_information">Declare Server Information</a></li>
+       <li> <a href="#Create_a_Hub_Program">Create a Hub Program</a></li>
+       <li> <a
+ href="#Conditionalize_your_server_for_multiple_Communicator_versions">Conditionalize
+   your server for multiple Communicator versions</a></li>
+           
+</ul>
+      As an illustration of how to build a Communicator-compliant server, 
+we  will use the <a
+ href="../../../contrib/MITRE/examples/double/main.html">double   server</a> 
+example.&nbsp; The double server <a
+ href="../../../contrib/MITRE/examples/double/double.c">double.c</a> (together 
+  with its dispatch functions, defined in <a
+ href="../../../contrib/MITRE/examples/double/double_core.c">double_core.c</a>)
+   is a simple server that doubles the value of an integer. The complex version
+   of the example uses the server <a
+ href="../../../contrib/MITRE/examples/double/multiply.c">multiply.c</a>
+to exemplify a slightly more complicated interaction.      
+<p> </p>
+         
+<hr width="100%">      
+<h2> <a name="Implement_Server_Functions"></a>Implement the Server Functions</h2>
+            
+<ul>
+      <li> <a href="#Setting_up_the_headers">Setting up the headers</a></li>
+       <li> <a href="#Initialization">Initialization</a></li>
+       <li> <a href="#Dispatch_functions_and_call_environments">Dispatch
+ functions  and call environments</a></li>
+       <li> <a href="#Writing_a_Dispatch_Function">Writing a Dispatch Function</a></li>
+       <li> <a href="#reinitialize">The special reinitialize function</a></li>
+       <li> <a href="#Invoking_the_Hub">Invoking the Hub</a></li>
+       <li> <a href="#Replying_to_the_Hub">Replying to the Hub</a></li>
+           
+</ul>
+      The server interacts with the Hub in the following ways:      
+<ul>
+      <li> an optional server initialization function <a
+ href="#_GalSS_init_server">_GalSS_init_server()</a></li>
+       <li> an optional special dispatch function <a
+ href="#reinitialize">reinitialize</a></li>
+       <li> functions which invoke the Hub</li>
+                      
+  <ul>
+      <li> <a href="#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame</a></li>
+       <li> <a href="#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a></li>
+                     
+  </ul>
+       <li> functions which provide replies to the Hub</li>
+                      
+  <ul>
+      <li> <a href="#GalSS_EnvError">GalSS_EnvError</a></li>
+       <li> <a href="#GalSS_EnvDestroyToken">GalSS_EnvDestroyToken</a></li>
+                     
+  </ul>
+           
+</ul>
+      In addition, servers rely on a structure called a <b>call environment 
+ </b>to  embody the context of each call to a dispatch function (the connection 
+ through  which the call was made, the administrative information that needs 
+ to be returned from that call, etc.). As the programmer, you'll touch the 
+ server object when you initialize the server, and in almost all other cases, 
+ you'll be interacting with the call environment. See the <a
+ href="../advanced/environment.html">environment management</a> and <a
+ href="../advanced/session.html#Administrative_functions">session management</a>
+ documentation for  more details.      
+<p> </p>
+         
+<hr width="100%">      
+<h3> <a name="Setting_up_the_headers"></a>Setting up the headers</h3>
+      The header file <tt>galaxy/galaxy_all.h</tt> declares the appropriate 
+ C++  conditionalizations and loads the following four header files:    
+ 
+<ul>
+      <li> <tt>galaxy/util.h</tt> - this provides headers and types for the 
+     <a href="../advanced/util.html">utilities library</a></li>
+       <li> <tt>galaxy/galaxy.h</tt> - this provides headers and types for
+     <a href="frame.html">frames</a>, <a
+ href="../advanced/timed_tasks.html">timed   tasks</a>, and more (prefix
+Gal_)</li>
+       <li> <tt>galaxy/galaxy_io.h</tt> - this provides headers and types 
+for       <a href="brokering.html">brokering</a> and more (prefix GalIO_)</li>
+       <li> <tt>galaxy/generic-server.h</tt> - this provides headers and
+types   for functions like <a href="#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame()</a>
+   (prefix GalSS_)</li>
+           
+</ul>
+      Your header information will declare server information by declaring
+ a  server declarations file and then providing instructions for how it should
+  be interpreted. See the section on <a
+ href="#Declare_server_information">declaring  server information</a> for
+ details.      
+<p> </p>
+         
+<hr width="100%">      
+<h3> <a name="Initialization"></a>Initialization</h3>
+            
+<ul>
+      <li> <a href="#_GalSS_init_server">_GalSS_init_server</a></li>
+       <li> <a href="#reinitialize">reinitialize</a></li>
+       <li> <a href="#_GalSS_print_usage">_GalSS_print_usage</a></li>
+           
+</ul>
+      There are thre crucial differences between <tt><a
+ href="#_GalSS_init_server">_GalSS_init_server</a></tt> and <tt><a
+ href="#reinitialize">reinitialize</a></tt>.      
+<ul>
+      <li> <tt><a href="#_GalSS_init_server">_GalSS_init_server</a></tt>
+is  called  when the server starts up, while <tt><a href="#reinitialize">reinitialize</a></tt>
+   is called each time the Hub connects to the server</li>
+       <li> <tt><a href="#_GalSS_init_server">_GalSS_init_server</a></tt> 
+is  passed initialization information from the command line, while <tt><a
+ href="#reinitialize">reinitialize</a></tt> is passed initialization information 
+  from the Hub</li>
+       <li> <tt><a href="#_GalSS_init_server">_GalSS_init_server</a></tt> 
+is  passed a server object while <tt><a href="#reinitialize">reinitialize</a></tt>
+  is passed a call environment object</li>
+           
+</ul>
+      Being aware of these three differences should guide you in choosing 
+where   to put various initializations.      
+<p>void *<a name="_GalSS_init_server"></a><b><big>_GalSS_init_server</big></b>(GalIO_ServerStruct
+   *<i>server</i>, int <i>argc</i>, char **<i>argv</i>) </p>
+         
+<p>Each Communicator-compliant server accepts the following arguments: </p>
+         
+<blockquote><tt>static char *oas[] = { <br>
+ &nbsp; "-port port", "run as a server, listening for client connections
+  on this port", NULL, <br>
+ &nbsp; "-assert", "exit unhappily if we fail to get the desired port", 
+   <br>
+ &nbsp; "-color", "enable color printing in a cxterm", <br>
+ #ifdef _REENTRANT <br>
+ &nbsp; "-thread", "use <a href="../advanced/timed_tasks.html#Threads">threads 
+instead of timed tasks</a>   (experimental)", <br>
+ #endif /* _REENTRANT */ <br>
+ &nbsp; "-nottloop", "do not use the timed_tasks_loop mechanism",     <br>
+ &nbsp; "-ttloop", "obsolete -- maintained for compatibility only",     <br>
+ &nbsp; "-maxconns max", "maximum number of connections for ttloop",   "1", 
+  <br>
+ &nbsp; "-validate", "validate each message send and return against   the 
+message signature", <br>
+ &nbsp; "-verbosity level", "set the verbosity of this server", NULL,   
+   <br>
+ &nbsp; "-contact_hub \"host:port...\"", "run as client, <a
+ href="../advanced/hub_listener.html">contacting Hubs</a> at the specified 
+  host and port pairs (overrides default port setting, but not -port)", NULL,
+     <br>
+ &nbsp; "-server_locations_file file", "a <a
+ href="../advanced/server_locations.html">server locations file</a> of lines 
+  server host:port [hub|server]", NULL,<br>
+ &nbsp; "-slf_name name", "if -server_locations_file is used, optional file 
+index", NULL,<br>
+ &nbsp; "-session_id id", "if -contact_hub is used, <a
+ href="../advanced/hub_listener.html#Setting_up_the_server">lock this client</a>
+  to the specified Hub session", NULL, <br>
+ &nbsp; NULL <br>
+ };</tt>                                                                
+                               </blockquote>
+      If both <tt>-port</tt> and <tt>-contact_hub</tt> are present, the server 
+  will start up as both client and listener. For more details on the <tt>-server_locations</tt> 
+  argument, see the <a
+ href="../advanced/server_locations.html#The_servers_view_of_the_server_location">server 
+  locations documentation</a>.      
+<p>See the <a href="../advanced/util.html#Command_line_argument_parsing">oa
+  library</a> for details on how these flags are processed. These arguments
+  will be removed from the arglist before it is passed to <tt><a
+ href="#_GalSS_init_server">_GalSS_init_server</a></tt>. For more details 
+  on how to run this server, see the section on the <a
+ href="hub.html#The_servers">server executables</a>. </p>
+         
+<p>When the server is first run, the generic server library will initialize 
+  the server by calling <tt><a href="#_GalSS_init_server">_GalSS_init_server</a></tt>.&nbsp;
+   If the function is not defined, the default in the library will be used.
+  The argument of this function is a <tt>GalIO_ServerStruct *.</tt> This
+is   the server structure which maintains information about the default listen
+  port, the dispatch functions, the server name, the number of connections,
+  etc. For more details about what functions can be used to manipulate the
+ server object, see the <a
+ href="server_structure.html#Manipulating_the_server_object">server  architecture</a>
+  documentation. </p>
+         
+<p>The <tt>_GalSS_init_server</tt> function in <a
+ href="../../../contrib/MITRE/examples/double/double_core.c">double_core.c</a>
+   sets the initial increment, extracted from the command line. </p>
+         
+<blockquote><tt>static char *oas[] = {</tt> <br>
+       <tt>&nbsp; "-increment i", "set the initial value", "1",</tt> <br>
+       <tt>&nbsp; NULL</tt> <br>
+       <tt>};</tt></blockquote>
+            
+<blockquote><tt>void *_GalSS_init_server(GalIO_ServerStruct *s, int argc, 
+  char **argv)</tt> <br>
+       <tt>{</tt> <br>
+       <tt>&nbsp; int i, increment = 1;</tt>                
+  <p><tt>&nbsp; if (!GalUtil_OACheckUsage(argc, argv, oas, &amp;i))</tt>
+  <br>
+       <tt>&nbsp;&nbsp;&nbsp; exit(1);</tt> <br>
+       <tt>&nbsp; GalUtil_OAExtract(argc, argv, oas, "-increment", GAL_OA_INT, 
+  &amp;increment);</tt> <br>
+       <tt>&nbsp; GalIO_SetServerData(s, (void *) increment, NULL);</tt>
+  <br>
+       <tt>&nbsp; return (void *) NULL;</tt> <br>
+       <tt>}</tt></p>
+     </blockquote>
+      Returning a non-NULL value from <tt><a href="#_GalSS_init_server">_GalSS_init_server</a></tt>
+   has the same effect as calling <a
+ href="server_structure.html#GalIO_SetServerData">GalIO_SetServerData</a>,
+   although using this capability is strongly discouraged.      
+<p>void&nbsp;<a name="_GalSS_print_usage"></a><b><big>_GalSS_print_usage</big></b>(int
+   <i>argc</i>, char **<i>argv</i>) <br>
+     This is one way for the server to print out its usage information. The 
+ default  way of defining this function is </p>
+         
+<blockquote><tt>void _GalSS_print_usage(int argc, char **argv)</tt> <br>
+       <tt>{</tt> <br>
+       <tt>&nbsp; GalUtil_OAPrintOptions(argc, argv, oas, NULL);</tt> <br>
+       <tt>&nbsp; printf("\n");</tt> <br>
+       <tt>}</tt></blockquote>
+      The function <a href="libutil.html#GalUtil_OAPrintOptions">GalUtil_OAPrintOptions</a>
+   is provided in connection with the <a
+ href="../advanced/util.html#Command_line_argument_parsing">oa library</a>, 
+  and can be used when the appropriate argument array is defined. See the 
+example  at the beginning of this section.      
+<p> </p>
+         
+<hr width="100%">      
+<h3> <a name="Dispatch_functions_and_call_environments"></a>Dispatch functions 
+  and call environments</h3>
+      The appropriate execution of dispatch functions requires maintaining
+ a  variety of administrative information: the token index by which the Hub
+ knows  the message it sent, the <a href="../advanced/session.html">session</a>
+ associated  with that token index, whether or not the Hub expects a return
+ value, the  location in the Hub script that the Hub issued the message from,
+ etc. This  information is embodied in a structure known as a <b>call environment</b>.
+   This call environment, of type <tt>GalSS_Environment *</tt>, is the second 
+  argument to every dispatch function (although, for historical reasons, the
+  argument is typed as a <tt>void *</tt>).      
+<p>It's important that every reply to a dispatch function include the administrative 
+  information associated with that call. The various ways of <a
+ href="#Replying_to_the_Hub">providing a dispatch function reply</a> all
+guarantee that this information will be included (returning a frame from
+a dispatch function, as well as calling the functions <a
+ href="adding.html#GalSS_EnvDestroyToken">GalSS_EnvDestroyToken</a>, <a
+ href="adding.html#GalSS_EnvError">GalSS_EnvError</a>, or <a
+ href="adding.html#GalSS_EnvReply">GalSS_EnvReply</a>, all of which we'll 
+  discuss in a moment). The call environment is also used to send new messages, 
+  using the functions <a href="adding.html#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame</a>
+   and <a href="adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a>.
+   </p>
+         
+<p>Although the call environment is almost always the proper channel through 
+  which to communicate with the Hub, the actual communication is done via 
+the  connection object, which is stored in the call environment and is accessible 
+  via the function <a href="server_structure.html#GalSS_EnvComm">GalSS_EnvComm</a>.
+   </p>
+         
+<p>For more details about functions which manipulate the connection object, 
+  see the <a
+ href="server_structure.html#Manipulating_the_connection_object">server  architecture</a>
+documentation. For more details on the use and manipulation  of call environments,
+see the <a href="../advanced/environment.html">environment management</a>
+and <a href="../advanced/session.html#Administrative_functions">session management</a>
+ documentation. </p>
+         
+<p> </p>
+         
+<hr width="100%">      
+<h3> <a name="Writing_a_Dispatch_Function"></a>Writing a Dispatch Function</h3>
+      Dispatch functions take frames as arguments, and return frames. The 
+call   environment caches the appropriate administration information and add
+it  to the dispatch function reply. The return value from the dispatch function
+ is always treated as the reply, unless a <a href="#Replying_to_the_Hub">reply
+ has been previously provided</a>, in which case it will be ignored. Similarly,
+ as of 3.0, if the dispatch function returns NULL, and the Hub requires a
+reply, the server bindings will write back a pacifier reply.      
+<p><a href="../../../contrib/MITRE/examples/double/multiply.c">multiply.c</a>
+   defines a dispatch function, <tt>multiply</tt>, which multiplies a number 
+  in the <tt>:int </tt>slot by a predefined factor and returns the number.
+  </p>
+         
+<blockquote><tt>Gal_Frame multiply(Gal_Frame frame, void *server_data)</tt>
+     <br>
+       <tt>{</tt> <br>
+       <tt>&nbsp; int i = <a href="frame.html#Gal_GetInt">Gal_GetInt</a>(frame,
+   ":int");</tt>                
+  <p><tt>&nbsp; if ((INT_MAX / i) &lt; Factor) {</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; /* If we're about to overflow... */</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; <a href="#GalSS_EnvError">GalSS_EnvError</a>((GalSS_Environment
+   *) server_data,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   "multiply would overflow MAXINT");</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; return (Gal_Frame) NULL;</tt> <br>
+       <tt>&nbsp; } else {</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; <a href="frame.html#Gal_SetProp">Gal_SetProp</a>(frame,
+   ":int",</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a
+ href="frame.html#Gal_IntObject">Gal_IntObject</a>(Factor * i));</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; return frame;</tt> <br>
+       <tt>&nbsp; }</tt> <br>
+       <tt>}</tt> </p>
+                   
+  <h4> Memory management</h4>
+      Both the frame which is passed to the dispatch function and the frame 
+ which  is returned (if different) are freed by the toplevel loop using <a
+ href="frame.html#Gal_FreeFrame">Gal_FreeFrame</a>. No dispatch function should
+free the incoming frame. See the <a href="frame.html">frame documentation</a> 
+  for detailed memory management comments about frames.</blockquote>
+      If you need to cache information per connection across calls to dispatch 
+  functions, it is possible to set and get connection-specific data directly 
+  through the environment object.      
+<p>void *<a name="GalSS_EnvGetCommData"></a><b><big>GalSS_EnvGetCommData</big></b>(GalSS_Environment
+   *<i>env</i>) <br>
+     Retrieves the connection-specific data from the connection object stored 
+  in <i>env</i>. See also <a
+ href="server_structure.html#GalIO_GetCommData">GalIO_GetCommData</a>. </p>
+         
+<p>void&nbsp;<a name="GalSS_EnvSetCommData"></a><b><big>GalSS_EnvSetCommData</big></b>(GalSS_Environment
+   *<i>env</i>, void *<i>data</i>, void (*<i>free_fn</i>)(void *)) <br>
+     Sets the data specific to the connection stored in <i>env</i>.. If <i>free_fn</i> 
+  is non-NULL, it will be called on the <i>data</i> when the data is reset 
+ or the connection is destroyed. See also <a
+ href="server_structure.html#GalIO_SetCommData">GalIO_SetCommData</a>. </p>
+         
+<p>If you've cached information specific to a given dispatch function, it 
+  is possible to access this information directly through the environment 
+object.  <br>
+     void *<a name="GalSS_EnvGetClientData"></a><b><big>GalSS_EnvGetClientData</big></b>(GalSS_Environment
+   *<i>env</i>, const char *<i>name</i>) <br>
+     Retrieves the information specific to the dispatch function <i>name</i>
+  from the connection object stored in <i>env</i>. See also <a
+ href="server_structure.html#GalIO_GetCommClientData">GalIO_GetCommClientData</a>.
+   </p>
+         
+<p> </p>
+         
+<hr width="100%">      
+<h3> <a name="Invoking_the_Hub"></a>Invoking the Hub</h3>
+      In some cases, you might want to send a new message to the Hub, or
+query   the Hub and wait for a response (we call these latter synchronous
+calls <b>server-to-server  subdialogues</b>).&nbsp; The message and response
+will be in the form of a frame.      
+<p>You should always use the call environment to send these messages. It is
+possible to send them using the connection alone (accessible via the call 
+  environment using the function <a
+ href="server_structure.html#GalSS_EnvComm">GalSS_EnvComm</a>(); see the <a
+ href="server_structure.html">server structure documentation</a> for details), 
+  but important session information will be lost. When you're inside a dispatch 
+  function, using the call environment is straightforward; if you're outside 
+  a call environment (if you've set up a <a href="brokering.html">brokering</a>
+   callback or a timed task), you must take special precautions to make sure
+   the call environment isn't freed after the dispatch function exits. See
+ the <a href="../advanced/environment.html">environment management</a> documentation
+ for more details. </p>
+         
+<p>When a message is written to or read from the Hub, the type of the message 
+  is also specified. The possible types are: <br>
+     <a name="Message_types"></a>      
+<table border="1" nosave="">
+      <tbody>
+         <tr>
+      <td>GAL_MESSAGE_MSG_TYPE</td>
+       <td>A new message</td>
+      </tr>
+       <tr>
+      <td>GAL_REPLY_MSG_TYPE</td>
+       <td>A normal reply to a message</td>
+      </tr>
+       <tr>
+      <td>GAL_ERROR_MSG_TYPE</td>
+       <td>An error reply to a message</td>
+      </tr>
+       <tr>
+      <td>GAL_DESTROY_MSG_TYPE</td>
+       <td>A destroy request for the specified token (also counts as a message 
+  reply)</td>
+      </tr>
+       <tr>
+      <td>GAL_POSTPONE_MSG_TYPE</td>
+       <td>A reply from the server informing the Hub that the message return
+  will be provided later (see the documentation on <a
+ href="../advanced/session.html">continuations</a>)</td>
+      </tr>
+                     
+  </tbody>     
+</table>
+       </p>
+         
+<p>If the message type is GAL_ERROR_MSG_TYPE, the accompanying frame will 
+  currently have the following form (use <a href="#GalIO_GetError">GalIO_GetError</a> 
+  to access the values): </p>
+         
+<blockquote><tt>{c system_error</tt> <br>
+       <tt>&nbsp;&nbsp; :errno &lt;num&gt;</tt> <br>
+       <tt>&nbsp;&nbsp; :err_description &lt;string&gt;</tt> <br>
+       <tt>&nbsp;&nbsp; ...}</tt></blockquote>
+      <a name="List_of_errors"></a>At this point, possible errors are: <br>
+     &nbsp;      
+<table border="1" nosave="">
+      <tbody>
+         <tr nosave="">
+      <td nosave="">GAL_APPLICATION_ERROR</td>
+       <td>Some server generated an error via GalSS_EnvError</td>
+      </tr>
+       <tr>
+      <td>GAL_TRANSMISSION_ERROR</td>
+       <td>An error was encountered in sending a frame</td>
+      </tr>
+       <tr>
+      <td>GAL_RECEPTION_ERROR</td>
+       <td>An error was encountered in reading a frame</td>
+      </tr>
+       <tr>
+      <td>GAL_NO_OPNAME_ERROR</td>
+       <td>Some server did not implement a requested operation</td>
+      </tr>
+       <tr>
+      <td>GAL_SERVER_DOWN_ERROR</td>
+       <td>The Hub could not contact a required server</td>
+      </tr>
+       <tr>
+      <td>GAL_NO_FRAME_ERROR</td>
+       <td>A dispatch was requested on an empty frame</td>
+      </tr>
+                     
+  </tbody>     
+</table>
+            
+<p>int&nbsp;<a name="GalSS_EnvWriteFrame"></a><b><big>GalSS_EnvWriteFrame</big></b>(GalSS_Environment
+   *<i>env</i>, Gal_Frame <i>frame</i>, int <i>do_block</i>) <br>
+     This function writes <i>frame</i> to the Hub through the connection
+object   stored in the <i>env</i>. If <i>do_block</i> is set, the function
+guarantees   that the write has happened before returning. The message type
+written is   always GAL_MESSAGE_MSG_TYPE. </p>
+         
+<p><a href="../../../contrib/MITRE/examples/double/double_core.c">double_core.c</a>
+   defines a dispatch function, <tt>twice</tt>, which takes the value of
+<tt>:int</tt>,    doubles it, introduces a new message to the Hub with the
+doubled integer,    and returns NULL. If it is about to overflow MAX_INT,
+or if the number it's  supposed to double is 0, then it generates an error.
+</p>
+         
+<ul>
+       <tt>Gal_Frame&nbsp;<a name="twice"></a><b><big>twice</big></b>(Gal_Frame
+     <i>frame</i>, void *<i>server_data</i>)</tt> <br>
+       <tt>{</tt> <br>
+       <tt>&nbsp; int i = <a href="frame.html#Gal_GetInt">Gal_GetInt</a>(frame,
+   ":int");</tt> <br>
+       <tt>&nbsp; char *program_name = <a
+ href="frame.html#Gal_GetString">Gal_GetString</a>(frame,    ":program");</tt>
+  <br>
+       <tt>&nbsp; Gal_Frame new_f;</tt>                
+  <p><tt>&nbsp; if (!program_name)</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; program_name = "main";</tt> </p>
+                   
+  <p><tt>&nbsp; if (i == 0) {</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; /* We'll loop forever. */</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; <a href="#GalSS_EnvError">GalSS_EnvError</a>((GalSS_Environment
+   *) server_data,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   "i is 0");</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; return (Gal_Frame) NULL;</tt> <br>
+       <tt>&nbsp; } else if ((INT_MAX / i) &lt; 2) {</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; /* If we're about to overflow... */</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; <a href="#GalSS_EnvError">GalSS_EnvError</a>((GalSS_Environment
+   *) server_data,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   "double would overflow MAXINT");</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; return (Gal_Frame) NULL;</tt> <br>
+       <tt>&nbsp; } else {</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; new_f = <a href="frame.html#Gal_MakeFrame">Gal_MakeFrame</a>(program_name,
+   GAL_CLAUSE);</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; <a href="frame.html#Gal_SetProp">Gal_SetProp</a>(new_f,
+   ":int", <a href="frame.html#Gal_IntObject">Gal_IntObject</a>(2 * i));</tt>
+     <br>
+       <tt>&nbsp;&nbsp;&nbsp; <a href="frame.html#Gal_SetProp">Gal_SetProp</a>(new_f,
+   ":program", <a href="frame.html#Gal_StringObject">Gal_StringObject</a>(program_name));</tt>
+     <br>
+       <tt>&nbsp;&nbsp;&nbsp; <a href="#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame</a>((GalSS_Environment
+   *) server_data, new_f, 0);</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; <a href="frame.html#Gal_FreeFrame">Gal_FreeFrame</a>(new_f);</tt>
+     <br>
+       <tt>&nbsp;&nbsp;&nbsp; return (Gal_Frame) NULL;</tt> <br>
+       <tt>&nbsp; }</tt> <br>
+       <tt>}</tt></p>
+         
+</ul>
+      See also <a
+ href="../advanced/provider_id.html#GalSS_EnvWriteFrameToProvider">GalSS_EnvWriteFrameToProvider</a>.
+       
+<p>Gal_Frame&nbsp;<a name="GalSS_EnvDispatchFrame"></a><b><big>GalSS_EnvDispatchFrame</big></b>(GalSS_Environment
+   *<i>env</i>, Gal_Frame <i>frame</i>, GalIO_MsgType *<i>t</i>) <br>
+     This function implements a server-to-server subdialogue with the Hub.
+ It  sends the <i>frame</i> through the connection object stored in the <i>env 
+  </i>and waits for a reply. This function is implemented in terms of <a
+ href="server_structure.html#GalIO_DispatchViaHub">GalIO_DispatchViaHub</a>.
+   The message type written is always GAL_MESSAGE_MSG_TYPE. The type of the 
+  reply is stored in <i>t</i>. The only values for <i>*t</i> you'll ever see
+  are <i>*t</i> are GAL_REPLY_MSG_TYPE and GAL_ERROR_MSG_TYPE; for all others,
+  a warning message is printed and NULL is returned. </p>
+         
+<p>See also <a
+ href="../advanced/provider_id.html#GalSS_EnvDispatchFrameToProvider">GalSS_EnvDispatchFrameToProvider</a>,
+   <a
+ href="../advanced/synch_vs_asynch.html#GalSS_EnvDispatchFrameWithContinuation">GalSS_EnvDispatchFrameWithContinuation</a>
+   and <a
+ href="../advanced/synch_vs_asynch.html#GalSS_EnvDispatchFrameToProviderWithContinuation">GalSS_EnvDispatchFrameToProviderWithContinuation</a>.
+   </p>
+         
+<p>int&nbsp;<a name="GalIO_GetError"></a><b><big>GalIO_GetError</big></b>(Gal_Frame
+   <i>f</i>, char **<i>err_desc</i>) <br>
+     Retrieves an error from a error frame returned from GalSS_EnvDispatchFrame. 
+  If the frame is not a well-formed error frame, this function will return 
+ -1 and set <i>*err_desc</i> to NULL if <i>err_desc</i> is provided. If the 
+ frame is a well-formed error frame, this function will return an <a
+ href="#List_of_errors">error code</a>, and set <i>*err_desc</i>&nbsp; if
+  <i>err_desc</i> is provided. If an error description is present in the
+frame,&nbsp;   the description will be a string, otherwise NULL. </p>
+         
+<p>double_core.c defines a dispatch function, complex_twice, which doubles 
+  the result it gets from the multiply server: </p>
+         
+<blockquote><tt>Gal_Frame complex_twice(Gal_Frame frame, void *server_data)</tt>
+     <br>
+       <tt>{</tt> <br>
+       <tt>&nbsp; Gal_Frame new_f = <a href="frame.html#Gal_MakeFrame">Gal_MakeFrame</a>("multiply",
+   GAL_CLAUSE);</tt> <br>
+       <tt>&nbsp; Gal_Frame res_f;</tt> <br>
+       <tt>&nbsp; GalIO_MsgType t;</tt> <br>
+       <tt>&nbsp; int i;</tt>                
+  <p><tt>&nbsp; <a href="frame.html#Gal_SetProp">Gal_SetProp</a>(new_f, ":int", 
+    <a href="frame.html#Gal_IntObject">Gal_IntObject</a>(<a
+ href="frame.html#Gal_GetInt">Gal_GetInt</a>(frame, ":int")));</tt> <br>
+       <tt>&nbsp; res_f = <a href="#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a>((GalSS_Environment
+   *) server_data, new_f, &amp;t);</tt> <br>
+     &nbsp;&nbsp;&nbsp; <tt><a href="frame.html#Gal_FreeFrame">Gal_FreeFrame</a>(new_f);</tt>
+     </p>
+                   
+  <p><tt>&nbsp; if (!res_f) {</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; <a
+ href="../advanced/util.html#GalUtil_Warn">GalUtil_Warn</a>("Didn't   hear 
+back from multiply");</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; return (Gal_Frame) NULL;</tt> <br>
+       <tt>&nbsp; }</tt> </p>
+                   
+  <p><tt>&nbsp; switch (t) {</tt> <br>
+       <tt>&nbsp; case GAL_REPLY_MSG_TYPE:</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; prog_name = <a
+ href="frame.html#Gal_GetString">Gal_GetString</a>(frame,  ":program");</tt> 
+   <br>
+       <tt>&nbsp;&nbsp;&nbsp; if (!prog_name) prog_name = "main";</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; <a href="frame.html#Gal_SetProp">Gal_SetProp</a>(new_f,
+   ":program", <a href="frame.html#Gal_StringObject">Gal_StringObject</a>(program_name));</tt>
+     <br>
+       <tt>&nbsp;&nbsp;&nbsp; return twice(res_f, server_data);</tt> <br>
+       <tt>&nbsp; case GAL_ERROR_MSG_TYPE:</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; return (Gal_Frame) NULL;</tt> <br>
+       <tt>&nbsp; default:</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp; return (Gal_Frame) NULL;</tt> <br>
+       <tt>&nbsp; }</tt> <br>
+       <tt>}</tt></p>
+     </blockquote>
+            
+<hr width="100%">      
+<h3> <a name="Replying_to_the_Hub"></a>Replying to the Hub</h3>
+      Typically, the return value of a dispatch function will be treated
+as  the  reply to the message the Hub sent. However, the programmer can provide 
+ a reply in advance of returning from the dispatch function. In all cases 
+where a reply is provided in advance, the return value of the dispatch function 
+ is ignored.      
+<p>Note that it is also possible to postpone the reply to a message beyond 
+  the scope of the dispatch function. The functions for doing this and the 
+ motivation for it are discussed extensively in the <a
+ href="../advanced/synch_vs_asynch.html#Continuations">documentation about
+ continuations</a>. </p>
+         
+<p>int&nbsp;<a name="GalSS_EnvError"></a><b><big>GalSS_EnvError</big></b>(GalSS_Environment
+   *<i>env</i>, const char *<i>description</i>) <br>
+     Reports an error as the return value. The message type of the message
+ written  is always GAL_ERROR_MSG_TYPE; it is annotated with the administrative
+ information  of the frame passed in. If you use this function, the return
+ value from the  dispatch function will be ignored. </p>
+         
+<p>int&nbsp;<a name="GalSS_EnvDestroyToken"></a><b><big>GalSS_EnvDestroyToken</big></b>(GalSS_Environment
+   *<i>env</i>) <br>
+     Makes a destroy request. The token information is taken from the frame 
+ passed  in. The message type of the message written is always GAL_DESTROY_MSG_TYPE. 
+  If you use this function, the return value from the dispatch function will 
+  be ignored. </p>
+         
+<p>int&nbsp;<a name="GalSS_EnvReply"></a><b><big>GalSS_EnvReply</big></b>(GalSS_Environment
+   *<i>env</i>, Gal_Frame <i>f</i>) <br>
+     Provides the frame <i>f</i> as a normal reply of type GAL_REPLY_MSG_TYPE. 
+  This function is provided mostly for completeness, since it duplicates the
+  functionality embodied in returning a frame from the dispatch function. 
+However,  if for some reason you want a dispatch function to keep running 
+past its "natural" reply point, you can use this function to satisfy the Hub's
+expectation of a reply. </p>
+         
+<p>See also <a
+ href="../advanced/synch_vs_asynch.html#GalSS_EnvPostponeReply">GalSS_EnvPostponeReply</a>.
+   </p>
+         
+<p> </p>
+         
+<hr width="100%">      
+<p>Gal_Frame&nbsp;<a name="reinitialize"></a><b><big>reinitialize</big></b>(Gal_Frame
+   <i>frame</i>, void *<i>server_data</i>); </p>
+         
+<p>The dispatch function <tt>reinitialize</tt> is special.&nbsp; It is called 
+  when the Hub first connects to the server.&nbsp; Any connection-specific 
+ initializations should be put in the <tt>reinitialize</tt> dispatch function.&nbsp; 
+ Like all other dispatch functions, the second argument is typed to <tt>void 
+ *</tt> for backward compatibility, but can reliably be cast to <tt>GalSS_Environment
+   *</tt>. </p>
+         
+<p>As of version 3.0, <tt>reinitialize</tt> is no longer restricted in its 
+  use. However, because it is used to initialize a connection, it's worth 
+observing  that while is convenient to use the <tt>reinitialize</tt> message 
+to "seed"  the Hub by providing a new token via <a
+ href="#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame()</a>,  <a
+ href="#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a> should not be used,
+for three very good reasons: </p>
+         
+<ul>
+      <li> since the Hub does not start processing new messages until all 
+the       <tt>reinitialize</tt> messages for all the servers are done, the 
+request   will be queued and never return; therefore, the <tt>reinitialize</tt> 
+message   itself will hang</li>
+       <li> if the server did not wait for a response, it would get one later, 
+  during normal processing, when it did not expect it</li>
+       <li> since <tt>reinitialize</tt> messages are handled essentially
+in  parallel  as far as the Hub is concerned, it is not illegitimate to attempt 
+ to contact  other servers (which may not have been initialized yet).</li>
+           
+</ul>
+      <a name="Welcome_message"></a>The frame passed to <tt>reinitialize</tt>
+  at initialization time is constructed very similarly to the <a
+ href="pgm.html#Initial_token">initial token</a>.      
+<ol>
+      <li> The frame is seeded with same global values as the implicit <a
+ href="pgm.html#Initial_token">initial token</a>, including the values from
+  the <a href="pgm.html#Initial_token"><tt>INITIAL_TOKEN:</tt> directive</a></li>
+       <li> The frame is augmented as follows:</li>
+                      
+  <table border="1" width="100%" nosave="">
+      <tbody>
+           <tr>
+      <td><b>frame key</b></td>
+       <td><b>source</b></td>
+       <td><b>type</b></td>
+       <td><b>default value</b></td>
+      </tr>
+       <tr nosave="">
+      <td>&lt;frame name&gt;</td>
+       <td nosave="">(specified in code; cannot be changed)</td>
+       <td>string</td>
+       <td><tt>reinitialize</tt></td>
+      </tr>
+       <tr>
+      <td><tt>:server_type</tt></td>
+       <td>the name of the server as the Hub knows it, if not already specified</td>
+       <td>string</td>
+       <td>&lt;none&gt;</td>
+      </tr>
+                               
+    </tbody>               
+  </table>
+       <li> The frame is augmented (or overwritten) by the values specified 
+ in  the <a href="pgm.html#INIT:"><tt>INIT:</tt> directive</a> for the server 
+ in the program file.</li>
+       <li> The frame is augmented (or overwritten) with the contents of
+the       <tt>-init</tt>  command line argument to the <a
+ href="hub.html#The_Hub">Hub executable</a>,  if present.</li>
+           
+</ol>
+            
+<hr width="100%">      
+<h2> <a name="Modify_the_Makefile_Stub_Template"></a>Modify the Makefile Stub
+Template</h2>
+      In the server directory, copy <a
+ href="../../../templates/Makefile.stub">templates/Makefile.stub </a>to use 
+  as the server Makefile.&nbsp; Make the appropriate modifications, for example, 
+  setting the root directory.&nbsp; (For more details on the makefiles, see 
+  the <a href="../admin/make.html">Guide to the Makefiles</a>.) We provide
+  a table here of all the elements you can customize in the MIT Makefile,
+what  they do, and whether there is a "slot" for them in the stub Makefile:
+<br>
+     &nbsp;      
+<table border="1" width="100%" nosave="">
+      <tbody>
+         <tr>
+      <td><b>Variable</b></td>
+       <td><b>What it does</b></td>
+       <td><b>Obligatory?</b></td>
+       <td><b>Slot?</b></td>
+      </tr>
+       <tr>
+      <td><tt>MAKEFILE</tt></td>
+       <td>Declares the name of the file, in order to generate the Makefile 
+ dependencies  correctly</td>
+       <td>yes</td>
+       <td>yes</td>
+      </tr>
+       <tr nosave="">
+      <td><tt>ROOT_DIR</tt></td>
+       <td>This is the root of the Communicator distribution</td>
+       <td nosave="">yes</td>
+       <td>yes</td>
+      </tr>
+       <tr>
+      <td><tt>CPPFLAGS</tt></td>
+       <td>The usual C preprocessor flags.</td>
+       <td>no</td>
+       <td>yes</td>
+      </tr>
+       <tr>
+      <td><tt>LDFLAGS</tt></td>
+       <td>The usual C linker flags.</td>
+       <td>no</td>
+       <td>yes</td>
+      </tr>
+       <tr>
+      <td><tt>COMMON_LIBS</tt></td>
+       <td>Defined here and augmented in <tt>templates/Galaxy.make</tt>.
+      <br>
+     Third party libraries without variants.</td>
+       <td>no</td>
+       <td>yes</td>
+      </tr>
+       <tr>
+      <td><tt>SPECIAL_LIBS,</tt> <br>
+           <tt>SPECIAL_LIBS_D,</tt> <br>
+           <tt>SPECIAL_LIBS_P</tt></td>
+       <td>Libraries with variants (_debug, _profile) which are particular
+ to  the current executable.&nbsp; If any of the variants are non-standard,
+ set        <tt>SPECIAL_LIBS_D</tt> and/or <tt>SPECIAL_LIBS_P</tt>. These
+will be arguments to the link line.</td>
+       <td>no</td>
+       <td>yes</td>
+      </tr>
+       <tr>
+      <td><tt>LIBDEPS</tt> <br>
+           <tt>LIBDEPS_D,</tt> <br>
+           <tt>LIBDEPS_P</tt></td>
+       <td>A list of libraries, which will be Makefile dependences (so real 
+ pathnames,  not <tt>-l</tt> values). These should correspond to the special 
+ and common  libraries.</td>
+       <td>no</td>
+       <td>yes for <tt>LIBDEPS</tt></td>
+      </tr>
+       <tr>
+      <td><tt>LIBTARGET,</tt> <br>
+           <tt>EXECTARGETS,</tt> <br>
+           <tt>SERVER,</tt> <br>
+           <tt>APPLET</tt></td>
+       <td>The primary target types. Exactly one of these must be set. The
+       <tt>SERVER</tt>   is the option for building a Communicator-compliant
+ server which automaticaly   generates the operations header file.</td>
+       <td>yes</td>
+       <td>yes</td>
+      </tr>
+       <tr>
+      <td><tt>LIBDIR</tt></td>
+       <td>The directory to put a library in. Defaults to <tt>$(ROOT_DIR)/lib/</tt>.
+   Note the trailing slash. The library will be put in the appropriate <tt>$(ARCHOS)</tt>
+   subdirectory. We advise setting this so as not to write to the Communicator
+   distribution.</td>
+       <td>no</td>
+       <td>no</td>
+      </tr>
+       <tr>
+      <td><tt>EXECDIR</tt></td>
+       <td>The directory to put an executable or server in. Defaults to <tt>$(ROOT_DIR)/bin/</tt>.
+   Note the trailing slash. The executable or server will be put in the appropriate
+         <tt>$(ARCHOS)</tt> subdirectory. We advise setting this so as not
+ to write to the Communicator distribution.</td>
+       <td>no</td>
+       <td>no</td>
+      </tr>
+       <tr>
+      <td><tt>THREAD_SAFE</tt></td>
+       <td>Whether the server or library supports thread-safe compilation.
+ If  you uncomment this line, the compilation instruction "make thread" will 
+ compile  a threaded version of the library or server. If you leave this line
+ uncommented,  this instruction will compile the normal version. See the
+      <a href="../admin/threads.html">thread notes</a>.</td>
+       <td>no</td>
+       <td>yes</td>
+      </tr>
+       <tr>
+      <td><tt>SUBDIRS</tt></td>
+       <td>A list of subdirectories where some of the sources may be.</td>
+       <td>no</td>
+       <td>yes</td>
+      </tr>
+       <tr>
+      <td><tt>SOURCES</tt></td>
+       <td>The source files.</td>
+       <td>yes</td>
+       <td>yes</td>
+      </tr>
+                     
+  </tbody>     
+</table>
+            
+<p> </p>
+         
+<hr width="100%">      
+<h2> <a name="Declare_server_information"></a>Declare server information</h2>
+      Galaxy Communicator 2.0 and later uses the C preprocessor to generate 
+ server  information, especially mappings between dispatch function names 
+and dispatch  functions.      
+<ul>
+      <li> <a href="#Basics">Basics</a></li>
+       <li> <a href="#Incorporating_other_software_packages">Incorporating
+  other software packages</a></li>
+       <li> <a href="#The_headerless_alternative">The headerless alternative</a></li>
+           
+</ul>
+            
+<h3> <a name="Basics"></a>Basics</h3>
+      There are two steps involved in declaring server information.      
+<h4> Create the declaration file</h4>
+      The declaration file contains several types of information:      
+<ul>
+      <li> A declaration GAL_SERVER_NAME(<i>name</i>), which contains the 
+name   of the server. This name potentially corresponds to the name of a 
+   <a href="pgm.html#Service_types">service type</a> in the Hub. This server 
+name  doesn't need to match the name the Hub has in its <a
+ href="pgm.html#SERVICE_TYPE:">SERVICE_TYPE:</a> declaration, except in the 
+  case of <a href="../advanced/hub_listener.html">listeners in the Hub</a>.</li>
+       <li> A declaration GAL_SERVER_PORT(<i>port</i>), which contains the
+ default  port number.</li>
+       <li> A declaration GAL_SERVER_OP(<i>dispatch_fn</i>) or GAL_SERVER_OP_SIGNATURE(<i>dispatch_fn, 
+  in_keys, allow_other_in_keys, reply_status, out_keys, allow_other_out_keys</i>) 
+  for each operation.</li>
+       <li> A declaration GAL_SERVER_SW_PACKAGE(<i>pkg</i>), which may contain 
+  a name of a <a href="#Incorporating_other_software_packages">software  package</a>
+ to use.</li>
+       <li> A declaration GAL_SERVER_MAX_CONNECTIONS(<i>numconns</i>), which
+  contains the default maximum number of simultaneous connections permitted
+  for this server. This can be overridden by the <tt>-maxconns</tt> command
+  line argument. If neither is specified, the default is one connection.</li>
+           
+</ul>
+      The double server <a
+ href="../../../contrib/MITRE/examples/double/double_server.h">declaration</a>
+   file lists <tt><a href="#twice">twice</a></tt> as one of its available
+operations:       
+<blockquote><tt>GAL_SERVER_NAME(double)</tt> <br>
+       <tt>GAL_SERVER_PORT(2800)</tt> <br>
+       <tt>GAL_SERVER_OP(twice)</tt> <br>
+       <tt>GAL_SERVER_OP(complex_twice)</tt> <br>
+       <tt>GAL_SERVER_OP(reinitialize)</tt></blockquote>
+      Here's a version of the double server declaration file using the extended 
+  signatures:      
+<blockquote><tt>GAL_SERVER_NAME(double)</tt> <br>
+       <tt>GAL_SERVER_PORT(2800)</tt> <br>
+       <tt>GAL_SERVER_OP_SIGNATURE(twice,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   GAL_SERVER_OP_KEYS(":int" _ GAL_INT _ GAL_KEY_ALWAYS),</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   GAL_OTHER_KEYS_NEVER,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   GAL_REPLY_NONE,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   NULL,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   GAL_OTHER_KEYS_NEVER)</tt> <br>
+       <tt>GAL_SERVER_OP_SIGNATURE(complex_twice,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   GAL_SERVER_OP_KEYS(":int" _ GAL_INT _ GAL_KEY_ALWAYS),</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   GAL_OTHER_KEYS_NEVER,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   GAL_REPLY_NONE,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   NULL,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   GAL_OTHER_KEYS_NEVER)</tt> <br>
+       <tt>GAL_SERVER_OP_SIGNATURE(reinitialize,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   NULL,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   GAL_OTHER_KEYS_NEVER,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   GAL_REPLY_PROVIDED,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   NULL,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   GAL_OTHER_KEYS_NEVER)</tt></blockquote>
+      The extended version which specifies the signature works as follows:
+ <br>
+     &nbsp;      
+<table border="1" cols="3" width="100%" nosave="">
+      <tbody>
+         <tr>
+      <td><b>argument</b></td>
+       <td><b>description</b></td>
+       <td><b>legal values</b></td>
+      </tr>
+       <tr>
+      <td><i>dispatch_fn</i></td>
+       <td>the name of a <a href="#Writing_a_Dispatch_Function">dispatch
+ function</a></td>
+       <td>&nbsp;</td>
+      </tr>
+       <tr>
+      <td><i>in_keys</i></td>
+       <td>the keys which this dispatch function expects</td>
+       <td>Either NULL or a declaration GAL_SERVER_OP_KEYS(key _ type _ obligatory 
+  ... ), where underscores are used in place of commas because of the idiosyncracies 
+  of the C preprocessor. Here key is a string, type is a legal <a
+ href="frame.html#Object_Types">object type</a>, and obligatory is either 
+  GAL_KEY_ALWAYS or GAL_KEY_SOMETIMES. This declaration may contain any number 
+  of key declarations (that is, its arguments must be a multiple of 3, all 
+ separated by underscores). The type GAL_FREE is used as a wildcard match.</td>
+      </tr>
+       <tr>
+      <td><i>allow_other_in_keys</i></td>
+       <td>whether or not the list of in_keys provided is complete</td>
+       <td>either GAL_OTHER_KEYS_MAYBE or <br>
+     GAL_OTHER_KEYS_NEVER</td>
+      </tr>
+       <tr>
+      <td><i>reply_status</i></td>
+       <td>whether or not the dispatch function returns anything</td>
+       <td>one of GAL_REPLY_PROVIDED, GAL_REPLY_NONE, GAL_REPLY_UNKNOWN</td>
+      </tr>
+       <tr>
+      <td><i>out_keys</i></td>
+       <td>the keys which this dispatch function returns&nbsp;</td>
+       <td>(see <i>in_keys</i>)</td>
+      </tr>
+       <tr>
+      <td><i>allow_other_out_keys</i></td>
+       <td>whether or not the list of out_keys provided is complete</td>
+       <td>(see <i>allow_other_in_keys</i>)</td>
+      </tr>
+                     
+  </tbody>     
+</table>
+            
+<p>These signatures can be used to validate calls to the dispatch functions 
+  if you pass the <tt><a href="#_GalSS_init_server">-validate</a></tt> flag 
+  to the server, and will be used in the future to pass to the Hub and synchronize 
+  signatures. </p>
+         
+<h4> Reference the declaration file</h4>
+      Instead of adding "server.h" to exactly one file in your server sources, 
+  add the appropriate reference to the declaration file. The declaration file
+  will be #included in a context which translates the declarations in the
+declaration  file into the appropriate C code. This reference #defines <tt>SERVER_FUNCTIONS_INCLUDE</tt>,
+  and then includes <tt>galaxy/server_functions.h</tt>. The #define must
+be done before  the header file is #included.      
+<p>Here is the header text from <a
+ href="../../../contrib/MITRE/examples/double/double.c">double.c</a>: </p>
+         
+<blockquote><tt>#include "galaxy/galaxy_all.h"</tt> <br>
+       <tt>#define SERVER_FUNCTIONS_INCLUDE "double_server.h"</tt> <br>
+       <tt>#include "galaxy/server_functions.h"</tt></blockquote>
+      This technique for providing server information is compatible with
+non-MIT   Makefiles (as well as being cross-platform-friendly). If not using
+the MIT   Makefile templates to build your servers, be sure that you have
+<tt>-I.</tt>    on your compile line to ensure that the compiler can find
+the declaration    file.      
+<p><b>Note</b>: the value of <tt>SERVER_FUNCTIONS_INCLUDE</tt> is included 
+  <b>multiple times</b> in <tt>server_functions.h</tt>. Therefore, the usual 
+  header programming practice of ensuring the header is loaded only once will
+  cause the declaration macros to fail. In other words, don't do this: </p>
+         
+<blockquote><tt>#ifndef __MY_SERVER_H__</tt> <br>
+       <tt>#define __MY_SERVER_H__</tt>                
+  <p><tt>GAL_SERVER_NAME(my_server)</tt> <br>
+       <tt>...</tt> <br>
+       <tt>#endif</tt></p>
+     </blockquote>
+            
+<h3> <a name="Incorporating_other_software_packages"></a>Incorporating other 
+  software packages</h3>
+      You can use the GAL_SERVER_SW_PACKAGE() macro in the server header
+to  declare  a software package you would like to use. If you do this, the
+compiler  will  look for a function <tt>_GalSS_configure_&lt;name&gt;</tt>,
+where <tt>&lt;name&gt;</tt>   is the argument of the macro. Typically, a
+library you link against will  provide this function; in the case of MIT
+dialogue processing, it's provided  in the dialogue headers. The function
+should take a single <tt>GalIO_ServerStruct   *</tt> argument and return
+<tt>void</tt>. For an example, see the <a
+ href="../../servers/turn_management.html#The_new_style">turn management</a> 
+  documentation.      
+<h3> <a name="The_headerless_alternative"></a>The headerless alternative</h3>
+      All the header incorporation does, really, is define the references 
+to  the dispatch functions and create a function called _GalSS_InitializeDefaults, 
+  which is called by the toplevel initialization procedure. This function 
+stores  the initialization information in the server in the appropriate way. 
+You can do the same thing yourself. The file <a
+ href="../../../contrib/MITRE/examples/double/headerless_double.c">headerless_double.c</a>
+   exemplifies this strategy:      
+<blockquote><tt>/* We don't need any signatures because the functions have 
+  already been defined. */</tt>                
+  <p><tt>void _GalSS_InitializeDefaults(GalIO_ServerStruct *s)</tt> <br>
+       <tt>{</tt> <br>
+       <tt>&nbsp; GalSS_InitializeServerDefaults(s, "double", 2800);</tt> 
+  <br>
+       <tt>&nbsp; GalSS_AddDispatchFunction(s, "twice", twice, NULL,</tt> 
+  <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   GAL_OTHER_KEYS_MAYBE, GAL_REPLY_UNKNOWN,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   NULL, GAL_OTHER_KEYS_MAYBE);</tt> <br>
+       <tt>&nbsp; GalSS_AddDispatchFunction(s, "complex_twice", complex_twice, 
+  NULL,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   GAL_OTHER_KEYS_MAYBE, GAL_REPLY_UNKNOWN,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   NULL, GAL_OTHER_KEYS_MAYBE);</tt> <br>
+       <tt>&nbsp; GalSS_AddDispatchFunction(s, "reinitialize", reinitialize,
+  NULL,</tt>    <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   GAL_OTHER_KEYS_MAYBE,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   GAL_REPLY_UNKNOWN,</tt> <br>
+       <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   NULL, GAL_OTHER_KEYS_MAYBE);</tt> <br>
+       <tt>}</tt></p>
+     </blockquote>
+  Note: if you do this in a C++ application, you will probably need to prefix
+ <tt>extern "C"</tt> to the function definition to defeat C++ name mangling,
+ since the infrastructure expects to find a function with this exact name.<br>
+  <br>
+  void&nbsp;<a name="_GalSS_InitializeDefaults"></a><b><big>_GalSS_InitializeDefaults</big></b>(GalIO_ServerStruct
+   *<i>scomm</i>) <br>
+     User-defined function which declares static server information. Usually
+  generated automatically during <a href="#Declare_server_information">server
+  declaration generation</a>.      
+<p>The following typedefs are relevant to the functions below: </p>
+         
+<blockquote><tt>typedef Gal_Frame (*Gal_FrameFnPtr)(Gal_Frame frame);</tt>
+     <br>
+       <tt>typedef Gal_Frame (*Gal_FrameDataFnPtr)(Gal_Frame frame, void
+*data);</tt></blockquote>
+            
+<p><br>
+     void&nbsp;<a name="GalSS_InitializeServerDefaults"></a><b><big>GalSS_InitializeServerDefaults</big></b>(GalIO_ServerStruct
+   *<i>scomm</i>, char *<i>name</i>, unsigned short <i>port</i>) <br>
+     Stores the <i>name </i>and <i>port</i> and <i>function_map</i> in the
+ server  <i>scomm</i>. The <i>name</i> corresponds to a Hub <a
+ href="pgm.html#Service_types">service type</a>. </p>
+         
+<p>void&nbsp;<a name="GalSS_AddDispatchFunction"></a><b><big>GalSS_AddDispatchFunction</big></b>(GalIO_ServerStruct
+   *<i>i</i>, const char *<i>name</i>, Gal_FrameDataFnPtr <i>fn</i>, Gal_DispatchFnSignatureKeyEntry
+   *<i>in_key_array</i>, int <i>allow_other_in_keys</i>, int <i>reply_provided</i>,
+   Gal_DispatchFnSignatureKeyEntry *<i>out_key_array</i>, int <i>allow_other_out_keys</i>)
+   <br>
+     Adds a <i>fn</i> indexed by <i>name</i> to the server <i>i</i>. This 
+function   takes a frame and a <tt>void *</tt> pointer (actually a <tt>GalSS_Environment 
+  *</tt>) and returns a frame. By convention, the index and the name of the 
+  function are the same, and that's the way the header strategy implements 
+ things, but this is not required (as long as the programmer is willing to 
+ assume responsibility for negotiating the digression). The possible values 
+ of allow_other_in_keys, reply_provided, and allow_other_out_keys are the 
+same as for the GAL_SERVER_OP_SIGNATURE() macro. The in_key_array and out_key_array 
+  are created by the function <a href="#Gal_CreateDispatchFnKeyArray">Gal_CreateDispatchFnKeyArray</a>().
+   </p>
+         
+<p>Gal_DispatchFnSignatureKeyEntry *<a
+ name="Gal_CreateDispatchFnKeyArray"></a><b><big>Gal_CreateDispatchFnKeyArray</big></b>(int
+   <i>ignore</i>, ... ) <br>
+     This function takes an arbitrary number of arguments. The first argument 
+  is ignored; it is present because the ANSI C mechanism for variable arguments 
+  requires at least one listed argument. The argument list must terminate 
+with  a NULL; otherwise, it's identical to the arguments to the GAL_SERVER_OP_KEYS() 
+  macro. Here's an example: </p>
+         
+<blockquote><tt>Gal_CreateDispatchFnKeyArray(0, ":int", GAL_INT, GAL_KEY_ALWAYS,
+   NULL);</tt>                
+  <h4> Memory management</h4>
+      The function <a href="#GalSS_AddDispatchFunction">GalSS_AddDispatchFunction</a>
+   copies the key array, so if you create an array to pass to <a
+ href="#GalSS_AddDispatchFunction">GalSS_AddDispatchFunction</a>, you must 
+  free it using <a href="#Gal_FreeDispatchFnKeyArray">Gal_FreeDispatchFnKeyArray.</a></blockquote>
+      void&nbsp;<a name="Gal_FreeDispatchFnKeyArray"></a><b><big>Gal_FreeDispatchFnKeyArray</big></b>(Gal_DispatchFnSignatureKeyEntry
+   *<i>entry</i>) <br>
+     Frees a key array created by <a
+ href="#Gal_CreateDispatchFnKeyArray">Gal_CreateDispatchFnKeyArray</a>.  
+     
+<p> </p>
+         
+<hr width="100%">      
+<h2> <a name="Create_a_Hub_Program"></a>Create a Hub Program</h2>
+      In order to use this server, a Hub needs to know how to find it. To 
+use   the server we've defined here, the Hub would typically be passed a <a
+ href="pgm.html">program file</a> containng information like the following:
+       
+<blockquote><tt>SERVER: double-server</tt> <br>
+       <tt>PORT: 2800</tt> <br>
+       <tt>HOST: localhost</tt> <br>
+       <tt>OPERATIONS: twice</tt></blockquote>
+      This entry instructs the Hub to contact the server in question on port
+  2800 on the local machine, and informs the Hub that the server supports
+a  dispatch function named <tt>twice</tt>. (It's also possible to have the
+<a href="../advanced/hub_listener.html">server contact the Hub</a> instead.) 
+  In addition, you might want to tell the Hub what to do with messages the 
+ server sends to it:      
+<ul>
+       <tt>PROGRAM: main</tt>                
+  <p><tt>RULE: :int --&gt; twice</tt> <br>
+       <tt>IN: :int</tt> <br>
+       <tt>OUT: none!</tt></p>
+         
+</ul>
+      This program sends the value of the <tt>:int</tt> key in the current
+ token  to the server which supports the <tt>twice</tt> dispatch function,
+ when the  <tt>:int</tt> key is present in the current token. (It's also
+possible  for  the Hub to <a href="../advanced/scriptless.html">run without
+a program</a>.)        
+<p> </p>
+         
+<hr>      
+<h2> <a
+ name="Conditionalize_your_server_for_multiple_Communicator_versions"></a>Conditionalize
+   your server for multiple Communicator versions</h2>
+      Things unavoidably change between releases, and you may wish to retain
+  the option of compiling your servers against multiple versions of the Galaxy 
+  Communicator distribution. The GC_VERSION definition is designed to do this
+  for you. Here's a simple illustration of how to use it:      
+<blockquote><tt>#include "galaxy/galaxy_all.h"</tt>                
+  <p><tt>#if defined(GC_VERSION) &amp;&amp; (GC_VERSION &gt;= 0x30000)</tt>
+     <br>
+       <tt>char *version = "3 point 0";</tt> <br>
+       <tt>#else</tt> <br>
+       <tt>#if defined(GC_VERSION) &amp;&amp; (GC_VERSION &gt;= 0x20000)</tt>
+    <br>
+       <tt>char *version = "between 2 point 0 and 3 point 0";</tt> <br>
+       <tt>#else</tt> <br>
+       <tt>#ifndef GC_VERSION</tt> <br>
+       <tt>char *version = "before 2 point 0";</tt> <br>
+       <tt>#endif</tt> <br>
+       <tt>#endif</tt> <br>
+       <tt>#endif</tt></p>
+     </blockquote>
+      The value of GC_VERSION is a number in hexadecimal form, such that
+the   lowest two hex digits are the "subminor" version, the next two hex
+digits   are the minor version, and everything above that is the major version.
+So   Galaxy Communicator version 4.2.3 (if we ever get there) will have a
+GC_VERSION   of 0x40203.      
+<p> </p>
+         
+<hr>  
+<center>   
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="frame.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>  
+     </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="pgm.html"><img src="../../arrow_right.gif" alt="" width="30"
+ height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+    Last updated July 30, 2002</center>
+       <br>
+     <br>
+    <br>
+   <br>
+  <br>
+ <br>
+</body>
+</html>

@@ -1,0 +1,1715 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="John Aberdeen, Samuel Bayer, Sasha Porto Caskey">
+   <meta name="GENERATOR" content="Mozilla/4.73 [en] (X11; I; SunOS 5.7 sun4u) [Netscape]">
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000EE" vlink="#551A8B" alink="#FF0000">
+
+<center>
+<h1>
+<b><font face="Arial,Helvetica"><font size=+4><font color="#CCCCCC">DARPA
+</font><font color="#999999">Communicator
+Testbed</font></font></font></b></h1></center>
+
+<center>
+<hr WIDTH="100%"></center>
+
+<center>
+<h1>
+Log Standard Proposal (v14)</h1></center>
+
+<ul>
+<li>
+<font face="Arial,Helvetica"><a href="#Introduction">Introduction</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Content">Content</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Format">Format</a></font></li>
+
+<ul>
+<li>
+<font face="Arial,Helvetica"><a href="#GC_LOG">GC_LOG</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Session">GC_SESSION</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Turn">GC_TURN</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Operation">GC_OPERATION</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Message">GC_MESSAGE</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Event">GC_EVENT</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Annot">GC_ANNOT</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Data">GC_DATA</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#GC_FRAME">GC_FRAME</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#GC_LIST">GC_LIST</a></font></li>
+</ul>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Code support">Code support</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Document Type Definition (DTD)">Document
+Type Definition (DTD)</a></font></li>
+</ul>
+
+<h2>
+
+<hr WIDTH="100%"></h2>
+
+<h2>
+<a NAME="Introduction"></a><font face="Arial,Helvetica">Introduction</font></h2>
+<font face="Arial,Helvetica">This document is intended to establish standards
+for logfile contents and format. We will try to determine what is the smallest
+set of data necessary in order to re-run a system, yet also includes meaningful
+metrics. This may vary depending on how much of the system is to be re-run
+as well as what we would like to measure. In the process we will attempt
+to establish a standard format which all logfiles can be converted to (or
+generated in, although we foresee that at least a minimal amount of inferencing
+might be required to render the logs in this form). A goal of this document
+is to provide a standard that is flexible and general enough such that
+it could be used in different domains.</font>
+<p><font face="Arial,Helvetica">In order to accomplish this goal, we will
+propose an XML DTD which records the basic events in a Communicator-compliant
+system which can be annotated with type information indicating that a data
+element is "significant" from the point of view of annotators (and annotation
+tools).</font>
+<p><font face="Arial,Helvetica">To clarify we will consider the following
+(term definitions are by no means final and are open to suggestion):</font>
+<ul>
+<li>
+<font face="Arial,Helvetica"><b>Session</b> - The interaction of a user
+with the system. In our current demonstration the equivalent of a phone
+call. A session is composed of a set of turns.</font></li>
+
+<li>
+<font face="Arial,Helvetica"><b>Turn</b> - The set of operations performed
+by the system in the course of processing and presenting a single dialogue
+participant's utterance.</font></li>
+
+<li>
+<font face="Arial,Helvetica"><b>Operation</b> - Every command executed
+by the system within a turn. Every operation can send and receive data.</font></li>
+
+<li>
+<font face="Arial,Helvetica"><b>Message</b> - Messages are items sent from
+a server to the hub, and their replies. In contrast to operations, messages
+are initiated by servers.</font></li>
+
+<li>
+<font face="Arial,Helvetica"><b>Events</b> - Examples of events are internal
+hub errors, locks, alarm expirations, alarm enabling/disabling, and alarm
+resets.</font></li>
+
+<li>
+<font face="Arial,Helvetica"><b>Data</b> - A set of key/value pairs.</font></li>
+</ul>
+<font face="Arial,Helvetica">The definition of "turn" requires special
+attention. In some accounts, a turn is an exchange between user and system.
+In a robust dialogue context, this definition fails to be adequate when
+the user or system barges in with follow-up information, etc., or when
+the dialogue involves more than two parties (a situation which we shouldn't
+rule out). We propose that the term "turn" in the context of these log
+files be reserved for the processing of a single participant's utterance
+(either user or system). This definition is not without its problems. For
+instance, it's not clear whether a call to the backend belongs at the end
+of the processing of a user's utterance (because it's the presentation
+of the utterance to the backend) or the beginning of the processing of
+the system's utterance (because it's the source of the system's response).
+We can currently think of nothing that this decision hinges on in the data
+analysis, and recommend that either interpretation be recognized at the
+moment.</font>
+<h2>
+
+<hr WIDTH="100%"></h2>
+
+<h2>
+<a NAME="Content"></a><font face="Arial,Helvetica">Content</font></h2>
+<font face="Arial,Helvetica">Here we will try to discuss the granularity
+of data to be logged in an end-to-end system. The contents of these bullets
+were derived mainly from the information needed by MITRE to do its own
+internal evaluation and will probably change as the perspectives of other
+sites are incorporated. Every log should contain enough information to
+determine the following (here input refers to the user sending information
+to the system and output refers to the system sending information to the
+user). Ideally, all this information should be extractable from the log
+file without any site-specific analysis. In this table, we describe the
+data to be logged, whether it's optional or obligatory, and how we propose
+to standardize access to the data:</font>
+<br>&nbsp;
+<table BORDER WIDTH="100%" >
+<tr>
+<td><b><font face="Arial,Helvetica">Data</font></b></td>
+
+<td><b><font face="Arial,Helvetica">Obligatory</font></b></td>
+
+<td><b><font face="Arial,Helvetica">Standard access</font></b></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">Duration of session</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+
+<td><font face="Arial,Helvetica">readable directly off the XML representation
+proposed below</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">Duration of turn (input or output)</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+
+<td><font face="Arial,Helvetica">readable directly off the XML representation
+proposed below</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">Duration of generation of output (in a
+phone demo, the time the synthesizer takes to generate the audio file)</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+
+<td>&nbsp;see <a href="#op1">1</a></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">Duration of display of output (in a phone
+demo, how long it takes to play the audio file)</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+
+<td>&nbsp;see <a href="#op2">2</a></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">Duration of recognition of input (in a
+phone demo, how long it takes the recognizer to produce its hypotheses)</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+
+<td>&nbsp;see <a href="#op3">3</a></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">Duration of arbitrary operations</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+
+<td><font face="Arial,Helvetica">readable directly off the XML representation
+proposed below</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">Number of turns within a session</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+
+<td><font face="Arial,Helvetica">readable directly off the XML representation
+proposed below</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">Number of sessions (in our current model
+each session is its own logfile)</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+
+<td><font face="Arial,Helvetica">readable directly off the XML representation
+proposed below</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">The audio files corresponding to the user
+input and system output and their formats. The audio files should be stored
+and distributed with the logs, and the pathnames of these files should
+be relative to the log.</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+
+<td><font face="Arial,Helvetica">accessed given an arbitrary search of
+the logged data (see the "audio_input" and "audio_output" values for the
+type attribute of the <a href="#Data">GC_DATA</a> tag, as well as the "mime_type"
+attribute)</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">The text of the user input chosen by the
+system</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+
+<td><font face="Arial,Helvetica">accessed given an arbitrary search of
+the logged data (see the "text_input" values for the type attribute of
+the <a href="#Data">GC_DATA</a> tag)</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">The text of the system output</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+
+<td><font face="Arial,Helvetica">accessed given an arbitrary search of
+the logged data (see the "text_output" value for the type attribute of
+the <a href="#Data">GC_DATA</a> tag)</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">All possible input sentences (from the
+recognizer) up to a certain limit (TBD) (N/A to systems that use a word
+lattice)</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+
+<td><font face="Arial,Helvetica">accessed given an arbitrary search of
+the logged data (see the "text_input_hypothesis" value for the type attribute
+of the <a href="#Data">GC_DATA</a> tag)</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">Indication of whether the parse succeeded</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+
+<td>&nbsp;see <a href="#op4">4</a></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">The full input interpretation</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+
+<td><font face="Arial,Helvetica">accessed given an arbitrary search of
+the logged data</font></td>
+</tr>
+</table>
+
+<p><font face="Arial,Helvetica">The elements which may pose minor complications
+have been left blank. Here we make tentative proposals for each of these:</font>
+<ol>
+<li>
+<a NAME="op1"></a><font face="Arial,Helvetica">Duration of output generation.
+In a system where there is a single, obvious call to the synthesizer, this
+is simply the duration of that operation, but this is only one possible
+configuration. We propose that the "type" attribute be added to the GC_OPERATION
+element and that a "virtual" operation be generated by a postprocess phase
+with a distinguished type (say, "synthesis_duration"); alternatively, we
+could introduce a new XML element (say, GC_EVENT) reserved for these "virtual"
+events.</font></li>
+
+<li>
+<a NAME="op2"></a><font face="Arial,Helvetica">Duration of output presentation.
+In the MIT system, this is an inference from notifications posted by the
+audio server (playing_has_begun, playing_has_ended; see the Communicator
+documentation for the MIT audio server). This could be handled similarly
+to output generation, or we could add optional start and end time attributes
+to the GC_DATA element which contains the audio file.</font></li>
+
+<li>
+<a NAME="op3"></a><font face="Arial,Helvetica">Duration of recognition.
+Again, we propose to handle this similarly to output generation.</font></li>
+
+<li>
+<a NAME="op4"></a><font face="Arial,Helvetica">Indication of whether the
+parse succeeded. Again, this is frequently an inference. We can insert
+a distinguished GC_DATA element (say, with a type of "input_parse_successful").</font></li>
+</ol>
+<font face="Arial,Helvetica">We believe that this sort of proposal will
+allow sites to gather data in the form they prefer, and augment it with
+sharable semantics in such a way that individual sites' data will retain
+its site-specific integrity.</font>
+<br>&nbsp;
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Format"></a><font face="Arial,Helvetica">Format</font></h2>
+<font face="Arial,Helvetica">We believe that XML would be a good candidate
+language for this format for many reasons, among them that there is a growing
+supply of viewers, editors, as well as a variety of parsers available in
+many programming languages.</font>
+<p><font face="Arial,Helvetica">We propose that operations should be logged
+as single XML elements. For example:</font>
+<blockquote><tt>&lt;GC_OPERATION name="paraphrase_reply" server="nl" location="localhost:11000"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; turnid="-1" stime="941473394.66"
+etime="941473394.69" tidx="3"></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_DATA key=":reply_string" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Hi! Welcome to Mitre's Travel demonstration.
+This call is being recorded for</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; system development. You may hang
+up or ask for help at any time. How can I</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; help you?</tt>
+<br><tt>&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&lt;/GC_OPERATION></tt></blockquote>
+
+<p><br><font face="Arial,Helvetica">Since in our distributed architecture
+messages are sent asynchronously, and many events may occur before the
+completion of an operation, some caching (or post processing) will be necessary
+to log operations as single elements.</font>
+<p><font face="Arial,Helvetica">Next we will try to define the main entities
+in the logfile and their formats. A DTD is also available which defines
+these terms and their relations. We will assume all time types will use
+a standard base time known as "the epoch", the number of milliseconds since
+January 1, 1970, 00:00:00 GMT. In attribute values, these times will be
+represented as float seconds.</font>
+<br>&nbsp;
+<h3>
+<a NAME="GC_LOG"></a><font face="Arial,Helvetica">GC_LOG</font></h3>
+<font face="Arial,Helvetica">GC_LOG is the top level element which encloses
+all other elements in the logfile. The elements in this table refer to
+the <a href="#Document Type Definition (DTD)">XML DTD</a>.</font>
+<br>&nbsp;
+<table BORDER COLS=4 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Name</b></td>
+
+<td><b>Description</b></td>
+
+<td><b>Type</b></td>
+
+<td><b>Required</b></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">logfile_version</font></td>
+
+<td><font face="Arial,Helvetica">A label referring to the system that generated
+the log</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">human_annotations_included</font></td>
+
+<td><font face="Arial,Helvetica">human_annotations_included="1" indicates
+that the human annotations file containing transcriptions and objective
+task completion has been folded into the main log file</font></td>
+
+<td><font face="Arial,Helvetica">number</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">GC_SESSION</font></td>
+
+<td><font face="Arial,Helvetica">see <a href="#Session">GC_SESSION</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_SESSION</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<h4>
+<font face="Arial,Helvetica">Example:</font></h4>
+
+<blockquote><tt>&lt;GC_LOG</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; logfile_version="travel cfone, version 2.0"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&lt;/GC_LOG></tt></blockquote>
+
+<h3>
+<a NAME="Session"></a><font face="Arial,Helvetica">GC_SESSION</font></h3>
+<font face="Arial,Helvetica">&nbsp;A session represents an interaction
+of a user with the system. In our current demo the equivalent to a phone
+call. The elements in this table refer to the <a href="#Document Type Definition (DTD)">XML
+DTD</a>.</font>
+<br>&nbsp;
+<table BORDER COLS=4 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Name</b></td>
+
+<td><b>Description</b></td>
+
+<td><b>Type</b></td>
+
+<td><b>Required</b></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">id</font></td>
+
+<td><font face="Arial,Helvetica">We should attempt to determine a unique
+identifier for sessions. MIT's solution for this is of the following format
+(IP:process id:session counter). Process id's might not be trivial to achieve
+in different programing languages and OS' however there usually are "equivalent"
+data available</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">stime</font></td>
+
+<td><font face="Arial,Helvetica">time when session started</font></td>
+
+<td><font face="Arial,Helvetica">seconds (float)</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">etime</font></td>
+
+<td><font face="Arial,Helvetica">time when session finished</font></td>
+
+<td><font face="Arial,Helvetica">seconds (float)</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">GC_TURN</font></td>
+
+<td><font face="Arial,Helvetica">see <a href="#Turn">GC_TURN</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_TURN</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<h4>
+<font face="Arial,Helvetica">Example:</font></h4>
+
+<blockquote><tt>&lt;GC_SESSION</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; id="129.10.2.200:1010:3"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; stime="930254422.720000"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; etime="930254434.790000"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&lt;/GC_SESSION></tt></blockquote>
+
+<h3>
+<a NAME="Turn"></a><font face="Arial,Helvetica">GC_TURN</font></h3>
+<font face="Arial,Helvetica">&nbsp;Consists of each interaction of the
+user with the system, as discussed in the <a href="#Introduction">introduction</a>.
+The elements in this table refer to the <a href="#Document Type Definition (DTD)">XML
+DTD</a>.</font>
+<br>&nbsp;
+<table BORDER COLS=4 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Name</b></td>
+
+<td><b>Description</b></td>
+
+<td><b>Type</b></td>
+
+<td><b>Required</b></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">turnid</font></td>
+
+<td><font face="Arial,Helvetica">A unique identifier within each session</font></td>
+
+<td><font face="Arial,Helvetica">number</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">stime</font></td>
+
+<td><font face="Arial,Helvetica">time when turn started</font></td>
+
+<td><font face="Arial,Helvetica">seconds (float)</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">etime</font></td>
+
+<td><font face="Arial,Helvetica">time when turn ended</font></td>
+
+<td><font face="Arial,Helvetica">seconds (float)</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">GC_OPERATION</font></td>
+
+<td><font face="Arial,Helvetica">see <a href="#Operation">GC_OPERATION</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_OPERATION</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">GC_MESSAGE</font></td>
+
+<td><font face="Arial,Helvetica">see <a href="#Message">GC_MESSAGE</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_MESSAGE</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">GC_EVENT</font></td>
+
+<td><font face="Arial,Helvetica">see <a href="#Event">GC_EVENT</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_EVENT</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<h4>
+<font face="Arial,Helvetica">Example:</font></h4>
+
+<blockquote><tt>&lt;GC_TURN</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; turnid="-01"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; stime="930254422.720000"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; etime="930254424.790000"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&lt;/GC_TURN></tt></blockquote>
+
+<h3>
+<a NAME="Operation"></a><font face="Arial,Helvetica">GC_OPERATION</font></h3>
+<font face="Arial,Helvetica">Every command executed by the system within
+a turn. All operations can send and receive data, frames or audio files.
+The elements in this table refer to the <a href="#Document Type Definition (DTD)">XML
+DTD</a>.</font>
+<br>&nbsp;
+<table BORDER COLS=4 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Name</b></td>
+
+<td><b>Description</b></td>
+
+<td><b>Type</b></td>
+
+<td><b>Required</b></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type</font></td>
+
+<td><font face="Arial,Helvetica">the type of operation being executed (specific
+values TBD)</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">turnid</font></td>
+
+<td><font face="Arial,Helvetica">the turn id that this operation was executed
+under</font></td>
+
+<td><font face="Arial,Helvetica">number</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">stime</font></td>
+
+<td><font face="Arial,Helvetica">time when operation started</font></td>
+
+<td><font face="Arial,Helvetica">seconds (float)</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">etime</font></td>
+
+<td><font face="Arial,Helvetica">time when operation ended</font></td>
+
+<td><font face="Arial,Helvetica">seconds (float)</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">server&nbsp;</font></td>
+
+<td><font face="Arial,Helvetica">the name (according to the program file)
+of the server that executed the operation</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">location</font></td>
+
+<td><font face="Arial,Helvetica">the server (real server name or IP address)
+and its port (server_name:port_number)</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">name</font></td>
+
+<td><font face="Arial,Helvetica">the name of the operation</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">tidx</font></td>
+
+<td><font face="Arial,Helvetica">the token index associated with the operation</font></td>
+
+<td><font face="Arial,Helvetica">number</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">reply_type</font></td>
+
+<td><font face="Arial,Helvetica">valid values of reply_type include normal,
+detroy, and error</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">reply_status</font></td>
+
+<td><font face="Arial,Helvetica">valid values are normal, error, destroy
+and asynchronous</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_start_task</font></td>
+
+<td><font face="Arial,Helvetica">valid values of type_start_task are true,
+task and total, and indicate whether the measurement is of on-task time
+or total call time</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_end_task</font></td>
+
+<td><font face="Arial,Helvetica">indicates the end of the task</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_new_turn</font></td>
+
+<td><font face="Arial,Helvetica">valid values of type_new_turn are user
+and system</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_start_utt</font></td>
+
+<td><font face="Arial,Helvetica">valid values of type_start_utt include
+user, system and pacifier</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_end_utt</font></td>
+
+<td><font face="Arial,Helvetica">valid valudes of type_end_utt include
+user, system and pacifier</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_prompt</font></td>
+
+<td><font face="Arial,Helvetica">indicates the system is prompting for
+a key. the value of type_prompt is the key being prompted</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">GC_DATA</font></td>
+
+<td><font face="Arial,Helvetica">see <a href="#Data">GC_DATA&nbsp;</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_DATA</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<h4>
+<font face="Arial,Helvetica">Example:</font></h4>
+
+<blockquote><tt>&lt;GC_OPERATION type_new_turn="system" name="paraphrase_reply"
+server="nl" location="localhost:11000"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; turnid="-1" stime="941473394.66"
+etime="941473394.69" tidx="3"></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_DATA type_utt_text="system" key=":reply_string"
+dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Hi! Welcome to Mitre's Travel demonstration.
+This call is being recorded for</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; system development. You may hang
+up or ask for help at any time. How can I</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; help you?</tt>
+<br><tt>&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&lt;/GC_OPERATION></tt></blockquote>
+
+<h3>
+<a NAME="Message"></a><font face="Arial,Helvetica">GC_MESSAGE</font></h3>
+<font face="Arial,Helvetica">Messages are items sent from a server to the
+hub, and their replies. In contrast to operations, messages are initiated
+by servers. The elements in this table refer to the <a href="#Document Type Definition (DTD)">XML
+DTD</a>.</font>
+<br>&nbsp;
+<table BORDER COLS=4 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Name</b></td>
+
+<td><b>Description</b></td>
+
+<td><b>Type</b></td>
+
+<td><b>Required</b></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type</font></td>
+
+<td><font face="Arial,Helvetica">the type of message being issued (specific
+values TBD)</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">turnid</font></td>
+
+<td><font face="Arial,Helvetica">the turn id that this operation was executed
+under</font></td>
+
+<td><font face="Arial,Helvetica">number</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">time</font></td>
+
+<td><font face="Arial,Helvetica">time when message issued</font></td>
+
+<td><font face="Arial,Helvetica">seconds (float)</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">server&nbsp;</font></td>
+
+<td><font face="Arial,Helvetica">the name of the server that issued the
+message</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">location</font></td>
+
+<td><font face="Arial,Helvetica">the server (real server name or IP address)
+and its port (server_name:port_number)</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">name</font></td>
+
+<td><font face="Arial,Helvetica">the name of the message</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">direction</font></td>
+
+<td><font face="Arial,Helvetica">server_to_hub or hub_to_server</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">tidx</font></td>
+
+<td><font face="Arial,Helvetica">the token index associated with the message</font></td>
+
+<td><font face="Arial,Helvetica">number</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">reply_type</font></td>
+
+<td><font face="Arial,Helvetica">valid values of reply_type include normal,
+detroy, and error</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">reply_status</font></td>
+
+<td><font face="Arial,Helvetica">valid values are normal, error, destroy
+and asynchronous</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_start_task</font></td>
+
+<td><font face="Arial,Helvetica">valid values of type_start_task are true,
+task and total, and indicate whether the measurement is of on-task time
+or total call time</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_end_task</font></td>
+
+<td><font face="Arial,Helvetica">indicates the end of the task</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_new_turn</font></td>
+
+<td><font face="Arial,Helvetica">valid values of type_new_turn are user
+and system</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_start_utt</font></td>
+
+<td><font face="Arial,Helvetica">valid values of type_start_utt include
+user, system and pacifier</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_end_utt</font></td>
+
+<td><font face="Arial,Helvetica">valid values of type_end_utt include user,
+system and pacifier</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_prompt</font></td>
+
+<td><font face="Arial,Helvetica">indicates the system is prompting for
+a key. the value of type_prompt is the key being prompted</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">GC_DATA</font></td>
+
+<td><font face="Arial,Helvetica">see <a href="#Data">GC_DATA&nbsp;</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_DATA</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+</table>
+
+<h4>
+<font face="Arial,Helvetica">Example:</font></h4>
+
+<blockquote><tt>&lt;GC_MESSAGE name="filelog" direction="server_to_hub"
+server="audio"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; location="localhost:15000" turnid="-1"
+time="941473396.48" tidx="6"></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_DATA key=":synth_log_filename" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /home/communicator/test/Travel-demo/../../logs/travel_cfone/19991101/001/</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; travel_cfone-19991101-001-synth--01-001.wav</tt>
+<br><tt>&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&lt;/GC_MESSAGE></tt></blockquote>
+
+<h3>
+<a NAME="Event"></a><font face="Arial,Helvetica">GC_EVENT</font></h3>
+<font face="Arial,Helvetica">Examples of events are internal hub errors,
+locks, alarm expirations, alarm enabling/disabling, and alarm resets. The
+elements in this table refer to the <a href="#Document Type Definition (DTD)">XML
+DTD</a>.</font>
+<br>&nbsp;
+<table BORDER COLS=4 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Name</b></td>
+
+<td><b>Description</b></td>
+
+<td><b>Type</b></td>
+
+<td><b>Required</b></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">etype</font></td>
+
+<td><font face="Arial,Helvetica">the name of hub event (SYSTEM_ERROR, LOCK,
+etc.)</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">turnid</font></td>
+
+<td><font face="Arial,Helvetica">the turn id under which this event occurred</font></td>
+
+<td><font face="Arial,Helvetica">number</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">time</font></td>
+
+<td><font face="Arial,Helvetica">time when message issued</font></td>
+
+<td><font face="Arial,Helvetica">seconds (float)</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">name</font></td>
+
+<td><font face="Arial,Helvetica">the type of the event (operation)</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">server&nbsp;</font></td>
+
+<td><font face="Arial,Helvetica">the name of the server that issued the
+message</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">location</font></td>
+
+<td><font face="Arial,Helvetica">the server (real server name or IP address)
+and its port (server_name:port_number)</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">tidx</font></td>
+
+<td><font face="Arial,Helvetica">the token index associated with the event</font></td>
+
+<td><font face="Arial,Helvetica">number</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_start_task</font></td>
+
+<td><font face="Arial,Helvetica">valid values of type_start_task are true,
+task and total, and indicate whether the measurement is of on-task time
+or total call time</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_end_task</font></td>
+
+<td><font face="Arial,Helvetica">indicates the end of the task</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_new_turn</font></td>
+
+<td><font face="Arial,Helvetica">valid values of type_new_turn are user
+and system</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_start_utt</font></td>
+
+<td><font face="Arial,Helvetica">valid values of type_start_utt include
+user, system and pacifier</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_end_utt</font></td>
+
+<td><font face="Arial,Helvetica">valid valudes of type_end_utt include
+user, system and pacifier</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_prompt</font></td>
+
+<td><font face="Arial,Helvetica">indicates the system is prompting for
+a key. the value of type_prompt is the key being prompted</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">GC_DATA</font></td>
+
+<td><font face="Arial,Helvetica">see <a href="#Data">GC_DATA&nbsp;</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_DATA</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<h4>
+<font face="Arial,Helvetica">Example:</font></h4>
+
+<blockquote><tt>&lt;GC_EVENT etype="LOCK" server="audio" location="localhost:15000"
+turnid="-1"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; time="941473396.19" name=":hub_get_session_lock"
+tidx="5"/></tt></blockquote>
+
+<h3>
+<a NAME="Annot"></a><font face="Arial,Helvetica">GC_ANNOT</font></h3>
+<font face="Arial,Helvetica">GC_ANNOT are tag containing human annotations,
+and as such are not present in the raw (unannotated) log files. GC_ANNOT
+is included in this specification to support folding human annotation files
+in with their associated log files. The elements in this table refer to
+the <a href="#Document Type Definition (DTD)">XML DTD</a>.</font>
+<br>&nbsp;
+<table BORDER COLS=4 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Name</b></td>
+
+<td><b>Description</b></td>
+
+<td><b>Type</b></td>
+
+<td><b>Required</b></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">turnid</font></td>
+
+<td><font face="Arial,Helvetica">the turn id under which this event occurred</font></td>
+
+<td><font face="Arial,Helvetica">number</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">tidx</font></td>
+
+<td><font face="Arial,Helvetica">the token index associated with the event</font></td>
+
+<td><font face="Arial,Helvetica">number</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_task_completion</font></td>
+
+<td><font face="Arial,Helvetica">human annotation indicating whether the
+task was successfully completed or not</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">GC_DATA</font></td>
+
+<td><font face="Arial,Helvetica">see <a href="#Data">GC_DATA&nbsp;</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_DATA</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<h4>
+<font face="Arial,Helvetica">Examples:</font></h4>
+
+<blockquote><tt>&lt;GC_ANNOT type_task_completion="1"/></tt>
+<p><tt>&lt;GC_ANNOT turnid="2" tidx="129"></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i'd like a flight from boston to
+san francisco</tt>
+<br><tt>&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&lt;/GC_ANNOT></tt></blockquote>
+
+<h3>
+<a NAME="Data"></a><font face="Arial,Helvetica">GC_DATA</font></h3>
+<font face="Arial,Helvetica">A key/value pair. This datatype can be used
+to display the information involved in an operation, as well as to display
+the contents of a GC_FRAME or GC_LIST. The elements in this table refer
+to the <a href="#Document Type Definition (DTD)">XML DTD</a>.</font>
+<br>&nbsp;
+<table BORDER COLS=4 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Name</b></td>
+
+<td><b>Description</b></td>
+
+<td><b>Type</b></td>
+
+<td><b>Required</b></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">key</font></td>
+
+<td><font face="Arial,Helvetica">the name of this data point</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">yes</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">turnid</font></td>
+
+<td><font face="Arial,Helvetica">the turn id that this operation was executed
+under</font></td>
+
+<td><font face="Arial,Helvetica">number</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">time</font></td>
+
+<td><font face="Arial,Helvetica">time stamp for this data point&nbsp;</font></td>
+
+<td><font face="Arial,Helvetica">seconds (float)</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type</font></td>
+
+<td><font face="Arial,Helvetica">valid values of type include audio_input,
+audio_output, text_input, text_output, text_input_hypothesis, and concept.
+See the <a href="#Content">Content</a> section.</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">mime_type</font></td>
+
+<td><font face="Arial,Helvetica">the mime type of the data</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">direction</font></td>
+
+<td><font face="Arial,Helvetica">valid values are in and out</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">dtype</font></td>
+
+<td><font face="Arial,Helvetica">the data type - valid values include integer,
+string, etc. (full list of values TBD)</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_utt_text</font></td>
+
+<td><font face="Arial,Helvetica">valid values of type_utt_text are transciption,
+system and asr</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_error_msg</font></td>
+
+<td><font face="Arial,Helvetica">valid value is true</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_help_msg</font></td>
+
+<td><font face="Arial,Helvetica">valid value is true</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_task_completion</font></td>
+
+<td><font face="Arial,Helvetica">human annotation indicating whether the
+task was successfully completed or not</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">GC_FRAME</font></td>
+
+<td><font face="Arial,Helvetica">see <a href="#GC_FRAME">GC_FRAME&nbsp;</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_FRAME</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">GC_LIST</font></td>
+
+<td><font face="Arial,Helvetica">see <a href="#GC_LIST">GC_LIST&nbsp;</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_LIST</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<h4>
+<font face="Arial,Helvetica">Example:</font></h4>
+
+<blockquote><tt>&lt;GC_DATA key=":reply_string" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp; Hi! Welcome to Mitre's Travel demonstration. This
+call is being recorded for</tt>
+<br><tt>&nbsp;&nbsp; system development. You may hang up or ask for help
+at any time. How can I</tt>
+<br><tt>&nbsp;&nbsp; help you?</tt>
+<br><tt>&lt;/GC_DATA></tt></blockquote>
+
+<h3>
+<a NAME="GC_FRAME"></a><font face="Arial,Helvetica">GC_FRAME</font></h3>
+<font face="Arial,Helvetica">This stucture would allow for recording of
+frames. The elements in this table refer to the <a href="#Document Type Definition (DTD)">XML
+DTD</a>.</font>
+<br>&nbsp;
+<table BORDER COLS=4 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Name</b></td>
+
+<td><b>Description</b></td>
+
+<td><b>Type</b></td>
+
+<td><b>Required</b></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">frame_type</font></td>
+
+<td><font face="Arial,Helvetica">Galaxy frame type</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">name</font></td>
+
+<td><font face="Arial,Helvetica">the name of the frame</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">turnid</font></td>
+
+<td><font face="Arial,Helvetica">the turn id in which this frame appears</font></td>
+
+<td><font face="Arial,Helvetica">number</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">GC_DATA</font></td>
+
+<td><font face="Arial,Helvetica">see <a href="#Data">GC_DATA</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_DATA</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+</table>
+
+<h4>
+<font face="Arial,Helvetica">Example:</font></h4>
+
+<blockquote><tt>&lt;GC_DATA key=":rec_scores"></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_FRAME name="scores" type="clause"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":acoustic_score"
+dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "-617.9270"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":ngram_score" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "-17.4465"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":nwords" dtype="integer"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 8</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":total_score" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "-651.3735"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":nphones" dtype="integer"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 36</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp; &lt;/GC_FRAME></tt>
+<br><tt>&lt;/GC_DATA></tt></blockquote>
+
+<h3>
+<a NAME="GC_LIST"></a><font face="Arial,Helvetica">GC_LIST</font></h3>
+<font face="Arial,Helvetica">This stucture would allow for recording of
+lists. The elements in this table refer to the <a href="#Document Type Definition (DTD)">XML
+DTD</a>.</font>
+<br>&nbsp;
+<table BORDER COLS=4 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Name</b></td>
+
+<td><b>Description</b></td>
+
+<td><b>Type</b></td>
+
+<td><b>Required</b></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">name</font></td>
+
+<td><font face="Arial,Helvetica">the name of the list</font></td>
+
+<td><font face="Arial,Helvetica">string</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">turnid</font></td>
+
+<td><font face="Arial,Helvetica">the turn id in which this list appears</font></td>
+
+<td><font face="Arial,Helvetica">number</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">GC_DATA</font></td>
+
+<td><font face="Arial,Helvetica">see <a href="#Data">GC_DATA</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_DATA</font></td>
+
+<td><font face="Arial,Helvetica">no</font></td>
+</tr>
+</table>
+
+<h4>
+<font face="Arial,Helvetica">Example:</font></h4>
+
+<blockquote><tt>&lt;GC_DATA name=":nbest_list"></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_LIST name=":nbest_list"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":nbest_list[0]"
+dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; can i get this
+american flight</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":nbest_list[1]"
+dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; can i get this
+american difference</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":nbest_list[2]"
+dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; can i did this
+american difference</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":nbest_list[3]"
+dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; can i get this
+american that flight</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp; &lt;/GC_LIST></tt>
+<br><tt>&lt;/GC_DATA></tt></blockquote>
+
+<hr WIDTH="100%">
+<h2>
+<a NAME="Code support"></a><font face="Arial,Helvetica">Code support</font></h2>
+<font face="Arial,Helvetica">MITRE volunteers to work with sites to produce
+the appropriate conversion tools from MIT logfiles to the proposed logfile
+standard. If more appropriate, we will produce a new logging module for
+the Hub which will simplify this process; however, we don't envision this
+to be necessary.</font>
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Document Type Definition (DTD)"></a><font face="Arial,Helvetica">Document
+Type Definition (DTD)</font></h2>
+<font face="Arial,Helvetica">Below we provide an XML DTD to define the
+above types.</font>
+<br>&nbsp;
+<p><tt>&lt;?xml version="1.0"?></tt>
+<p><tt>&lt;!ELEMENT GC_LOG (GC_SESSION)*></tt>
+<br><tt>&lt;!ATTLIST GC_LOG logfile_version CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_LOG human_annotations_included NMTOKEN #IMPLIED></tt>
+<p><tt>&lt;!ELEMENT GC_SESSION ( GC_TURN | GC_ANNOT )*></tt>
+<br><tt>&lt;!ATTLIST GC_SESSION id NMTOKEN #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_SESSION stime CDATA #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_SESSION etime CDATA #REQUIRED></tt>
+<p><tt>&lt;!ELEMENT GC_TURN ( GC_ANNOT | GC_OPERATION | GC_MESSAGE | GC_EVENT
+)*></tt>
+<br><tt>&lt;!ATTLIST GC_TURN turnid NMTOKEN #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_TURN stime NMTOKEN #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_TURN etime NMTOKEN #REQUIRED></tt>
+<p><tt>&lt;!ELEMENT GC_ANNOT (GC_DATA)*></tt>
+<br><tt>&lt;!-- GC_ANNOT can have a sequence of one or more GC_DATA tags
+or it can be empty --></tt>
+<br><tt>&lt;!ATTLIST GC_ANNOT type_task_completion CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_ANNOT turnid NMTOKEN #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_ANNOT tidx NMTOKEN #IMPLIED></tt>
+<p><tt>&lt;!ELEMENT GC_OPERATION (GC_DATA)*></tt>
+<br><tt>&lt;!ATTLIST GC_OPERATION type NMTOKENS #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_OPERATION turnid NMTOKEN #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_OPERATION server CDATA #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_OPERATION location NMTOKEN #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_OPERATION name CDATA #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_OPERATION tidx NMTOKEN #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_OPERATION reply_type CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_OPERATION reply_status CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_OPERATION stime CDATA #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_OPERATION etime CDATA #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_OPERATION type_start_task CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_OPERATION type_end_task CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_OPERATION type_new_turn CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_OPERATION type_start_utt CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_OPERATION type_end_utt CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_OPERATION type_prompt CDATA #IMPLIED></tt>
+<p><tt>&lt;!ELEMENT GC_MESSAGE (GC_DATA)*></tt>
+<br><tt>&lt;!ATTLIST GC_MESSAGE type NMTOKENS #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_MESSAGE turnid NMTOKEN #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_MESSAGE server CDATA #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_MESSAGE location NMTOKEN #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_MESSAGE name CDATA #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_MESSAGE direction NMTOKEN #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_MESSAGE tidx NMTOKEN #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_MESSAGE reply_type CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_MESSAGE reply_status CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_MESSAGE time CDATA #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_MESSAGE type_start_task CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_MESSAGE type_end_task CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_MESSAGE type_new_turn CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_MESSAGE type_start_utt CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_MESSAGE type_end_utt CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_MESSAGE type_prompt CDATA #IMPLIED></tt>
+<p><tt>&lt;!ELEMENT GC_EVENT (GC_DATA)*></tt>
+<br><tt>&lt;!ATTLIST GC_EVENT etype NMTOKEN #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_EVENT turnid NMTOKEN #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_EVENT server CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_EVENT location NMTOKEN #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_EVENT time CDATA #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_EVENT name CDATA #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_EVENT tidx NMTOKEN #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_EVENT type_start_task CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_EVENT type_end_task CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_EVENT type_new_turn CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_EVENT type_start_utt CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_EVENT type_end_utt CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_EVENT type_prompt CDATA #IMPLIED></tt>
+<p><tt>&lt;!ELEMENT GC_DATA ANY></tt>
+<br><tt>&lt;!ATTLIST GC_DATA key CDATA #REQUIRED></tt>
+<br><tt>&lt;!ATTLIST GC_DATA type NMTOKENS #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_DATA mime_type NMTOKEN #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_DATA direction NMTOKEN #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_DATA dtype NMTOKEN #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_DATA time CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_DATA turnid NMTOKEN #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_DATA type_utt_text CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_DATA type_error_msg CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_DATA type_help_msg CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_DATA type_task_completion CDATA #IMPLIED></tt>
+<p><tt>&lt;!ELEMENT GC_FRAME (GC_DATA)*></tt>
+<br><tt>&lt;!ATTLIST GC_FRAME frame_type NMTOKEN #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_FRAME name CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_FRAME turnid NMTOKEN #IMPLIED></tt>
+<p><tt>&lt;!ELEMENT GC_LIST (GC_DATA)*></tt>
+<br><tt>&lt;!ATTLIST GC_LIST name CDATA #IMPLIED></tt>
+<br><tt>&lt;!ATTLIST GC_LIST turnid NMTOKEN #IMPLIED></tt>
+<br>&nbsp;
+</body>
+</html>

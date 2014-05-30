@@ -1,0 +1,13 @@
+This file (c) Copyright 1998 - 2002 The MITRE Corporation
+
+This file is part of the Galaxy Communicator system. It is licensed
+under the conditions described in the file LICENSE in the root 
+directory of the Galaxy Communicator system.
+
+In order to use the libraries in this directory, you must
+make sure you do
+
+sys.path.insert(0, "<your-root-dir>/MITRE/tools/lib/python")
+
+into your path. None of the files here install the proper
+path.

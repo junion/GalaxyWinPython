@@ -1,0 +1,2616 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.75 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>Galaxy Communicator Documentation: MITRE Log Tools</title>
+</head>
+<body style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#0000FF">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:
+<br><br>MITRE Log Tools</h1></center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "unit_tester_ref.html"><img src="../../../../docs/arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../../LICENSE">License</a> / <a href = "../../../../docs/manual/index.html">Documentation home</a> / <a href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "log_reference.html"><img src="../../../../docs/arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+
+<hr WIDTH="100%">
+<p>MITRE is providing a number of support
+tools for the community to use for manipulating logs and preparing them
+for evaluation. These tools are useful for people generating logs from
+raw Hub logs, or writing their own XML. All these tools are written in
+Python.
+<p>This version of the log tools was originally
+distributed with GalaxyCommunicator 2.0.1p2; no changes were made for version
+2.1. However, a set of errors was discovered in the final preparations
+for the 2000 evaluation which led to patches both for 2.0.1 and 2.1. For
+convenience, a set of <a href="log_reference.html">reference documents</a>
+has been included with this distribution; however, you are encouraged to
+consult <a href="http://fofoca.mitre.org/logstandard/index.html">MITRE's
+DARPA Communicator web site</a> for the most current versions.
+<ul>
+<li>
+<a href="#Background_and_common_arguments">Background
+and common arguments</a></li>
+
+<li>
+<a href="#XML_log_generation">XML log generation</a></li>
+
+<li>
+<a href="#XML_annotation">XML annotation</a></li>
+
+<li>
+<a href="#XML_human_annotation_stub_generation">XML
+human annotation stub generation</a></li>
+
+<li>
+<a href="#Unifying_automatic_and_human_XML_files">Unifying
+automatic and human XML files</a></li>
+
+<li>
+<a href="#XML_summarization">XML summarization</a></li>
+
+<li>
+<a href="#XML_log_validation">XML log validation</a></li>
+
+<li>
+<a href="#XML_scoring">XML scoring</a></li>
+
+<li>
+<a href="#Batch_generation_of_NIST_sclite_input">Batch
+generation of NIST <tt>sclite</tt>
+input</a></li>
+
+<li>
+<a href="#Extraction_of_landmarks">Extraction
+of landmarks</a></li>
+</ul>
+
+<hr WIDTH="100%">
+<h2>
+<a NAME="Background_and_common_arguments"></a>Background
+and common arguments</h2>
+All the MITRE log analysis tools operate on
+sets of <b>log directories</b>. These log directories have an expected
+form, and all the tools in this suite of tools can be instructed about
+where to find these log directories and what to expect their form to be.
+<p>All these tools are written in Python,
+and currently use the XML parser in the standard Python distribution. This
+XML parser isn't really fast enough. In the near future, we'll be looking
+into other XML parsers currently being produced by the Python XML SIG,
+which should yield considerably enhanced performance (as well as providing
+DTD validation). We apologize for the inconvenience.
+<h4>
+Common command line</h4>
+<tt>&lt;GC_HOME>/contrib/MITRE/tools/bin/&lt;tool_name> \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--raw_txt_pat regexp] [--raw_xml_pat regexp]
+[--ann_xml_pat regexp] [--human_xml_pat regexp] \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--force] [--write_file] [--print_output] [--write_cache]
+[--read_cache] \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--help] \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--start first_dir] [--end last_dir] log_root...</tt>
+<p>We'll consider these arguments in groups.
+<h4>
+<a NAME="Group_1:_Directory_structure"></a>Group
+1: Directory structure</h4>
+Each log directory must contain either a raw
+MIT text log, a raw XML log, or an annotated XML log. In addition, the
+tool suite recognizes a fourth distinguished file containing human annotations.
+The directory may have an arbitrary number of additional files, but it
+must contain no directories besides a directory called <tt>.cache</tt>,
+which is created by the tool suite <a href="#--write_cache">under certain
+circumstances</a>. The default names of the files in the log directory
+are:
+<br>&nbsp;
+<table BORDER WIDTH="100%" NOSAVE >
+<tr>
+<td><b>File type</b></td>
+
+<td><b>Perl regular expression</b></td>
+
+<td><b>Command line argument for override</b></td>
+</tr>
+
+<tr>
+<td>raw MIT text log</td>
+
+<td><tt>^.+-\d{8,8}-\d{3,3}-hublog[.]txt$</tt></td>
+
+<td><tt>--raw_txt_pat</tt></td>
+</tr>
+
+<tr>
+<td>raw XML log</td>
+
+<td><tt>^.+-\d{8,8}-\d{3,3}-hublog-raw[.]xml$</tt></td>
+
+<td><tt>--raw_xml_pat</tt></td>
+</tr>
+
+<tr>
+<td>annotated XML log</td>
+
+<td><tt>^.+-\d{8,8}-\d{3,3}-hublog-annotated[.]xml$</tt></td>
+
+<td><tt>--ann_xml_pat</tt></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE>human annotation file</td>
+
+<td><tt>^.+-\d{8,8}-\d{3,3}-hublog-human[.]xml$ or ^.+-\d{8,8}-\d{3,3}-human[.]xml$</tt></td>
+
+<td><tt>--human_xml_pat</tt></td>
+</tr>
+</table>
+
+<p>The default pattern for the raw MIT text
+log is identical to what the Hub logger produces, so if you're using this
+tool suite to generate the raw and annotated XML, you don't have to worry
+about filenames, except to observe that your human annotations file should
+be generated by replacing <tt>hublog.txt</tt>
+in your raw MIT text log filename with <tt>hublog-human.xml</tt>.
+<h4>
+Overriding file names</h4>
+If you are not using the Hub logger, you have
+the option of providing different regular expressions for the four file
+types. You can use the arguments listed here to provide different patterns
+for the file types. By convention, the file names follow a consistent pattern,
+and you can take advantage of this in your overrides. So for instance,
+if you provide a pattern only for the raw MIT text log, and the tool finds
+the raw MIT text log but can't find the other files based on the default
+patterns, it will also search for files based on the pattern you provided
+for the raw MIT text log. The algorithm works as follows:
+<ul>
+<li>
+The tool first searches for a file matching
+the default or override pattern for each file type.</li>
+
+<li>
+If the tool finds a raw MIT text log
+<tt>&lt;base>.&lt;ext></tt>,
+it will attempt to find any missing files according to the following patterns:
+<tt>&lt;base>-raw.xml</tt>,
+<tt>&lt;base>-annotated.xml,&lt;base>-human.xml</tt>.</li>
+
+<li>
+If the tool finds a raw XML log <tt>&lt;base>-raw.&lt;ext></tt>,
+it will attempt to find any missing files according to the following patterns:
+<tt>&lt;base>-annotated.xml,&lt;base>-human.xml</tt>.
+If the filename without extension does not end in <tt>-raw</tt>,
+it will treat the entire filename without extension as the base.</li>
+
+<li>
+If the tool finds an annotated XML log <tt>&lt;base>-annotated.&lt;ext></tt>,
+it will attempt to find a missing human annotation file according to the
+pattern <tt>&lt;base>-human.xml</tt>.
+If the filename without extension does not end in <tt>-raw</tt>,
+it will treat the entire filename without extension as the base.</li>
+</ul>
+So if your raw MIT text log pattern is
+<tt>^mylog.text$</tt>,
+the tool will also accept <tt>mylog-raw.xml</tt>,
+<tt>mylog-annotated.xml
+</tt>and
+<tt>mylog-human.xml
+</tt>as
+the names of the other files if it can't find the defaults.
+<h4>
+<a NAME="Group_2:_Processing_directives"></a>Group
+2: Processing directives</h4>
+Each analysis step has preconditions on its
+execution, and may produce a log as a result of operating.
+<br>&nbsp;
+<table BORDER WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE><b>Analysis step</b></td>
+
+<td><b>Precondition</b></td>
+
+<td><b>Produces</b></td>
+</tr>
+
+<tr>
+<td>XML log generation</td>
+
+<td>raw MIT text log</td>
+
+<td>raw XML log conforming to the <a href="http://fofoca.mitre.org/members/CAC/log-standard-versions.html">logfile
+standard</a></td>
+</tr>
+
+<tr>
+<td>XML annotation</td>
+
+<td>raw XML log conforming to the <a href="http://fofoca.mitre.org/members/CAC/log-standard-versions.html">logfile
+standard</a> (+ rules)</td>
+
+<td>annotated XML log conforming to the
+<a href="http://fofoca.mitre.org/members/CAC/logstandard-dmas-v3.html">logfile
+DMA standard</a></td>
+</tr>
+
+<tr>
+<td>XML summarization</td>
+
+<td>annotated XML log conforming to the <a href="http://fofoca.mitre.org/members/CAC/logstandard-dmas-v3.html">logfile
+DMA standard</a> (+ human annotation file conforming to the <a href="http://fofoca.mitre.org/members/CAC/human_annot.html">human
+annotation logfile standard</a>, if annotations are not included in the
+annotated XML log)</td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>XML log validation</td>
+
+<td>annotated XML log conforming to the <a href="http://fofoca.mitre.org/members/CAC/logstandard-dmas-v3.html">logfile
+DMA standard</a> (+ human annotation file conforming to the <a href="http://fofoca.mitre.org/members/CAC/human_annot.html">human
+annotation logfile standard</a>, if annotations are not included in the
+annotated XML log)</td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>XML scoring</td>
+
+<td>annotated XML log conforming to the <a href="http://fofoca.mitre.org/members/CAC/logstandard-dmas-v3.html">logfile
+DMA standard</a> (+ human annotation file conforming to the <a href="http://fofoca.mitre.org/members/CAC/human_annot.html">human
+annotation logfile standard</a>, if annotations are not included in the
+annotated XML log)</td>
+
+<td></td>
+</tr>
+</table>
+
+<p>If the required preconditions of each step
+are not met, the tool suite is capable of backward chaining to generate
+it. So if you ask for an annotation, but all you currently have is the
+raw MIT text log, the annotation tool will force the generation of the
+raw XML log (or, rather, an internal representation of it).
+<br>&nbsp;
+<table BORDER COLS=2 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Flag</b></td>
+
+<td><b>Purpose</b></td>
+</tr>
+
+<tr>
+<td><tt>--force</tt></td>
+
+<td>Causes the tool to backward chain as far
+as possible, regardless of which intermediate files are present. So if
+you've provided a raw MIT text log, all the analysis steps will start with
+this file, no matter whether you've written out intermediate results.</td>
+</tr>
+
+<tr NOSAVE>
+<td><tt>--write_file</tt></td>
+
+<td NOSAVE>Causes the tool to write out intermediate
+results to an appropriately-named file, using the same naming generalizations
+that it uses to search for files. The default is not to write files.</td>
+</tr>
+
+<tr>
+<td><tt>--print_output</tt></td>
+
+<td>Causes the tool to print out each intermediate
+result to standard output. The default is not to print.</td>
+</tr>
+
+<tr>
+<td><tt>--read_cache</tt></td>
+
+<td>Causes the tool to read from a file in
+the <tt>.cache</tt> directory, if present.
+The default is not to consult the cache.</td>
+</tr>
+
+<tr>
+<td><a NAME="--write_cache"></a><tt>--write_cache</tt></td>
+
+<td>Causes the tool to write intermediate
+results to a file in the <tt>.cache </tt>directory.
+The default is not to write intermediate results to the cache.</td>
+</tr>
+</table>
+
+<p>The cache exists because of the current
+speed problems with the default Python XML parser. The cache uses a fairly
+simple XDR encoding of the XML tree structure. This cache takes a while
+to write (considerably longer than writing the XML files themselves), but
+currently seems noticeably faster to load than the raw XML (we haven't
+done timings, though). If you're doing a great deal of batch processing,
+it may be valuable to write the cache for the annotated XML log and read
+from the cache for subsequent validation, summarization and scoring. The
+cache may go away in the future, if the XML parsing speeds up sufficiently.
+<h4>
+Group 3: <tt>--help</tt></h4>
+Prints out the command line and exits.
+<h4>
+Group 4: Finding the log directories</h4>
+The tools in this suite are capable of processing
+multiple log directories at the same time. Each tool can accept a sequence
+of directory names as arguments, and it will search hierarchically through
+those directories to find any directories which meet the <a href="#Group_1:_Directory_structure">qualifications
+for being log directories</a>. As an example, assume your directory stack
+looks like this:
+<p><tt>mylogs/</tt>
+<br><tt>&nbsp; 19991120/</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; 000/</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; 001/</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; 002/</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; notes/</tt>
+<br><tt>&nbsp; 19991123/</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; 000/</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; 001/</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; 002/</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; 003/</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; 004/</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; notes/</tt>
+<br><tt>&nbsp; 19991124/</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; 000/</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; 001/</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; 002/</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; notes/</tt>
+<p>Assume the <tt>notes/</tt>
+directories don't contain logs, but all the other leaf directories do.
+If you want to produce raw XML for all the logs and write out the file,
+all you need to do is this:
+<p><tt>% xmlize --write_file mylogs</tt>
+<p>which is equivalent to
+<p><tt>% xmlize --write_file mylogs/19991120 mylogs/19991123 mylogs/19991124</tt>
+<p>The <tt>--start</tt>
+and <tt>--end</tt> command line arguments
+allow you to control begin and end points when you provide a single directory
+root as an argument. The <tt>--start</tt>
+and <tt>--end</tt> values are treated
+as subdirectories of the root, and only directory names which are alphanumerically
+greater than or equal to the start and less than or equal to the end are
+processed. So if you just want to do the last two days in your directory
+stack, you could use the following command line:
+<p><tt>% xmlize --write_file --start 19991123 mylogs</tt>
+<p>If you wanted to start with the final log
+on the first day and end with the first log on the final day, you could
+use the following command line:
+<p><tt>% xmlize --write_file --start 19991120/002 --end 19991124/000 mylogs</tt>
+<p>If you're using the Hub logger, the alphanumeric
+order of the directory names in your directory stack is conveniently also
+the date order.
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="XML_log_generation"></a>XML log generation</h2>
+
+<h4>
+Command line</h4>
+<tt>&lt;GC_HOME>/contrib/MITRE/tools/bin/xmlize &lt;common flags> [--default_user_version
+version_string] log_root...</tt>
+<p>This tool translates
+<a href="../../../../docs/manual/reference/logging.html">MIT
+logs</a> into XML which conforms to the unannotated portion of the most
+recent version of the <a href="http://fofoca.mitre.org/members/CAC/log-standard-versions.html">MITRE
+logfile standard proposal</a>. The file <tt>&lt;GC_HOME>/contrib/MITRE/tools/src/xmlizer/log_standard.dtd</tt>
+contains the XML DTD which the result of this utility conforms to. The
+resulting log can be printed or written to an appropriately-named file
+using the <a href="#Group_2:_Processing_directives">common flags</a>. All
+status messages are written to stderr.
+<p>The <tt>--default_user_version</tt>
+argument allows you to add a version name to the GC_LOG tag; this is normally
+inherited from the program file if you use LOGFILE_VERSION:, but this allows
+you to provide a default version for this log if there is no LOGFILE_VERSION:
+in your program file. The <a href="#XML_annotation">XML annotation tool</a>
+is sensitive to this version name; if it is present, the name must match
+one of the GC_LOG_VERSION tag contents specified in the rules file (described
+below), but if it is absent, no checking will be done.
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="XML_annotation"></a>XML annotation</h2>
+Once you have a raw XML file, you may annotate
+it using the XML annotation tool. This tool uses a special rules file.
+<h4>
+Command line</h4>
+<tt>&lt;GC_HOME>/contrib/MITRE/tools/bin/xml_annotate &lt;common flags>
+\</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--default_user_version version_string] [--rule_base
+rule_file] log_root...</tt>
+<p>This tool produces an annotated XML document.
+The resulting log can be printed or written to an appropriately-named file
+using the <a href="#Group_2:_Processing_directives">common flags</a>. The
+raw XML log in each directory must conform to the <a href="http://fofoca.mitre.org/members/CAC/log-standard-versions.html">logfile
+standard</a>. The <tt>rule_file</tt>
+is an XML file describing legal augmentations of the raw XML. You may pass
+in as many rule files as you wish; the first one whose version matches
+will be used. The resulting document conforms to the <a href="http://fofoca.mitre.org/members/CAC/logstandard-dmas-v3.html">logfile
+DMA standard</a>. Note that this operation also takes the command line
+arguments for <a href="#XML_log_generation">XML log generation</a>, in
+case backchaining is required. All status messages are written to stderr.
+<p>Here's an example of a rules file (this
+is actually the current rules file for MITRE's travel demo):
+<p><tt>&lt;RULES></tt>
+<br><tt>&lt;GC_LOG_VERSION>travel, version 2.0 cfone&lt;/GC_LOG_VERSION></tt>
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp; &lt;GC_MESSAGE name="filelog"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":synth_log_filename"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+dtype="string"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+new:type_audio_file="system"/></tt>
+<br><tt>&nbsp; &lt;/GC_MESSAGE></tt>
+<br><tt>&lt;/RULE></tt>
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp; &lt;GC_MESSAGE name="filelog"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":utt_log_filename"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+dtype="string"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+new:type_audio_file="user"/></tt>
+<br><tt>&nbsp; &lt;/GC_MESSAGE></tt>
+<br><tt>&lt;/RULE></tt>
+<p><tt>&lt;RULE occurrences="first"></tt>
+<br><tt>&nbsp; &lt;GC_OPERATION name="speak_output"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+new:type_start_task="total"/></tt>
+<br><tt>&lt;/RULE></tt>
+<p><tt>&lt;RULE occurrences="first"></tt>
+<br><tt>&nbsp; &lt;GC_OPERATION name="nop"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+new:type_start_task="task"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":listening_has_begun"/></tt>
+<br><tt>&nbsp; &lt;/GC_OPERATION></tt>
+<br><tt>&lt;/RULE></tt>
+<p><tt>&lt;RULE occurrences="last"></tt>
+<br><tt>&nbsp; &lt;GC_OPERATION name="nop"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+new:type_end_task="true"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":playing_has_ended"/></tt>
+<br><tt>&nbsp; &lt;/GC_OPERATION></tt>
+<br><tt>&lt;/RULE></tt>
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp; &lt;GC_OPERATION name="paraphrase_reply"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+new:type_new_turn="system"/></tt>
+<br><tt>&lt;/RULE></tt>
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp; &lt;GC_OPERATION name="nop"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+new:type_new_turn="user"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":listening_has_begun"/></tt>
+<br><tt>&nbsp; &lt;/GC_OPERATION></tt>
+<br><tt>&lt;/RULE></tt>
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp; &lt;GC_OPERATION name="speak_output"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":reply_string" dtype="string"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+new:type_utt_text="system"/></tt>
+<br><tt>&nbsp; &lt;/GC_OPERATION></tt>
+<br><tt>&lt;/RULE></tt>
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp; &lt;GC_OPERATION name="gather"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":parse_frame"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_FRAME></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":input_string"
+dtype="string"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; new:type_utt_text="asr"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_FRAME></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp; &lt;/GC_OPERATION></tt>
+<br><tt>&lt;/RULE></tt>
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp; &lt;GC_OPERATION name="nop" new:type_end_utt="user"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":recording_has_ended"/></tt>
+<br><tt>&nbsp; &lt;/GC_OPERATION></tt>
+<br><tt>&lt;/RULE></tt>
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp; &lt;GC_OPERATION name="nop" new:type_start_utt="system"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":playing_has_begun"/></tt>
+<br><tt>&nbsp; &lt;/GC_OPERATION></tt>
+<br><tt>&lt;/RULE></tt>
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp; &lt;GC_OPERATION name="nop" new:type_end_utt="system"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":playing_has_ended"/></tt>
+<br><tt>&nbsp; &lt;/GC_OPERATION></tt>
+<br><tt>&lt;/RULE></tt>
+<p><tt>&lt;/RULES></tt>
+<h4>
+Tags</h4>
+We attempt to describe the rules file here.
+<br>&nbsp;
+<table BORDER COLS=3 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Tag name</b></td>
+
+<td><b>Description</b></td>
+
+<td><b>Legal children</b></td>
+</tr>
+
+<tr>
+<td>RULES</td>
+
+<td>Toplevel tag in the rules file. Exactly
+one must appear.</td>
+
+<td>RULE, GC_LOG_VERSION, OR</td>
+</tr>
+
+<tr>
+<td>GC_LOG_VERSION</td>
+
+<td>The content of this tag is log file version
+this set of rules applies to. This must match the value of the <tt>logfile_version</tt>
+attribute of the GC_LOG tag in your raw XML log file, if that attribute
+is present. This tag may be repeated, in which case the rules are applied
+if at least one of the versions matches.</td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>RULE</td>
+
+<td>An individual rule. The immediate children
+of this tag must match tags which share an immediate parent. The children
+of this tag describe the pattern which must match, and the augmentations
+to apply. This tag may be repeated. It accepts the attributes <tt>occurrences="first"</tt>
+and
+<tt>occurrences="last"</tt>, which
+apply to the first and last tags to match the pattern, respectively.</td>
+
+<td>GC_TURN, GC_OPERATION, GC_MESSAGE, GC_EVENT,
+GC_DATA</td>
+</tr>
+
+<tr>
+<td>OR</td>
+
+<td>A disjunction of rules. The first rule
+that succeeds for a given tag in the raw XML log file satisfies the OR.</td>
+
+<td>RULE</td>
+</tr>
+</table>
+
+<p>Both tags and attributes may have the special
+namespace prefixes <tt>new:</tt> (material
+to add) or <tt>not:</tt> (material
+to ensure is not present), which we'll discuss in a moment. First, let's
+review the behavior of the rule engine. The rule engine behaves as follows:
+<ul>
+<li>
+At each level, each sequence of children in
+the RULE pattern are matched with as many nonoverlapping child sequences
+as possible. So if your rule pattern contains <tt>&lt;A>&lt;B/>&lt;C/>&lt;/A></tt>,
+each subpattern of <tt>&lt;B/>&lt;C/></tt>
+within the same <tt>&lt;A></tt> will
+match.</li>
+
+<li>
+The patterns enforce a subset match rather
+than an exact match; so the last rule in our sample set says that if you
+find a GC_OPERATION tag whose attributes include
+<tt>name="nop"</tt>,
+and one of whose immediate children is a GC_DATA tag whose attributes include
+<tt>key=":playing_has_ended"</tt>,
+add the attribute <tt>type_end_utt="system"</tt>
+to the parent tag.</li>
+
+<li>
+You can add attributes anywhere in the pattern,
+and you can add as many attributes as you want to a tag.</li>
+
+<li>
+The entire pattern in a given RULE must match
+for any of the attributes or tags to be added.</li>
+
+<li>
+Data is unordered; everything else is ordered.
+The effect of this generalization is that if all the children are GC_DATA
+and GC_LIST (the only possible manifestations of data according to the
+DTD), the children will be treated as unordered, <b>unless</b> the name
+of their parent tag is GC_LIST (whose children are data but are ordered).
+If you specify a tag with multiple order-sensitive children, the pattern
+children must be in the same order as the children of the tag the pattern
+matches. If you specify a tag with multiple order-insensitive children,
+the pattern children can be in any order relative to the children of the
+tag the pattern matches, but no "target" child can match more than one
+pattern child.</li>
+</ul>
+In the context of this behavior, the namespace
+prefixes have the following meaning:
+<br>&nbsp;
+<table BORDER COLS=3 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Prefix</b></td>
+
+<td><b>Tag meaning</b></td>
+
+<td><b>Attribute meaning</b></td>
+</tr>
+
+<tr>
+<td>new:</td>
+
+<td>Add this tag, with its attributes and
+children, at the end of the list of children of the tag its parent matches.</td>
+
+<td>Add this attribute-value pair to the tag
+which this attribute's tag matches.</td>
+</tr>
+
+<tr>
+<td>not:</td>
+
+<td>Fail if this tag matches an eligible child.</td>
+
+<td>Fail if this attribute-value pair matches
+any attribute-value pair on the tag being checked.</td>
+</tr>
+</table>
+
+<p>For unordered tag children, the interpretation
+of the <tt>not:</tt> prefix is straightforward:
+if any child matches, fail. So the pattern <tt>&lt;GC_DATA a="b"/>&lt;NOT:GC_DATA
+a="b"/></tt> will always fail. However, for
+ordered tag children, the interpretation is a little more subtle: in this
+case, the eligible children are only those children between the nearest
+positive matches (or the beginning or end of the list of children). So
+the pattern <tt>&lt;GC_OPERATION a="b"/>&lt;NOT:GC_OPERATION a="b"/></tt>
+may very well match a sequence of children which has exactly one tag in
+it of the form <tt>&lt;GC_OPERATION a="b"/></tt>.
+<p>Note that for both prefixes, the closing
+tags must also bear the prefixes.
+<p>The annotator will warn you if you specify
+a "new" attribute it doesn't know about; it will not fail, however. For
+known attributes, on the other hand, the annotator enforces certain generalizations
+about what tags the attributes can be associated with. So tags which implicitly
+refer to timestamps must be associated with timestamped tags (GC_OPERATION,
+GC_MESSAGE, GC_EVENT), while tags which implicitly refer to data must be
+associated with GC_DATA tags. The annotator will print a notification if
+it encounters such a rules file, and then exit.
+<h4>
+<a NAME="A_note_about_GC_TURN"></a>A note
+about GC_TURN</h4>
+Currently, the GC_TURN tag is created in the
+raw XML log as a result of the execution of the Hub builtin server operation
+<tt>builtin.increment_utterance</tt>.
+Because there's no requirement that you use this operation, we can't rely
+on GC_TURN tags. Accordingly, the subsequent summarization, validation
+and scoring steps rely not on GC_TURN but on the placement of the
+<tt>type_new_turn</tt>
+attribute that results from the annotation step. We anticipate that GC_TURN
+will eventually vanish from the log standard DTD.
+<h4>
+Matching and copying attributes and data</h4>
+The values of attributes, and tag content,
+in the RULE patterns are actually Perl regular expressions (which Python
+also recognizes). These expressions are required to match the entire attribute
+value or tag content. So if you want to tag any data element whose key
+starts with <tt>":error"</tt> as a
+<tt>type_error_msg</tt>,
+you can write the following rule:
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp; &lt;GC_DATA key=":error.*" new:type_error_msg="true"/></tt>
+<br><tt>&lt;/RULE></tt>
+<p>Perl regular expressions provide a grouping
+operation (using parentheses) which allows subsequent reference to the
+match by numeric index. Python provides an extension of this operation
+by which these groups can be named, as well as numbered. You can use this
+facility to copy information from one place in the pattern to another (this
+will be useful, for instance, to record values for the <tt>type_prompt</tt>
+attribute signalling a system reprompt). The Python syntax is as follows:
+<blockquote><tt>(?P&lt;name>...)</tt></blockquote>
+The location to copy the matching text to
+can be specified using the <tt>"old:"</tt>
+namespace, referencing the pattern name. The scope of these names is the
+entire rule; it is an error to have duplicate names in the patterns, or
+to reference an undefined pattern name.
+<p>So let's say we record the prompted slot
+in our frames in the <tt>:prompted_slot</tt>
+key, as follows:
+<blockquote><tt>{c tts</tt>
+<br><tt>&nbsp;&nbsp; :output_string "What city would you like to depart
+from?"</tt>
+<br><tt>&nbsp;&nbsp; :prompted_slot "departure_city" }</tt></blockquote>
+We'd <b>like</b> to be able to copy the value
+of <tt>:prompted_slot</tt> to the value
+of <tt>type_prompt</tt> as follows:
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp; &lt;GC_OPERATION></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":prompted_slot" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (?P&lt;slot_name>.*)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":output_string" dtype="string"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+new:type_prompt="old:slot_name"/></tt>
+<br><tt>&nbsp; &lt;/GC_OPERATION></tt>
+<br><tt>&lt;/RULE></tt>
+<p>The Python extension, regrettably, delimits
+the pattern name using angle brackets, which are (of course) special in
+XML. So we actually need to use XML entity references in the pattern:
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp; &lt;GC_OPERATION></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":prompted_slot" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (?P&amp;lt;slot_name&amp;gt;.*)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":output_string" dtype="string"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+new:type_prompt="old:slot_name"/></tt>
+<br><tt>&nbsp; &lt;/GC_OPERATION></tt>
+<br><tt>&lt;/RULE></tt>
+<p>So the XML reader translates the entities
+to their textual representations (open and close angle bracket), and the
+postprocess which digests the rules recognizes the resulting string as
+a delimited name. This general approach applies to any other characters
+in Perl regular expressions which are also special in XML.
+<h4>
+Using order to conditionalize</h4>
+Let's say you have two operations, <tt>start_speaking_A</tt>
+and <tt>start_speaking_B</tt>, and
+they can occur in any order, and the first one should indicate the start
+of system speech. Because annotations aren't added unless the entire rule
+is matched, you can use order to conditionalize the assignment of system
+speech onset, as follows:
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_OPERATION name="start_speaking_A" new:type_start_utt="system"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_OPERATION name="start_speaking_B"/></tt>
+<br><tt>&lt;/RULE></tt>
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_OPERATION name="start_speaking_B" new:type_start_utt="system"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_OPERATION name="start_speaking_A"/></tt>
+<br><tt>&lt;/RULE></tt>
+<h4>
+Using negation</h4>
+Consider a situation where the system reports
+beginning and end of audio output, but in some cases fails to report the
+end of audio output because a call hangup occurred. You can use <tt>not:</tt>
+to ensure that the hangup is recognized as the end of audio output just
+when there's no actual end reported as follows:
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp; &lt;GC_MESSAGE name="audio_status" new:type_start_utt="system"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":playback_start"/></tt>
+<br><tt>&nbsp; &lt;/GC_MESSAGE></tt>
+<br><tt>&lt;/RULE></tt>
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp; &lt;GC_MESSAGE name="audio_status"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":playback_start"/></tt>
+<br><tt>&nbsp; &lt;/GC_MESSAGE></tt>
+<br><tt>&nbsp; &lt;GC_MESSAGE name="audio_status" new:type_end_utt="system"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":playback_end"/></tt>
+<br><tt>&nbsp; &lt;/GC_MESSAGE></tt>
+<br><tt>&lt;/RULE></tt>
+<p><tt>&lt;RULE></tt>
+<br><tt>&nbsp; &lt;GC_MESSAGE name="audio_status"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":playback_start"/></tt>
+<br><tt>&nbsp; &lt;/GC_MESSAGE></tt>
+<br><tt>&nbsp; &lt;NOT:GC_MESSAGE name="audio_status"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":playback_end"/></tt>
+<br><tt>&nbsp; &lt;/NOT:GC_MESSAGE></tt>
+<br><tt>&nbsp; &lt;GC_MESSAGE name="call" new:type_end_utt="system"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA key=":hangup"/></tt>
+<br><tt>&nbsp; &lt;/GC_MESSAGE></tt>
+<br><tt>&lt;/RULE></tt>
+<br>&nbsp;
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="XML_human_annotation_stub_generation"></a>XML
+human annotation stub generation</h2>
+Sometimes human annotations, such as speech
+transcription, need to be hand-generated. We do not yet have a GUI tool
+which will generate these files for you. However, we do provide a stubber,
+which produces a "seed" containing the SR output as the default transcription,
+and a place for the judgment of task completion.
+<h4>
+Command line</h4>
+<tt>&lt;GC_HOME>/contrib/MITRE/tools/bin/xml_human_stubber &lt;common flags>
+\</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--default_user_version version_string] [--rule_base
+rule_file] \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--range [all_turns | overall_task | on_task]]
+log_root...</tt>
+<p>This tool produces a stub for human annotations
+from an annotated XML log. The annotated XML log must conform to the <a href="http://fofoca.mitre.org/members/CAC/logstandard-dmas-v3.html">logfile
+DMA standard</a>. The generated stub conforms to the <a href="http://fofoca.mitre.org/members/CAC/human_annot.html">human
+annotation logfile standard</a>. This utility writes its stub to standard
+output (rather than saving it directly). All status messages are written
+to stderr. When you save the output of this utility, be sure that you respect
+the <a href="#Group_1:_Directory_structure">filename conventions</a>. Although
+this utility, like all the others, operates on an entire repository, you'll
+almost certainly want to use it one log directory at a time.
+<p>Note that this operation also takes the
+command line arguments for <a href="#XML_log_generation">XML log generation</a>
+and <a href="#XML_annotation">annotation</a>, in case backchaining is required.
+<h4>
+<a NAME="Log_ranges"></a>Log ranges</h4>
+This utility also takes the <tt>--range</tt>
+command line argument. This argument allows the user to specify what subinterval
+of the session this utility (and other utilities) applies to. The default
+is <tt>overall_task</tt> unless otherwise
+indicated for the tool.
+<br>&nbsp;
+<table BORDER COLS=2 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Value</b></td>
+
+<td><b>Description</b></td>
+</tr>
+
+<tr>
+<td><tt>all_turns</tt></td>
+
+<td>All annotated data starting with the first
+new turn (marked with the <tt>type_new_turn</tt>
+attribute) will be considered.</td>
+</tr>
+
+<tr>
+<td><tt>overall_task</tt></td>
+
+<td>Only annotated data between the overall
+start and end task markers (<tt>type_start_task=true, type_start_task=total,
+type_end_task=true, type_end_task=total</tt>),
+inclusive, will be considered. If a turn is underway when the start marker
+is encountered, the subset of that turn which follows the marker will be
+considered.</td>
+</tr>
+
+<tr>
+<td><tt>on_task</tt></td>
+
+<td>Only annotated data between the on_task
+start and end markers (<tt>type_start_task=true, type_start_task=task,
+type_end_task=true, type_end_task=task</tt>),
+inclusive, will be considered. If a turn is underway when the start marker
+is encountered, the subset of that turn which follows the marker will be
+considered.</td>
+</tr>
+</table>
+
+<p>When you write a human annotations file,
+you can specify what the annotation is anchored to by <tt>turnid</tt>
+or by <tt>tidx</tt>. Here's an example
+hand-generated human annotations file from a MITRE log:
+<p><tt>&lt;GC_LOG_ANNOTATIONS></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_SESSION></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_ANNOT type_task_completion="0"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription"
+turnid="0" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I'd like to fly
+to Newark</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription"
+turnid="1" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; St. Louis</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription"
+turnid="2" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Could I leave
+from New Orleans</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription"
+turnid="3" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I'd like to leave
+from New Orleans</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription"
+turnid="4" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I'd like to leave
+at midnight on Friday</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription"
+turnid="5" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I'd to leave around
+dinner on Friday</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription"
+turnid="6" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I want to leave
+around six _p_m on Friday</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription"
+turnid="7" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Goodbye</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp; &lt;/GC_SESSION></tt>
+<br><tt>&lt;/GC_LOG_ANNOTATIONS></tt>
+<p>The value of the <tt>turnid</tt>
+attribute is anchored to the appropriate turn in the original XML file
+(and see the <a href="#A_note_about_GC_TURN">note about GC_TURN</a>). The
+stub output for this same session would look like this:
+<p><tt>&lt;GC_LOG_ANNOTATIONS></tt>
+<br><tt>&nbsp; &lt;GC_SESSION></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_ANNOT type_task_completion="?"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription" dtype="string"
+turnid="0" tidx="35"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i+d like to fly to newark</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription" dtype="string"
+turnid="1" tidx="81"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; say ends</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription" dtype="string"
+turnid="2" tidx="127"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; could i will be from new orleans</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription" dtype="string"
+turnid="3" tidx="158"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i+d like to leave from new orleans</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription" dtype="string"
+turnid="4" tidx="211"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i+d like to leave around midnight
+on friday</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription" dtype="string"
+turnid="5" tidx="261"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i+d like to leave around dinner
+on friday</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription" dtype="string"
+turnid="6" tidx="296"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i want to leave at around six p
+m on friday</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;GC_DATA type_utt_text="transcription" dtype="string"
+turnid="7" tidx="341"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; goodbye</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp; &lt;/GC_SESSION></tt>
+<br><tt>&lt;/GC_LOG_ANNOTATIONS></tt>
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Unifying_automatic_and_human_XML_files"></a>Unifying
+automatic and human XML files</h2>
+There's no requirement that human annotations
+be placed in a separate file; it's just sometimes easier to store the human
+annotations separately. All the tools in this package will operate reliably
+if no human annotations file is present; of course, in those circumstances,
+the appropriate human annotations need to be in the annotated XML file
+in order for summarization, validation and scoring to work appropriately.
+If, for some reason, you wish to merge a human annotations file into an
+annotated XML file, you can use this utility.
+<h4>
+Command line</h4>
+<tt>&lt;GC_HOME>/contrib/MITRE/tools/bin/xml_unify &lt;common flags> \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--default_user_version version_string] [--rule_base
+rule_file] log_root...</tt>
+<p>This tool produces an annotated XML log
+which contains all the auxiliary human annotations found in a human annotations
+file in the same directory. The annotated XML log must conform to the <a href="http://fofoca.mitre.org/members/CAC/logstandard-dmas-v3.html">logfile
+DMA standard</a>. Note that this operation also takes the command line
+arguments for <a href="#XML_log_generation">XML log generation</a> and
+<a href="#XML_annotation">annotation</a>,
+in case backchaining is required. If a human annotation file is present
+in the log directory, it must conform to the <a href="http://fofoca.mitre.org/members/CAC/human_annot.html">human
+annotation logfile standard</a> (you can generate a stub for this file
+using the <a href="#XML_human_annotation_stub_generation">human stubber</a>).
+<p>As usual, in order to print out the result,
+use the <tt>--print</tt> common flag.
+In order to save the file, use the <tt>--write_file</tt>
+common flag. <b>Note that the human annotations file is not removed</b>.
+This utility adds the attribute <tt>human_annotations_included="1"</tt>
+to the output file, which causes utilities which use the annotated XML
+files to ignore the human annotations file.
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="XML_summarization"></a>XML summarization</h2>
+Once you have your annotated XML file, you
+can summarize it using this tool. This tool will work for any conformant
+XML file, whether or not it was generated using the previous tools. If
+you have a separate human annotations file, it will be folded in here.
+<h4>
+Command line</h4>
+<tt>&lt;GC_HOME>/contrib/MITRE/tools/bin/xml_summarize &lt;common flags>
+\</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--default_user_version version_string] [--rule_base
+rule_file] \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--range [all_turns | overall_task | on_task]]
+log_root...</tt>
+<p>This tool summarizes an annotated XML log.
+The annotated XML log must conform to the <a href="http://fofoca.mitre.org/members/CAC/logstandard-dmas-v3.html">logfile
+DMA standard</a>. If a human annotation file is present in the log directory,
+it must conform to the <a href="http://fofoca.mitre.org/members/CAC/human_annot.html">human
+annotation logfile standard</a> (you can generate a stub for this file
+using the <a href="#XML_human_annotation_stub_generation">human stubber</a>).
+This utility writes its summary to standard output. All status messages
+are written to stderr.
+<p>Note that this operation also takes the
+command line arguments for <a href="#XML_log_generation">XML log generation</a>
+and <a href="#XML_annotation">annotation</a>, in case backchaining is required.
+In addition, this utility allows you to specify a <a href="#Log_ranges">log
+range</a>.
+<h4>
+Example</h4>
+Here's an example of a MITRE log summarized
+using this method. Notice that this summary includes references to the
+audio files, which are annotated using the optional <tt>type_audio_file="user"</tt>
+and
+<tt>type_audio_file="system"</tt>.
+<p><tt>% xml_summarize --force --rule_base travel_2_0_rules.xml MITRE/19991101/004</tt>
+<br><tt>Checking: MITRE/19991101/004</tt>
+<br><tt>Reading raw Hub log: MITRE/19991101/004/travel_cfone-19991101-004-hublog.txt</tt>
+<br><tt>...read.</tt>
+<br><tt>Converting to XML: MITRE/19991101/004/travel_cfone-19991101-004-hublog.txt</tt>
+<br><tt>...converted.</tt>
+<br><tt>Reading rule file: travel_2_0_rules.xml</tt>
+<br><tt>Ignoring Comment element</tt>
+<br><tt>Ignoring Comment element</tt>
+<br><tt>...read.</tt>
+<br><tt>Applying rules: travel_2_0_rules.xml</tt>
+<br><tt>...succeeded.</tt>
+<br><tt>Reading human XML annotations: MITRE/19991101/004/travel_cfone-19991101-004-hublog-human.xml</tt>
+<br><tt>...read.</tt>
+<br><tt>Resegmenting...</tt>
+<br><tt>Incorporating human annotations: MITRE/19991101/004/travel_cfone-19991101-004-hublog-human.xml</tt>
+<br><tt>...resegmented.</tt>
+<br><tt>Mon Nov 1 1999 at 17:09:57.40: Task-specific portion started.</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:08.83: Overall task started.</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:58.32: Task-specific portion and overall
+task ended.</tt>
+<br><tt>Task completion status: not completed.</tt>
+<br>&nbsp;
+<br>&nbsp;
+<p><tt>Turn 0 (system)</tt>
+<br><tt>Mon Nov 1 1999 at 17:09:57.36 to Mon Nov 1 1999 at 17:09:57.38:
+New system turn began.</tt>
+<p><tt>System said: Hi! Welcome to Mitre's Travel demonstration. This call
+is being recorded for system development. You may hang up or ask for help
+at any time. How can I help you?</tt>
+<br><tt>Mon Nov 1 1999 at 17:09:58.43: System started speaking.</tt>
+<br><tt>System audio file: travel_cfone-19991101-004-synth--01-001.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:08.66: System finished speaking.</tt>
+<p><tt>Turn 1 (user)</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:08.83: New user turn began.</tt>
+<p><tt>Mon Nov 1 1999 at 17:10:09.36: User started speaking.</tt>
+<br><tt>User audio file: travel_cfone-19991101-004-000.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:12.77: User finished speaking.</tt>
+<br><tt>Recognizer heard: i+d like to fly to newark</tt>
+<br><tt>User said: I'd like to fly to Newark</tt>
+<p><tt>Turn 2 (system)</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:17.64 to Mon Nov 1 1999 at 17:10:17.66:
+New system turn began.</tt>
+<p><tt>System said: What city does the flight depart from?</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:18.72: System started speaking.</tt>
+<br><tt>System audio file: travel_cfone-19991101-004-synth-000-001.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:20.83: System finished speaking.</tt>
+<p><tt>Turn 3 (user)</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:21.03: New user turn began.</tt>
+<p><tt>Mon Nov 1 1999 at 17:10:21.80: User started speaking.</tt>
+<br><tt>User audio file: travel_cfone-19991101-004-001.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:24.14: User finished speaking.</tt>
+<br><tt>Recognizer heard: say ends</tt>
+<br><tt>User said: St. Louis</tt>
+<p><tt>Turn 4 (system)</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:30.03 to Mon Nov 1 1999 at 17:10:30.05:
+New system turn began.</tt>
+<p><tt>System said: i am sorry i did not understand that</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:30.95: System started speaking.</tt>
+<br><tt>System audio file: travel_cfone-19991101-004-synth-001-001.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:33.43: System finished speaking.</tt>
+<p><tt>Turn 5 (user)</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:33.61: New user turn began.</tt>
+<p><tt>Mon Nov 1 1999 at 17:10:34.66: User started speaking.</tt>
+<br><tt>User audio file: travel_cfone-19991101-004-002.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:37.89: User finished speaking.</tt>
+<br><tt>Recognizer heard: could i will be from new orleans</tt>
+<br><tt>User said: Could I leave from New Orleans</tt>
+<p><tt>Turn 6 (system)</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:44.22 to Mon Nov 1 1999 at 17:10:44.24:
+New system turn began.</tt>
+<p><tt>System said: could you please repeat that</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:45.13: System started speaking.</tt>
+<br><tt>System audio file: travel_cfone-19991101-004-synth-002-001.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:46.91: System finished speaking.</tt>
+<p><tt>Turn 7 (user)</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:47.14: New user turn began.</tt>
+<p><tt>Mon Nov 1 1999 at 17:10:47.92: User started speaking.</tt>
+<br><tt>User audio file: travel_cfone-19991101-004-003.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:51.36: User finished speaking.</tt>
+<br><tt>Recognizer heard: i+d like to leave from new orleans</tt>
+<br><tt>User said: I'd like to leave from New Orleans</tt>
+<p><tt>Turn 8 (system)</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:54.50 to Mon Nov 1 1999 at 17:10:54.53:
+New system turn began.</tt>
+<p><tt>System said: Can you provide the approximate departure or arrival
+time?</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:55.96: System started speaking.</tt>
+<br><tt>System audio file: travel_cfone-19991101-004-synth-003-001.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:59.54: System finished speaking.</tt>
+<p><tt>Turn 9 (user)</tt>
+<br><tt>Mon Nov 1 1999 at 17:10:59.73: New user turn began.</tt>
+<p><tt>Mon Nov 1 1999 at 17:11:00.51: User started speaking.</tt>
+<br><tt>User audio file: travel_cfone-19991101-004-004.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:04.49: User finished speaking.</tt>
+<br><tt>Recognizer heard: i+d like to leave around midnight on friday</tt>
+<br><tt>User said: I'd like to leave at midnight on Friday</tt>
+<p><tt>Turn 10 (system)</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:10.75 to Mon Nov 1 1999 at 17:11:10.76:
+New system turn began.</tt>
+<p><tt>System said: i am sorry i could not understand you</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:11.64: System started speaking.</tt>
+<br><tt>System audio file: travel_cfone-19991101-004-synth-004-001.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:13.99: System finished speaking.</tt>
+<p><tt>Turn 11 (user)</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:14.17: New user turn began.</tt>
+<p><tt>Mon Nov 1 1999 at 17:11:14.72: User started speaking.</tt>
+<br><tt>User audio file: travel_cfone-19991101-004-005.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:18.88: User finished speaking.</tt>
+<br><tt>Recognizer heard: i+d like to leave around dinner on friday</tt>
+<br><tt>User said: I'd like to leave around dinner on Friday</tt>
+<p><tt>Turn 12 (system)</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:24.38 to Mon Nov 1 1999 at 17:11:24.40:
+New system turn began.</tt>
+<p><tt>System said: please try rephrasing what you said</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:25.29: System started speaking.</tt>
+<br><tt>System audio file: travel_cfone-19991101-004-synth-005-001.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:27.43: System finished speaking.</tt>
+<p><tt>Turn 13 (user)</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:27.62: New user turn began.</tt>
+<p><tt>Mon Nov 1 1999 at 17:11:28.40: User started speaking.</tt>
+<br><tt>User audio file: travel_cfone-19991101-004-006.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:32.87: User finished speaking.</tt>
+<br><tt>Recognizer heard: i want to leave at around six p m on friday</tt>
+<br><tt>User said: I want to leave around six _p_m on Friday</tt>
+<p><tt>Turn 14 (system)</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:38.85 to Mon Nov 1 1999 at 17:11:38.89:
+New system turn began.</tt>
+<p><tt>System said: I have no information about a flight from New Orleans
+that depart to Newark that depart friday around 6 o'clock p m .</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:40.08: System started speaking.</tt>
+<br><tt>System audio file: travel_cfone-19991101-004-synth-006-001.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:47.26: System finished speaking.</tt>
+<p><tt>Turn 15 (user)</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:47.46: New user turn began.</tt>
+<p><tt>Mon Nov 1 1999 at 17:11:48.50: User started speaking.</tt>
+<br><tt>User audio file: travel_cfone-19991101-004-007.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:50.62: User finished speaking.</tt>
+<br><tt>Recognizer heard: goodbye</tt>
+<br><tt>User said: Goodbye</tt>
+<p><tt>Turn 16 (system)</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:53.47 to Mon Nov 1 1999 at 17:11:53.49:
+New system turn began.</tt>
+<p><tt>System said: Good bye. Thank you for using Mitre's Travel demonstration.</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:54.40: System started speaking.</tt>
+<br><tt>System audio file: travel_cfone-19991101-004-synth-007-001.wav</tt>
+<br><tt>Mon Nov 1 1999 at 17:11:58.32: System finished speaking.</tt>
+<br>&nbsp;
+<br>&nbsp;
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="XML_log_validation"></a>XML log validation</h2>
+Once you have your annotated XML file, you
+can validate it using this tool. This tool will work for any conformant
+XML file, whether or not it was generated using the previous tools. If
+you have a separate human annotations file, it will be folded in here.
+<h4>
+Command line</h4>
+<tt>&lt;GC_HOME>/contrib/MITRE/tools/bin/xml_log_validate &lt;common flags>
+\</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--default_user_version version_string] [--rule_base
+rule_file] log_root...</tt>
+<p>This tool validates an annotated XML log.
+The annotated XML log must conform to the <a href="http://fofoca.mitre.org/members/CAC/logstandard-dmas-v3.html">logfile
+DMA standard</a>. If a human annotation file is present in the log directory,
+it must conform to the <a href="http://fofoca.mitre.org/members/CAC/human_annot.html">human
+annotation logfile standard</a> (you can generate a stub for this file
+using the <a href="#XML_human_annotation_stub_generation">human stubber</a>).
+This utility writes its summary to standard output. All status messages
+are written to stderr.
+<p>Note that this operation also takes the
+command line arguments for <a href="#XML_log_generation">XML log generation</a>
+and <a href="#XML_annotation">annotation</a>, in case backchaining is required.
+<p>This utility now analyzes all turns. It
+reports which turns lie outside the task boundaries, as well as more specific
+information about how to locate misplaced elements.
+<h4>
+Example</h4>
+Here's an example of a MITRE log validated
+using this method. Notice that this log is not completely valid; we have
+not yet completed writing our rules to catch all the appropriate termination
+conditions.
+<p><tt>% xml_log_validate --force --rule_base travel_2_0_rules.xml MITRE/19991101/004</tt>
+<br><tt>Checking: MITRE/19991101/004</tt>
+<br><tt>Reading raw Hub log: MITRE/19991101/004/travel_cfone-19991101-004-hublog.txt</tt>
+<br><tt>...read.</tt>
+<br><tt>Converting to XML: MITRE/19991101/004/travel_cfone-19991101-004-hublog.txt</tt>
+<br><tt>...converted.</tt>
+<br><tt>Reading rule file: travel_2_0_rules.xml</tt>
+<br><tt>Ignoring Comment element</tt>
+<br><tt>Ignoring Comment element</tt>
+<br><tt>...read.</tt>
+<br><tt>Applying rules: travel_2_0_rules.xml</tt>
+<br><tt>...succeeded.</tt>
+<br><tt>Reading human XML annotations: MITRE/19991101/004/travel_cfone-19991101-004-hublog-human.xml</tt>
+<br><tt>...read.</tt>
+<br><tt>Resegmenting...</tt>
+<br><tt>Incorporating human annotations: MITRE/19991101/004/travel_cfone-19991101-004-hublog-human.xml</tt>
+<br><tt>...resegmented.</tt>
+<p><tt>#</tt>
+<br><tt># Log MITRE/19991101/004:</tt>
+<br><tt>#</tt>
+<p><tt>Global elements:</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Possibly misplaced turns:</tt>
+<p><tt>Turn 17 (turnid 8, tidx 365) is completely outside the overall task
+boundaries.</tt>
+<p><tt>Turn 0 (system)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 1 (user)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 2 (system)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 3 (user)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 4 (system)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 5 (user)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 6 (system)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 7 (user)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 8 (system)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 9 (user)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 10 (system)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 11 (user)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 12 (system)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 13 (user)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 14 (system)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 15 (user)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 16 (system)</tt>
+<br>&nbsp;
+<p><tt>No errors found.</tt>
+<p><tt>Turn 17 (user)</tt>
+<p><tt>Error for one of the attributes type_start_utt="user":</tt>
+<br><tt>At least one required.</tt>
+<br>&nbsp;
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="XML_scoring"></a>XML scoring</h2>
+Once you have your annotated XML file, you
+can score it using this tool. This tool will work for any conformant XML
+file, whether or not it was generated using the previous tools. If you
+have a separate human annotations file, it will be folded in here.
+<h4>
+Command line</h4>
+<tt>&lt;GC_HOME>/contrib/MITRE/tools/bin/xml_score &lt;common flags> \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--default_user_version version_string] [--format
+html | csv] [--rule_base rule_file] \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--range [all_turns | overall_task | on_task]]
+[--ref_postprocess script] log_root...</tt>
+<p>This tool scores an annotated XML log.
+The annotated XML log must conform to the <a href="http://fofoca.mitre.org/members/CAC/logstandard-dmas-v3.html">logfile
+DMA standard</a>. If a human annotation file is present in the log directory,
+it must conform to the <a href="http://fofoca.mitre.org/members/CAC/human_annot.html">human
+annotation logfile standard</a> (you can generate a stub for this file
+using the <a href="#XML_human_annotation_stub_generation">human stubber</a>).
+This utility writes its score output to standard output. All status messages
+are written to stderr. The default format is HTML output; <tt>--format
+csv</tt> will produce comma-delimited output
+suitable for loading into a spreadsheet (no formula cells, unfortunately).
+<p>Note that this operation also takes the
+command line arguments for <a href="#XML_log_generation">XML log generation</a>
+and <a href="#XML_annotation">annotation</a>, in case backchaining is required.
+In addition, this utility allows you to specify a <a href="#Log_ranges">log
+range</a>. The default in this case is to report all intervals separately,
+rather than just the total task interval.
+<p>The scorer now produces all automatically
+computable DMAs yet (except word error rate, which the <tt><a href="#Batch_generation_of_NIST_sclite_input">xml_nist_batch</a></tt>
+tool generates input for the NIST scoring package for). It also currently
+provides output as HTML tables and comma-delimited flat files for spreadsheet
+input.
+<h4>
+<a NAME="Postprocessing_scripts"></a>Postprocessing
+scripts</h4>
+This utility allows you to specify a script
+to postprocess the user transcriptions via <tt>--ref_postprocess</tt>.
+This script should be a normal Unix executable, of any kind. It can be
+used to strip out transcription markup in preparation for scoring. The
+executable should loop, reading lines from stdin and writing the altered
+string to stdout, including a trailing newline. Be sure to flush stdout
+after each write. See the <a href="#Extraction_of_landmarks">extraction
+of landmarks</a> for examples.
+<p>If no postprocess is provided, any data
+corresponding to use transcriptions will be postprocessed according to
+the NIST transcription guidelines for the Communicator program. This postprocess
+removes any tokens delimited by square brackets ([ ]), since they are intended
+to indicate noise under the guidelines. If you provide your own postprocess,
+this step will be skipped; so be sure you duplicate this behavior if you
+write your own postprocess.
+<h4>
+Example</h4>
+Here's the command line for scoring a set
+of MITRE logs, and the corresponding HTML tables which result. Note the
+use of multiple rule files, due to the fact that the two logs processed
+here use different program file formats and thus have different log versions.
+<p><tt>% xml_score --force --default_user_version "travel, version 1" \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; --rule_base travel_1_0_rules.xml --rule_base
+travel_2_0_rules.xml MITRE</tt>
+<br><tt>Checking: MITRE</tt>
+<br><tt>Checking: MITRE/19991101</tt>
+<br><tt>Checking: MITRE/19991101/004</tt>
+<br><tt>Checking: MITRE/19990923</tt>
+<br><tt>Checking: MITRE/19990923/000</tt>
+<br><tt>Reading raw Hub log: MITRE/19991101/004/travel_cfone-19991101-004-hublog.txt</tt>
+<br><tt>...read.</tt>
+<br><tt>Converting to XML: MITRE/19991101/004/travel_cfone-19991101-004-hublog.txt</tt>
+<br><tt>...converted.</tt>
+<br><tt>Reading rule file: travel_1_0_rules.xml</tt>
+<br><tt>...read.</tt>
+<br><tt>Reading rule file: travel_2_0_rules.xml</tt>
+<br><tt>Ignoring Comment element</tt>
+<br><tt>Ignoring Comment element</tt>
+<br><tt>...read.</tt>
+<br><tt>Applying rules: travel_1_0_rules.xml</tt>
+<br><tt>...wrong version.</tt>
+<br><tt>Applying rules: travel_2_0_rules.xml</tt>
+<br><tt>...succeeded.</tt>
+<br><tt>Reading human XML annotations: MITRE/19991101/004/travel_cfone-19991101-004-hublog-human.xml</tt>
+<br><tt>...read.</tt>
+<br><tt>Resegmenting...</tt>
+<br><tt>Incorporating human annotations: MITRE/19991101/004/travel_cfone-19991101-004-hublog-human.xml</tt>
+<br><tt>...resegmented.</tt>
+<br><tt>Reading raw Hub log: MITRE/19990923/000/travel_cfone-19990923-000-hublog.txt</tt>
+<br><tt>...read.</tt>
+<br><tt>Converting to XML: MITRE/19990923/000/travel_cfone-19990923-000-hublog.txt</tt>
+<br><tt>...converted.</tt>
+<br><tt>Applying rules: travel_1_0_rules.xml</tt>
+<br><tt>...succeeded.</tt>
+<br><tt>Reading human XML annotations: MITRE/19990923/000/travel_cfone-19990923-000-hublog-human.xml</tt>
+<br><tt>...read.</tt>
+<br><tt>Resegmenting...</tt>
+<br><tt>Incorporating human annotations: MITRE/19990923/000/travel_cfone-19990923-000-hublog-human.xml</tt>
+<br><tt>...resegmented.</tt>
+<h3>
+Complete sessions (on task)</h3>
+
+<table BORDER=2 COLS=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<th>&nbsp;</th>
+
+<th>Duration (secs)</th>
+
+<th>Turns in interval</th>
+
+<th>Error messages</th>
+
+<th>Help messages</th>
+
+<th>Response latency (mean in secs/variance)</th>
+
+<th>User words (noise stripped)</th>
+
+<th>System words</th>
+
+<th>Prompt percentage</th>
+
+<th>Number of reprompts</th>
+</tr>
+
+<tr VALIGN=TOP>
+<td>MITRE/19990923/000</td>
+
+<td>58.71</td>
+
+<td>8</td>
+
+<td>1</td>
+
+<td>0</td>
+
+<td>5.35/0.1189</td>
+
+<td>21</td>
+
+<td>62</td>
+
+<td>0.25</td>
+
+<td>0</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>Overall</td>
+
+<td>58.71</td>
+
+<td>8.00</td>
+
+<td>1.00</td>
+
+<td>0.00</td>
+
+<td>5.35/0.1189</td>
+
+<td>21</td>
+
+<td>62</td>
+
+<td>0.25</td>
+
+<td>0.00</td>
+</tr>
+</table>
+
+<h3>
+Complete sessions (total task)</h3>
+
+<table BORDER=2 COLS=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<th>&nbsp;</th>
+
+<th>Duration (secs)</th>
+
+<th>Turns in interval</th>
+
+<th>Error messages</th>
+
+<th>Help messages</th>
+
+<th>Response latency (mean in secs/variance)</th>
+
+<th>User words (noise stripped)</th>
+
+<th>System words</th>
+
+<th>Prompt percentage</th>
+
+<th>Number of reprompts</th>
+</tr>
+
+<tr VALIGN=TOP>
+<td>MITRE/19990923/000</td>
+
+<td>70.35</td>
+
+<td>9</td>
+
+<td>1</td>
+
+<td>0</td>
+
+<td>5.35/0.1189</td>
+
+<td>21</td>
+
+<td>92</td>
+
+<td>0.20</td>
+
+<td>0</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>Overall</td>
+
+<td>70.35</td>
+
+<td>9.00</td>
+
+<td>1.00</td>
+
+<td>0.00</td>
+
+<td>5.35/0.1189</td>
+
+<td>21</td>
+
+<td>92</td>
+
+<td>0.20</td>
+
+<td>0.00</td>
+</tr>
+</table>
+
+<h3>
+Complete sessions (all turns)</h3>
+
+<table BORDER=2 COLS=9 WIDTH="100%" >
+<tr VALIGN=TOP>
+<th>&nbsp;</th>
+
+<th>Turns in interval</th>
+
+<th>Error messages</th>
+
+<th>Help messages</th>
+
+<th>Response latency (mean in secs/variance)</th>
+
+<th>User words (noise stripped)</th>
+
+<th>System words</th>
+
+<th>Prompt percentage</th>
+
+<th>Number of reprompts</th>
+</tr>
+
+<tr VALIGN=TOP>
+<td>MITRE/19990923/000</td>
+
+<td>10</td>
+
+<td>1</td>
+
+<td>0</td>
+
+<td>5.35/0.1189</td>
+
+<td>21</td>
+
+<td>92</td>
+
+<td>0.20</td>
+
+<td>0</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>Overall</td>
+
+<td>10.00</td>
+
+<td>1.00</td>
+
+<td>0.00</td>
+
+<td>5.35/0.1189</td>
+
+<td>21</td>
+
+<td>92</td>
+
+<td>0.20</td>
+
+<td>0.00</td>
+</tr>
+</table>
+
+<h3>
+Incomplete sessions (on task)</h3>
+
+<table BORDER=2 COLS=9 WIDTH="100%" >
+<tr VALIGN=TOP>
+<th>&nbsp;</th>
+
+<th>Duration (secs)</th>
+
+<th>Turns in interval</th>
+
+<th>Error messages</th>
+
+<th>Help messages</th>
+
+<th>User words (noise stripped)</th>
+
+<th>System words</th>
+
+<th>Prompt percentage</th>
+
+<th>Number of reprompts</th>
+</tr>
+
+<tr VALIGN=TOP>
+<td>MITRE/19991101/004</td>
+
+<td>120.92</td>
+
+<td>1</td>
+
+<td>0</td>
+
+<td>0</td>
+
+<td>0</td>
+
+<td>30</td>
+
+<td>0.00</td>
+
+<td>0</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>Overall</td>
+
+<td>120.92</td>
+
+<td>1.00</td>
+
+<td>0.00</td>
+
+<td>0.00</td>
+
+<td>0</td>
+
+<td>30</td>
+
+<td>0.00</td>
+
+<td>0.00</td>
+</tr>
+</table>
+
+<h3>
+Incomplete sessions (total task)</h3>
+
+<table BORDER=2 COLS=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<th>&nbsp;</th>
+
+<th>Duration (secs)</th>
+
+<th>Turns in interval</th>
+
+<th>Error messages</th>
+
+<th>Help messages</th>
+
+<th>Response latency (mean in secs/variance)</th>
+
+<th>User words (noise stripped)</th>
+
+<th>System words</th>
+
+<th>Prompt percentage</th>
+
+<th>Number of reprompts</th>
+</tr>
+
+<tr VALIGN=TOP>
+<td>MITRE/19991101/004</td>
+
+<td>109.49</td>
+
+<td>17</td>
+
+<td>0</td>
+
+<td>0</td>
+
+<td>6.14/1.4842</td>
+
+<td>47</td>
+
+<td>105</td>
+
+<td>0.22</td>
+
+<td>0</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>Overall</td>
+
+<td>109.49</td>
+
+<td>17.00</td>
+
+<td>0.00</td>
+
+<td>0.00</td>
+
+<td>6.14/1.4842</td>
+
+<td>47</td>
+
+<td>105</td>
+
+<td>0.22</td>
+
+<td>0.00</td>
+</tr>
+</table>
+
+<h3>
+Incomplete sessions (all turns)</h3>
+
+<table BORDER=2 COLS=9 WIDTH="100%" >
+<tr VALIGN=TOP>
+<th>&nbsp;</th>
+
+<th>Turns in interval</th>
+
+<th>Error messages</th>
+
+<th>Help messages</th>
+
+<th>Response latency (mean in secs/variance)</th>
+
+<th>User words (noise stripped)</th>
+
+<th>System words</th>
+
+<th>Prompt percentage</th>
+
+<th>Number of reprompts</th>
+</tr>
+
+<tr VALIGN=TOP>
+<td>MITRE/19991101/004</td>
+
+<td>18</td>
+
+<td>0</td>
+
+<td>0</td>
+
+<td>6.14/1.4842</td>
+
+<td>47</td>
+
+<td>105</td>
+
+<td>0.22</td>
+
+<td>0</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>Overall</td>
+
+<td>18.00</td>
+
+<td>0.00</td>
+
+<td>0.00</td>
+
+<td>6.14/1.4842</td>
+
+<td>47</td>
+
+<td>105</td>
+
+<td>0.22</td>
+
+<td>0.00</td>
+</tr>
+</table>
+
+<h3>
+All sessions (on task)</h3>
+
+<table BORDER=2 COLS=17 WIDTH="100%" >
+<tr VALIGN=TOP>
+<th>&nbsp;</th>
+
+<th>Task completed</th>
+
+<th>Duration (secs)</th>
+
+<th>Turns in interval</th>
+
+<th>Mean user words per turn (noise stripped)</th>
+
+<th>Mean system words per turn</th>
+
+<th>Error messages</th>
+
+<th>Help messages</th>
+
+<th>Response latency (mean in secs/variance)</th>
+
+<th>User words (noise stripped)</th>
+
+<th>System words</th>
+
+<th>Prompt percentage</th>
+
+<th>Number of reprompts</th>
+
+<th>Mean system utterance duration (secs)</th>
+
+<th>Mean system turn duration (secs)</th>
+
+<th>Mean system turn silence (secs)</th>
+
+<th>System turn silence pct</th>
+</tr>
+
+<tr VALIGN=TOP>
+<td>MITRE/19990923/000</td>
+
+<td>1</td>
+
+<td>58.71</td>
+
+<td>8</td>
+
+<td>5.25</td>
+
+<td>15.50</td>
+
+<td>1</td>
+
+<td>0</td>
+
+<td>5.35/0.1189</td>
+
+<td>21</td>
+
+<td>62</td>
+
+<td>0.25</td>
+
+<td>0</td>
+
+<td>5.35</td>
+
+<td>5.35</td>
+
+<td>0.00</td>
+
+<td>0.00</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>MITRE/19991101/004</td>
+
+<td>0</td>
+
+<td>120.92</td>
+
+<td>1</td>
+
+<td>-</td>
+
+<td>30.00</td>
+
+<td>0</td>
+
+<td>0</td>
+
+<td>-</td>
+
+<td>0</td>
+
+<td>30</td>
+
+<td>0.00</td>
+
+<td>0</td>
+
+<td>10.23</td>
+
+<td>10.23</td>
+
+<td>0.00</td>
+
+<td>0.00</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>Overall</td>
+
+<td>0.50</td>
+
+<td>89.82</td>
+
+<td>4.50</td>
+
+<td>5.25</td>
+
+<td>18.40</td>
+
+<td>0.50</td>
+
+<td>0.00</td>
+
+<td>5.35/0.1189</td>
+
+<td>21</td>
+
+<td>92</td>
+
+<td>0.20</td>
+
+<td>0.00</td>
+
+<td>6.33</td>
+
+<td>6.33</td>
+
+<td>0.00</td>
+
+<td>0.00</td>
+</tr>
+</table>
+
+<h3>
+All sessions (total task)</h3>
+
+<table BORDER=2 COLS=17 WIDTH="100%" >
+<tr VALIGN=TOP>
+<th>&nbsp;</th>
+
+<th>Task completed</th>
+
+<th>Duration (secs)</th>
+
+<th>Turns in interval</th>
+
+<th>Mean user words per turn (noise stripped)</th>
+
+<th>Mean system words per turn</th>
+
+<th>Error messages</th>
+
+<th>Help messages</th>
+
+<th>Response latency (mean in secs/variance)</th>
+
+<th>User words (noise stripped)</th>
+
+<th>System words</th>
+
+<th>Prompt percentage</th>
+
+<th>Number of reprompts</th>
+
+<th>Mean system utterance duration (secs)</th>
+
+<th>Mean system turn duration (secs)</th>
+
+<th>Mean system turn silence (secs)</th>
+
+<th>System turn silence pct</th>
+</tr>
+
+<tr VALIGN=TOP>
+<td>MITRE/19990923/000</td>
+
+<td>1</td>
+
+<td>70.35</td>
+
+<td>9</td>
+
+<td>5.25</td>
+
+<td>18.40</td>
+
+<td>1</td>
+
+<td>0</td>
+
+<td>5.35/0.1189</td>
+
+<td>21</td>
+
+<td>92</td>
+
+<td>0.20</td>
+
+<td>0</td>
+
+<td>6.33</td>
+
+<td>6.33</td>
+
+<td>0.00</td>
+
+<td>0.00</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>MITRE/19991101/004</td>
+
+<td>0</td>
+
+<td>109.49</td>
+
+<td>17</td>
+
+<td>5.88</td>
+
+<td>11.67</td>
+
+<td>0</td>
+
+<td>0</td>
+
+<td>6.14/1.4842</td>
+
+<td>47</td>
+
+<td>105</td>
+
+<td>0.22</td>
+
+<td>0</td>
+
+<td>3.97</td>
+
+<td>3.97</td>
+
+<td>0.00</td>
+
+<td>0.00</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>Overall</td>
+
+<td>0.50</td>
+
+<td>89.92</td>
+
+<td>13.00</td>
+
+<td>5.67</td>
+
+<td>14.07</td>
+
+<td>0.50</td>
+
+<td>0.00</td>
+
+<td>5.88/1.1692</td>
+
+<td>68</td>
+
+<td>197</td>
+
+<td>0.21</td>
+
+<td>0.00</td>
+
+<td>4.82</td>
+
+<td>4.82</td>
+
+<td>0.00</td>
+
+<td>0.00</td>
+</tr>
+</table>
+
+<h3>
+All sessions (all turns)</h3>
+
+<table BORDER=2 COLS=16 WIDTH="100%" >
+<tr VALIGN=TOP>
+<th>&nbsp;</th>
+
+<th>Task completed</th>
+
+<th>Turns in interval</th>
+
+<th>Mean user words per turn (noise stripped)</th>
+
+<th>Mean system words per turn</th>
+
+<th>Error messages</th>
+
+<th>Help messages</th>
+
+<th>Response latency (mean in secs/variance)</th>
+
+<th>User words (noise stripped)</th>
+
+<th>System words</th>
+
+<th>Prompt percentage</th>
+
+<th>Number of reprompts</th>
+
+<th>Mean system utterance duration (secs)</th>
+
+<th>Mean system turn duration (secs)</th>
+
+<th>Mean system turn silence (secs)</th>
+
+<th>System turn silence pct</th>
+</tr>
+
+<tr VALIGN=TOP>
+<td>MITRE/19990923/000</td>
+
+<td>1</td>
+
+<td>10</td>
+
+<td>5.25</td>
+
+<td>18.40</td>
+
+<td>1</td>
+
+<td>0</td>
+
+<td>5.35/0.1189</td>
+
+<td>21</td>
+
+<td>92</td>
+
+<td>0.20</td>
+
+<td>0</td>
+
+<td>6.33</td>
+
+<td>6.33</td>
+
+<td>0.00</td>
+
+<td>0.00</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>MITRE/19991101/004</td>
+
+<td>0</td>
+
+<td>18</td>
+
+<td>5.88</td>
+
+<td>11.67</td>
+
+<td>0</td>
+
+<td>0</td>
+
+<td>6.14/1.4842</td>
+
+<td>47</td>
+
+<td>105</td>
+
+<td>0.22</td>
+
+<td>0</td>
+
+<td>3.97</td>
+
+<td>3.97</td>
+
+<td>0.00</td>
+
+<td>0.00</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>Overall</td>
+
+<td>0.50</td>
+
+<td>14.00</td>
+
+<td>5.67</td>
+
+<td>14.07</td>
+
+<td>0.50</td>
+
+<td>0.00</td>
+
+<td>5.88/1.1692</td>
+
+<td>68</td>
+
+<td>197</td>
+
+<td>0.21</td>
+
+<td>0.00</td>
+
+<td>4.82</td>
+
+<td>4.82</td>
+
+<td>0.00</td>
+
+<td>0.00</td>
+</tr>
+</table>
+
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Batch_generation_of_NIST_sclite_input"></a>Batch
+generation of NIST <tt>sclite</tt>
+input</h2>
+Once you have your annotated XML file, you
+can generate input for the NIST <tt>sclite</tt>
+scoring tool using the <tt>xml_nist_batch</tt>
+tool. This tool will work for any conformant XML file, whether or not it
+was generated using the previous tools. If you have a separate human annotations
+file, it will be folded in here.
+<h4>
+Command line</h4>
+<tt>&lt;GC_HOME>/contrib/MITRE/tools/bin/xml_nist_batch &lt;common flags>
+\</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--default_user_version version_string] [--rule_base
+rule_file] \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--hyp_postprocess script] [--ref_postprocess
+script] [--wav_postprocess script] \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--outdir file_location] [--outprefix file_prefix]
+\</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--range [all_turns | overall_task | on_task]]
+log_root...</tt>
+<p>This tool generates three files, given
+an annotated XML log. The annotated XML log must conform to the <a href="http://fofoca.mitre.org/members/CAC/logstandard-dmas-v3.html">logfile
+DMA standard</a>. If a human annotation file is present in the log directory,
+it must conform to the <a href="http://fofoca.mitre.org/members/CAC/human_annot.html">human
+annotation logfile standard</a> (you can generate a stub for this file
+using the <a href="#XML_human_annotation_stub_generation">human stubber</a>).
+<p>Note that this operation also takes the
+command line arguments for <a href="#XML_log_generation">XML log generation</a>
+and <a href="#XML_annotation">annotation</a>, in case backchaining is required.
+In addition, this utility allows you to specify a <a href="#Log_ranges">log
+range</a>.
+<p>This utility saves three files: a speech
+hypothesis file, a speech transcription file, and (possibly) a file of
+audio files. The <tt>--outprefix</tt>
+names the file prefix, if present. The default file prefix is <tt>sr</tt>.
+The three files are named:
+<ul>
+<li>
+<tt>&lt;file prefix>.hyp</tt> (speech hypothesis)</li>
+
+<li>
+<tt>&lt;file prefix>.ref </tt>(speech transcriptions)</li>
+
+<li>
+<tt>&lt;file prefix>.wav</tt> (names of the
+audio files, if the optional MITRE landmarks for audio files are used)</li>
+</ul>
+These files are written to:
+<ul>
+<li>
+the directory named by <tt>--outdir</tt>,
+or</li>
+
+<li>
+the directory corresponding to the log root,
+if exactly one log root was given, or</li>
+
+<li>
+the current working directory.</li>
+</ul>
+If any of the arguments <tt>--hyp_postprocess</tt>,
+<tt>--ref_postprocess</tt>,
+or <tt>--wav_postprocess</tt> are present,
+the hypothesis, transcription, or audio file pathname will be passed through
+the executable named by the corresponding argument. These executables are
+identical in form to the <a href="#Postprocessing_scripts">postprocessing
+scripts</a> described above. The default for <tt>--ref_postprocess</tt>
+is the same as in <tt><a href="#XML_scoring">xml_score</a></tt>;
+the defaults for the others are not to do postprocessing.
+<p>The hypothesis and transcription files
+can be passed to the <tt>sclite</tt>
+utility as follows:
+<p><tt>% xml_nist_batch --force --default_user_version "travel, version
+1" \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --rule_base travel_1_0_rules.xml
+--rule_base travel_2_0_rules.xml \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --range all_turns MITRE</tt>
+<br><tt>Checking: MITRE</tt>
+<br><tt>Checking: MITRE/19991101</tt>
+<br><tt>Checking: MITRE/19991101/004</tt>
+<br><tt>Checking: MITRE/19990923</tt>
+<br><tt>Checking: MITRE/19990923/000</tt>
+<br><tt>Reading raw Hub log: MITRE/19991101/004/travel_cfone-19991101-004-hublog.txt</tt>
+<br><tt>...read.</tt>
+<br><tt>Converting to XML: MITRE/19991101/004/travel_cfone-19991101-004-hublog.txt</tt>
+<br><tt>...converted.</tt>
+<br><tt>Reading rule file: travel_1_0_rules.xml</tt>
+<br><tt>...read.</tt>
+<br><tt>Reading rule file: travel_2_0_rules.xml</tt>
+<br><tt>Ignoring Comment element</tt>
+<br><tt>Ignoring Comment element</tt>
+<br><tt>...read.</tt>
+<br><tt>Applying rules: travel_1_0_rules.xml</tt>
+<br><tt>...wrong version.</tt>
+<br><tt>Applying rules: travel_2_0_rules.xml</tt>
+<br><tt>...succeeded.</tt>
+<br><tt>Reading human XML annotations: MITRE/19991101/004/travel_cfone-19991101-004-hublog-human.xml</tt>
+<br><tt>...read.</tt>
+<br><tt>Resegmenting...</tt>
+<br><tt>Incorporating human annotations: MITRE/19991101/004/travel_cfone-19991101-004-hublog-human.xml</tt>
+<br><tt>...resegmented.</tt>
+<br><tt>Reading raw Hub log: MITRE/19990923/000/travel_cfone-19990923-000-hublog.txt</tt>
+<br><tt>...read.</tt>
+<br><tt>Converting to XML: MITRE/19990923/000/travel_cfone-19990923-000-hublog.txt</tt>
+<br><tt>...converted.</tt>
+<br><tt>Applying rules: travel_1_0_rules.xml</tt>
+<br><tt>...succeeded.</tt>
+<br><tt>Reading human XML annotations: MITRE/19990923/000/travel_cfone-19990923-000-hublog-human.xml</tt>
+<br><tt>...read.</tt>
+<br><tt>Resegmenting...</tt>
+<br><tt>Incorporating human annotations: MITRE/19990923/000/travel_cfone-19990923-000-hublog-human.xml</tt>
+<br><tt>...resegmented.</tt>
+<br><tt>% sclite -r MITRE/sr.ref -h MITRE/sr.hyp -i rm</tt>
+<br><tt>sclite: 2.2 TK Version 1.2</tt>
+<br><tt>Begin alignment of Ref File: 'MITRE/sr.ref' and Hyp File: 'MITRE/sr.hyp'</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Alignment# 4 for speaker travel_cfone19990923000hublogannotated</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Alignment# 8 for speaker travel_cfone19991101004hublogannotated</tt>
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+SYSTEM SUMMARY PERCENTAGES by SPEAKER</tt>
+<p><tt>,------------------------------------------------------------------------------------------------.</tt>
+<br><tt>|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+MITRE/sr.hyp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|</tt>
+<br><tt>|------------------------------------------------------------------------------------------------|</tt>
+<br><tt>| SPKR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| # Snt # Wrd | Corr&nbsp;&nbsp;&nbsp; Sub&nbsp;&nbsp;&nbsp; Del&nbsp;&nbsp;&nbsp;
+Ins&nbsp;&nbsp;&nbsp; Err&nbsp; S.Err |</tt>
+<br><tt>|----------------------------------------+-------------+-----------------------------------------|</tt>
+<br><tt>| travel_cfone19990923000hublogannotated |&nbsp;&nbsp;&nbsp; 4&nbsp;&nbsp;&nbsp;&nbsp;
+21 | 76.2&nbsp;&nbsp; 23.8&nbsp;&nbsp;&nbsp; 0.0&nbsp;&nbsp;&nbsp; 9.5&nbsp;&nbsp;
+33.3&nbsp; 100.0 |</tt>
+<br><tt>|----------------------------------------+-------------+-----------------------------------------|</tt>
+<br><tt>| travel_cfone19991101004hublogannotated |&nbsp;&nbsp;&nbsp; 8&nbsp;&nbsp;&nbsp;&nbsp;
+47 | 80.9&nbsp;&nbsp; 19.1&nbsp;&nbsp;&nbsp; 0.0&nbsp;&nbsp;&nbsp; 6.4&nbsp;&nbsp;
+25.5&nbsp;&nbsp; 87.5 |</tt>
+<br><tt>|================================================================================================|</tt>
+<br><tt>| Sum/Avg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp;&nbsp; 12&nbsp;&nbsp;&nbsp;&nbsp; 68 | 79.4&nbsp;&nbsp; 20.6&nbsp;&nbsp;&nbsp;
+0.0&nbsp;&nbsp;&nbsp; 7.4&nbsp;&nbsp; 27.9&nbsp;&nbsp; 91.7 |</tt>
+<br><tt>|================================================================================================|</tt>
+<br><tt>|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Mean&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 6.0&nbsp;&nbsp; 34.0 | 78.5&nbsp;&nbsp; 21.5&nbsp;&nbsp;&nbsp;
+0.0&nbsp;&nbsp;&nbsp; 8.0&nbsp;&nbsp; 29.4&nbsp;&nbsp; 93.8 |</tt>
+<br><tt>|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+S.D.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 2.8&nbsp;&nbsp; 18.4 |&nbsp; 3.3&nbsp;&nbsp;&nbsp; 3.3&nbsp;&nbsp;&nbsp;
+0.0&nbsp;&nbsp;&nbsp; 2.2&nbsp;&nbsp;&nbsp; 5.5&nbsp;&nbsp;&nbsp; 8.8 |</tt>
+<br><tt>|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Median&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; 6.0&nbsp;&nbsp; 34.0 | 78.5&nbsp;&nbsp; 21.5&nbsp;&nbsp;&nbsp;
+0.0&nbsp;&nbsp;&nbsp; 8.0&nbsp;&nbsp; 29.4&nbsp;&nbsp; 93.8 |</tt>
+<br><tt>`------------------------------------------------------------------------------------------------'</tt>
+<p><tt>Successful Completion</tt>
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Extraction_of_landmarks"></a>Extraction
+of landmarks</h2>
+Once you have your annotated XML file, you
+can extract the values of arbitrary landmarks using the <tt>xml_extract_landmarks</tt>
+tool. This tool will work for any conformant XML file, whether or not it
+was generated using the previous tools. If you have a separate human annotations
+file, it will be folded in here.
+<h4>
+Command line</h4>
+<tt>&lt;GC_HOME>/contrib/MITRE/tools/bin/xml_extract_landmarks &lt;common
+flags> \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--default_user_version version_string] [--rule_base
+rule_file] \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; --landmark attr=val[:script] [--landmark attr=val[:script]]*
+\</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; [--outdir file_location] [--outprefix file_prefix]
+log_root...</tt>
+<p>For each annotated XML log, this tool generates
+a file containing the landmarks specified, given an annotated XML log.
+The annotated XML log must conform to the <a href="http://fofoca.mitre.org/members/CAC/logstandard-dmas-v3.html">logfile
+DMA standard</a>. If a human annotation file is present in the log directory,
+it must conform to the <a href="http://fofoca.mitre.org/members/CAC/human_annot.html">human
+annotation logfile standard</a> (you can generate a stub for this file
+using the <a href="#XML_human_annotation_stub_generation">human stubber</a>).
+<p>Note that this operation also takes the
+command line arguments for <a href="#XML_log_generation">XML log generation</a>
+and <a href="#XML_annotation">annotation</a>, in case backchaining is required.
+In addition, this utility allows you to specify a <a href="#Log_ranges">log
+range</a>.
+<p>You must specify at least one landmark.
+Each landmark is specified as shown in the command line; so if you want
+to extract all instances of system text, you'd specify <tt>--landmark
+type_utt_text=system</tt>. If you'd like the
+landmark postprocessed before it's written out, you can specify a <a href="#Postprocessing_scripts">postprocess
+executable</a>.
+<p>These files are written to:
+<ul>
+<li>
+the directory named by <tt>--outdir</tt>,
+or</li>
+
+<li>
+the directory corresponding to the log root,
+if exactly one log root was given, or</li>
+
+<li>
+the current working directory.</li>
+</ul>
+Each file is named <tt>&lt;file_prefix>-&lt;annotated_XML_filename>.txt</tt>.
+The default file prefix is <tt>landmark-&lt;UTC_time></tt>.
+Because the annotated XML filename is used to differentiate between sessions,
+this utility will probably not work too well if the names of your annotated
+XML files are all the same (e.g., if you've overriden the defaults and
+named all your files <tt>annotated.xml</tt>).
+<p>Here's an example of collecting alternating
+user and system text using this utility. The scripts <tt>add_u.py</tt>
+and <tt>add_s.py</tt> add the prefix
+<tt>"U:
+"</tt> and <tt>"S: "</tt>,
+respectively, to each line. The scripts are displayed at the end of the
+example.
+<p><tt>% xml_extract_landmarks --landmark type_utt_text=transcription:/tmp/add_u.py
+\</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; --landmark type_utt_text=system:/tmp/add_s.py
+--force \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; --default_user_version "travel, version 1" \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; --rule_base travel_1_0_rules.xml --rule_base
+travel_2_0_rules.xml \</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; --outprefix landmark MITRE</tt>
+<br><tt>Checking: MITRE</tt>
+<br><tt>Checking: MITRE/19991101</tt>
+<br><tt>Checking: MITRE/19991101/004</tt>
+<br><tt>Checking: MITRE/19990923</tt>
+<br><tt>Checking: MITRE/19990923/000</tt>
+<br><tt>Reading raw Hub log: MITRE/19991101/004/travel_cfone-19991101-004-hublog.txt</tt>
+<br><tt>...read.</tt>
+<br><tt>Converting to XML: MITRE/19991101/004/travel_cfone-19991101-004-hublog.txt</tt>
+<br><tt>...converted.</tt>
+<br><tt>Reading rule file: travel_1_0_rules.xml</tt>
+<br><tt>...read.</tt>
+<br><tt>Reading rule file: travel_2_0_rules.xml</tt>
+<br><tt>Ignoring Comment element</tt>
+<br><tt>Ignoring Comment element</tt>
+<br><tt>...read.</tt>
+<br><tt>Applying rules: travel_1_0_rules.xml</tt>
+<br><tt>...wrong version.</tt>
+<br><tt>Applying rules: travel_2_0_rules.xml</tt>
+<br><tt>...succeeded.</tt>
+<br><tt>Reading human XML annotations: MITRE/19991101/004/travel_cfone-19991101-004-hublog-human.xml</tt>
+<br><tt>...read.</tt>
+<br><tt>Resegmenting...</tt>
+<br><tt>Incorporating human annotations: MITRE/19991101/004/travel_cfone-19991101-004-hublog-human.xml</tt>
+<br><tt>...resegmented.</tt>
+<br><tt>Reading raw Hub log: MITRE/19990923/000/travel_cfone-19990923-000-hublog.txt</tt>
+<br><tt>...read.</tt>
+<br><tt>Converting to XML: MITRE/19990923/000/travel_cfone-19990923-000-hublog.txt</tt>
+<br><tt>...converted.</tt>
+<br><tt>Applying rules: travel_1_0_rules.xml</tt>
+<br><tt>...succeeded.</tt>
+<br><tt>Reading human XML annotations: MITRE/19990923/000/travel_cfone-19990923-000-hublog-human.xml</tt>
+<br><tt>...read.</tt>
+<br><tt>Resegmenting...</tt>
+<br><tt>Incorporating human annotations: MITRE/19990923/000/travel_cfone-19990923-000-hublog-human.xml</tt>
+<br><tt>...resegmented.</tt>
+<br><tt>% more MITRE/landmark-*</tt>
+<br><tt>::::::::::::::</tt>
+<br><tt>MITRE/landmark-travel_cfone-19990923-000-hublog-annotated.txt</tt>
+<br><tt>::::::::::::::</tt>
+<br><tt>S: Hi! Welcome to Mitre's Travel demonstration. This call is being
+recorded for</tt>
+<br><tt>system development. You may hang up or ask for help at any time.
+How can I help</tt>
+<br><tt>you?</tt>
+<br><tt>U: i+d like an flight from boston to detroit</tt>
+<br><tt>S: Can you provide the approximate departure or arrival time?</tt>
+<br><tt>U: i+d like to leave at seven a m</tt>
+<br><tt>S: north west flight 381 departs Boston at seven thirty a m&nbsp;
+and arrives Detroit</tt>
+<br><tt>&nbsp;at nine forty nine a m . Is there something else I can do
+for you?</tt>
+<br><tt>U: is that flight serve breakfast</tt>
+<br><tt>S: That flight does not serve breakfast. What else would you like
+to know?</tt>
+<br><tt>U: goodbye&nbsp; now</tt>
+<br><tt>S: I heard your words, but I can't understand them correctly.</tt>
+<br><tt>::::::::::::::</tt>
+<br><tt>MITRE/landmark-travel_cfone-19991101-004-hublog-annotated.txt</tt>
+<br><tt>::::::::::::::</tt>
+<br><tt>S: Hi! Welcome to Mitre's Travel demonstration. This call is being
+recorded for</tt>
+<br><tt>system development. You may hang up or ask for help at any time.
+How can I help</tt>
+<br><tt>you?</tt>
+<br><tt>U: I'd like to fly to Newark</tt>
+<br><tt>S: What city does the flight depart from?</tt>
+<br><tt>U: St. Louis</tt>
+<br><tt>S: i am sorry i did not understand that</tt>
+<br><tt>U: Could I leave from New Orleans</tt>
+<br><tt>S: could you please repeat that</tt>
+<br><tt>U: I'd like to leave from New Orleans</tt>
+<br><tt>S: Can you provide the approximate departure or arrival time?</tt>
+<br><tt>U: I'd like to leave at midnight on Friday</tt>
+<br><tt>S: i am sorry i could not understand you</tt>
+<br><tt>U: I'd to leave around dinner on Friday</tt>
+<br><tt>S: please try rephrasing what you said</tt>
+<br><tt>U: I want to leave around six _p_m on Friday</tt>
+<br><tt>S: I have no information about a flight from New Orleans that depart
+to Newark t</tt>
+<br><tt>hat depart friday around 6 o'clock p m .</tt>
+<br><tt>U: Goodbye</tt>
+<br><tt>S: Good bye. Thank you for using Mitre's Travel demonstration.</tt>
+<br><tt>% more /tmp/add_u.py /tmp/add_s.py</tt>
+<br><tt>::::::::::::::</tt>
+<br><tt>add_u.py</tt>
+<br><tt>::::::::::::::</tt>
+<br><tt>#!/usr/bin/python</tt>
+<p><tt>import string, sys</tt>
+<p><tt>r = string.strip(sys.stdin.readline())</tt>
+<br><tt>while r:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; print "U:", r</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; sys.stdout.flush()</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; r = string.strip(sys.stdin.readline())</tt>
+<br><tt>::::::::::::::</tt>
+<br><tt>add_s.py</tt>
+<br><tt>::::::::::::::</tt>
+<br><tt>#!/usr/bin/python</tt>
+<p><tt>import string, sys</tt>
+<p><tt>r = string.strip(sys.stdin.readline())</tt>
+<br><tt>while r:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; print "S:", r</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; sys.stdout.flush()</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; r = string.strip(sys.stdin.readline())</tt>
+<p>
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "unit_tester_ref.html"><img src="../../../../docs/arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../../LICENSE">License</a> / <a href = "../../../../docs/manual/index.html">Documentation home</a> / <a href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "log_reference.html"><img src="../../../../docs/arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated August 31, 2000</center>
+
+<p><br>
+</body>
+</html>

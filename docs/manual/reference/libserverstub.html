@@ -1,0 +1,106 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+        
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Server Stub Library</title>
+         <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+    
+<center>  
+<h1> Galaxy Communicator Documentation:<br>
+  <br>
+  Server Stub Library</h1>
+ </center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "libgalaxy_io.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "libutil.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+    
+<hr width="100%"> <br>
+ &nbsp;  
+<p>This documentation briefly describes functions in the directory src/libGalaxy/ServerStub 
+which are present but probably will not be used by the developer. The signatures 
+of these functions may change from release to release. </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<p>Gal_Frame&nbsp;<a name="GalSS_CallServerFunction"></a><b><big>GalSS_CallServerFunction</big></b>(Gal_Frame
+ <i>frame</i>, GalSS_Environment *<i>env</i>, int <i>optional</i>) <br>
+ Calls the server function specified in <i>frame</i>.&nbsp; Both <i>frame</i> 
+and <i>server_data</i> are passed to the function.&nbsp; If the function is
+not <i>optional</i>, a warning is printed if it does not exist.&nbsp; The
+result frame is returned. </p>
+ 
+<p>int&nbsp;<a name="GalSS_EnvErrorOfType"></a><b><big>GalSS_EnvErrorOfType</big></b>(GalSS_Environment
+ *<i>env</i>, int <i>type</i>, const char *<i>description</i>) </p>
+ 
+<p>int&nbsp;<a name="GalSS_FrameHandler"></a><b><big>GalSS_FrameHandler</big></b>(GalIO_CommStruct
+ *<i>gcomm</i>, Gal_Frame <i>frame</i>) <br>
+ This function is always the third argument of <a
+ href="libgalaxy_io.html#GalIO_ServerInit">GalIO_ServerInit</a>, and it is 
+called with connection as an argument. The <i>frame</i> is a message which 
+will be passed to the appropriate dispatch function. The return value is
+</p>
+ 
+<ul>
+  <li> 1 if the function both evaluated the dispatch function and wrote a 
+reply;</li>
+   <li> 0 if the function evaluated the dispatch function, but no reply was 
+necessary;</li>
+   <li> -1 if an error was encountered and the connection was closed</li>
+   
+</ul>
+  GalSS_ServerLocationEntry *<a name="GalSS_FindServerLocationEntry"></a><b><big>GalSS_FindServerLocationEntry</big></b>(const 
+char *<i>filename</i>, const char *<i>server_name</i>)  
+<p>GalSS_ServerLocationEntry *<a name="GalSS_DigestServerLocationFile"></a><b><big>GalSS_DigestServerLocationFile</big></b>(const 
+char *<i>filename</i>) </p>
+ 
+<p>void&nbsp;<a name="GalSS_FreeProviderSpec"></a><b><big>GalSS_FreeProviderSpec</big></b>(GalSS_ProviderSpec
+ *<i>spec</i>) </p>
+ 
+<p>char *<a name="GalSS_FormatProviderSpec"></a><b><big>GalSS_FormatProviderSpec</big></b>(GalSS_ProviderSpec
+ *<i>spec</i>, Gal_StringBuffer **<i>bufptr</i>) </p>
+ 
+<p>int&nbsp;<a name="GalSS_SessionDecodeLocks"></a><b><big>GalSS_SessionDecodeLocks</big></b>(Gal_Frame
+ <i>fr</i>, int *<i>mask_ptr</i>, int *<i>value_ptr</i>) </p>
+ 
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "libgalaxy_io.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "libutil.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated June 24, 2002</center>
+   <br>
+ <br>
+</body>
+</html>

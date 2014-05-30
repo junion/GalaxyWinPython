@@ -1,0 +1,948 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>Log Standard Implementation of DMA Metrics</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000FF" vlink="#551A8B" alink="#0000FF">
+
+<center>
+<h1>
+<b><font face="Arial,Helvetica"><font size=+4><font color="#CCCCCC">DARPA
+</font><font color="#999999">Communicator
+Testbed</font></font></font></b></h1></center>
+
+<center>
+<h1>
+
+<hr WIDTH="100%"></h1></center>
+
+<center>
+<h1>
+<font face="Arial,Helvetica">Log Standard Implementation of DMA Metrics
+(v4)</font></h1></center>
+
+<h2>
+<font face="Arial,Helvetica">Contents</font></h2>
+
+<ul>
+<li>
+<font face="Arial,Helvetica"><a href="#Introduction">Introduction</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#DMAs">DMA Metrics</a></font></li>
+
+<ul>
+<li>
+<font face="Arial,Helvetica"><a href="#Task Completion">Task Completion</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Time to Completion">Time to Completion</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Turns to Completion">Turns to Completion</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Mean User Words/Turn">Mean User
+Words/Turn</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Mean System Words/Turn">Mean System
+Words/Turn</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Mean User Concepts/Turn">Mean User
+Concepts/Turn</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Mean Concept Efficiency">Mean Concept
+Efficiency</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#State of Itinerary">State of Itinerary</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Error Messages">Error Messages</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Help Messages">Help Messages</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Response Latency">Response Latency</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#User Words to Completion">User Words
+to Completion</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#System Words to Completion">System
+Words to Completion</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#User Repeats">User Repeats</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#System Repeats/Reprompts">System
+Repeats/Reprompts</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Word Error">Word Error</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Mean Length of System Utterance">Mean
+Length of System Utterance</a></font></li>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Mean Length of System Turn">Mean
+Length of System Turn</a></font></li>
+</ul>
+
+<li>
+<font face="Arial,Helvetica"><a href="#Summary of Attributes and Metrics">Summary
+of Attributes and Metrics</a></font></li>
+</ul>
+
+<h2>
+
+<hr WIDTH="100%"></h2>
+
+<h2>
+<a NAME="Introduction"></a><font face="Arial,Helvetica">Introduction</font></h2>
+<font face="Arial,Helvetica">The purpose of this document is to provide
+some guidance in logging such that we all collect the appropriate metrics
+for evaluation. Most of the metrics rely on </font><tt>type_...</tt><font face="Arial,Helvetica">
+attributes (XML tag attributes beginning with </font><tt>type_</tt><font face="Arial,Helvetica">)
+and their values. In most cases these attributes may be assigned to one
+of a few tag types (as opposed to being restricted to a single tag type),
+to allow some flexibility in accomodating different systems. Human annotations
+should be stored in a separate XML file external to the main logfile, to
+facilitate multiple annotators and measurement of interannotator agreement.
+We envision that each log with reside in its own directory which also contains
+the associated human annotations as well as the audio (wav) files associated
+with the dialogue. The main log file should contain pointers to the audio
+(wav) files. Below are our specific recommendations for placement and naming
+of files associated with a call:</font>
+<ul>
+<li>
+<font face="Arial,Helvetica">All of the files associated with a call are
+in the same directory</font></li>
+
+<li>
+<font face="Arial,Helvetica">Each call has its own directory</font></li>
+
+<li>
+<font face="Arial,Helvetica">The files in this directory are:</font></li>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">the core log file</font></li>
+
+<li>
+<font face="Arial,Helvetica">the file of human annotations (transcriptions)</font></li>
+</ul>
+
+<li>
+<font face="Arial,Helvetica">The core log file should have pointers to
+the audio (wav) files for user and system utterances</font></li>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Example:</font></li>
+
+<br><tt>&lt;GC_DATA key=":utt_log_filename" dtype="unknown"></tt>
+<br><tt>&nbsp; /home/communicator/Travel-demo/../logs/travel_cfone/19990608/002/travel_cfone-19990608-002-000.wav</tt>
+<br><tt>&lt;/GC_DATA></tt></ul>
+
+<li>
+We are offering the following recommendations for naming files:</li>
+
+<ul>
+<li>
+the core log file: &lt;site-specific-prefix>-&lt;date>-&lt;callnumber>-hublog.xml</li>
+
+<li>
+the file of human annotations: &lt;site-specific-prefix>-&lt;date>-&lt;callnumber>-human.xml</li>
+</ul>
+</ul>
+
+<h2>
+
+<hr WIDTH="100%"><a NAME="DMAs"></a><font face="Arial,Helvetica">DMA Metrics</font></h2>
+
+<h3>
+<a NAME="Task Completion"></a><font face="Arial,Helvetica">Task Completion</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Requires human annotation</font></li>
+
+<li>
+<font face="Arial,Helvetica">Human annotations are stored in a separate
+XML file (to facilitate multiple annotations and measurement of interannotator
+agreement)</font></li>
+
+<li>
+<font face="Arial,Helvetica">Example:</font></li>
+
+<br><tt>&lt;GC_LOG_ANNOTATIONS></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_SESSION&nbsp; id="199.94.106.6:20300:0" stime="941473394.650000"
+etime="941473494.820000"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;GC_ANNOT type_task_completion="1"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; &lt;/GC_SESSION></tt>
+<br><tt>&lt;/GC_LOG_ANNOTATIONS></tt></ul>
+
+<h3>
+<a NAME="Time to Completion"></a><font face="Arial,Helvetica">Time to Completion</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Relies on two tag attributes:</font></li>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">the </font><tt>type_start_task</tt><font face="Arial,Helvetica">
+attribute has a value of either </font><tt>total</tt><font face="Arial,Helvetica">,
+</font><tt>task</tt><font face="Arial,Helvetica"> or </font><tt>true</tt></li>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">the </font><tt>total</tt><font face="Arial,Helvetica">
+value is used when time to completion indicates total call time (attribute
+placed on a tag at the start of the first system utterance)</font></li>
+
+<li>
+<font face="Arial,Helvetica">the </font><tt>task</tt><font face="Arial,Helvetica">
+value is used when time to completion indicates on-task time (attribute
+placed on a tag at the start of the user's first utterance)</font></li>
+
+<li>
+<font face="Arial,Helvetica">the </font><tt>true</tt><font face="Arial,Helvetica">
+value may be used when a dialogue does NOT begin with any non-task utterances</font></li>
+</ul>
+
+<li>
+<font face="Arial,Helvetica">the </font><tt>type_end_task</tt><font face="Arial,Helvetica">
+attribute has a value of either </font><tt>total</tt><font face="Arial,Helvetica">,
+</font><tt>task</tt><font face="Arial,Helvetica"> or </font><tt>true. The
+true</tt><font face="Arial,Helvetica"> value may be used when a dialogue
+does NOT end with any non-task utterances.</font></li>
+</ul>
+
+<li>
+<font face="Arial,Helvetica">The attributes may be placed on </font><tt>GC_OPERATION</tt><font face="Arial,Helvetica">,
+</font><tt>GC_MESSAGE</tt><font face="Arial,Helvetica">,
+or </font><tt>GC_EVENT</tt><font face="Arial,Helvetica"> tags</font></li>
+
+<li>
+<font face="Arial,Helvetica">Example:</font></li>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Start:</font></li>
+
+<br><tt>&lt;GC_OPERATION type_start_task="task" name="nop" server="Builtin"
+location="Builtin:-1" turnid="0" stime="941473406.850000" etime="941473406.850000"
+tidx="13"></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_DATA key=":listening_has_begun" dtype="unknown"/></tt>
+<br><tt>&lt;/GC_OPERATION></tt></ul>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">End:</font></li>
+
+<br><tt>&lt;GC_OPERATION type_end_task="true" name="nop" server="Builtin"
+location="Builtin:-1" turnid="5" stime="941473494.520000" etime="941473494.520000"
+tidx="315"></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_DATA key=":playing_has_ended" dtype="unknown"/></tt>
+<br><tt>&lt;/GC_OPERATION></tt></ul>
+
+<li>
+<font face="Arial,Helvetica">Time to completion is calculated by subtracting
+the value of </font><tt>stime</tt><font face="Arial,Helvetica"> of the
+tag with a </font><tt>type_start_task </tt><font face="Arial,Helvetica">attribute
+from the value of </font><tt>etime</tt><font face="Arial,Helvetica"> of
+the tag with a </font><tt>type_end_task</tt><font face="Arial,Helvetica">
+attribute</font></li>
+</ul>
+
+<h3>
+<a NAME="Turns to Completion"></a><font face="Arial,Helvetica">Turns to
+Completion</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Relies on </font><tt>type_new_turn</tt><font face="Arial,Helvetica">
+attributes which have values of </font><tt>user</tt><font face="Arial,Helvetica">
+or </font><tt>system</tt></li>
+
+<li>
+<font face="Arial,Helvetica">The attributes may be placed on </font><tt>GC_OPERATION</tt><font face="Arial,Helvetica">,
+</font><tt>GC_MESSAGE</tt><font face="Arial,Helvetica">,
+or </font><tt>GC_EVENT</tt><font face="Arial,Helvetica"> tags</font></li>
+
+<li>
+<font face="Arial,Helvetica">Examples:</font></li>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">System:</font></li>
+
+<br><tt>&lt;GC_OPERATION type_new_turn="system" name="speak_output" server="tts"
+location="localhost:15020" turnid="-1" stime="941473394.700000" etime="941473394.700000"
+tidx="3"></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_DATA type_utt_text="system" key=":reply_string"
+dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Hi! Welcome to Mitre's Travel demonstration.
+This call is being recorded for system development. You may hang up or
+ask for help at any time. How can I help you?</tt>
+<br><tt>&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&lt;/GC_OPERATION></tt>
+<li>
+<font face="Arial,Helvetica">User:</font></li>
+
+<br><tt>&lt;GC_OPERATION type_new_turn="user" name="create_frame" server="nl"
+location="localhost:11000" turnid="0" stime="941473415.560000" etime="941473415.620000"
+tidx="50"></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_DATA type_utt_text="user" key=":input_string"
+dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i would like to fly to newark</tt>
+<br><tt>&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&lt;/GC_OPERATION></tt></ul>
+
+<li>
+<font face="Arial,Helvetica">After collapsing all consecutive "sub-turns"
+from the same side of the dialogue into single turns (as outlined in the
+DMA specification), turns to completion may be calculated by simply counting</font></li>
+</ul>
+
+<h3>
+<a NAME="Mean User Words/Turn"></a><font face="Arial,Helvetica">Mean User
+Words/Turn</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Requires human annotations (transcription),
+which are stored in a separate XML file external to the main logfile</font></li>
+
+<li>
+<font face="Arial,Helvetica">Relies on </font><tt>type_utt_text</tt><font face="Arial,Helvetica">
+attribute with a value of </font><tt>transcription</tt></li>
+
+<li>
+<font face="Arial,Helvetica">The </font><tt>type_utt_text</tt><font face="Arial,Helvetica">
+attribute is placed on </font><tt>GC_DATA</tt><font face="Arial,Helvetica">
+tags</font></li>
+
+<li>
+<font face="Arial,Helvetica">Example:</font></li>
+
+<br><tt>&lt;GC_DATA type_utt_text="transcription" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp; I want a flight to Newark</tt>
+<br><tt>&lt;/GC_DATA></tt>
+<li>
+<font face="Arial,Helvetica">Count the words in each element with a </font><tt>type_utt_text="transcription"</tt><font face="Arial,Helvetica">
+attribute, sum them all and divide by the number of user turns</font></li>
+</ul>
+
+<h3>
+<a NAME="Mean System Words/Turn"></a><font face="Arial,Helvetica">Mean
+System Words/Turn</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Relies on </font><tt>type_utt_text</tt><font face="Arial,Helvetica">
+attribute with a value of </font><tt>system</tt></li>
+
+<li>
+<font face="Arial,Helvetica">The </font><tt>type_utt_text</tt><font face="Arial,Helvetica">
+attribute is placed on </font><tt>GC_DATA</tt><font face="Arial,Helvetica">
+tags</font></li>
+
+<li>
+<font face="Arial,Helvetica">Example:</font></li>
+
+<br><tt>&lt;GC_DATA type_utt_text="system" key=":reply_string" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp; U S Airways flight 1820 departs Philadelphia at three
+thirty p m&nbsp; and arrives Newark at four thirty p m . What else would
+you like to know?</tt>
+<br><tt>&lt;/GC_DATA></tt>
+<li>
+<font face="Arial,Helvetica">Count the words in each element with a </font><tt>type_utt_text="system"</tt><font face="Arial,Helvetica">
+attribute, sum them all and divide by the number of system turns</font></li>
+</ul>
+
+<h3>
+<a NAME="Mean User Concepts/Turn"></a><font face="Arial,Helvetica">Mean
+User Concepts/Turn</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Deferred until concept labeling is defined</font></li>
+</ul>
+
+<h3>
+<a NAME="Mean Concept Efficiency"></a><font face="Arial,Helvetica">Mean
+Concept Efficiency</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Deferred until concept labeling is defined</font></li>
+</ul>
+
+<h3>
+<a NAME="State of Itinerary"></a><font face="Arial,Helvetica">State of
+Itinerary</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Deferred</font></li>
+</ul>
+
+<h3>
+<a NAME="Error Messages"></a><font face="Arial,Helvetica">Error Messages</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Relies on </font><tt>type_error_msg</tt><font face="Arial,Helvetica">
+attribute (with a value of </font><tt>true</tt><font face="Arial,Helvetica">)</font></li>
+
+<li>
+<font face="Arial,Helvetica">The </font><tt>type_error_msg</tt><font face="Arial,Helvetica">
+attribute is placed on </font><tt>GC_DATA</tt><font face="Arial,Helvetica">
+tags that also have </font><tt>type_utt_text="system"</tt><font face="Arial,Helvetica">
+attributes</font></li>
+
+<li>
+<font face="Arial,Helvetica">Example:</font></li>
+
+<br><tt>&lt;GC_DATA type_utt_text="system" type_error_msg="true" key=":reply_string"
+dtype="string"></tt>
+<br><tt>&nbsp;&nbsp; I was unable to parse your utterance.</tt>
+<br><tt>&lt;/GC_DATA></tt></ul>
+
+<h3>
+<a NAME="Help Messages"></a><font face="Arial,Helvetica">Help Messages</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Relies on </font><tt>type_help_msg</tt><font face="Arial,Helvetica">
+attribute (with a value of </font><tt>true</tt><font face="Arial,Helvetica">)</font></li>
+
+<li>
+<font face="Arial,Helvetica">The </font><tt>type_help_msg</tt><font face="Arial,Helvetica">
+attribute is placed on </font><tt>GC_DATA</tt><font face="Arial,Helvetica">
+tags that also have </font><tt>type_utt_text="system"</tt><font face="Arial,Helvetica">
+attributes</font></li>
+
+<li>
+<font face="Arial,Helvetica">Example:</font></li>
+
+<br><tt>&lt;GC_DATA type_utt_text="system" type_help_msg="true" key=":reply_string"
+dtype="string"></tt>
+<br><tt>&nbsp;&nbsp; I can provide worldwide travel information.</tt>
+<br><tt>&lt;/GC_DATA></tt></ul>
+
+<h3>
+<a NAME="Response Latency"></a><font face="Arial,Helvetica">Response Latency</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Relies on </font><tt>type_start_utt</tt><font face="Arial,Helvetica">
+and </font><tt>type_end_utt</tt><font face="Arial,Helvetica"> attributes
+with values of </font><tt>user</tt><font face="Arial,Helvetica"> or </font><tt>system</tt></li>
+
+<li>
+<font face="Arial,Helvetica">End of user utterances are indicated by a
+time stamped tag with a </font><tt>type_end_utt="user"</tt><font face="Arial,Helvetica">
+attribute</font></li>
+
+<li>
+<font face="Arial,Helvetica">Start of system utterances are indicated by
+a time stamped tag with a </font><tt>type_start_utt="system"</tt><font face="Arial,Helvetica">
+attribute</font></li>
+
+<li>
+<font face="Arial,Helvetica">The attributes may be placed on </font><tt>GC_OPERATION</tt><font face="Arial,Helvetica">,
+</font><tt>GC_MESSAGE</tt><font face="Arial,Helvetica">
+or </font><tt>GC_EVENT</tt><font face="Arial,Helvetica"> tags</font></li>
+
+<li>
+<font face="Arial,Helvetica">Example:</font></li>
+
+<ul><font face="Arial,Helvetica">End of user utterance:</font>
+<br><tt>&lt;GC_OPERATION type_end_utt="user" name="nop" server="Builtin"
+location="Builtin:-1" turnid="1" stime="941473421.440000" etime="941473421.440000"
+tidx="78"></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_DATA key=":recording_has_ended" dtype="unknown"/></tt>
+<br><tt>&lt;/GC_OPERATION></tt>
+<br><font face="Arial,Helvetica">Start of system utterance:</font>
+<br><tt>&lt;GC_OPERATION type_start_utt="system" name="nop" server="Builtin"
+location="Builtin:-1" turnid="1" stime="941473425.140000" etime="941473425.140000"
+tidx="91"></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_DATA key=":playing_has_begun" dtype="unknown"/></tt>
+<br><tt>&lt;/GC_OPERATION></tt></ul>
+
+<li>
+<font face="Arial,Helvetica">Note that the </font><tt>type_end_utt="user"</tt><font face="Arial,Helvetica">
+and </font><tt>type_start_utt="system"</tt><font face="Arial,Helvetica">
+type attributes will likely be on tags other than those in the example
+above (for better accuracy, the audio server could issue messages indicating
+the utterance boundaries, in which case the attributes would appear on
+</font><tt>&lt;GC_MESSAGE></tt><font face="Arial,Helvetica">
+tags)</font></li>
+
+<li>
+<font face="Arial,Helvetica">Response latency is calculated by subtracting
+value of the </font><tt>etime</tt><font face="Arial,Helvetica"> attribute
+of the tag with </font><tt>type_end_utt="user"</tt><font face="Arial,Helvetica">
+from the value of the </font><tt>stime</tt><font face="Arial,Helvetica">
+attribute of the tag with the </font><tt>type_start_utt="system"</tt><font face="Arial,Helvetica">
+attribute</font></li>
+</ul>
+
+<h3>
+<a NAME="User Words to Completion"></a><font face="Arial,Helvetica">User
+Words to Completion</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Requires human annotations (transcription),
+which are stored in a separate XML file external to the main logfile</font></li>
+
+<li>
+<font face="Arial,Helvetica">Relies on several attributes</font></li>
+
+<ul>
+<li>
+<tt>type_utt_text</tt><font face="Arial,Helvetica"> attributes with a values
+of </font><tt>transcription</tt><font face="Arial,Helvetica"> are placed
+on </font><tt>GC_DATA</tt><font face="Arial,Helvetica"> tags</font></li>
+
+<li>
+<font face="Arial,Helvetica">the </font><tt>type_start_task</tt><font face="Arial,Helvetica">
+attribute has a value of either </font><tt>total</tt><font face="Arial,Helvetica">,
+</font><tt>task</tt><font face="Arial,Helvetica"> or </font><tt>true</tt></li>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">the </font><tt>total</tt><font face="Arial,Helvetica">
+value is used when time to completion indicates total call time (attribute
+placed on a tag at the start of the first system utterance)</font></li>
+
+<li>
+<font face="Arial,Helvetica">the </font><tt>task</tt><font face="Arial,Helvetica">
+value is used when time to completion indicates on-task time (attribute
+placed on a tag at the start of the user's first utterance)</font></li>
+
+<li>
+<font face="Arial,Helvetica">the </font><tt>true</tt><font face="Arial,Helvetica">
+value may be used when a dialogue does NOT begin with any non-task utterances</font></li>
+</ul>
+
+<li>
+<font face="Arial,Helvetica">the </font><tt>type_end_task</tt><font face="Arial,Helvetica">
+attribute has a value of either </font><tt>total</tt><font face="Arial,Helvetica">,
+</font><tt>task</tt><font face="Arial,Helvetica"> or </font><tt>true. The
+true</tt><font face="Arial,Helvetica"> value may be used when a dialogue
+does NOT end with any non-task utterances.</font></li>
+</ul>
+
+<li>
+<font face="Arial,Helvetica">Example:</font></li>
+
+<br><tt>&lt;GC_DATA type_utt_text="transcription" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp; I want a flight to Newark</tt>
+<br><tt>&lt;/GC_DATA></tt>
+<li>
+<font face="Arial,Helvetica">Collect all of the </font><tt>&lt;GC_DATA
+type_utt_text="transcription"></tt><font face="Arial,Helvetica"> elements
+for utterances that exist between the tag with the </font><tt>type_start_task</tt><font face="Arial,Helvetica">
+attribute (be it a </font><tt>&lt;GC_OPERATION></tt><font face="Arial,Helvetica">
+or </font><tt>&lt;GC_MESSAGE></tt><font face="Arial,Helvetica">) and the
+tag with the </font><tt>type_end_task</tt><font face="Arial,Helvetica">
+attribute</font></li>
+
+<li>
+<font face="Arial,Helvetica">Count the words in each of these elements
+to calculate user words to completion</font></li>
+</ul>
+
+<h3>
+<a NAME="System Words to Completion"></a><font face="Arial,Helvetica">System
+Words to Completion</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Relies on </font><tt>type_start_task</tt><font face="Arial,Helvetica">
+and </font><tt>type_end_task</tt><font face="Arial,Helvetica"> attributes</font></li>
+
+<li>
+<font face="Arial,Helvetica">Collect all of the </font><tt>&lt;GC_DATA
+type_utt_text="system" key=":reply_string" dtype="string"> </tt><font face="Arial,Helvetica">elements
+that exist between the tag with the </font><tt>type_start_task</tt><font face="Arial,Helvetica">
+attribute (be it a </font><tt>&lt;GC_OPERATION></tt><font face="Arial,Helvetica">
+or </font><tt>&lt;GC_MESSAGE></tt><font face="Arial,Helvetica">) and the
+tag with the </font><tt>type_end_task</tt><font face="Arial,Helvetica">
+attribute</font></li>
+
+<li>
+<font face="Arial,Helvetica">Example:</font></li>
+
+<br><tt>&lt;GC_DATA type_utt_text="system" key=":reply_string" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp; U S Airways flight 1820 departs Philadelphia at three
+thirty p m&nbsp; and arrives Newark at four thirty p m . What else would
+you like to know?</tt>
+<br><tt>&lt;/GC_DATA></tt>
+<li>
+<font face="Arial,Helvetica">Count the words in each of these elements
+to calculate system words to completion</font></li>
+</ul>
+
+<h3>
+<a NAME="User Repeats"></a><font face="Arial,Helvetica">User Repeats</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Deferred until concept labeling is defined</font></li>
+</ul>
+
+<h3>
+<a NAME="System Repeats/Reprompts"></a><font face="Arial,Helvetica">System
+Repeats/Reprompts</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Relies on </font><tt>type_prompt</tt><font face="Arial,Helvetica">
+attributes</font></li>
+
+<li>
+<font face="Arial,Helvetica">Example:</font></li>
+
+<br><tt>&lt;GC_OPERATION type_prompt="leg1-dep_city" name="speak_output"
+server="tts" location="localhost:15020" turnid="0" stime="941473413.840000"
+etime="941473413.840000" tidx="34"></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_DATA key=":reply_string" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; What city does the flight depart
+from?</tt>
+<br><tt>&nbsp;&nbsp; &lt;/GC_DATA></tt>
+<br><tt>&lt;/GC_OPERATION></tt>
+<li>
+<font face="Arial,Helvetica">A postprocess will look for consecutive instances
+of the same value for the </font><tt>type_prompt</tt><font face="Arial,Helvetica">
+attribute</font></li>
+</ul>
+
+<h3>
+<a NAME="Word Error"></a><font face="Arial,Helvetica">Word Error</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Requires human annotations (transcription),
+which are stored in a separate XML file external to the main logfile</font></li>
+
+<li>
+<font face="Arial,Helvetica">Relies on type_utt_text attributes with values
+of transcription or asr</font></li>
+
+<li>
+<font face="Arial,Helvetica">Produce transcriptions as </font><tt>&lt;GC_DATA></tt><font face="Arial,Helvetica">
+tags with </font><tt>type_utt_text="transcription"</tt><font face="Arial,Helvetica">
+attributes</font></li>
+
+<li>
+<font face="Arial,Helvetica">Speech recognition hypotheses are repesented
+as </font><tt>&lt;GC_DATA></tt><font face="Arial,Helvetica"> tags with
+</font><tt>type_utt_text="asr"</tt><font face="Arial,Helvetica">
+attributes</font></li>
+
+<li>
+<font face="Arial,Helvetica">Example:</font></li>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Hypotheses:</font></li>
+
+<br><tt>&lt;GC_DATA type_utt_text="asr" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp; I want any flight to Newark</tt>
+<br><tt>&lt;/GC_DATA></tt>
+<li>
+<font face="Arial,Helvetica">Transcription:</font></li>
+
+<br><tt>&lt;GC_DATA type_utt_text="transcription" dtype="string"></tt>
+<br><tt>&nbsp;&nbsp; I want a flight to Newark</tt>
+<br><tt>&lt;/GC_DATA></tt></ul>
+
+<li>
+<font face="Arial,Helvetica">The standard NIST metric is used to calculate
+word error rate</font></li>
+</ul>
+
+<h3>
+<a NAME="Mean Length of System Utterance"></a><font face="Arial,Helvetica">Mean
+Length of System Utterance</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Relies on </font><tt>type_start_utt="system"</tt><font face="Arial,Helvetica">
+and </font><tt>type_end_utt="system"</tt></li>
+
+<li>
+<font face="Arial,Helvetica">Example:</font></li>
+
+<ul><font face="Arial,Helvetica">Start:</font>
+<br><tt>&lt;GC_OPERATION type_start_utt="system" name="nop" server="Builtin"
+location="Builtin:-1" turnid="-1" stime="941473396.190000" etime="941473396.190000"
+tidx="5"></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_DATA key=":playing_has_begun" dtype="unknown"/></tt>
+<br><tt>&lt;/GC_OPERATION></tt>
+<br><font face="Arial,Helvetica">End:</font>
+<br><tt>&lt;GC_OPERATION type_end_utt="system" name="nop" server="Builtin"
+location="Builtin:-1" turnid="-1" stime="941473406.570000" etime="941473406.570000"
+tidx="11"></tt>
+<br><tt>&nbsp;&nbsp; &lt;GC_DATA key=":playing_has_ended" dtype="unknown"/></tt>
+<br><tt>&lt;/GC_OPERATION></tt></ul>
+
+<li>
+<font face="Arial,Helvetica">Tags with </font><tt>type_start_utt="system"</tt><font face="Arial,Helvetica">
+are paired with the corresponding tag with </font><tt>type_end_utt="system"</tt><font face="Arial,Helvetica">
+in the same utterance</font></li>
+
+<li>
+<font face="Arial,Helvetica">Length of an individual system utterance is
+calculated by subtracting the value of the </font><tt>stime</tt><font face="Arial,Helvetica">
+attribute of the tag with </font><tt>type_start_utt="system"</tt><font face="Arial,Helvetica">
+from the value of the </font><tt>etime</tt><font face="Arial,Helvetica">
+attribute of the tag with </font><tt>type_end_utt="system"</tt></li>
+
+<li>
+<font face="Arial,Helvetica">Mean length of system utterance is calculated
+by summing the individual utterance lengths and dividing by the number
+of system utterances</font></li>
+</ul>
+
+<h3>
+<a NAME="Mean Length of System Turn"></a><font face="Arial,Helvetica">Mean
+Length of System Turn</font></h3>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">Like Mean Length of System Utterance, this
+metric relies on time stamped tags with </font><tt>type_start_utt="system"</tt><font face="Arial,Helvetica">
+and </font><tt>type_end_utt="system" </tt><font face="Arial,Helvetica">attributes</font></li>
+
+<li>
+<font face="Arial,Helvetica">For each system turn, the first tag with </font><tt>type_start_utt="system"</tt><font face="Arial,Helvetica">
+is paired with the last tag with </font><tt>type_end_utt="system"</tt><font face="Arial,Helvetica">
+in the same turn</font></li>
+
+<li>
+<font face="Arial,Helvetica">Length of an individual system turn is calculated
+by subtracting the value of the </font><tt>stime</tt><font face="Arial,Helvetica">
+attribute of the tag with </font><tt>type_start_utt="system"</tt><font face="Arial,Helvetica">
+from the value of the </font><tt>etime</tt><font face="Arial,Helvetica">
+attribute of the tag with </font><tt>type_end_utt="system"</tt></li>
+
+<li>
+<font face="Arial,Helvetica">Mean length of system turn is calculated by
+summing the individual turn lengths and dividing by the number of system
+turns</font></li>
+</ul>
+
+<h2>
+
+<hr WIDTH="100%"><a NAME="Summary of Attributes and Metrics"></a><font face="Arial,Helvetica">Summary
+of Attributes and Metrics</font></h2>
+
+<ul>
+<li>
+<font face="Arial,Helvetica">The Attribute column names the attribute</font></li>
+
+<li>
+<font face="Arial,Helvetica">The Values column lists the possible values
+of the attribute</font></li>
+
+<li>
+<font face="Arial,Helvetica">The Metrics column lists the metrics that
+use the attribute (with the appropriate attribute values in parentheses)</font></li>
+
+<li>
+<font face="Arial,Helvetica">The Tags column lists the tags on which the
+attribute may appear</font></li>
+</ul>
+
+<table BORDER COLS=4 WIDTH="100%" >
+<tr>
+<td WIDTH="20%"><b><font face="Arial,Helvetica">Attribute</font></b></td>
+
+<td WIDTH="15%"><b><font face="Arial,Helvetica">Values</font></b></td>
+
+<td WIDTH="45%"><b><font face="Arial,Helvetica">Metrics</font></b></td>
+
+<td WIDTH="20%"><b><font face="Arial,Helvetica">Tags</font></b></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_start_task</font></td>
+
+<td><font face="Arial,Helvetica">total</font>
+<br><font face="Arial,Helvetica">task</font>
+<br><font face="Arial,Helvetica">true</font></td>
+
+<td><font face="Arial,Helvetica"><a href="#Time to Completion">Time to
+Completion</a></font>
+<br><font face="Arial,Helvetica"><a href="#User Words to Completion">User
+Words to Completion</a></font>
+<br><font face="Arial,Helvetica"><a href="#System Words to Completion">System
+Words to Completion</a></font>
+<br><font face="Arial,Helvetica"><a href="#Turns to Completion">Turns to
+Completion</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_OPERATION</font>
+<br><font face="Arial,Helvetica">GC_MESSAGE</font>
+<br><font face="Arial,Helvetica">GC_EVENT</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_end_task</font></td>
+
+<td><font face="Arial,Helvetica">total</font>
+<br><font face="Arial,Helvetica">task</font>
+<br><font face="Arial,Helvetica">true</font></td>
+
+<td><font face="Arial,Helvetica"><a href="#Time to Completion">Time to
+Completion</a></font>
+<br><font face="Arial,Helvetica"><a href="#User Words to Completion">User
+Words to Completion</a></font>
+<br><font face="Arial,Helvetica"><a href="#System Words to Completion">System
+Words to Completion</a></font>
+<br><font face="Arial,Helvetica"><a href="#Turns to Completion">Turns to
+Completion</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_OPERATION</font>
+<br><font face="Arial,Helvetica">GC_MESSAGE</font>
+<br><font face="Arial,Helvetica">GC_EVENT</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_new_turn</font></td>
+
+<td><font face="Arial,Helvetica">user</font>
+<br><font face="Arial,Helvetica">system</font></td>
+
+<td><font face="Arial,Helvetica"><a href="#Turns to Completion">Turns to
+Completion</a></font>
+<br><font face="Arial,Helvetica"><a href="#Mean User Words/Turn">Mean User
+Words/Turn</a> (user)</font>
+<br><font face="Arial,Helvetica"><a href="#Mean System Words/Turn">Mean
+System Words/Turn</a> (system)</font>
+<br><font face="Arial,Helvetica"><a href="#Mean Length of System Turn">Mean
+Length of System Turn</a> (system)</font></td>
+
+<td><font face="Arial,Helvetica">GC_OPERATION</font>
+<br><font face="Arial,Helvetica">GC_MESSAGE</font>
+<br><font face="Arial,Helvetica">GC_EVENT</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_utt_text</font></td>
+
+<td><font face="Arial,Helvetica">transcription</font>
+<br><font face="Arial,Helvetica">system</font>
+<br><font face="Arial,Helvetica">asr</font></td>
+
+<td><font face="Arial,Helvetica"><a href="#Mean User Words/Turn">Mean User
+Words/Turn</a> (transcription)</font>
+<br><font face="Arial,Helvetica"><a href="#Mean System Words/Turn">Mean
+System Words/Turn</a> (system)</font>
+<br><font face="Arial,Helvetica"><a href="#Error Messages">Error Messages</a>
+(system)</font>
+<br><font face="Arial,Helvetica"><a href="#Help Messages">Help Messages</a>
+(system)</font>
+<br><font face="Arial,Helvetica"><a href="#User Words to Completion">User
+Words to Completion</a> (transcription)</font>
+<br><font face="Arial,Helvetica"><a href="#System Words to Completion">System
+Words to Completion</a> (system)</font>
+<br><font face="Arial,Helvetica"><a href="#Word Error">Word Error</a> (transcription,
+asr)</font></td>
+
+<td><font face="Arial,Helvetica">GC_DATA</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_error_msg</font></td>
+
+<td><font face="Arial,Helvetica">true</font></td>
+
+<td><font face="Arial,Helvetica"><a href="#Error Messages">Error Messages</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_DATA</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_help_msg</font></td>
+
+<td><font face="Arial,Helvetica">true</font></td>
+
+<td><font face="Arial,Helvetica"><a href="#Help Messages">Help Messages</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_DATA</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_start_utt</font></td>
+
+<td><font face="Arial,Helvetica">user</font>
+<br><font face="Arial,Helvetica">system</font></td>
+
+<td><font face="Arial,Helvetica"><a href="#Response Latency">Response Latency</a>
+(system)</font>
+<br><font face="Arial,Helvetica"><a href="#Mean Length of System Utterance">Mean
+Length of System Utterance</a> (system)</font></td>
+
+<td><font face="Arial,Helvetica">GC_OPERATION</font>
+<br><font face="Arial,Helvetica">GC_MESSAGE</font>
+<br><font face="Arial,Helvetica">GC_EVENT</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_end_utt</font></td>
+
+<td><font face="Arial,Helvetica">user</font>
+<br><font face="Arial,Helvetica">system</font></td>
+
+<td><font face="Arial,Helvetica"><a href="#Response Latency">Response Latency</a>
+(user)</font>
+<br><font face="Arial,Helvetica"><a href="#Mean Length of System Utterance">Mean
+Length of System Utterance</a> (system)</font></td>
+
+<td><font face="Arial,Helvetica">GC_OPERATION</font>
+<br><font face="Arial,Helvetica">GC_MESSAGE</font>
+<br><font face="Arial,Helvetica">GC_EVENT</font></td>
+</tr>
+
+<tr>
+<td><font face="Arial,Helvetica">type_prompt</font></td>
+
+<td><font face="Arial,Helvetica">(key being prompted for)</font></td>
+
+<td><font face="Arial,Helvetica"><a href="#System Repeats/Reprompts">System
+Repeats/Reprompts</a></font></td>
+
+<td><font face="Arial,Helvetica">GC_OPERATION</font>
+<br><font face="Arial,Helvetica">GC_MESSAGE</font>
+<br><font face="Arial,Helvetica">GC_EVENT</font></td>
+</tr>
+</table>
+
+</body>
+</html>

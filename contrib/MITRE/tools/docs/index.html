@@ -1,0 +1,111 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>Galaxy Communicator Documentation: MITRE Tools</title>
+</head>
+<body style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#0000FF">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:<br>
+<br>
+MITRE Tools</h1></center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "../../utilities/docs/api_index.html"><img src="../../../../docs/arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../../LICENSE">License</a> / <a href = "../../../../docs/manual/index.html">Documentation home</a> / <a href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "process_monitor_ref.html"><img src="../../../../docs/arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+
+<hr WIDTH="100%">
+<p>MITRE is providing a number of support
+tools for the community to use. Some of these tools were developed in the
+context of the MITRE training course.
+<ul>
+<li>
+Process monitor</li>
+
+<ul>
+<li>
+<a href="process_monitor_tut.html">Tutorial</a></li>
+
+<li>
+<a href="process_monitor_ref.html">Reference</a></li>
+</ul>
+
+<li>
+Unit tester</li>
+
+<ul>
+<li>
+<a href="unit_tester_tut.html">Tutorial</a></li>
+
+<li>
+<a href="unit_tester_ref.html">Reference</a></li>
+</ul>
+
+<li>
+<a href="#Server_scripts">Server scripts</a></li>
+
+<li>
+<a href="log_tools.html">MITRE log tools</a></li>
+</ul>
+
+<hr WIDTH="100%">
+<h2>
+<a NAME="Server_scripts"></a>Server scripts</h2>
+A number of the MIT servers require certain
+environment variables to be set, and require you to be in certain directories.
+MITRE provides a set of scripts which attempt to encapsulate these requirements
+and make the appropriate options available on the command line.
+<h4>
+Command line</h4>
+<tt>&lt;GC_HOME>/contrib/MITRE/tools/bin/run_server [-verbosity &lt;int>]
+&lt;server_and_args>...</tt>
+<p>This command takes a server and its arguments
+and runs the server in an appropriate environment. The primary advantage
+of this tool is to ensure that <tt>GAL_VERBOSE</tt>
+and <tt>SLS_VERBOSE</tt> is set to
+a reasonable value. <tt>SLS_VERBOSE</tt>
+is set for backward compatibility with MIT servers. The level is 3 by default;
+it can be controlled using the <tt>-verbosity</tt>
+argument.
+<h4>
+Command line</h4>
+<tt>&lt;GC_HOME>/contrib/MITRE/tools/bin/run_silent_server &lt;server_and_args>...</tt>
+<p>This command is identical to run_server
+except that it ensures that <tt>SLS_VERBOSE/GAL_VERBOSE</tt>
+are 0 (that is, minimal information will be printed out).
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "../../utilities/docs/api_index.html"><img src="../../../../docs/arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../../LICENSE">License</a> / <a href = "../../../../docs/manual/index.html">Documentation home</a> / <a href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "process_monitor_ref.html"><img src="../../../../docs/arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated September 10, 2001</center>
+
+<p><br>
+</body>
+</html>

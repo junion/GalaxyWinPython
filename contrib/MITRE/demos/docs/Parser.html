@@ -1,0 +1,129 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>Galaxy Communicator Documentation: The Toy Travel Parser Server</title>
+</head>
+<body style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#0000FF">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:<br>
+<br>
+The Toy Travel Parser Server</h1></center>
+
+<hr WIDTH="100%">
+<p>The toy travel Parser server is part of
+a demonstration of how to construct servers of various levels of complexity
+and use the Hub scripting language to assemble them into an end-to-end
+system. All the servers in this demonstration share a common message script
+file, which dictates how each server will respond to incoming messages.
+<p>
+<hr WIDTH="100%">
+<h2>
+Usage</h2>
+
+<h4>
+Command line</h4>
+<tt>&lt;GC_HOME>/contrib/MITRE/demos/toy-travel/bin/Parser...</tt>
+<h4>
+Default port</h4>
+10000
+<h4>
+Command line arguments</h4>
+
+<blockquote><tt>static char *oas[] = {</tt>
+<br><tt>&nbsp; "-parser_data file",&nbsp; "parser data", (char *) NULL,</tt>
+<br><tt>&nbsp; NULL</tt>
+<br><tt>};</tt></blockquote>
+&nbsp;This server also accepts the <a href="../../../../docs/manual/reference/adding.html#_GalSS_init_server">standard
+server arguments</a>. See the <a href="../../../../docs/manual/advanced/util.html#Command_line_argument_parsing">oa
+library</a> for details.
+<p>
+<hr WIDTH="100%">
+<h2>
+Message Set</h2>
+
+<ul>
+<li>
+<a href="#Parse">Parse</a></li>
+</ul>
+
+<hr WIDTH="100%">
+<p><a NAME="Parse"></a><b><big>Parse</big></b>
+accepts a string and returns a frame representation of a parse tree.
+<br>&nbsp;
+<table BORDER WIDTH="100%" NOSAVE >
+<tr>
+<td>&nbsp;</td>
+
+<td><b>parameter</b></td>
+
+<td><b>type</b></td>
+
+<td><b>optional</b></td>
+
+<td><b>depends on</b></td>
+
+<td><b>description/constraints</b></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE><b>IN:</b></td>
+
+<td><tt>:input_string</tt></td>
+
+<td>string</td>
+
+<td>&nbsp;</td>
+
+<td>&nbsp;</td>
+
+<td>textual representation of user input</td>
+</tr>
+
+<tr>
+<td><b>OUT:</b></td>
+
+<td><tt>:frame</tt></td>
+
+<td>frame</td>
+
+<td>&nbsp;</td>
+
+<td>&nbsp;</td>
+
+<td>frame representation of parse</td>
+</tr>
+</table>
+
+<p>This message returns a frame.
+<p>
+<hr WIDTH="100%">
+<h2>
+Messages sent</h2>
+This server sends no new messages.
+<center>
+<p>
+<hr>Please send comments and suggestions to:
+<a href="mailto:bugs-darpacomm@linus.mitre.org">bugs-darpacomm@linus.mitre.org</a>
+<br>Last updated August 30, 2001.
+<p><i>Copyright (c) 1998 - 2001</i>
+<br><i>The <a href="http://www.mitre.org">MITRE</a>
+Corporation</i>
+<br><i>ALL RIGHTS RESERVED</i></center>
+
+<p><br>
+<br>
+<br>
+<br>
+</body>
+</html>

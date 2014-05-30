@@ -1,0 +1,74 @@
+/* GC_config.h.in.  Generated automatically from configure.in by autoheader.  */
+
+/* Define if your processor stores words with the most significant
+   byte first (like Motorola and SPARC, unlike Intel and VAX).  */
+#undef WORDS_BIGENDIAN
+
+/* Define this if you have config.h */
+#undef HAVE_CONFIG_H
+
+/* Define this if you have gethostbyname() */
+#undef HAVE_GETHOSTBYNAME
+
+/* Define this if you have some version of gethostbyname_r() */
+#undef HAVE_GETHOSTBYNAME_R
+
+/* Define this if you have the 3-arg version of gethostbyname_r() */
+#undef HAVE_GETHOSTBYNAME_R_3_ARG
+
+/* Define this if you have the 5-arg version of gethostbyname_r() */
+#undef HAVE_GETHOSTBYNAME_R_5_ARG
+
+/* Define this if you have the 6-arg version of gethostbyname_r() */
+#undef HAVE_GETHOSTBYNAME_R_6_ARG
+
+/* Define this if you need sys/ioctl.h to get FIONREAD or SIOCGIFCONF */
+#undef NEED_SYS_IOCTL
+
+/* Define this if you need sys/filio.h to get FIONREAD */
+#undef NEED_SYS_FILIO
+
+/* Define this if you need sys/sockio.h to get SIOCGIFCONF */
+#undef NEED_SYS_SOCKIO
+
+/* Define if you access floats in an IEEE 754 compliant way */
+#undef HAVE_IEEEFP
+
+/* Define if you have xdr_sizeof. */
+#undef HAVE_XDR_SIZEOF
+
+/* Define if you have strtok_r */
+#undef HAVE_STRTOK_R
+
+/* Define if you have xdr_longlong_t. MacOS X 10.1 doesn't. */
+#undef HAVE_XDR_LONGLONG_T
+
+/* Define if you have the nanosleep header. Not used on Win32. */
+#undef HAVE_NANOSLEEP_HEADER
+
+/* Define if you have sa_len in sockaddr_in. */
+#undef HAVE_SA_LEN
+
+/* The number of bytes in a char.  */
+#undef SIZEOF_CHAR
+
+/* The number of bytes in a double.  */
+#undef SIZEOF_DOUBLE
+
+/* The number of bytes in a float.  */
+#undef SIZEOF_FLOAT
+
+/* The number of bytes in a int.  */
+#undef SIZEOF_INT
+
+/* The number of bytes in a long.  */
+#undef SIZEOF_LONG
+
+/* The number of bytes in a long long.  */
+#undef SIZEOF_LONG_LONG
+
+/* The number of bytes in a short.  */
+#undef SIZEOF_SHORT
+
+/* Define if you have the strerror_r function.  */
+#undef HAVE_STRERROR_R

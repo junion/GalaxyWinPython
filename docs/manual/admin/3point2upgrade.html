@@ -1,0 +1,139 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>Galaxy Communicator Documentation: Upgrading from 3.1 to 3.2</title>
+<!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+<body style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#0000FF">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:<br>
+<br>
+Upgrading from 3.1 to 3.2</h1></center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "3point3upgrade.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "3point1upgrade.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+
+<hr WIDTH="100%">
+<p>Upgrading to Galaxy Communicator 3.2 is
+simple. For almost all users, there are no obligatory upgrades.
+<p>This document describes only the steps
+required or recommended to upgrade existing features of Galaxy Communicator.
+You can find a list of new features <a href="new_features.html">here</a>.
+You can find the complete release notes <a href="release_notes.html">here</a>.
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER COLS=3 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Step</b></td>
+
+<td><b>Who's affected</b></td>
+
+<td><b>Status</b></td>
+</tr>
+
+<tr>
+<td><a href="#Updating_session_management_in_the_Hub">Step
+1: Updating session management in the Hub</a></td>
+
+<td>All users of <a href="../advanced/hub_properties.html#GalSS_EnvSetSession">session
+locks</a> and multiple sessions</td>
+
+<td>Obligatory</td>
+</tr>
+
+<tr>
+<td><a href="#Upgrading_flags_which_set_Hub_client_behavior">Step
+2: Upgrading flags which set Hub client behavior</a></td>
+
+<td>All users of Hub clients (not for Java
+yet)</td>
+
+<td>Obligatory</td>
+</tr>
+</table>
+
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Updating_session_management_in_the_Hub"></a>Step
+1: Updating session management in the Hub</h2>
+The Hub chooses service providers based on
+a number of considerations: whether they support the requested operation,
+whether they're free, whether they're up, and <a href="../advanced/hub_properties.html#GalSS_EnvSetSession">what
+sessions they may be restricted to supporting</a>. In version 3.1, being
+the only provider for a particular service outweighed the session the provider
+was restricted to supporting, so that if there was, say, only one audio
+server, and it was locked to session 1, programs running tokens in session
+2 would still be allowed to select that server, because it was the only
+one. This behavior was incorrect, and it has been fixed.
+<p>However, if you have been experimenting
+with session locks and multiple sessions, it's possible that at this point
+your system might stop working, because you've unwittingly relied on this
+bug in 3.1. So if in 3.2, your system informs you that there are no providers
+available when you believe that there are, you should consider the possibility
+that you've misused session locks.
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Upgrading_flags_which_set_Hub_client_behavior"></a>Step
+2: Upgrading flags which set Hub client behavior</h2>
+When you set up a Hub client <a href="../reference/server_structure.html#Listener-in-Hub_support">programmatically</a>,
+it's possible to define the behavior of the Hub client when it cannot establish
+a connection, or when it loses one. As of version 3.2, it's possible to
+specify that the process should shut down if it can't establish a connection,
+where before it was not possible to do so. It's also possible to check
+the conditions more mnemonically than before, because new masks and constants
+have been added. In some cases, because the values of the constants have
+changed, this change is obligatory.
+<p>For instance, if you want to see if the
+server was set up to retry, you would previously have need to do this:
+<p><b>Version 3.1</b>
+<blockquote><tt>if (!(GalIO_ServerListenStatus(scomm) &amp; GAL_HUB_CLIENT_CONNECT_FAILURE_NOOP))
+{</tt>
+<br><tt>&nbsp; ... }</tt></blockquote>
+This will now do the wrong thing. The proper
+(and more mnemonic)&nbsp;test is
+<p>Version 3.2
+<blockquote><tt>if ((GalIO_ServerListenStatus(scomm) &amp; GAL_HUB_CLIENT_CONNECT_FAILURE_MASK)
+==</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; GAL_HUB_CLIENT_CONNECT_FAILURE_RETRY)&nbsp;{</tt>
+<br><tt>&nbsp; ... }</tt></blockquote>
+See the documentation on <a href="../reference/server_structure.html#GalIO_ServerListenStatus">GalIO_ServerListenStatus</a>
+for more details.
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "3point3upgrade.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "3point1upgrade.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated October 4, 2001</center>
+
+<p><br>
+</body>
+</html>

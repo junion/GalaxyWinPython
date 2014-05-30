@@ -1,0 +1,1987 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+            
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+            
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Communicator Hub Programs</title>
+             <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+      
+<center>   
+<h1> Galaxy Communicator Documentation:<br>
+   <br>
+   Communicator Hub Programs</h1>
+  </center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="adding.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="logging.html"><img src="../../arrow_right.gif" alt="" width="30"
+ height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+       
+<hr width="100%"> <br>
+  The Galaxy Communicator uses a configurable Hub. This configurability is
+ accomplished by having the Hub read in a script upon start-up. This script
+ is written in a simple, Hub-specific scripting language. The Hub program,
+ or script, contains information about available servers (name and location)
+ and their externally accessible operations, as well as possible flow of
+control  instructions.   
+<p>The program file must be specified via the command line option: <b>-pgm_file</b>
+ <i>filename</i>.&nbsp; If no file is specified, the Hub will exit. </p>
+   
+<p>Each directive of the program file must contain no more than one expression,
+ and begin with a valid, system defined identifier name. Blank lines are
+permitted,  and are also used to terminate small declaration blocks (see
+the rest of the documentation for details). A&nbsp;<a name="comment"></a>comment
+is introduced  when the first non-whitespace character of a line is either
+a semicolon (;).  Line breaks in directives are permitted using the \ (backslash)
+character.  Directives are terminated by an unescaped newline. </p>
+   
+<p>Identifiers are case sensitive.&nbsp; However, by convention, identifiers
+ are all upper-case with a trailing colon, :.&nbsp; Identifiers can be used
+ to specify: </p>
+   
+<ul>
+   <li> <a href="#Global_Declarations">global variables</a> in the form of
+key-value pairs</li>
+    <li> <a href="#Server_Declarations">server declarations</a> (service
+ type and provider definitions)</li>
+    <li> <a href="#Hub_Programs">named programs</a> (rules and associated
+ parameters)</li>
+     
+</ul>
+   There is no macro expansion or evaluation.&nbsp; There is also no nesting
+ of rules or scoping, although modules are supported via the <tt><a
+ href="#PROGRAM:">PROGRAM:</a></tt> identifier.   
+<p><b>Note:</b>&nbsp; any newlines in the examples below are a side effect
+ of presentation; newlines are permitted in entries in program files only
+if they are escaped with the backslash character. </p>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Hub_Program_File_Structure"></a>The Hub Program File Structure</h2>
+   A Hub program file contains the following constructs:   
+<ul>
+   <li> <a href="#Values">Values</a></li>
+    <li> <a href="#Subfiles">Subfiles</a></li>
+    <li> <a href="#Expression_syntax">Expression syntax</a></li>
+          
+  <ul>
+   <li> <a href="#Directives">Directives</a></li>
+    <li> <a href="#Simple_values">Simple values</a></li>
+    <li> <a href="#Key-value_pairs">Key-value pairs and namespaces</a></li>
+              
+    <ul>
+   <li> <a href="#Optional_Value">Optional value format</a></li>
+    <li> <a href="#Obligatory_Value">Obligatory value format</a></li>
+             
+    </ul>
+    <li> <a href="#Rule_conditions">Rule conditions</a></li>
+    <li> <a href="#Extended_syntax_mode">Extended syntax mode</a></li>
+              
+    <ul>
+   <li> <a href="#Entity_reference_functions">Entity reference functions</a></li>
+    <li> <a href="#The_$in_entity_reference_function">The <tt>$in</tt>  entity
+reference function</a></li>
+    <li> <a href="#Summary_of_differences_from_default_syntax_mode">Summary 
+ of differences from default syntax mode</a></li>
+             
+    </ul>
+         
+  </ul>
+    <li><a href="#Entity_reference_function_reference">Entity reference function
+ reference</a><br>
+   <br>
+    </li>
+     
+</ul>
+   These constructs are used to form the following logical blocks:   
+<ul>
+   <li> <a href="#Global_Declarations">Global Declarations</a></li>
+          
+  <ul>
+   <li> <a href="#Logfile_Instructions">Logging Parameters</a></li>
+         
+  </ul>
+    <li> <a href="#Server_Declarations">Server Declarations</a></li>
+          
+  <ul>
+   <li> <a href="#Service_types">Service Types</a></li>
+    <li> <a href="#Service_providers">Service Providers</a></li>
+    <li> <a href="#Other_server_directives">Other server directives</a></li>
+         
+  </ul>
+    <li> <a href="#Hub_Programs">Hub Programs</a></li>
+          
+  <ul>
+   <li> <a href="#Program_Name">Name</a></li>
+    <li> <a href="#Rules">Rules</a></li>
+    <li> <a href="#Parameters">Parameters</a></li>
+         
+  </ul>
+     
+</ul>
+   Although global declarations can be defined anywhere, servers must be
+defined  before programs. Typically a script will specify <a
+ href="#Global_Declarations">global variables</a> first, then <a
+ href="#Server_Declarations">servers.</a>&nbsp; The file may also contain
+ one or more <a href="#Hub_Programs">program</a> definitions. The frame names 
+of incoming messages which are not replies to messages sent by the Hub names 
+are treated as program names if the named program exists; otherwise, the incoming
+message is treated as an invocation of a server operation. If no matching
+program or server operation is found, the message is discarded. See the <a
+ href="../tutorial/how_it_works.html">discussion of how a system works</a> 
+for more details, as well as the documentation on <a
+ href="../advanced/scriptless.html">using the Hub in scriptless mode</a>. 
+  
+<p>The distribution contains a number of program files (default extension
+ <tt>.pgm</tt>) as examples. See <tt>contrib/MITRE/example </tt>and<tt> contrib/MITRE/demos.</tt> 
+ </p>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Values"></a>Values</h2>
+   As of version 1.3, the program file reader uses the same underlying reader
+ that's used to digest <a href="frame.html#Frame_Syntax">string representations
+ of frames</a>. As a result, there is a well-defined system of value parsing
+ throughout the program files.   
+<ul>
+   <li> Frames, ints, floats and lists should be formatted just as their
+corresponding  types are inside frames.</li>
+    <li> Strings should be formatted just as GAL_STRINGs are (that is, with
+ double quotes around them). As a special case, a string which consists of
+ a single token (no whitespace) does not need to be delimited by double quotes.</li>
+     
+</ul>
+      
+<hr width="100%">   
+<h2> <a name="Subfiles"></a>Subfiles</h2>
+   A program file can be decomposed into subfiles.&nbsp; To include a subfile
+ into the main program file use:   
+<blockquote><tt>#include &lt;<i>filename</i>&gt;</tt></blockquote>
+   The filename should be a string, so double quotes are optional (since
+it's  a single token). If &lt;<i>filename</i>&gt; includes no directory information,
+ the current file directory is used as the default.&nbsp; Nested includes
+are permissible.&nbsp; The contents of included files are incorporated as
+read in, so #includes can be places anywhere within the program file. If
+the filename is a relative pathname, it will be interpreted relative to the
+directory where the program file which contains the reference is located.
+  
+<p><b>Note:&nbsp;</b> as of version 1.3, <a href="logging.html">logging instructions</a>
+ are no longer ignored in subfiles. </p>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Expression_syntax"></a>Expression syntax</h2>
+   In addition to the syntax of <a href="#Values">values</a>, program files
+ can contain a number of different constructs. Here's a fragment of a program
+ file which exemplifies the different constructs, which we will use to elaborate. 
+  
+<blockquote><tt>SERVICE_TYPE: parser</tt> <br>
+    <tt>OPERATIONS: parse_string</tt> <br>
+    <tt>INIT: :speed "medium" (:accuracy "high")</tt>       
+  <p><tt>SERVICE_PROVIDER: parser</tt> <br>
+    <tt>LOCATION: localhost:14000</tt> <br>
+    <tt>IN: (:language "English")</tt> </p>
+       
+  <p><tt>PROGRAM: main</tt> </p>
+       
+  <p><tt>RULE: :input_string &amp;&amp; :language == "English" --&gt; parser.parse_string</tt> 
+   <br>
+    <tt>IN: (:string :input_string) :user</tt></p>
+  </blockquote>
+      
+<h3> <a name="Directives"></a>Directives</h3>
+   All directive entries in the program file consist of a single logical
+line.  These logical lines can contain newlines if they are escaped with
+a backslash  (\), which must be the last character in the physical line.
+The first token  in each directive entry is the directive, which always ends
+with a colon (:). Examples in the program file fragment here are SERVICE_TYPE:,
+INIT:, OPERATIONS:, etc. For readability, we recommend leaving at least one
+space in between the directive and its value; however, it is not necessary
+to do so.   
+<h3> <a name="Simple_values"></a>Simple values</h3>
+   Directives like PROGRAM: and&nbsp; SERVICE_TYPE: accept a quoted or unquoted
+ string as a value. This value is interpreted as a string regardless. If
+a  single value is expected, the directive value must be quoted. If multiple
+ values are expected, a sequence of tokens, quoted or unquoted, will be interpreted
+ as the appropriate sequence of string.   
+<h3> <a name="Key-value_pairs"></a>Key-value pairs and namespaces</h3>
+   The Hub maintains a number of memory states, which we call namespaces. 
+<br>
+  &nbsp;   
+<table border="1" cols="2" nosave="">
+   <tbody>
+      <tr>
+   <td><b>State description</b></td>
+    <td><b>Namespace name</b></td>
+   </tr>
+    <tr>
+   <td>Each token is associated with a state, which is initially populated
+ by a new incoming message and updated by the Hub program</td>
+    <td><tt>token</tt></td>
+   </tr>
+    <tr>
+   <td>Each session is associated with a state, which can be <a
+ href="../advanced/hub_properties.html#Session_properties">updated by servers</a>
+ or by Hub program instructions</td>
+    <td><tt>session</tt></td>
+   </tr>
+    <tr nosave="">
+   <td nosave="">Each server (actually, <a href="#Service_providers">service 
+ provider</a>) the Hub knows about is associated with a state, which can be
+      <a href="../advanced/hub_properties.html#Server_properties">updated 
+ by the server</a> or, in <a href="#Extended_syntax_mode">extended syntax</a> 
+ mode, by Hub program instructions</td>
+    <td nosave=""><tt>server</tt></td>
+   </tr>
+    <tr nosave="">
+   <td nosave="">Each message, incoming and outgoing, counts as a state</td>
+    <td><tt>message</tt></td>
+   </tr>
+    <tr>
+   <td><a href="#Global_Declarations">Global settings</a> are stored as their
+own state</td>
+    <td><tt>global</tt></td>
+   </tr>
+         
+  </tbody>  
+</table>
+      
+<p>All key-value pairs in the Hub program language have a target namespace,
+ and in some cases a source namespace as well. There are two types of key-value
+ pair formats in program files. </p>
+   
+<h4> <a name="Optional_Value"></a>Optional value format</h4>
+   In optional value format, exemplified by the IN: lines in the example
+program  file, there are three format options: <br>
+  &nbsp;   
+<table border="1" nosave="">
+   <tbody>
+      <tr nosave="">
+   <td nosave=""><b>Example</b></td>
+    <td><b>Interpretation</b></td>
+   </tr>
+    <tr>
+   <td><tt>:user</tt></td>
+    <td>A single key in optional value format is an instruction to draw the
+ value from the source namespace and store it under the identical key in
+the  target namespace. In the case of IN:, the source namespace is the token,
+and the target namespace is the message.</td>
+   </tr>
+    <tr>
+   <td><tt>(:string :input_string)</tt></td>
+    <td>A parenthesized pair where the second element is an unquoted string
+ is an instruction to draw the value from the source namespace under the
+key  named by the second element (<tt>:input_string</tt>, here) and store
+it in  the target namespace under the key named by the first element (<tt>:string</tt>,
+ here). In the case of IN:, the source namespace is the token, and the target
+ namespace is the message.</td>
+   </tr>
+    <tr>
+   <td><tt>(:language "English")</tt></td>
+    <td>A parenthesized pair where the second element is a literal <a
+ href="#Values">value</a> is an instruction to store that value (<tt>"English"</tt>,
+ here) in the target namespace under the key named by the first element (<tt>:language</tt>, 
+ here). In the case of IN:, the target namespace is the message.</td>
+   </tr>
+         
+  </tbody>  
+</table>
+      
+<h4> <a name="Obligatory_Value"></a>Obligatory value format</h4>
+   In obligatory value format, exemplified by the INIT: line in the example
+ program file, only literal values are permitted. There are two format options. 
+ <br>
+  &nbsp;   
+<table border="1" nosave="">
+   <tbody>
+      <tr nosave="">
+   <td nosave=""><b>Example</b></td>
+    <td><b>Interpretation</b></td>
+   </tr>
+    <tr>
+   <td><tt>:speed "medium"</tt></td>
+    <td>An unparenthesized pair where the second element is a literal <a
+ href="#Values">value</a> is an instruction to store that value (<tt>"medium"</tt>,
+ here) in the target namespace under the key named by the first element (<tt>:speed</tt>, 
+ here). In the case of INIT:, the target namespace is the <a
+ href="adding.html#reinitialize">reinitialize</a> message.</td>
+   </tr>
+    <tr>
+   <td><tt>(:accuracy "high")</tt></td>
+    <td>A parenthesized pair where the second element is a literal <a
+ href="#Values">value</a> is an instruction to store that value (<tt>"high"</tt>,
+ here) in the target namespace under the key named by the first element (<tt>:accuracy</tt>, 
+ here). In the case of INIT:, the target namespace is the <a
+ href="adding.html#reinitialize">reinitialize</a> message.</td>
+   </tr>
+         
+  </tbody>  
+</table>
+      
+<h3> <a name="Rule_conditions"></a>Rule conditions</h3>
+   The RULE: directive, as exemplified in the program file, accepts a complex
+ rule condition expression.   
+<h4> <a name="Constructing_a_rule_condition"></a><b>Constructing a rule condition</b></h4>
+   The grammar for condition expressions is as follows:   
+<blockquote><tt>&lt;conditions&gt; = &lt;condition&gt; (&lt;connective&gt;
+ &lt;condition&gt;)*</tt> <br>
+    <tt>&lt;connective&gt; = &amp; | &amp;&amp; | | | || (that is, (2) ampersand(s) 
+ or (2) vertical bar(s))</tt> <br>
+    <tt>&lt;condition&gt; = (!) &lt;key&gt; | &lt;key&gt; &lt;restriction&gt;</tt> 
+   <br>
+    <tt>&lt;condition&gt; = ( &lt;conditions&gt; ) (that is, conditions surrounded 
+ by parentheses)</tt> <br>
+    <tt>&lt;restriction&gt; = (!) &lt;int_comparison&gt; &lt;int&gt;</tt> 
+  <br>
+    <tt>&lt;int_comparison&gt; = &gt; | &lt; | &gt;= | &lt;= | =(=)</tt>
+  <br>
+    <tt>&lt;restriction&gt; = (!) &lt;string&gt; | (!) &lt;string_comparison&gt; 
+ &lt;string&gt;</tt> <br>
+    <tt>&lt;string_comparison&gt; = % | ^ | =(=)</tt></blockquote>
+   Whitespace is required between the key and the restriction, but whitespace
+ is optional between the comparison and the value. As noted, parentheses
+can  be used to group the elements explicitly, and these new conditions can
+be  negated, etc.   
+<p><b>Note:</b> The % comparison operator still works, but will be deprecated
+ in favor of the ^ comparison in the future. </p>
+   
+<h4> <a name="Examples_of_valid_conditions"></a>Examples of valid conditions</h4>
+      
+<table border="1" cols="2" width="100%" nosave="">
+   <tbody>
+      <tr>
+   <td><b>condition</b></td>
+    <td><b>interpretation</b></td>
+   </tr>
+    <tr>
+   <td><tt>:foo</tt></td>
+    <td>the key is present in the target namespace</td>
+   </tr>
+    <tr>
+   <td><tt>!:foo</tt> <br>
+        <tt>! :foo</tt></td>
+    <td>the key is not present in the target namespace</td>
+   </tr>
+    <tr>
+   <td><tt>:foo = 5</tt> <br>
+        <tt>:foo =5</tt> <br>
+        <tt>:foo == 5</tt> <br>
+        <tt>:foo 3</tt> <br>
+        <tt>etc.</tt></td>
+    <td>the key value in the target namespace is the specified integer (note
+ that the right hand side can be a key referring to an integer in <a
+ href="#Extended_syntax_mode">extended syntax mode</a>)</td>
+   </tr>
+    <tr>
+   <td><tt>:foo &gt; 5</tt> <br>
+        <tt>:foo &lt; 5</tt> <br>
+        <tt>:foo &gt;5</tt> <br>
+        <tt>:foo &lt;5</tt></td>
+    <td>the key value in the target namespace is an integer which is greater
+ (less) than the specified integer (note that the right hand side can be
+a  key referring to an integer in <a href="#Extended_syntax_mode">extended 
+ syntax mode</a>)</td>
+   </tr>
+    <tr>
+   <td><tt>:foo IN ( "a" "b" )</tt></td>
+    <td>the key value in the target namespace is a member of the specified
+ list, using <a href="frame.html#Gal_ObjectEqual">Gal_ObjectEqual</a> for
+comparison (note that the right hand side can be a key referring to a list
+in <a href="#Extended_syntax_mode">extended syntax mode</a>)</td>
+   </tr>
+    <tr>
+   <td><tt>:foo % bar</tt> <br>
+        <tt>:foo ^ bar</tt> <br>
+        <tt>:foo % "bar"</tt> <br>
+        <tt>:foo ^ "bar"</tt> <br>
+        <tt>:foo %"bar"</tt> <br>
+        <tt>:foo ^bar</tt> <br>
+        <tt>etc.</tt></td>
+    <td>the key value in the target namespace is a string with the specified
+ substring (note that unquoted literal values are interpreted as keys in
+      <a href="#Extended_syntax_mode">extended syntax mode</a>)</td>
+   </tr>
+    <tr>
+   <td><tt>:foo ! % bar</tt> <br>
+        <tt>:foo !^ bar</tt> <br>
+        <tt>:foo !% "bar"</tt> <br>
+        <tt>:foo ! ^ "bar"</tt> <br>
+        <tt>etc.</tt></td>
+    <td>the key value in the target namespace is a string which does not
+contain  the specified substring (note that unquoted literal values are interpreted
+ as keys in <a href="#Extended_syntax_mode">extended syntax mode</a>)</td>
+   </tr>
+    <tr>
+   <td><tt>:foo bar</tt> <br>
+        <tt>foo = bar</tt> <br>
+        <tt>:foo ="bar"</tt> <br>
+        <tt>:foo == bar</tt> <br>
+        <tt>etc.</tt></td>
+    <td>the key value in the target namespace is the specified string (note
+ that quoteless integer values are interpreted as integers, not strings,
+and  that unquoted literal values are interpreted as keys in <a
+ href="#Extended_syntax_mode">extended syntax mode</a>)</td>
+   </tr>
+    <tr>
+   <td><tt>:foo ! bar</tt> <br>
+        <tt>:foo !"bar"</tt> <br>
+        <tt>foo != bar</tt> <br>
+        <tt>:foo !="bar"</tt> <br>
+        <tt>etc.</tt></td>
+    <td>the key value in the target namespace is not the specifed string
+(note  that quoteless integer values are interpreted as integers, not strings,
+and  that unquoted literal values are interpreted as keys in <a
+ href="#Extended_syntax_mode">extended syntax mode</a>)</td>
+   </tr>
+    <tr>
+   <td><tt>&lt;condition&gt; &amp; &lt;condition&gt;</tt> <br>
+        <tt>&lt;condition&gt; &amp;&amp; &lt;condition&gt;</tt> <br>
+        <tt>(&lt;condition&gt; &amp; &lt;condition&gt;)</tt> <br>
+        <tt>etc.</tt></td>
+    <td>conjunction of conditions</td>
+   </tr>
+    <tr>
+   <td><tt>&lt;condition&gt; | &lt;condition&gt;</tt> <br>
+        <tt>&lt;condition&gt; || &lt;condition&gt;</tt> <br>
+        <tt>(&lt;condition&gt; | &lt;condition&gt;)</tt> <br>
+        <tt>etc.</tt></td>
+    <td>disjunction of the immediately adjacent conditions</td>
+   </tr>
+         
+  </tbody>  
+</table>
+      
+<h4> Special cases</h4>
+      
+<ul>
+   <li> an integer comparison against a list value uses the length of the 
+list</li>
+    <li> a string comparison against a frame value uses the name of a frame</li>
+    <li> a string comparison against a list value recurses on the first element
+ of the list</li>
+     
+</ul>
+   Note: these special cases are not supported in <a
+ href="#Extended_syntax_mode">extended syntax mode</a>.   
+<h3> <a name="Extended_syntax_mode"></a>Extended syntax mode</h3>
+   As of version 3.0, there is a variant syntax for Hub programs, which we
+ call <b>extended syntax mode</b>, which makes available a wider range of
+expressions to the Hub program writer and eliminates a number of special
+cases in the default (or <b>normal</b>) syntax mode. You can switch to this
+mode using the global directive <a href="#PGM_SYNTAX:">PGM_SYNTAX:</a>. 
+ 
+<h4> <a name="Entity_reference_functions"></a>Entity reference functions</h4>
+   One of the most important enhancements available in extended syntax mode
+ is a growing set of <b>entity reference functions</b>. These are functions
+ which can appear in most positions a <a href="#Values">value</a> can appear,
+ e.g., the directives <a href="#IN:">IN:</a>, <a href="#OUT:">OUT:</a>, <a
+ href="#DEL:">DEL:</a>, <a href="#PARAM:">PARAM:</a>, <a href="#SET:">SET:</a>, 
+ <a href="#ERROR:">ERROR:</a>, <a href="#LOG_IN:">LOG_IN:</a>, <a
+ href="#LOG_OUT:">LOG_OUT:</a>, <a href="#CONDITIONS:">CONDITIONS:</a>, and
+ in <a href="#Rules">rule conditions</a>. These functions return values,
+instead  of being or referring to values directly. These functions have the
+following  form:   
+<blockquote><tt>$&lt;fn&gt;(&lt;arg&gt; ... )</tt></blockquote>
+   As of version 4.0, there are three such entity reference functions: <tt>$id</tt>,
+ <tt>$bind</tt> and <tt>$in</tt>. We describe the <tt>$in</tt> function here;
+ we describe the others later.   
+<h4> <a name="The_$in_entity_reference_function"></a>The <tt>$in</tt> entity
+ reference function</h4>
+   These <tt>$in</tt> entity reference function allows us to refer explicitly
+ to namespaces. It has the following form:   
+<blockquote><tt>$in(&lt;key&gt; &lt;namespace&gt;)</tt></blockquote>
+   &nbsp;Here's a variation on our example program file:   
+<blockquote><tt>PGM_SYNTAX: extended</tt>       
+  <p><tt>SERVICE_TYPE: parser</tt> <br>
+    <tt>OPERATIONS: parse_string</tt> <br>
+    <tt>INIT: :speed "medium" (:accuracy "high")</tt> </p>
+       
+  <p><tt>SERVICE_PROVIDER: parser</tt> <br>
+    <tt>LOCATION: localhost:14000</tt> <br>
+    <tt>PROPERTIES: (:language "English")</tt> </p>
+       
+  <p><tt>PROGRAM: main</tt> </p>
+       
+  <p><tt>RULE: :input_string &amp;&amp; :language == "English" --&gt; parser.parse_string</tt> 
+   <br>
+    <tt>IN: (:string :input_string) :user $in(:language server)</tt></p>
+  </blockquote>
+   In this example, we associate a property with the service provider, and
+ import it into the message on the IN: line. These namespace references can
+ occur anywhere that keys can occur (in the directives in which they're available).
+ When present, the specified namespace overrides the default source or target
+ namespace. As a special case, when these namespace references occur in optional
+ value mode in the same position as bare keys, the specified namespace overrides
+ the default source namespace and retains the default target. In this example
+ here, it overrides the default source namespace for IN:.   
+<p>Consider another example: </p>
+   
+<blockquote><tt>RULE: :input_string &amp;&amp; :language == "English" --&gt; 
+ parser.parse_string</tt> <br>
+    <tt>IN: ($in(:lang session) $in(:language server))</tt></blockquote>
+   This IN: line doesn't add anything to the message; rather, it takes the
+ value of the <tt>:language</tt> key in the server namespace and stores it
+ as the value of the <tt>:lang</tt> key in the session namespace, before
+the  message is sent.   
+<p>These namespace references are available in rule conditions as well: </p>
+   
+<blockquote><tt>PGM_SYNTAX: extended</tt>       
+  <p><tt>SERVICE_TYPE: parser</tt> <br>
+    <tt>OPERATIONS: parse_string</tt> <br>
+    <tt>INIT: :speed "medium" (:accuracy "high")</tt> <br>
+    <tt>CONDITIONS: :language == $in(:language session)</tt></p>
+  </blockquote>
+   The CONDITIONS: line here imposes a restriction on the selection of any
+ service provider for the given service type; namely, that the value of the
+ <tt>:language</tt> key in the default namespace (which is the <tt>server</tt> 
+ namespace for CONDITIONS:) is equal to the value of the <tt>:language</tt> 
+ key in the <tt>session</tt> namespace. In other words, choose the parser
+ that understands the language the session is being conducted in.   
+<p>As a side effect of implementing this construct, it is now possible in
+ rule conditions to compare the values of any two keys, which means that
+unquoted  tokens on the right hand side of comparisons are not coerced into
+strings.  Here's an example: </p>
+   
+<blockquote><tt>RULE: :a == :b --&gt; foo</tt></blockquote>
+   In default syntax mode, this rule will be fired if the value of the key
+ <tt>:a</tt> in the token is the string <tt>":b"</tt>; that is, the test
+is  equivalent to <tt>:a == ":b"</tt>. In extended syntax mode, this rule
+will  be fired if the value of the key <tt>:a</tt> is the same as the value
+of the key <tt>:b</tt>.   
+<h4> <a name="Summary_of_differences_from_default_syntax_mode"></a>Summary 
+ of differences from default syntax mode</h4>
+   Some of these differences will not make sense until you've read the complete
+ scripting documentation. They are listed here for completeness. Some of
+the  differences refer to previously undocumented exceptional behavior in
+the default syntax mode, and in many cases are previous attempts to support
+references  to namespaces other than the default namespace.   
+<ul>
+   <li> The entity reference functions are available in extended syntax mode,
+ but not in default syntax mode.</li>
+    <li> Unquoted strings on the right hand side of comparisons in conditions
+ are interpreted as frame keys rather than string literals.</li>
+    <li> The special case comparisons in conditions are not supported in
+extended  syntax mode.</li>
+    <li> The <tt><a href="#Session_keys">:hub_session_</a></tt> prefix for
+ keys is recognized as an exceptional reference to the session namespace
+in  IN: and OUT: in default syntax mode, but is not available in extended
+syntax  mode.</li>
+    <li> The <a href="#Special_logging_session_keys">special logfile  information
+keys</a> are retrieved from the session rather than the token  when they
+appear in the IN: line in default syntax mode, but this exception  is eliminated
+in extended syntax mode.</li>
+    <li> In default syntax mode, a key in the source position in IN: which
+ is not found in the token (the default source namespace) will also be looked
+ for in the message, in case a <a href="#RETRIEVE:">RETRIEVE:</a> directive
+ added it. This exception is eliminated in extended syntax mode.</li>
+    <li> In default syntax mode, a colon is prepended to every supposed frame
+ key which does not begin with a colon. This behavior is eliminated in extended
+ syntax mode.</li>
+     
+</ul>
+   Note that because of the nature of Hub program execution, not all namespaces
+ are available in all directives where the construct is recognized. For each
+ directive where extended syntax makes a difference, the restrictions are
+noted.<br>
+  <br>
+   
+<hr width="100%" size="2">  
+<h2><a name="Entity_reference_function_reference"></a>Entity reference function
+ reference</h2>
+  Entity reference functions are available in extended syntax mode. These 
+functions differ from functions in the <a
+ href="../../servers/builtin.html">Builtin</a> server in that they are essentially 
+normal function calls, while the Builtin server incurs the overhead of the 
+dispatch function mechanism. Unlike normal dispatch functions and like normal 
+function calls, these functions can only return a single argument.<br>
+  <br>
+  We've discussed the <a href="#The_$in_entity_reference_function"><tt>$in</tt></a>
+function already. Here, we describe the other entity reference functions
+which have been defined so far.<br>
+   
+<h3><tt><a name="$id"></a>$id(&lt;string&gt;)</tt></h3>
+  The single string argument is the name of a <a href="#Key-value_pairs">namespace</a>. 
+ This function returns the unique ID associated with that namespace. The namespaces
+which are currently recognized are <tt>server</tt> and <tt>session</tt>.
+ For an example of its use, see the section on <a
+ href="#Selecting_a_provider">selecting a provider</a>.<br>
+   
+<h3><tt><a name="$bind"></a>$bind(&lt;arg1&gt;, &lt;arg2&gt;, ... &lt;argn&gt;)</tt></h3>
+  This function is essentially equivalent to <tt><a
+ href="frame.html#Gal_VAReadVarObjectFromString">Gal_VAReadVarObjectFromString</a>(&lt;arg1&gt;,
+ (n - 1)/2, &lt;arg2&gt;, ..., &lt;argn&gt;)</tt>. Each argument can be either
+ a value or an entity reference (that is, it can be anything that can be
+bound).  The first argument must evaluate to a string, and each of the alternating
+ remaining arguments must also evaluate to a string (since they're the substitution
+ keys). All memory management is handled internally.<br>
+  <br>
+  The intended use of this function is for situations where you want to create
+ a frame or other complex object to send to a provider, but some of the values
+ depend on existing keys. Here's an example:<br>
+   
+<blockquote><tt>RULE: --&gt; GetAnswer<br>
+  OUT: :answer<br>
+    <br>
+  RULE: --&gt; DisplayFrame<br>
+  IN: (:frame $bind("{c reply :reply $answer }" "$answer" :answer))</tt></blockquote>
+     
+<hr width="100%">   
+<h2> <a name="Global_Declarations"></a>Global Declarations</h2>
+   There are a number of global identifiers, which have different effects 
+on the function of the Hub. These identifiers can be used to configure the 
+initial token which is executed by the Hub, or to set global values for logging,
+ or to set other global defaults. <br>
+  &nbsp;   
+<table border="2" cellspacing="2" cellpadding="2" width="600" nosave="">
+   <tbody>
+      <tr>
+   <td><b>global variable identifier</b></td>
+    <td><b>description</b></td>
+    <td><b>type</b></td>
+    <td><b>visible in global namespace?</b></td>
+   </tr>
+    <tr nosave="">
+   <td><a name="DOMAIN:"></a>DOMAIN:</td>
+    <td nosave="">Domain name, used by MIT to partition the space of queries
+ into different topic areas, and passed to all servers via the <tt>reinitialize</tt>
+ message. Default value is <tt>Unspecified</tt>.</td>
+    <td>string</td>
+    <td>yes</td>
+   </tr>
+    <tr nosave="">
+   <td><a name="INITIAL_REPLY:"></a>INITIAL_REPLY:</td>
+    <td nosave="">Used by the Hub to "seed" the initial token with a string
+ to be presented to the user as a welcome message. It is called a "reply"
+because in the MIT scripts, the same rules which handle replies are intended
+to handle this string. <b>This is very idiosyncratic, and should not be used.</b></td>
+    <td>string</td>
+    <td>yes</td>
+   </tr>
+    <tr>
+   <td>INITIAL_TOKEN:</td>
+    <td>A frame which can override some of the default values of the initial
+ token, especially the name of the program invoked. See the section on the
+       <a href="#Initial_token">initial token</a>.</td>
+    <td>frame</td>
+    <td>no</td>
+   </tr>
+    <tr>
+   <td><a name="MODE:"></a>MODE:</td>
+    <td>There are three legal values for MODE:.               
+      <p>The first, <tt>singlethread</tt>, allows the user to specify that
+ only the first rule which matches should fire. See the lesson on <a
+ href="../tutorial/how_it_works.html">how the Hub processes incoming messages</a>.
+ As of version 2.1, this entry is superfluous, because it is set by default
+ and cannot be disabled. </p>
+               
+      <p>The second, <tt>pedantic</tt>, forces the Hub to exit if it encounters
+ a missing server or operation (default behavior is to warn and continue).
+ But see the <a href="#IGNORE:">IGNORE:</a> directive. </p>
+               
+      <p>The third, <tt>global_read_only</tt>, locks the global namespace
+ for writing.</p>
+        </td>
+    <td>string</td>
+    <td>no</td>
+   </tr>
+    <tr>
+   <td><a name="USER_ID:"></a>USER_ID:</td>
+    <td>Distinguished string which identifies the "user". This is something
+ of a misnomer, since the Hub can be used by many different people at the
+same time. It is passed both during <tt>reinitialize</tt> and in the initial
+token. It can be used to identify the connecting site to the server.</td>
+    <td>string</td>
+    <td>yes</td>
+   </tr>
+    <tr>
+   <td><a name="PGM_SYNTAX:"></a>PGM_SYNTAX:</td>
+    <td>The single legal value <tt>extended</tt> specifies that all subsequent
+ material in the program file should be interpreted using the rules for extended
+ syntax (new in 3.0)&nbsp;</td>
+    <td>string</td>
+    <td>no</td>
+   </tr>
+         
+  </tbody>  
+</table>
+      
+<p>Here's an example global declaration block: </p>
+   
+<blockquote><tt>PGM_SYNTAX: extended</tt>       
+  <p><tt>USER_ID: MITRE</tt> <br>
+    <tt>INITIAL_TOKEN: {c initialize }</tt> <br>
+    <tt>MODE: pedantic</tt></p>
+  </blockquote>
+      
+<h3> Extended syntax note</h3>
+   The global namespace keys are the directive names themselves. Here's the
+ global namespace which results from the sample global declaration block: 
+  
+<blockquote><tt>{c global</tt> <br>
+    <tt>&nbsp;&nbsp; DOMAIN: "Unspecified"</tt> <br>
+    <tt>&nbsp;&nbsp; USER_ID: "MITRE"}</tt></blockquote>
+   Here's a sample rule:   
+<blockquote><tt>RULE: $in(DOMAIN: global) --&gt; do_it</tt> <br>
+    <tt>IN: (:domain $in(DOMAIN: global)) ($in(LOCATION: global) "US") $in(COUNTRY:
+ global)</tt></blockquote>
+   This rule will fire if the global namespace contains an entry for the
+<tt>DOMAIN:</tt>  key. It will pass in that value as the <tt>:domain</tt>
+key to the <tt>do_it</tt>  operation. It will attempt to set the global <tt>LOCATION:</tt>
+to <tt>"US"</tt>,  which will have no effect because the global namespace
+is not writable, and  it will attempt to pass in the value of the <tt>COUNTRY:</tt>
+key in the global namespace, which will have no effect because the global
+namespace does not have an entry for that key.   
+<p>In version 3.0, the <tt>global</tt> namespace could not be written to,
+ so specifying it as a target namespace had no effect. In 3.1, the <tt>global</tt> 
+ namespace is writable, and it can be write-locked using the <tt>global_read_only</tt> 
+ value of <a href="#MODE:">MODE:</a>. </p>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Initial_token"></a>Initial Token</h2>
+   The initial token is constructed as follows:   
+<ol>
+   <li> The frame is first seeded with global default information, as follows:</li>
+          
+  <table border="1" nosave="">
+   <tbody>
+        <tr>
+   <td><b>frame key</b></td>
+    <td><b>source</b></td>
+    <td><b>type</b></td>
+    <td><b>default value</b></td>
+   </tr>
+    <tr nosave="">
+   <td>&lt;frame name&gt;</td>
+    <td nosave="">(specified in code)</td>
+    <td>&nbsp;</td>
+    <td><tt>main</tt></td>
+   </tr>
+    <tr nosave="">
+   <td><tt>:domain</tt></td>
+    <td nosave="">value of <tt>DOMAIN:</tt> program file identifier</td>
+    <td>string</td>
+    <td><tt>Unspecified</tt></td>
+   </tr>
+    <tr>
+   <td><tt>:initialize</tt></td>
+    <td>&nbsp;</td>
+    <td>integer</td>
+    <td><tt>1</tt></td>
+   </tr>
+    <tr>
+   <td><tt>:reply_string</tt></td>
+    <td>value of <tt>INITIAL_REPLY:</tt> program file identifier, if present</td>
+    <td>string</td>
+    <td>&lt;none&gt;</td>
+   </tr>
+    <tr>
+   <td><tt>:user_id</tt></td>
+    <td>value of <tt>USER_ID:</tt> program file identifier, if present</td>
+    <td>string</td>
+    <td><tt>sls</tt></td>
+   </tr>
+             
+    </tbody>      
+  </table>
+    <li> The frame is augmented (or overwritten) from the specification of
+ the<tt> INITIAL_TOKEN: </tt>entry, if it exists. At this point, the initial
+ token is cached to feed the construction of the <a
+ href="adding.html#Welcome_message">reinitialize</a> message.</li>
+    <li> The frame is augmented (or overwritten) with the contents of the 
+    <tt>-init</tt>  command line argument to the <a
+ href="hub.html#The_Hub">Hub executable</a>,  if present.</li>
+     
+</ol>
+   On startup, the Hub processes this token as soon as it's finished its
+initial  round of contacting servers (some of which might be unsuccessful).
+See the  discussion on <a href="../overview.html">how the Hub works</a>.
+  
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Logfile_Instructions"></a>Logging Parameters</h2>
+   Logging parameters can also be defined globally.&nbsp; These instruct
+what  to log and when.&nbsp; Logfile instructions are useful for spot checking
+the system, and the resulting logs display attributes important for debugging.
+ For details, see the <a href="logging.html">logging documentation.</a> 
+ 
+<p>Timestamps are recorded whenever the listed operations are called.&nbsp;
+ Keys are logged when the input message is sent, or a return is received.
+This behavior supersedes previous behavior, where keys were logged only when
+<tt>increment_utterance</tt> was called. <br>
+  &nbsp;   
+<table border="1" nosave="">
+   <tbody>
+      <tr>
+   <td><b>logging identifier</b></td>
+    <td><b>description</b></td>
+    <td><b>type</b></td>
+    <td><b>example</b></td>
+    <td><b>visible in global namespace?</b></td>
+   </tr>
+    <tr>
+   <td>LOG_IN:</td>
+    <td>Keys to be recorded when a rule is fired or a message is sent to
+the  Hub</td>
+    <td>(see the <a href="#LOG_IN:">rule entry</a>)</td>
+    <td>See the <a href="logging.html">logging documentation</a>.</td>
+    <td>(not global)</td>
+   </tr>
+    <tr nosave="">
+   <td>LOG_OUT:</td>
+    <td>Keys to be recorded when a rule return is received or a reply is
+sent  from the Hub</td>
+    <td>(see the <a href="#LOG_OUT:">rule entry</a>)</td>
+    <td nosave="">See the <a href="logging.html">logging documentation</a>.</td>
+    <td>(not global)</td>
+   </tr>
+    <tr nosave="">
+   <td nosave="">LOG_DIR:</td>
+    <td>Logfile directory</td>
+    <td>string</td>
+    <td><tt>LOG_DIR:&nbsp; /usr/logs</tt></td>
+    <td>yes</td>
+   </tr>
+    <tr>
+   <td>LOG_HUB_ACTIVITY:</td>
+    <td>Control of logging of Hub events like alarm expiration, servers not
+ found, etc.</td>
+    <td>sequence of strings</td>
+    <td><tt>LOG_HUB_ACTIVITY: system_errors</tt>               
+      <p>See the <a href="logging.html">logging documentation</a>.</p>
+        </td>
+    <td>no</td>
+   </tr>
+    <tr>
+   <td>LOG_VERSION:</td>
+    <td>User version string to differentiate logging strategies</td>
+    <td>string</td>
+    <td><tt>LOG_VERSION: "travel demo, version 2.3"</tt>               
+      <p>See the <a href="logging.html">logging documentation</a>.</p>
+        </td>
+    <td>yes</td>
+   </tr>
+    <tr>
+   <td>TIMESTAMP:</td>
+    <td>Operations or messages to log with timestamps (<a href="#Rules">dot
+ notation</a> is legal)</td>
+    <td>sequence of strings</td>
+    <td><tt>TIMESTAMP:&nbsp; create_frame nl.paraphrase_request jupiter.turn_management 
+ paraphrase_reply&nbsp;</tt></td>
+    <td>no</td>
+   </tr>
+    <tr>
+   <td>MESSAGE:</td>
+    <td>A message declaration to host message LOG_IN: and LOG_OUT: keys</td>
+    <td>string</td>
+    <td>See the <a href="logging.html">logging documentation</a>.</td>
+    <td>(not global)</td>
+   </tr>
+         
+  </tbody>  
+</table>
+    </p>
+   
+<p>(Note that any newlines in this table are a side effect of presentation;
+ newlines are permitted in entries in program files only if they are escaped
+ with the backslash character.) </p>
+   
+<h3> <a name="Special_logging_session_keys"></a>Special logging session keys</h3>
+   If logging is enabled, each session namespace contains four special keys: 
+ <br>
+  &nbsp;   
+<table border="1" nosave="">
+   <tbody>
+      <tr nosave="">
+   <td nosave=""><b>key</b></td>
+    <td><b>value</b></td>
+   </tr>
+    <tr>
+   <td><tt>:hub_logdir</tt></td>
+    <td>the value of the LOG_DIR: directive</td>
+   </tr>
+    <tr>
+   <td><tt>:hub_log_prefix</tt></td>
+    <td>the prefix for the logfile name</td>
+   </tr>
+    <tr>
+   <td><tt>:hub_pwd</tt></td>
+    <td>the directory the Hub is running in</td>
+   </tr>
+    <tr>
+   <td><tt>:hub_logfile</tt></td>
+    <td>the name of the logfile for the session</td>
+   </tr>
+         
+  </tbody>  
+</table>
+      
+<p>So on Unix, the logfile name is <tt>&lt;:hub_pwd&gt;/&lt;:hub_logdir&gt;/&lt;:hub_log_prefix&gt;-hublog.txt</tt>, 
+ or, alternatively, <tt>&lt;:hub_logfile&gt;</tt>. In <a
+ href="#Extended_syntax_mode">extended syntax</a> mode, you can pass these
+keys to the server as follows: </p>
+   
+<blockquote><tt>IN: $in(:hub_logdir session) $in(:hub_log_prefix session) 
+ $in(:hub_pwd session) $in(:hub_logfile session)</tt></blockquote>
+   In default syntax mode, these keys are exceptionally available in the
+IN:  line.   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Server_Declarations"></a>Server Declarations</h2>
+   The Hub keeps track of a set of service types, each of which is associated
+ with a set of available operations, and a set of service providers which
+implement these operations. These service providers correspond to <a
+ href="adding.html">Communicator-compliant</a> servers.   
+<h3> <a name="Service_types"></a>Service types</h3>
+   The service type block contains the following directives: <br>
+  &nbsp;   
+<table border="2" cellspacing="2" cellpadding="2" nosave="">
+   <tbody>
+      <tr>
+   <td><b>system identifier</b></td>
+    <td><b>description</b></td>
+    <td><b>type</b></td>
+    <td><b>extended syntax notes</b></td>
+   </tr>
+    <tr>
+   <td><a name="SERVICE_TYPE:"></a>SERVICE_TYPE:</td>
+    <td>unique name of the service being provided.</td>
+    <td>string</td>
+    <td>&nbsp;</td>
+   </tr>
+    <tr>
+   <td><a name="OPERATIONS:"></a>OPERATIONS:</td>
+    <td>list of operations supported by all providers of this service</td>
+    <td>sequence of strings</td>
+    <td>&nbsp;</td>
+   </tr>
+    <tr>
+   <td><a name="INIT:"></a>INIT:</td>
+    <td>initializes server-specific keys to specified values in the <tt><a
+ href="adding.html#reinitialize">reinitialize()</a></tt> message.</td>
+    <td><a href="#Obligatory_Value">obligatory value</a> format</td>
+    <td>&nbsp;</td>
+   </tr>
+    <tr>
+   <td><a name="CLIENT_PORT:"></a>CLIENT_PORT:</td>
+    <td>a port for the Hub to <a href="../advanced/hub_listener.html">set 
+up a listener</a> on (alternates with PORT:)</td>
+    <td>integer</td>
+    <td>&nbsp;</td>
+   </tr>
+    <tr>
+   <td>PORT:</td>
+    <td>synonym of CLIENT_PORT:</td>
+    <td>integer</td>
+    <td>&nbsp;</td>
+   </tr>
+    <tr>
+   <td><a name="PROPERTIES:"></a>PROPERTIES:</td>
+    <td>initializes a set of properties which the Hub associates with each
+ service provider for this service type (can be overridden by a PROPERTIES:
+ declaration on the service provider, or by the <a
+ href="../advanced/hub_properties.html#Server_properties">server itself</a>).</td>
+    <td><a href="#Obligatory_Value">obligatory value</a> format</td>
+    <td>&nbsp;</td>
+   </tr>
+    <tr nosave="">
+   <td><a name="CONDITIONS:"></a>CONDITIONS:</td>
+    <td nosave="">specifies a set of conditions associated with when to select
+ a given service provider; relatively useless unless extended syntax is enabled</td>
+    <td><a href="#Constructing_a_Rule">rule condition</a></td>
+    <td>Default namespace is <tt>server.</tt> All namespaces available.</td>
+   </tr>
+    <tr>
+   <td>IN:</td>
+    <td>specifies a set of directives to be appended to the IN: line for
+any  rule fired for any service provider for this service type (see the main
+entry  for <a href="#IN:">IN:</a>)</td>
+    <td><a href="#Optional_Value">optional value</a> format</td>
+    <td>Default source namespace is <tt>server</tt>, default target namespace
+ is <tt>token.</tt> All namespaces available.</td>
+   </tr>
+         
+  </tbody>  
+</table>
+      
+<p>Here's an example service type block: </p>
+   
+<blockquote><tt>SERVICE_TYPE: parser</tt> <br>
+    <tt>OPERATIONS: create_frame context_tracking_in</tt> <br>
+    <tt>INIT: :default_language "Spanish"</tt> <br>
+    <tt>CLIENT_PORT: 11000</tt> <br>
+    <tt>PROPERTIES: :dialect "standard"</tt> <br>
+    <tt>CONDITIONS: :language == $in(:language session)</tt> <br>
+    <tt>IN: :dialect</tt></blockquote>
+   <b>Note</b>: this block may not contain any blank lines.   
+<h3> <a name="Service_providers"></a>Service providers</h3>
+   The program file can also specify a list of service providers for the
+Hub  to contact at startup time (service providers can also contact the Hub
+using  the <a href="../advanced/hub_listener.html">listener-in-Hub</a> facilities,
+ but these are not listed in the Hub program). The Hub will attempt to maintain
+ a connection with these servers; if it cannot find them, or they disconnect
+ after startup, the Hub will periodically attempt to reconnect. <br>
+  &nbsp;   
+<table border="2" cellspacing="2" cellpadding="2" width="100%" nosave="">
+   <tbody>
+      <tr>
+   <td><b>system identifier</b></td>
+    <td><b>description</b></td>
+    <td><b>type</b></td>
+    <td><b>extended syntax notes</b></td>
+   </tr>
+    <tr>
+   <td><a name="SERVICE_PROVIDER:"></a>SERVICE_PROVIDER:</td>
+    <td>a sequence of tokens corresponding to declared service types. The 
+service provider must implement the union of operations specified for those 
+service types.</td>
+    <td>sequence of strings</td>
+    <td>&nbsp;</td>
+   </tr>
+    <tr>
+   <td><a name="HOST:"></a>HOST:</td>
+    <td>service provider host name or IP address (see also <tt><a
+ href="#LOCATION:">LOCATION:</a></tt>). Note that the program file parser
+ will not interpret IP addresses as strings unless they're explicitly delimited.</td>
+    <td>string</td>
+    <td>&nbsp;</td>
+   </tr>
+    <tr>
+   <td>INIT:</td>
+    <td>initializes server-specific keys to specified values in the <tt><a
+ href="adding.html#reinitialize">reinitialize()</a></tt>message. Individual
+ key-value pairs override any INIT: declarations on the parent service types</td>
+    <td><a href="#Obligatory_Value">obligatory value</a> format</td>
+    <td><tt>&nbsp;</tt></td>
+   </tr>
+    <tr>
+   <td><a name="LOCATION:"></a>LOCATION:</td>
+    <td>server host name/IP address and port, separated by a colon; used
+as  an alternative to <tt><a href="#HOST:">HOST:</a></tt> and <tt><a
+ href="#PORT:">PORT:</a></tt>. Note that the program file parser will not
+ interpret IP addresses as strings unless they're explicitly delimited.</td>
+    <td>string</td>
+    <td>&nbsp;</td>
+   </tr>
+    <tr>
+   <td><a name="PORT:"></a>PORT:</td>
+    <td>server port (see also <tt><a href="#LOCATION:">LOCATION:</a></tt>)</td>
+    <td>integer</td>
+    <td><tt>&nbsp;</tt></td>
+   </tr>
+    <tr>
+   <td>PROPERTIES:</td>
+    <td>initializes a set of properties which the Hub associates this service
+ provider (individual key-value pairs override any <a
+ href="#PROPERTIES:">PROPERTIES:</a>  declarations on the parent service
+type, and can also be updated by the <a
+ href="../advanced/hub_properties.html#Server_properties">server itself</a>)</td>
+    <td><a href="#Obligatory_Value">obligatory value</a> format</td>
+    <td>&nbsp;</td>
+   </tr>
+    <tr nosave="">
+   <td>CONDITIONS:</td>
+    <td nosave="">specifies a set of conditions associated with when to select
+ this service provider; relatively useless unless extended syntax is enabled.
+ If specified on a service provider, all <a href="#CONDITIONS:">CONDITIONS:</a> 
+ on service type parents are ignored.</td>
+    <td><a href="#Constructing_a_Rule">rule condition</a></td>
+    <td>Default namespace is <tt>server.</tt> All namespaces available.</td>
+   </tr>
+    <tr>
+   <td>IN:</td>
+    <td>specifies a set of directives to be appended to the IN: line for
+any  rule fired for any service provider for this service type (see the main
+entry  for <a href="#IN:">IN:</a>). Individual key-value pairs override any
+IN: declarations on the parent service types.</td>
+    <td><a href="#Optional_Value">optional value</a> format</td>
+    <td>Default source namespace is <tt>server</tt>, default target namespace
+ is <tt>token.</tt> All namespaces available.</td>
+   </tr>
+    <tr>
+   <td><a name="PROVIDER_ID:"></a>PROVIDER_ID:</td>
+    <td>specifies a string to use as the non-numeric ID portion of an explicit
+       <a href="../advanced/provider_id.html">provider name</a>. The value
+ must be a well-formed non-numeric <a
+ href="../advanced/provider_id.html#The_syntax_of_provider_names">provider
+ID</a>; i.e., it must be delimited  by square brackets.</td>
+    <td>string</td>
+    <td>&nbsp;</td>
+   </tr>
+         
+  </tbody>  
+</table>
+      
+<p>Here's a sample service provider block. Note that the content of INIT:,
+ PROPERTIES:, CONDITIONS: and IN: override the service type values, if present.
+ Also note that the CONDITIONS: line requires extended syntax to be enabled. 
+ </p>
+   
+<blockquote><tt>SERVICE_PROVIDER: parser</tt> <br>
+    <tt>LOCATION: localhost:11000</tt> <br>
+    <tt>INIT: :default_language "Spanish"</tt> <br>
+    <tt>PROPERTIES: :dialect "standard"</tt> <br>
+    <tt>CONDITIONS: :language == $in(:language session)</tt> <br>
+    <tt>IN: :dialect</tt> <br>
+    <tt>PROVIDER_ID: [myparser]</tt></blockquote>
+   <b>Note</b>: this block may not contain any blank lines.   
+<h3> <a name="Other_server_directives"></a>Other server directives</h3>
+   There are three other directives which are provided. <br>
+  &nbsp;   
+<table border="2" cellspacing="2" cellpadding="2" width="100%" nosave="">
+   <tbody>
+      <tr>
+   <td><b>system identifier</b></td>
+    <td><b>description</b></td>
+    <td><b>type</b></td>
+   </tr>
+    <tr>
+   <td><a name="SERVER:"></a>SERVER:</td>
+    <td>Introduces a block which defines a service type and its providers 
+simultaneously. All service type and service provider directives are accepted; 
+multiple LOCATION: directives are interpreted as multiple service providers. 
+INIT:, CONDITIONS:, IN:, and PROPERTIES: are associated with the service type
+rather than any of the providers. If the value includes a non-numeric provider
+ID prefix, that prefix will be assigned to the first of the providers defined.
+If the PROVIDER_ID: directive is present in the block, it too applies to
+the first of the providers defined, and overrides any provider ID prefix on
+the value of the SERVER: directive.</td>
+    <td>string</td>
+   </tr>
+    <tr>
+   <td><a name="SERVERS:"></a>SERVERS:</td>
+    <td>Provides a list of service types and providers which are active in
+ this session. If present, the subset of SERVICE_TYPE: and SERVICE_PROVIDER:
+ declarations present in this directive will be used. This can be used to
+share a single file of type and provider declarations among multiple systems
+and program files, not all of which are used in any given system configuration.
+ This declaration must precede all type and provider declarations. Legal
+values  are <a
+ href="../advanced/provider_id.html#The_syntax_of_provider_names">provider 
+ names</a>, <a
+ href="../advanced/provider_id.html#Extended_provider_names">extended  provider
+names</a>, service type names with a similar optional location suffix, or
+any legal value for the <a href="#LOCATION:">LOCATION:</a> directive.</td>
+    <td>sequence of strings</td>
+   </tr>
+    <tr>
+   <td><a name="IGNORE:"></a>IGNORE:</td>
+    <td>Provides a list of rule operations which the Hub can disregard when
+ reading in a program file. Normally, if the Hub encounters a rule with an
+ operation which is not defined, it will issue a warning (or exit in <a
+ href="#MODE:">pedantic mode</a>). However, if the operation is in the IGNORE:
+ list, the Hub will not complain. This feature is useful when including program
+ files in many other program files, where the programmer is certain that
+some  of the programs or rules in the included file will never be encountered.
+The elements in this list are matched precisely against candidate rule RHSs,
+so they may contain <a
+ href="../advanced/provider_id.html#Service_type_and_provider_prefixes">operation 
+ name prefixes</a>.</td>
+    <td>sequence of strings</td>
+   </tr>
+         
+  </tbody>  
+</table>
+      
+<p>Examples: </p>
+   
+<blockquote><tt>SERVERS: parser localhost:17500</tt>       
+  <p><tt>SERVER: parser</tt> <br>
+    <tt>LOCATION: localhost:17600</tt> <br>
+    <tt>OPERATIONS: parse_string</tt> <br>
+    <tt>INIT: :default_language "Spanish"</tt> </p>
+       
+  <p><tt>IGNORE: parser.create_frame context_in</tt></p>
+  </blockquote>
+   <b>Note</b>: the SERVER: block may not contain any blank lines.   
+<h3> The Builtin server</h3>
+   The Hub provides a <a href="../../servers/builtin.html">special server 
+called Builtin</a> which is always available (that is, it does not need to 
+be declared). This server provides support for null operations, session management, 
+etc.   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Hub_Programs"></a>Hub Programs</h2>
+   A Hub program is basically a set of rules that describes a sequence of 
+operations. Hub programs provide an optional level of scripting which developers 
+may exploit to exert additional control over the flow of control of messages.
+ Typically, there is a main program (conventionally named "main") which controls
+ the toplevel flow of control; other uses of subprograms might be to control
+ server-initiated communication for executing subtasks. For example, a program
+ called <b>db_query</b> might control the following sequence of operations:
+ turn_management --&gt; database --&gt; turn_management.   
+<p>All programs (main and subprograms) consist of: </p>
+   
+<ul>
+   <li> <a href="#Program_Name">Program Name</a> (<tt><a
+ href="#PROGRAM:">PROGRAM:</a></tt>)</li>
+    <li> <a href="#Rules">Rules</a> (<tt><a href="#RULE:">RULE:</a></tt>)</li>
+          
+  <ul>
+   <li> <a href="#Constructing_a_Rule">Constructing a Rule</a></li>
+    <li> <a href="#Examples_of_Valid_Rules">Examples of Rules</a></li>
+    <li> <a href="#Selecting_a_provider">Selecting a provider</a></li>
+         
+  </ul>
+    <li> <a href="#Parameters">Parameters</a></li>
+          
+  <ul>
+   <li> <a href="#Input_Parameters">Input / Output / Merge Parameters</a>
+ ( <tt><a href="#IN:">IN:</a></tt> / <tt><a href="#OUT:">OUT:</a></tt> /
+      <tt><a href="#SET:">SET:</a></tt>/ <tt><a href="#PARAM:">PARAM:</a>/
+      <a href="#DEL:">DEL:</a></tt> )</li>
+    <li> <a href="#Database_parameters">Database Parameters</a> (<tt><a
+ href="#RETRIEVE:">RETRIEVE:</a></tt> / <tt><a href="#STORE:">STORE:</a></tt>)</li>
+    <li> <a href="#Session_keys">Session keys</a></li>
+    <li> <a href="#Alarms">Alarms</a></li>
+         
+  </ul>
+     
+</ul>
+   There is an <a href="#Order_of_Operation">order</a> associated with  when
+operations and identifiers are evaluated.   
+<p>A program begins when it is named and ends when the next program is named.
+ All rules and associated keys in between are part of the program. </p>
+   
+<p>The following table lists the valid identifiers used in defining programs.
+ Identifiers which are specific to rules are listed later. <br>
+  &nbsp;   
+<table border="2" cellspacing="2" cellpadding="2" width="100%" nosave="">
+   <tbody>
+      <tr>
+   <td><b>program identifier</b></td>
+    <td><b>description</b></td>
+    <td><b>extended syntax notes</b></td>
+   </tr>
+    <tr>
+   <td>ALARM:</td>
+    <td>enabling/disabling time outs. See the section on <a
+ href="#Alarms">alarms</a>.</td>
+    <td><tt>&nbsp;</tt></td>
+   </tr>
+    <tr>
+   <td><a name="PROGRAM:"></a>PROGRAM:</td>
+    <td>name of Hub program (main or subprogram)</td>
+    <td><tt>&nbsp;</tt></td>
+   </tr>
+    <tr>
+   <td><a name="RULE:"></a>RULE:</td>
+    <td>the specified conditions under which the rule will be executed</td>
+    <td>Default namespace is <tt>token</tt>. All namespaces except <tt>server</tt> 
+ available (provider hans't been selected yet).</td>
+   </tr>
+         
+  </tbody>  
+</table>
+    </p>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Program_Name"></a>Program Name</h2>
+   A Hub program name is indicated by the <tt>PROGRAM:</tt>identifier followed
+ by the program name:   
+<blockquote><tt>PROGRAM: main</tt></blockquote>
+   The program may have any name.   
+<p>As of Galaxy Communicator 2.0, the program may also have <a
+ href="#LOG_IN:">LOG_IN:</a> and <a href="#LOG_OUT:">LOG_OUT:</a> designations,
+ which cause keys and values to be written to the Hub log when the program
+ is initially invoked and when it returns a server-to-server subdialogue
+reply  to the server which invoked the program via <a
+ href="adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a>. </p>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Rules"></a>Rules</h2>
+   A Hub program consists of a sequence of rules.&nbsp; A rule specifies
+an  operation to be executed by a server if and when appropriate conditions
+are  met.&nbsp; The scripting language supports a subset of boolean operators
+for composing conditions in a logical expression.&nbsp; A rule is similar
+to an if-then statement.   
+<p>Here is an example of a simple rule: </p>
+   
+<ul>
+    <tt>RULE: !:thin_frame &amp; !:parse_frame &amp; :input_string --&gt; 
+create_frame</tt>       
+  <p>This rule states that if the <tt>:thin_frame </tt>key and the <tt>:parse_frame
+   </tt>key do not exist but <tt>:input_string</tt> does, then call <tt>create_frame</tt>.</p>
+   
+</ul>
+   Rules are fired in the order in which they appear in the program file. 
+Typically, the first rule which matches is the one which is fired, except 
+in the case of certain <a href="#Special_control_directives">special control
+directives</a>. Note that the order in which tokens are returned from multiple
+rules is not defined.   
+<h3> <a name="Constructing_a_Rule"></a><b>Constructing a Rule</b></h3>
+   The <tt>RULE:</tt> identifier is used to indicate a rule.&nbsp; It uses
+ the <a href="#Rule_conditions">rule condition</a> expressions:   
+<ul>
+    <tt>&lt;rule_expr&gt; = RULE: (&lt;conditions&gt;) --&gt; &lt;operation&gt;</tt>
+ 
+</ul>
+      
+<h3> <a name="Examples_of_Valid_Rules"></a><b>Examples of Valid Rules</b></h3>
+      
+<ul>
+    <tt>RULE: :history_frame &amp; :reply_frame --&gt; context_tracking_out</tt> 
+      
+  <p>If there is a <tt>:history_frame </tt>and a <tt>:reply_frame</tt> then
+ execute <tt>context_tracking_out</tt>. </p>
+       
+  <p><tt>RULE: !:history_frame &amp; !:reply &amp; :reply_frame --&gt; paraphrase_reply</tt> 
+   </p>
+       
+  <p>If there is not a <tt>:history_frame </tt>and not a <tt>:reply</tt>
+but there is a <tt>:reply_frame</tt> then call <tt>paraphrase_reply</tt>.</p>
+   
+</ul>
+      
+<h3> <a name="Selecting_a_provider"></a>Selecting a provider</h3>
+   The <a href="../advanced/provider_id.html#Selecting_a_provider">rules 
+for selecting a provider</a> to execute the operation on the RHS of the rule
+are the same as those which govern the selection of providers in <a
+ href="../advanced/scriptless.html">scriptless mode</a>. Additionally, the
+ Hub can affect provider selection in a number of ways.   
+<p>First, the <a href="#PROVIDER_ID:">PROVIDER_ID:</a> directive can be used,
+ as we saw, to specify a non-numeric provider ID for a provider. In this
+case,  the argument of the PROVIDER_ID: directive is a string. </p>
+   
+<p>Second, the <a href="#PROVIDER_NAME:">PROVIDER_NAME:</a> directive can
+ be used to specify a provider name or service type name for a rule. In this
+ case, the argument is any entity which evaluates to a string. Here are a
+few examples: </p>
+   
+<blockquote><tt>RULE: --&gt; Parse</tt> <br>
+    <tt>PROVIDER_NAME: $in(:preferred_parser session)</tt>       
+  <p><tt>RULE: --&gt; Parse</tt> <br>
+    <tt>PROVIDER_NAME: "Parser"</tt> </p>
+       
+  <p><tt>RULE: --&gt; Parse</tt> <br>
+    <tt>PROVIDER_NAME: "[myparser]"</tt></p>
+  </blockquote>
+   This rule will select the provider according to the normal rules, but
+treat  the value of the entity reference as a provider name restriction.
+If there  is a conflict between the <a
+ href="../advanced/provider_id.html#Service_type_and_provider_prefixes">operation 
+ name prefix</a> in the rule RHS and the value of PROVIDER_NAME: (e.g., if
+ they both specify a provider ID), then the value of PROVIDER_NAME: takes 
+precedence.   
+<p>Finally, the <tt><a href="#$id">$id</a> </tt><a
+ href="#Entity_reference_functions">entity reference function</a> can  be
+used to retrieve a canonical <a href="../advanced/provider_id.html">provider 
+ ID</a> to pass to a server for use in <a
+ href="../advanced/provider_id.html#Bypassing_Hub_programs">bypassing  Hub
+program matching</a>. Here's an example: </p>
+   
+<blockquote><tt>RULE: --&gt; Parse</tt> <br>
+    <tt>IN: ($in(:parser_used token) $id("server"))</tt> <br>
+    <tt>OUT:</tt>       
+  <p><tt>RULE: --&gt; DoDialogue</tt> <br>
+    <tt>IN: (:parser_used $in(:parser_used token))</tt> <br>
+    <tt>...</tt></p>
+  </blockquote>
+   In this example, we want the dialogue server to know which of a number 
+of available parsers was actually used, in case the dialogue server needs 
+to retrieve any information from it. So we store the provider ID of the server
+ used in the <tt>Parse</tt> operation in the token namespace, and pass it
+later to the dialogue server.   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Parameters"></a>Parameters</h2>
+      
+<ul>
+   <li> <a href="#Order_of_Operation">Order of application</a></li>
+    <li> <a href="#Input_Parameters">Input Parameters</a> (<tt><a
+ href="#IN:">IN:</a></tt><tt>)</tt></li>
+    <li> <a href="#Output_Parameters">Output Parameters</a><tt> (</tt> <tt><a
+ href="#OUT:">OUT:</a>/<a href="#ERROR:">ERROR:</a></tt>)</li>
+    <li> <a href="#Merge_Parameters">Merge Parameters</a> ( <tt><a
+ href="#SET:">SET:</a></tt> / <tt><a href="#PARAM:">PARAM:</a>/ <a
+ href="#DEL:">DEL:</a></tt>)</li>
+    <li> <a href="#Database_parameters">Database Parameters</a> (<tt><a
+ href="#RETRIEVE:">RETRIEVE:</a></tt>/ <tt><a href="#STORE:">STORE:</a></tt>)</li>
+    <li> <a href="#Other_rule_parameters">Other rule parameters</a></li>
+     
+</ul>
+      
+<h3> <a name="Order_of_Operation"></a><b>Order of Operation</b></h3>
+   There is an order associated with when operations and identifiers are
+evaluated.  All these identifiers are evaluated after the condition matching
+is checked.  The overall order is: <br>
+  &nbsp;   
+<table border="1" cols="4" width="100%" nosave="">
+   <tbody>
+      <tr>
+   <td><b>key</b></td>
+    <td><b>value processing</b></td>
+    <td><b>value format</b></td>
+    <td><b>comments</b></td>
+   </tr>
+    <tr>
+   <td>(conditions match)</td>
+    <td>Default namespace is <tt>token</tt>. All namespaces but <tt>server</tt> 
+ available (service provider not chosen yet).&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>Extended syntax available.</td>
+   </tr>
+    <tr>
+   <td><a name="RETRIEVE:"></a>RETRIEVE:</td>
+    <td>From Hub DB to message frame</td>
+    <td>list of tokens (but see note on <a href="#Database_parameters">database 
+ parameters</a>)</td>
+    <td>Extended syntax not available.</td>
+   </tr>
+    <tr>
+   <td><a name="PARAM:"></a>PARAM:</td>
+    <td>Target namespace is <tt>message</tt>.</td>
+    <td><a href="#Obligatory_Value">obligatory value</a></td>
+    <td>Extended syntax available.</td>
+   </tr>
+    <tr>
+   <td><a name="IN:"></a>IN:</td>
+    <td>Default source namespace is <tt>token</tt>, default target namespace
+ is <tt>message</tt>. See also the <a href="#Server_Declarations">server
+ directives</a>.</td>
+    <td><a href="#Optional_Value">optional value</a></td>
+    <td>Extended syntax available.</td>
+   </tr>
+    <tr>
+   <td><a name="LOG_IN:"></a>LOG_IN:</td>
+    <td>Default source namespace is <tt>message</tt>. Writes to log.</td>
+    <td><a href="#Optional_Value">optional value</a></td>
+    <td>Extended syntax available for source namespace.</td>
+   </tr>
+    <tr>
+   <td><a name="CONTINUE_REPLY:"></a>CONTINUE_REPLY:</td>
+    <td>(n/a)</td>
+    <td>frame</td>
+    <td>For discussion, see the section on <a href="#Hub_continuations">Hub 
+ continuations</a>. Can be repeated.</td>
+   </tr>
+    <tr>
+   <td><a name="CONTINUE_ERROR:"></a>CONTINUE_ERROR:</td>
+    <td>(n/a)</td>
+    <td>frame</td>
+    <td>For discussion, see the section on <a href="#Hub_continuations">Hub 
+ continuations</a>. Can be repeated.</td>
+   </tr>
+    <tr>
+   <td><a name="PROVIDER_NAME:"></a>PROVIDER_NAME:</td>
+    <td>Default namespace is <tt>token</tt>.</td>
+    <td><a href="#Values">value</a> which evaluates to a string</td>
+    <td>Imposes restrictions on <a href="#Selecting_a_provider">provider 
+selection.</a> Note that string literals for this entry <b>must</b> have double
+quotes around them, because this entry can also be a namespace reference (i.e.,
+      <tt>":foo"</tt> is literal non-numeric provider ID, and and       <tt>:foo</tt>
+ is a reference to the value of that key in the default namespace).</td>
+   </tr>
+    <tr>
+   <td>(dispatch function called)</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+   </tr>
+    <tr>
+   <td><a name="LOG_OUT:"></a>LOG_OUT:</td>
+    <td>Default source namespace is <tt>message</tt> (message return). Writes
+ to log.</td>
+    <td><a href="#Optional_Value">optional value</a></td>
+    <td>Extended syntax available for source namespace.</td>
+   </tr>
+    <tr>
+   <td><a name="STORE:"></a>STORE:</td>
+    <td>From message return to Hub DB</td>
+    <td>list of tokens</td>
+    <td>Note that STORE: does not work with <a href="#:none!">none!</a>,
+ since there's no message return, but it does work with <a
+ href="#:destroy!">destroy!</a>. Extended syntax not available.</td>
+   </tr>
+    <tr>
+   <td><a name="DEL:"></a>DEL:</td>
+    <td>From token</td>
+    <td>list of tokens</td>
+    <td>Note that DEL: works with both <a href="#:none!">none!</a> and
+      <a href="#:destroy!">destroy!</a>. Extended syntax available.</td>
+   </tr>
+    <tr>
+   <td><a name="OUT:"></a>OUT:</td>
+    <td>Default source namespace is <tt>message</tt> (message return), default
+ target namespace is <tt>token</tt>.</td>
+    <td><a href="#Optional_Value">optional value</a></td>
+    <td>Extended syntax available.</td>
+   </tr>
+    <tr>
+   <td><a name="ERROR:"></a>ERROR:</td>
+    <td>Default source namespace is <tt>message</tt> (message return), default
+ target namespace is <tt>token</tt>.</td>
+    <td><a href="#Optional_Value">optional value</a></td>
+    <td>Evaluated if the dispatch function call returns an error reply, in
+ which case OUT: is not evaluated. Extended syntax available. See the discussion
+ of <a href="#Output_Parameters">output parameters</a>.</td>
+   </tr>
+    <tr>
+   <td><a name="SET:"></a>SET:</td>
+    <td>From rule to token</td>
+    <td><a href="#Obligatory_Value">obligatory value</a></td>
+    <td>Note that SET: works with both <a href="#:none!">none!</a> and
+      <a href="#:destroy!">destroy!.</a> Extended syntax available.</td>
+   </tr>
+    <tr>
+   <td><a name="CONTROL:"></a>CONTROL:</td>
+    <td>(n/a)</td>
+    <td>zero or more of the symbols <tt>:return</tt>, <tt>:asynchronous</tt>, 
+ and :<tt>no_result</tt></td>
+    <td>For discussion, see the <a href="#Special_control_directives">special 
+ control directives</a></td>
+   </tr>
+         
+  </tbody>  
+</table>
+      
+<p>The <tt><a href="#INIT:">INIT:</a></tt> directive in the server specification
+ also uses the obligatory value value format. </p>
+   
+<p><b>Note</b>: the RULE: block may not contain any blank lines. </p>
+   
+<h3> <a name="Input_Parameters"></a><b>Input Parameters</b></h3>
+   When a given operation is executed, input parameters are passed in the 
+token to the server.&nbsp; The <tt>IN: </tt>identifier is used to specify 
+the list of input parameters.&nbsp; Any keys not included in the parameter 
+lists are probably ignored by the server. IN: uses the optional value value 
+format; the key-mapping subcase of this format will map keys set by RETRIEVE: 
+and PARAM:   
+<p>For example, </p>
+   
+<ul>
+    <tt>IN: :foo (:bar 5) :baz (:remote_key :local_key)</tt> <br>
+  would mean that the frame sent to the server contains:       
+  <blockquote>the key <tt>:foo</tt>, containing the token's value of <tt>:foo</tt> 
+     <br>
+  the key <tt>:bar</tt>, containing 5 <br>
+  the key <tt>:baz</tt>, containing the token's value of <tt>:baz</tt> <br>
+  the key <tt>:remote_key</tt>, containing the token's value of <tt>:local_key</tt></blockquote>
+     
+</ul>
+   Note that explicit namespace references provided in <a
+ href="#Extended_syntax_mode">extended syntax mode</a> are available for
+IN:.   
+<h3> <a name="Output_Parameters"></a><b>Output Parameters</b></h3>
+   Expected output parameters are identified with <tt>OUT: </tt>or <tt>ERROR:</tt>. 
+ Output parameters are used to update the token state. Output parameters use
+the optional value value format.   
+<p>For example, </p>
+   
+<ul>
+    <tt>OUT: :foo (:bar 5) :baz (:local_key :remote_key)</tt> <br>
+  would mean that after the update, the token contains:       
+  <blockquote>the key <tt>:foo</tt>, containing the reply frame's value of
+     <tt>:foo</tt> <br>
+  the key <tt>:bar</tt>, containing 5 <br>
+  the key <tt>:baz</tt>, containing the reply frame's value of <tt>:baz</tt> 
+     <br>
+  the key <tt>:local_key</tt>, containing the reply frame's value of <tt>:remote_key</tt></blockquote>
+     
+</ul>
+   The server is marked as busy when there are expected output parameters,
+ and the Hub will send no further messages to this server until it receives
+ a reply.   
+<p>If the reply from the dispatch function is an <a
+ href="adding.html#GalSS_EnvError">error</a>, the default behavior is for
+ the Hub to terminate execution of the current token (and return the token
+ state to the originating server, in the case of a server-to-server subdialogue).
+ In this case, all the appropriate updates, including OUT:, are performed
+before the token execution is terminated. If the ERROR: directive is present
+and the reply is an error, then the ERROR: directive is evaluated instead
+of the OUT: directive and token execution continues (that is, it's as if
+the reply was a normal reply instead of an error). However, if a <a
+ href="#Special_control_directives">reply is not expected</a>, then ERROR:
+ has no effect. </p>
+   
+<p>Note that explicit namespace references provided in <a
+ href="#Extended_syntax_mode">extended syntax mode</a> are available for output
+parameters. </p>
+   
+<h3> <a name="Special_control_directives"></a>Special control directives</h3>
+   The CONTROL: directive allows the user to specify how the program is to
+ proceed after the rule is fired.   
+<ul>
+   <li> A value of <tt>:return</tt> means that the script should stop running
+ the program when this rule is complete.</li>
+    <li> A value of <tt>:asynchronous</tt> means that the script should not
+ wait for the operation to complete before starting the next applicable rule
+ (<a href="#SET:">SET:</a> and <a href="#DEL:">DEL:</a> will be run immediately,
+ before additional rules are tried). When you use the builtin server dispatch
+ functions <a href="../../servers/builtin.html#dispatch_to_main">dispatch_to_main</a> 
+ or <a href="../../servers/builtin.html#dispatch_token">dispatch_token</a> 
+ with CONTROL: :asynchronous, a new token is created for the dispatch, but 
+ rules continue to be tried for the current token.</li>
+    <li> A value of <tt>:no_result</tt> tells the hub that the server will
+ not return a value from the operation. If you use <tt>:no_result</tt>, you 
+ should also use <tt>:asynchronous</tt>.</li>
+     
+</ul>
+   Three special values of the <a href="#OUT:">OUT:</a> directive, <tt><a
+ href="#:none!">none!</a></tt>, <a href="#abort!">abort!</a> and <tt><a
+ href="#:destroy!">destroy!</a></tt>,&nbsp; are shorthands for sets of
+CONTROL: values.   
+<ul>
+   <li> OUT:&nbsp;<a name=":none!"></a><b><tt>none! </tt></b>is equivalent
+ to CONTROL: :no_result :asynchronous</li>
+    <li> OUT:&nbsp;<a name="abort!"></a><b><tt>abort!</tt></b> is equivalent
+ to CONTROL: :return</li>
+    <li> OUT:&nbsp;<a name=":destroy!"></a><b><tt>destroy!</tt></b>&nbsp; 
+is equivalent to CONTROL: :no_result :asynchronous :return</li>
+     
+</ul>
+      
+<h3> <a name="Hub_continuations"></a>Hub continuations</h3>
+   By specifying values for <a href="#CONTINUE_REPLY:">CONTINUE_REPLY:</a> 
+and <a href="#CONTINUE_ERROR:">CONTINUE_ERROR:</a> in a rule, the programmer 
+can force the Hub to treat new messages from the selected server as reply 
+or error messages. These directives should be used when the programmer wants
+ the Hub to use a synchronous programming model, but the server in question
+ doesn't provide replies. The server is notified that a real reply isn't
+expected  (in fact, the real reply will be discarded if the server provides
+it), and  the Hub won't process the message return until a new message of
+one of the  specified forms is received from the server. The matching is
+done using <a href="frame.html#Gal_MatchFrame">Gal_MatchFrame</a>. The new
+message is treated as a normal reply or error, including for the purposes
+of <a href="logging.html">timestamps and logging</a>, and all the return
+parameters  (OUT:, STORE:, etc.) are processed normally. See also the <a
+ href="../../servers/builtin.html#hub_continue">Builtin.hub_continue</a> function
+and the discussion of <a
+ href="../advanced/synch_vs_asynch.html#Hub/server_expectation_mismatches">continuations</a>.
+  
+<h3> <a name="Merge_Parameters"></a><b>Merge Parameters</b></h3>
+   Note that explicit namespace references provided in <a
+ href="#Extended_syntax_mode">extended syntax mode</a> are available for
+merge parameters.   
+<h4> <b>Set</b></h4>
+   The <tt>SET:</tt> identifier allows token keys to be set to specific values
+ upon return from the server.&nbsp; SET: uses the obligatory value value
+format.   
+<p>For example, </p>
+   
+<blockquote><tt>SET: :enable_input_ok 1 :reply_string "Thanks_for_using_Jupiter" 
+ :speaker "paul"</tt> <br>
+  sets <tt>:enable_input_ok</tt> to int 1 and <tt>:reply_string</tt> to the
+ string "Thanks_for_using_Jupiter" and <tt>:speaker</tt> to the string "paul".</blockquote>
+   Note that as a special case, none! works with SET:, even though there's
+ no message return.   
+<h4> <b>Param</b></h4>
+   The <tt>PARAM:</tt> identifier allows token keys to be set to specific 
+values before being sent to the server.&nbsp; PARAM: uses the obligatory value
+value format.   
+<p>For example, </p>
+   
+<blockquote><tt>PARAM: :reply_string "The phone has disconnected. Terminating 
+ session."</tt> <br>
+  sets <tt>:reply_string </tt>to "The phone has disconnected.&nbsp; Terminating
+ session"</blockquote>
+      
+<h4> <b>Del</b></h4>
+   The <tt>DEL:</tt>&nbsp; identifier indicates which keys to delete from 
+the token state upon return from the operation.   
+<p>Note that as a special case, none! works with DEL:, even though there's
+ no message return. </p>
+   
+<h3> <a name="Database_parameters"></a><b>Database Parameters</b></h3>
+      
+<ul>
+   <li> <tt>STORE:</tt> is used to store the named keys in the Hub-internal
+ database.</li>
+    <li> <tt>RETRIEVE:</tt> is used to retrieve the named keys from the Hub-internal
+ database.</li>
+     
+</ul>
+   For example,   
+<blockquote><tt>RETRIEVE: :history_frame</tt> <br>
+    <tt>IN: :selected_thin_frame</tt> <br>
+    <tt>OUT: :request_frame :history_frame :domain</tt> <br>
+    <tt>STORE: :history_frame</tt></blockquote>
+      
+<p><br>
+  The RETRIEVE: operation is performed before the argument list is composed
+ for server dispatch, and the STORE: operation is performed after the rule
+ returns, but before the token is updated with the server response.&nbsp;&nbsp;
+ See the <a href="#Order_of_Operation">overall order</a>. New in version
+ 1.2: STORE: will search "unmapped" versions of key-mapped OUT: entries if
+ it can't find the value in the mapped values. </p>
+   
+<p>RETRIEVE: and STORE: are related to the underlying utterance ID of the
+ Hub (see the <a href="../../servers/builtin.html#increment_utterance">increment_utterance</a> 
+ message in the builtin server). STORE: stores an element in the slice of 
+the Hub DB associated with the current utterance ID. RETRIEVE:, by default, 
+retrieves an element from the slice of the Hub DB associated with the <i>previous</i> 
+ utterance ID. The <tt>RETRIEVE:</tt> entry allows a optional value version
+ in which the second element is the relative index into the Hub DB. For example,
+ <tt>(:a 0)</tt>will retrieve the value of <tt>:a </tt>from the DB associated
+ with the current utterance ID, while <tt>(:a -2)</tt> will retrieve the
+value  of <tt>:a</tt> from the DB associated with the current utterance ID
+- 2. Default is -1. </p>
+   
+<p>Note that STORE: works with destroy! but not with none!, since there's
+ no message return in the latter case. However, both work with DEL: and SET:,
+ since although there's no message return, neither DEL: nor SET: depend on
+ the return message. </p>
+   
+<h3> <a name="Other_rule_parameters"></a>Other rule parameters</h3>
+      
+<table border="2" cellspacing="2" cellpadding="2" width="100%" nosave="">
+   <tbody>
+      <tr>
+   <td><b>rule identifier</b></td>
+    <td><b>description</b></td>
+    <td><b>example / syntax</b></td>
+   </tr>
+    <tr>
+   <td>ALARM:</td>
+    <td>enabling/disabling time outs. Used both globally and in rules. See
+ the section on <a href="#Alarms">alarms</a>.</td>
+    <td><b><tt>ALARM: alarm_name enable | disable | &lt;num_secs&gt;</tt></b> 
+       <br>
+        <tt>ALARM: global_alarm 20</tt> <br>
+        <tt>ALARM: global_alarm disable</tt> <br>
+        <tt>ALARM: global_alarm enable global_alarm 20 turn_alarm enable
+turn_alarm  60</tt></td>
+   </tr>
+    <tr>
+   <td><a name="LOCK:"></a>LOCK:</td>
+    <td>one of two possible keys (:hub_get_session_lock, :hub_serve_this_session_only)
+ which control session locking</td>
+    <td>(not documented yet)</td>
+   </tr>
+         
+  </tbody>  
+</table>
+      
+<p> </p>
+   
+<hr width="100%">   
+<h3> <a name="Session_keys"></a>Session keys</h3>
+   The session maintains its own session state. By default, the session is
+ populated with <a href="#Special_logging_session_keys">log information.</a>
+ It also initializes the <tt>:utterance_id</tt> key, which is incremented
+by the builtin server dispatch function <a
+ href="../../servers/builtin.html#increment_utterance">increment_utterance.</a>&nbsp; 
+ However, it's convenient to store additional information on the session, 
+which is specific to the current interaction but persists across messages. 
+It's possible to <a
+ href="../advanced/hub_properties.html#Session_properties">control these
+ values</a> from the server itself, and in <a
+ href="#Extended_syntax_mode">extended syntax mode</a>, it's easy to set and
+retrieve such values using namespace references. In default syntax mode, it's
+a little trickier.   
+<p>In default syntax mode, in SET:, IN: and OUT:, keys which start with <tt>:hub_session_</tt> 
+ are stored in or retrieved from the session rather than the token. The <tt>hub_session_</tt> 
+ portion of the key is stripped off. Here's an example of this capability 
+in action, first a program file fragment and then the resulting status: </p>
+   
+<blockquote><tt>LOG_DIR: .</tt>       
+  <p><tt>USER_ID: MITRE</tt> </p>
+       
+  <p><tt>PROGRAM: main</tt> </p>
+       
+  <p><tt>[...]</tt> </p>
+       
+  <p><tt>RULE: --&gt; Builtin.nop</tt> <br>
+    <tt>SET: :hub_session_current_status "adequate"</tt> </p>
+       
+  <p><tt>-------------------------------------</tt> </p>
+       
+  <p><tt>{c session</tt> <br>
+    <tt>&nbsp;&nbsp; :utterance_id -1</tt> <br>
+    <tt>&nbsp;&nbsp; :hub_log_prefix "MITRE-20001206-007"</tt> <br>
+    <tt>&nbsp;&nbsp; :hub_logdir "./MITRE/20001206/007/"</tt> <br>
+    <tt>&nbsp;&nbsp; :hub_pwd "/usr/local/GalaxyCommunicator/src"</tt> <br>
+    <tt>&nbsp;&nbsp; :current_status "adequate" }</tt> <br>
+  &nbsp;</p>
+  </blockquote>
+   As a special case, a Hub program may use the special values <tt>hub_increment_value</tt> 
+ and <tt>hub_decrement_value</tt> as values of these session keys in a SET:
+ directive to increment and decrement integer values.   
+<p> </p>
+   
+<hr width="100%">   
+<h3> <a name="Alarms"></a><b>Alarms</b></h3>
+   Alarms are session-specific variables used for setting time outs in a
+production  system.&nbsp; Alarms can have three states:   
+<ul>
+   <li> disabled</li>
+    <li> enabled with time set</li>
+    <li> enabled without time set</li>
+     
+</ul>
+   If an alarm is enabled with the time set, a system error will be generated
+ when the time reaches zero.&nbsp; In the normal course of execution, the
+time should be reset as each rule fires.&nbsp; If a server dies, a system
+error will be generated.&nbsp; The error can be used to end the dialogue
+by informing the user that the system is down.   
+<p>The syntax is: </p>
+   
+<blockquote>ALARM: alarm_name enable | disable | &lt;num_secs&gt;</blockquote>
+   The same line may contain enable/disable and &lt;num_secs&gt; for the
+same  alarm.&nbsp; Two examples are:   
+<ul>
+    <tt>ALARM: global_alarm 20</tt> <br>
+    <tt>ALARM: global_alarm enable global_alarm 20 turn_alarm enable turn_alarm 
+ 60</tt>  
+</ul>
+      
+<p><br>
+  Processing occurs from left to right with the enable/disables processed 
+first, then the &lt;num_secs&gt;.&nbsp;&nbsp; The first example sets the already-enabled
+global_alarm to 20 seconds.&nbsp; The second example enables both the global_alarm
+and the turn_alarm and then sets the first to 20 seconds, the second to 60
+seconds. </p>
+   
+<h4> <b>Alarm Enable</b></h4>
+   Upon intiation, all alarms are enabled but they are not set unless the 
+&lt;num_secs&gt; is specified.&nbsp; Once an alarm is enabled, any future 
+change of &lt;num_secs&gt; to a non-zero number is valid.&nbsp; Setting an 
+alarm with zero &lt;num_secs&gt; is equivalent to the alarm not being set.&nbsp;&nbsp; 
+For example,   
+<ul>
+    <tt>ALARM: global_alarm 20</tt> <br>
+  sets the already-enabled global_alarm to 20 seconds.       
+  <p><tt>ALARM: global_alarm 40</tt> <br>
+  sets the same alarm to 40 seconds. </p>
+       
+  <p><tt>ALARM: global_alarm 0</tt> <br>
+  is equivalent to: <br>
+    <tt>ALARM: global_alarm disable</tt> <br>
+  &nbsp;</p>
+   
+</ul>
+   Alarms can be set globally so that they do not have to be set in each
+rule.&nbsp;  To set an alarm globally, set the alarm before any rules are
+defined.&nbsp;  Any particular server can override the global setting with
+a specific, local  alarm.   
+<h4> <b>Alarm Disable</b></h4>
+   Disabling an alarm is a higher-level override that sets &lt;num_secs&gt;
+ to zero.&nbsp; The alarm will not change until the next enable.&nbsp; Disabling
+ an alarm is useful because there is no easy way to test for an alarm having
+ a time set before resetting it.&nbsp; For example, one might want to turn
+ off all alarms while waiting for user input.&nbsp; Disabling an alarm is
+also useful when trying to debug code.   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Table_of_Hub_Program_Identifiers"></a>Alphabetical index of
+ program file elements</h2>
+   <a href="#comment">; (comment)</a> <br>
+  <a href="#comment"># (comment)</a> <br>
+  <a href="#Subfiles">#include</a><br>
+  <a href="#$bind">$bind</a><br>
+  <a href="#$id">$id</a> <br>
+  <a href="#The_$in_entity_reference_function">$in</a> <br>
+  <a href="#Alarms">ALARM:</a> <br>
+  <a href="#CLIENT_PORT:">CLIENT_PORT:</a> <br>
+  <a href="#CONDITIONS:">CONDITIONS:</a> <br>
+  <a href="#CONTINUE_REPLY:">CONTINUE_REPLY:</a> <br>
+  <a href="#CONTINUE_ERROR:">CONTINUE_ERROR:</a> <br>
+  <a href="#CONTROL:">CONTROL:</a> <br>
+  <a href="#DEL:">DEL:</a> <br>
+  <a href="#DOMAIN:">DOMAIN:</a> <br>
+  <a href="#ERROR:">ERROR:</a> <br>
+  <a href="#HOST:">HOST:</a> <br>
+  <a href="#IGNORE:">IGNORE:</a> <br>
+  <a href="#IN:">IN:</a> <br>
+  <a href="#INIT:">INIT:</a> <br>
+  <a href="#INITIAL_REPLY:">INITIAL_REPLY:</a> <br>
+  <a href="#Initial_token">INITIAL_TOKEN:</a> <br>
+  <a href="#LOCATION:">LOCATION:</a> <br>
+  <a href="#LOCK:">LOCK:</a> <br>
+  <a href="logging.html#LOG_DIR:">LOG_DIR:</a> <br>
+  <a href="logging.html#LOG_HUB_ACTIVITY:">LOG_HUB_ACTIVITY:</a> <br>
+  <a href="#LOG_IN:">LOG_IN:</a> (see also the <a
+ href="logging.html#LOG_IN:">logging documentation</a>) <br>
+  <a href="#LOG_OUT:">LOG_OUT:</a> (see also the <a
+ href="logging.html#LOG_OUT:">logging documentation</a>) <br>
+  <a href="logging.html#LOG_VERSION:">LOG_VERSION:</a> <br>
+  <a href="logging.html#MESSAGE:">MESSAGE:</a> <br>
+  <a href="#MODE:">MODE:</a> <br>
+  <a href="#OPERATIONS:">OPERATIONS</a>: <br>
+  <a href="#OUT:">OUT:</a> <br>
+  <a href="#PARAM:">PARAM:</a> <br>
+  <a href="#PGM_SYNTAX:">PGM_SYNTAX:</a> <br>
+  <a href="#PORT:">PORT:</a> <br>
+  <a href="#PROPERTIES:">PROPERTIES:</a> <br>
+  <a href="#PROGRAM:">PROGRAM:</a> <br>
+  <a href="#PROVIDER_NAME:">PROVIDER_NAME:</a> <br>
+  <a href="#PROVIDER_ID:">PROVIDER_ID:</a> <br>
+  <a href="#RETRIEVE:">RETRIEVE:</a> <br>
+  <a href="#RULE:">RULE:</a> <br>
+  <a href="#SERVER:">SERVER:</a> <br>
+  <a href="#SERVERS:">SERVERS:</a> <br>
+  <a href="#SERVICE_PROVIDER:">SERVICE_PROVIDER:</a> <br>
+  <a href="#SERVICE_TYPE:">SERVICE_TYPE:</a> <br>
+  <a href="#SET:">SET:</a> <br>
+  <a href="#STORE:">STORE:</a> <br>
+  <a href="logging.html#TIMESTAMP:">TIMESTAMP:</a> <br>
+  <a href="#USER_ID:">USER_ID:</a>   
+<p> </p>
+   
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="adding.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="logging.html"><img src="../../arrow_right.gif" alt="" width="30"
+ height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated August 13, 2002</center>
+    <br>
+   <br>
+</body>
+</html>

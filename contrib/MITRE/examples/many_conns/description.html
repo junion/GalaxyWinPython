@@ -1,0 +1,109 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.61 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Example: A Multiple-Connection Double Server</title>
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+  
+<center> 
+<h1> Galaxy Communicator Documentation: <br>
+<br>
+Multiple connection server example</h1>
+</center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="../local_makefile/description.html"><img
+ src="../../../../docs/arrow_left.gif" alt="" width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../../LICENSE">License</a> / <a
+ href="../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a> 
+       </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="../../../../docs/servers/turn_management.html"><img
+ src="../../../../docs/arrow_right.gif" alt="" width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  
+<hr>  In this example, we use the simple double server to illustrate a multiple
+connection server. Multiple connections are available in the core, so all
+we need is to tell the server to accept multiple connections, using the -maxconns
+argument. This example uses the server and program file from the <a
+ href="../double/main.html">double example</a>. 
+<p>This example can be found in the distribution in <tt>contrib/MITRE/examples/many_conns</tt>. 
+</p>
+<h3> Source files</h3>
+ None. 
+<h3> Running the example</h3>
+All configurations in this example can be accessed by invoking the process
+monitor, as follows.<br>
+  
+<blockquote><tt><b>Unix</b><br>
+   <br>
+ % cd &lt;root_of_GC&gt;<br>
+ % ./contrib/MITRE/tools/bin/process_monitor contrib/MITRE/examples/many_conns/double.config<br>
+   <br>
+   <b>Windows</b><br>
+   <br>
+ C:\&gt; set GC_HOME=&lt;root_of_GC&gt;<br>
+ C:\&gt; python %GC_HOME%\</tt><tt>contrib\MITRE\tools\src\process_monitor\process_monitor.py
+%GC_HOME%\contrib\MITRE\examples\many_conns\double.config</tt><br>
+ </blockquote>
+  In addition, on Unix, we generate the following script.<br>
+<br>
+ double.csh: runs the double server and the Hub, using the double.pgm program
+file from the double example. 
+<h3> Compilation</h3>
+ Typing "make" in this directory will create the script. 
+<h3> Discussion</h3>
+ See the documentation on <a
+ href="../../../../docs/manual/reference/adding.html#_GalSS_init_server">setting 
+maximum number of connections</a>. 
+<p> </p>
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="../local_makefile/description.html"><img
+ src="../../../../docs/arrow_left.gif" alt="" width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../../LICENSE">License</a> / <a
+ href="../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a> 
+       </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="../../../../docs/servers/turn_management.html"><img
+ src="../../../../docs/arrow_right.gif" alt="" width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated August 8, 2002</center>
+  <br>
+</body>
+</html>

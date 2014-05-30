@@ -1,0 +1,725 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: The Hub GUI Message Set</title>
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+  
+<center> 
+<h1> Galaxy Communicator Documentation:<br>
+ <br>
+ The Hub GUI&nbsp;Message Set</h1>
+</center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="../../contrib/MITRE/tools/docs/log_reference.html"><img
+ src="../arrow_left.gif" alt="" width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../LICENSE">License</a> / <a href="../manual/index.html">Documentation
+home</a> / <a href="../manual/index.html#Getting_help">Help and feedback</a> 
+       </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="../../contrib/MITRE/demos/docs/toy-travel-ref.html"><img
+ src="../arrow_right.gif" alt="" width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+   
+<hr width="100%"> 
+<p>The Hub&nbsp;accepts a <a href="../manual/reference/hub.html#The_Hub"><tt>-gui</tt> 
+command line argument</a> which specifies the <tt>host:port</tt> of a remote 
+server which will replace the normal status messages. The host can be the 
+string <tt>&lt;listener&gt;</tt>, which indicates that the Hub should set
+up a listener at the specified port for the server to contact (note that
+this is not the wisest thing in the world, because the server will miss some
+important initialization messages). This remote server can implement profiling
+and visualization functionality. Any programmer can implement such a server.
+In this document, we describe the message set this server must support. </p>
+<p>We've implemented two servers which exemplify this functionality. The
+one we will describe here along with the message set is a trivial template
+for such servers. We've also provided with the <a
+ href="http://communicator.sourceforge.net/download/index.shtml">Open Source
+Toolkit</a> an extensive Java tool which implements this message set which
+visualizes the Hub activity. </p>
+<ul>
+ <li> <a href="#Usage">Usage</a></li>
+  <li> <a href="#Message_set">Message set</a></li>
+  <li> <a href="#Messages_issued">Messages issued</a></li>
+ 
+</ul>
+  
+<hr width="100%"> 
+<h2> <a name="Usage"></a>Usage</h2>
+ These usage notes apply only to the sample server. 
+<h4> Command line</h4>
+ <tt>&lt;GALAXY_ROOT&gt;/contrib/MITRE/tools/bin/sample_hub_gui ...</tt> 
+<h4> Default port</h4>
+ 4111 
+<h4> Command line arguments</h4>
+ The sample utility only accepts the <a
+ href="../manual/reference/adding.html#_GalSS_init_server">standard server
+arguments</a>. 
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="Message_set"></a>Message set</h2>
+ These messages are all sent to the remote server by the Hub automatically.
+It is not possible to refer to the GUI&nbsp;server directly in a Hub program,
+but it is possible to use the Builtin function <a
+ href="builtin.html#hub_gui_notify">hub_gui_notify</a> to relay a message 
+to the GUI, if present. 
+<ul>
+ <li> <a href="#provider_status">provider_status</a></li>
+  <li> <a href="#add_menu_items">add_menu_items</a></li>
+  <li> <a href="#new_service_type">new_service_type</a></li>
+  <li> <a href="#message_event">message_event</a></li>
+  <li> <a href="#session_status">session_status</a></li>
+  <li> <a href="#session_lock_status">session_lock_status</a></li>
+  <li> <a href="#session_alarm_status">session_alarm_status</a></li>
+  <li> <a href="#token_status">token_status</a></li>
+  <li> <a href="#listener_status">listener_status</a></li>
+  <li> <a href="#message_queue_status">message_queue_status</a></li>
+  <li> <a href="#hub_debug_prompt">hub_debug_prompt</a></li>
+  <li> <a href="#hub_debug_info">hub_debug_info</a></li>
+ 
+</ul>
+  
+<hr width="100%"> <br>
+<a name="provider_status"></a><b><big>provider_status</big></b> is used to
+inform the GUI about new service providers (or changes in the status of an
+existing provider, e.g., when a provider connects/disconnects from the Hub).
+The contents of each provider frame at connection time is determined partially
+by the <a href="../manual/reference/pgm.html#PROPERTIES:">PROPERTIES:</a> 
+directives associated with the provider (technically, it's the service provider's
+properties themselves, but the <a
+ href="../manual/advanced/hub_properties.html">client API</a>&nbsp;won't
+have an opportunity to apply before this status message is sent). So you
+might specify a screen name for a provider as follows: 
+<blockquote><tt>SERVICE_PROVIDER:&nbsp;Parser</tt> <br>
+  <tt>PROPERTIES:&nbsp;:screen_name "My Parser"<br>
+  </tt></blockquote>
+If the server properties contain the <tt>:gui_invisible</tt> key, the GUI
+will not receive any status messages about the server.<br>
+<br>
+  
+<table border="1" width="100%" nosave="">
+ <tbody>
+    <tr nosave="">
+ <td nosave="">&nbsp;</td>
+  <td><b>parameter</b></td>
+  <td><b>type</b></td>
+  <td><b>optional</b></td>
+  <td><b>depends on</b></td>
+  <td><b>description/constraints</b></td>
+ </tr>
+  <tr nosave="">
+ <td nosave=""><b>IN:</b></td>
+  <td><tt>:provider_list</tt></td>
+  <td nosave="">list</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>Contains list of service provider frames. In each frame, the Hub GUI
+recognizes at least these keys: <br>
+      <ul>
+        <li><tt>:provider_id</tt> (string, required) is the <a
+ href="../manual/advanced/provider_id.html#The_syntax_of_provider_names">provider
+ID</a> of a service provider.</li>
+        <li><tt>:init</tt>, if present, indicates that the provider is being
+declared rather than being referenced (if <tt>:init</tt> is absent and the
+value indicated by <tt>:provider_id</tt> is unknown, the frame will be ignored).</li>
+        <li><tt>:hub_is_client</tt>, cooccurs with the <tt>:init</tt> key;
+if present, indicates that the provider is one that the Hub contacted, rather
+than one that contacted the Hub.<br>
+        </li>
+        <li><tt>:connected </tt>(integer, required) is 0 if the provider
+is not connected to the Hub and 1 if it is.</li>
+        <li><tt>:available </tt>(integer, optional) is 1 if the provider
+is available (i.e., currently being used). In most cases, this will be the
+case. You can use this key in the GUI that you write to, e.g., grey out servers
+which currently aren't on the active path.</li>
+        <li><tt>:screen_name</tt> (string, required when the provider is
+first added to the GUI) is the name to be used for this provider in the GUI. 
+        </li>
+        <li><tt>:icon</tt> (string, optional) is the full path to the icon
+(JPG or GIF) to be used for this provider in the GUI. </li>
+        <li><tt>:menu_items</tt> (list, optional) is a list of string/frame
+pairs (each pair represented as a list) that correspond to menu items for
+the provider. When the menu item is selected via the GUI, the specified frame
+is sent to the Hub.</li>
+      </ul>
+      </td>
+ </tr>
+ 
+  </tbody>
+</table>
+  
+<p>This message returns NULL. <br>
+&nbsp; </p>
+<p><a name="add_menu_items"></a><b><big>add_menu_items</big></b> can be used
+to added general menu items to the remote server, if is it really a GUI. <br>
+&nbsp; 
+<table border="1" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td>&nbsp;</td>
+  <td><b>parameter</b></td>
+  <td><b>type</b></td>
+  <td><b>optional</b></td>
+  <td><b>depends on</b></td>
+  <td><b>description/constraints</b></td>
+ </tr>
+  <tr nosave="">
+ <td nosave=""><b>IN:</b></td>
+  <td><tt>:menu_items</tt></td>
+  <td>list</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>Contains a list of string/frame pairs (each pair represented as a list)
+that correspond to general menu items for the GUI (i.e., not tied to a specific
+service provider). When the menu item is selected via the GUI, the specified
+frame is sent to the Hub.</td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>This message returns NULL. <br>
+&nbsp; </p>
+<p><a name="new_service_type"></a><b><big>new_service_type</big></b> alerts
+the GUI to the introduction of a new provider of a given service type. <br>
+&nbsp; 
+<table border="1" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td>&nbsp;</td>
+  <td><b>parameter</b></td>
+  <td><b>type</b></td>
+  <td><b>optional</b></td>
+  <td><b>depends on</b></td>
+  <td><b>description/constraints</b></td>
+ </tr>
+  <tr nosave="">
+ <td nosave=""><b>IN:</b></td>
+  <td><tt>:name</tt></td>
+  <td>string</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>Name of the new service type of the new provider.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:port</tt></td>
+  <td>integer</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>Port on which the service provider is listening.</td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>This message returns a frame. <br>
+&nbsp; </p>
+<p><a name="message_event"></a><b><big>message_event</big></b> indicates
+to the GUI that a message was sent (either Hub to service provider or provider
+to Hub). <br>
+&nbsp; 
+<table border="1" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td>&nbsp;</td>
+  <td><b>parameter</b></td>
+  <td><b>type</b></td>
+  <td><b>optional</b></td>
+  <td><b>depends on</b></td>
+  <td><b>description/constraints</b></td>
+ </tr>
+  <tr nosave="">
+ <td nosave=""><b>IN:</b></td>
+  <td><tt>:provider_id</tt></td>
+  <td>integer</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>The <a
+ href="../manual/advanced/provider_id.html#The_syntax_of_provider_names">provider
+ID</a> of a service provider</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:msg</tt></td>
+  <td>frame</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>The message being sent.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:msg_type</tt></td>
+  <td>integer</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>The <a href="../manual/reference/adding.html#Message_types">type of
+message</a> sent</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:destination</tt></td>
+  <td>string</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>If equal to "server", the message is being sent from the Hub to a server.
+Otherwise, the message is being sent from a server to the Hub.</td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>This message returns NULL. <br>
+&nbsp; </p>
+<p><a name="session_status"></a><b><big>session_status</big></b> contains
+information about the current sessions in the system. <br>
+&nbsp; 
+<table border="1" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td>&nbsp;</td>
+  <td><b>parameter</b></td>
+  <td><b>type</b></td>
+  <td><b>optional</b></td>
+  <td><b>depends on</b></td>
+  <td><b>description/constraints</b></td>
+ </tr>
+  <tr nosave="">
+ <td nosave=""><b>IN:</b></td>
+  <td><tt>:action</tt></td>
+  <td>integer</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>The ID of the action. Valid values are GAL_HUB_SESSION_SETTINGS (0),
+GAL_HUB_SESSION_CREATED (1), GAL_HUB_SESSION_DESTROYED (2), and GAL_HUB_SESSION_HISTORY
+(3).</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:session_id</tt></td>
+  <td>string</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>If the action is GAL_HUB_SESSION_CREATED or GAL_HUB_SESSION_DESTROYED,
+this is the ID of the session that was created or destroyed. Otherwise, this
+key is not needed.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:settings</tt></td>
+  <td>frame</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>If the action is GAL_HUB_SESSION_SETTINGS, this frame includes information
+about the settings of all current sessions. Otherwise, this key is not needed.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:history</tt></td>
+  <td>frame</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>If the action is GAL_HUB_SESSION_HISTORY, this frame includes historical
+information about sessions. Otherwise, this key is not needed.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:debug</tt></td>
+  <td>integer</td>
+  <td>yes</td>
+  <td>&nbsp;</td>
+  <td>If present, this key indicates that this status information is being
+sent in response to a Hub debug command issued by the GUI. The status information
+is displayed in the GUI's debug window.</td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>This message returns NULL. <br>
+&nbsp; </p>
+<p><a name="session_lock_status"></a><b><big>session_lock_status</big></b> 
+contains information about session locks. <br>
+&nbsp; 
+<table border="1" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td>&nbsp;</td>
+  <td><b>parameter</b></td>
+  <td><b>type</b></td>
+  <td><b>optional</b></td>
+  <td><b>depends on</b></td>
+  <td><b>description/constraints</b></td>
+ </tr>
+  <tr nosave="">
+ <td nosave=""><b>IN:</b></td>
+  <td><tt>:action</tt></td>
+  <td>integer</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>The ID of the action. Valid values are GAL_HUB_SESSION_LOCK_STATUS
+(0), GAL_HUB_SESSION_LOCK_SET (1), and GAL_HUB_SESSION_LOCK_RELEASED (2).</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:providers_sessions</tt></td>
+  <td>list</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>If the action is GAL_HUB_SESSION_LOCK_STATUS, this list of string/string
+pairs indicates which sessions can write to which service providers.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:providers_sessions_readers</tt></td>
+  <td>list</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>If the action is GAL_HUB_SESSION_LOCK_STATUS, this list of string/string
+pairs indicates which service providers are reading from which sessions.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:providers_sessions_writers</tt></td>
+  <td>list</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>If the action is GAL_HUB_SESSION_LOCK_STATUS, this list of string/string
+pairs indicates which service providers are writing to which sessions.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:lock_type</tt></td>
+  <td>integer</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>If the action is GAL_HUB_SESSION_LOCK_SET or GAL_HUB_SESSION_LOCK_RELEASED,
+this is the type of lock that was set or released.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:session_id</tt></td>
+  <td>string</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>If the action is GAL_HUB_SESSION_LOCK_SET or GAL_HUB_SESSION_LOCK_RELEASED,
+this is the session that was locked or unlocked.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:debug</tt></td>
+  <td>integer</td>
+  <td>yes</td>
+  <td>&nbsp;</td>
+  <td>If present, this key indicates that this status information is being
+sent in response to a Hub debug command issued by the GUI. The status information
+is displayed in the GUI's debug window.</td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>This message returns NULL. <br>
+&nbsp; </p>
+<p><a name="session_alarm_status"></a><b><big>session_alarm_status</big></b> 
+contains information about session alarms. <br>
+&nbsp; 
+<table border="1" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td>&nbsp;</td>
+  <td><b>parameter</b></td>
+  <td><b>type</b></td>
+  <td><b>optional</b></td>
+  <td><b>depends on</b></td>
+  <td><b>description/constraints</b></td>
+ </tr>
+  <tr nosave="">
+ <td nosave=""><b>IN:</b></td>
+  <td><tt>:action</tt></td>
+  <td>integer</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>The ID of the action. Valid values are GAL_HUB_SESSION_ALARM_STATUS
+(0), GAL_HUB_SESSION_ALARM_ENABLED (1),&nbsp; GAL_HUB_SESSION_ALARM_DISABLED
+(2), GAL_HUB_SESSION_ALARM_RESET (3), and GAL_HUB_SESSION_ALARM_EXPIRED (4).</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:alarm_key</tt></td>
+  <td>string</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>This is the alarm ID.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:session_id</tt></td>
+  <td>string</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>If the action is GAL_HUB_SESSION_ALARM_STATUS, this is the id of the
+session that owns the alarm.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:expiration_secs</tt></td>
+  <td>integer</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>If the action is GAL_HUB_SESSION_ALARM_STATUS or GAL_HUB_SESSION_ALARM_RESET,
+this is the number of seconds that the alarm is set to expire after.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:remaining_secs</tt></td>
+  <td>integer</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>If the action is GAL_HUB_SESSION_ALARM_STATUS, this is the number of
+seconds remaining before the alarm expires.</td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>This message returns NULL. <br>
+&nbsp; </p>
+<p><a name="token_status"></a><b><big>token_status</big></b> contains information
+about tokens. <br>
+&nbsp; 
+<table border="1" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td>&nbsp;</td>
+  <td><b>parameter</b></td>
+  <td><b>type</b></td>
+  <td><b>optional</b></td>
+  <td><b>depends on</b></td>
+  <td><b>description/constraints</b></td>
+ </tr>
+  <tr nosave="">
+ <td nosave=""><b>IN:</b></td>
+  <td><tt>:action</tt></td>
+  <td>integer</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>The ID of the action. Valid values are GAL_HUB_TOKEN_STATUS (0),&nbsp;
+GAL_HUB_TOKEN_CREATED (1), and GAL_HUB_TOKEN_DESTROYED (2).</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:state</tt></td>
+  <td>frame</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>Information on the current tokens.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:tidx</tt></td>
+  <td>string</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>If the action is GAL_HUB_TOKEN_CREATED or GAL_HUB_TOKEN_DESTROYED,
+this is the id of the token that was created or destroyed.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:debug</tt></td>
+  <td>integer</td>
+  <td>yes</td>
+  <td>&nbsp;</td>
+  <td>If present, this key indicates that this status information is being
+sent in response to a Hub debug command issued by the GUI. The status information
+is displayed in the GUI's debug window.</td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>This message returns NULL. <br>
+&nbsp; </p>
+<p><a name="listener_status"></a><b><big>listener_status</big></b> contains
+information about the Hub listener. <br>
+&nbsp; 
+<table border="1" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td>&nbsp;</td>
+  <td><b>parameter</b></td>
+  <td><b>type</b></td>
+  <td><b>optional</b></td>
+  <td><b>depends on</b></td>
+  <td><b>description/constraints</b></td>
+ </tr>
+  <tr nosave="">
+ <td nosave=""><b>IN:</b></td>
+  <td><tt>:action</tt></td>
+  <td>integer</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>The ID of the action. Valid values are GAL_HUB_LISTENER_INITIALIZED
+(0) and GAL_HUB_LISTENER_INITIALIZATION_ERROR (1).</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:port</tt></td>
+  <td>integer</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>If the action is GAL_HUB_LISTENER_INITIALIZED, this is the port that
+the Hub listener is using.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:reused</tt></td>
+  <td>integer</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>If the action is GAL_HUB_LISTENER_INITIALIZED, if this is 1, the Hub
+listener is reusing the specified port.</td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>This message returns NULL. <br>
+&nbsp; </p>
+<p><a name="message_queue_status"></a><b><big>message_queue_status</big></b> 
+contains information about the message queue. <br>
+&nbsp; 
+<table border="1" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td>&nbsp;</td>
+  <td><b>parameter</b></td>
+  <td><b>type</b></td>
+  <td><b>optional</b></td>
+  <td><b>depends on</b></td>
+  <td><b>description/constraints</b></td>
+ </tr>
+  <tr nosave="">
+ <td nosave=""><b>IN:</b></td>
+  <td><tt>:action</tt></td>
+  <td>integer</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>The id of the action. The only valid value is GAL_HUB_MESSAGE_QUEUE_CONTENTS
+(0).</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:queue</tt></td>
+  <td>32-bit integer array</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>Array of the token ids of the messages currently in the queue.</td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>This message returns NULL. <br>
+&nbsp; </p>
+<p><a name="hub_debug_prompt"></a><b><big>hub_debug_prompt</big></b> is invoked
+to cause the GUI to prompt the user for a Hub debug command. This message
+takes no input, and it postpones its reply. See <a
+ href="#Messages_issued">Messages issued</a>. <br>
+&nbsp; </p>
+<p><a name="hub_debug_info"></a><b><big>hub_debug_info</big></b> is used
+to report miscellaneous Hub debug information to the GUI. <br>
+&nbsp; 
+<table border="1" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td>&nbsp;</td>
+  <td><b>parameter</b></td>
+  <td><b>type</b></td>
+  <td><b>optional</b></td>
+  <td><b>depends on</b></td>
+  <td><b>description/constraints</b></td>
+ </tr>
+  <tr nosave="">
+ <td nosave=""><b>IN:</b></td>
+  <td><tt>:type</tt></td>
+  <td>string</td>
+  <td>yes</td>
+  <td>&nbsp;</td>
+  <td>A string that indicates what type of information is being provided.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:frame</tt></td>
+  <td>frame</td>
+  <td>yes</td>
+  <td>&nbsp;</td>
+  <td>A frame containing debug information.</td>
+ </tr>
+  <tr>
+ <td>&nbsp;</td>
+  <td><tt>:msg</tt></td>
+  <td>string</td>
+  <td>yes</td>
+  <td>&nbsp;</td>
+  <td>A text message containing debug information.</td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>This message returns NULL. </p>
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="Messages_issued"></a>Messages issued</h2>
+ When the GUI server receives a <a href="#hub_debug_prompt">hub_debug_prompt</a> 
+message, it prompts the user for a Hub debug command. Once that command is
+specified, it is sent to the Hub via a <tt>hub_debug_cmd</tt> message: <br>
+&nbsp; 
+<blockquote><tt>{c hub_debug_cmd</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; :debug_cmd &lt;string form of debug command&gt;</tt> 
+  <br>
+  <tt>}</tt></blockquote>
+  
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="../../contrib/MITRE/tools/docs/log_reference.html"><img
+ src="../arrow_left.gif" alt="" width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../LICENSE">License</a> / <a href="../manual/index.html">Documentation
+home</a> / <a href="../manual/index.html#Getting_help">Help and feedback</a> 
+       </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="../../contrib/MITRE/demos/docs/toy-travel-ref.html"><img
+ src="../arrow_right.gif" alt="" width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated August 13, 2002</center>
+  <br>
+</body>
+</html>

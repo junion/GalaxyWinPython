@@ -1,0 +1,243 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                    
+  <meta name="GENERATOR"
+ content="Mozilla/4.7 [en] (X11; I; Linux 2.2.14pre9 ppc) [Netscape]">
+  <title>Galaxy Communicator Documentation: Server Locations</title>
+                     <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+          
+<center>     
+<h1> Galaxy Communicator Documentation:<br>
+     <br>
+     Coordinating Locations of Hub and Server Listeners</h1>
+    </center>
+       
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+       <tbody>
+         <tr>
+           <td valign="middle" align="left" width="10%"><a
+ href="../advanced/environment.html"><img src="../../arrow_left.gif"
+ alt="" width="30" height="30">
+         </a></td>
+           <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+           <td valign="middle" align="right" width="10%"><a
+ href="synch_vs_asynch.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+         </a></td>
+         </tr>
+                  
+  </tbody>     
+</table>
+           
+<hr width="100%">     
+<p>By default, servers start up listeners on their default ports, and the
+  Hub contacts them. Alternatively, you can set up a <a
+ href="hub_listener.html">listener in the Hub</a> and have the server contact
+  the Hub instead. In both these cases, the programmer needs to make sure
+that  the <a href="../reference/pgm.html#Server_Declarations">server entries
+in  the Hub program file</a>, the <a
+ href="../reference/adding.html#Declare_server_information">default server
+  header</a>, and the <a
+ href="../reference/adding.html#_GalSS_init_server">server command line arguments</a>
+  all correspond to each other, so that the Hub and servers can connect.
+Not   only can this be a difficult and unreliable procedure, but it's also
+possible   that multiple instances of the same Communicator system might
+be running  at the same site on different sets of machines. In this latter
+case, the scripts and program files for the system would typically have to
+be modified for each invocation (or separate versions would need to be maintained).
+The overhead of this chore can be extremely frustrating. </p>
+       
+<p>In version 3.0, we've implemented a simple solution to address this issue. 
+  <br>
+    <br>
+    </p>
+       
+<hr width="100%">     
+<h2> The server locations file</h2>
+    Both the Hub and servers now accept a <tt>-server_locations_file</tt> 
+command line argument which names a file which describes where the listeners 
+are located. The format  of each meaningful line of this file should be as 
+follows:     
+<p><tt>&lt;entry_name&gt; &lt;listener_host_or_ip&gt;":"&lt;listener_port&gt;
+  ["hub"|"server"]</tt> </p>
+       
+<p>In other words, each entry is a triple, with the entries delimited by whitespace.
+The first element of each triple is an entry name, which is a character sequence.
+The second entry is a token consisting of a host name or IP address, followed
+by a colon (":"), followed by a port number. The third entry is either the
+token <tt>hub</tt> or the token <tt>server</tt>. We've provided an <a
+ href="#An_example">example</a>.<br>
+ </p>
+ 
+<p>    In addition to the meaningful lines described above, all lines consisting
+  entirely of whitespace are ignored, as are all lines whose first non-whitespace
+  character is a hash mark ("#"). There can be any nonempty amount of whitespace
+ in  between the three tokens in each meaningful line.<br>
+ </p>
+ 
+<p>The interpretation of this file differs slightly depending on whether
+the Hub or a server is looking at it. We'll start with the Hub side.<br>
+    </p>
+       
+<h3><a name="The_Hubs_view_of_the_server_locations"></a>The Hub's view of
+  the server locations file<br>
+    </h3>
+       
+<p>On the Hub side, <tt>&lt;server_name&gt;</tt> is either a <a
+ href="provider_id.html#The_syntax_of_provider_names">provider name</a> or 
+ the name of a <a href="../reference/pgm.html#Service_types">service type</a>. 
+ If the third element is the token <tt>hub</tt>, then the Hub uses <tt>&lt;listener_port&gt;</tt>
+  as the port to set up a listener on, and <tt>&lt;listener_host_or_ip&gt;</tt>
+  is ignored. If the third element is the token <tt>server</tt>, the Hub
+uses&nbsp;  <tt>&lt;listener_host_or_ip&gt;:&lt;listener_port&gt;</tt>  as
+the contact  information to use for updating on of its provider specifications.
+ Each line is treated as a separate entry.<br>
+    </p>
+       
+<p>In general, each entry is able to override an existing declaration, and
+  even switch the direction of connectivity, as long as there's no more than
+  one element to override. Specifically, the rules for matching are as follows:</p>
+       
+<ul>
+      <li>If the entry specifies creating a listener, then the entry's hostname 
+  can't have a provider ID.</li>
+      <li>If the entry specifies creating a listener and the Hub already
+has   a listener for the specified service type, use the port information
+to override.</li>
+      <li>If the entry specifies creating a listener and the Hub has no listener 
+  for the specified service type and no more than one server to contact, remove
+  the server if present and set up a listener using the specified port information.</li>
+      <li>If the entry specifies creating a listener and the Hub has no listener 
+  for the specified service type, but more than one server to contact, skip 
+  the entry.</li>
+      <li>If the entry does not specify creating a listener, find all providers 
+  known to the Hub which match the hostname. If there are no more than one,
+  shut down the listener for the named provider, if it exists, and either
+update  the single match according to the contact information in the entry,
+or introduce  a new provider which matches the contact information in the
+entry. If more  than one matching provider is found, do nothing.</li>
+       
+</ul>
+       
+<h3><a name="The_servers_view_of_the_server_location"></a>The server's view
+  of the server location file<br>
+    </h3>
+       
+<p>On the server side, things are a little different. First, the server is
+  only looking for one entry: the one that it matches. It identifies this
+entry  by matching the <tt>&lt;server_name&gt;</tt>. By default, it uses
+its own  name (that is, the value of the <a
+ href="../reference/adding.html#Basics"><tt>GAL_SERVER_NAME</tt> macro</a>).
+  However, sometimes that's not useful. For instance, when the <tt>&lt;server_name&gt;</tt>
+  is a Hub provider name, the server has no way of matching this entry against
+  its own name, since the provider names are assigned by the Hub. If you
+want  to provide an alternate name for the server to look up an entry in
+the server  locations file, use the <tt>-slf_name</tt> argument.<br>
+    </p>
+       
+<p>If the third element of the matched entry is <tt>hub</tt>, the server
+updates itself to contact the Hub ad&nbsp;<tt>&lt;listener_host_or_ip&gt;:&lt;listener_port&gt;</tt>
+  . If the third element of the matched entry is the token <tt>server</tt>, 
+the server  updates itself to set up a listener on&nbsp;<tt>&lt;listener_port&gt;</tt>,
+  and&nbsp;<tt>&lt;listener_host_or_ip&gt;</tt> is ignored. <br>
+    </p>
+       
+<h3><a name="An_example"></a>An example<br>
+     </h3>
+       
+<p>For example, the following server locations file describes a situation
+  where the Hub has a listener on port 3600 listening for connections from
+ a provider of service type <tt>multiply</tt>, and a server which the Hub
+knows as having the provider name <tt>[double]</tt> opens up its own listener
+on port 5200. In addition, the <tt>multiply</tt> server will try to find
+that Hub listener on <tt>bolcom.mitre.org</tt> (so the Hub had better be
+running on that machine), and the Hub will try to find the <tt>[double]</tt>
+listener   on <tt>feta.mitre.org</tt> (so the <tt>[double]</tt> server had
+better be  running on that machine): </p>
+       
+<p><tt>multiply bolcom.mitre.org:3600 hub</tt> <br>
+    <tt>[double] &nbsp; feta.mitre.org:5200 server</tt> </p>
+       
+<p>So as long as the Hub starts up on <tt>bolcom.mitre.org</tt> and is passed
+  this server locations file, and as long as the <tt>double</tt> server starts
+  up on <tt>feta.mitre.org</tt> and is passed this server locations file
+with   the appropriate index into the file, and as long as the <tt>multiply</tt> 
+  server starts up <b>some</b>where and is passed this server locations file, 
+  this system configuration will initialize itself appropriately: </p>
+       
+<p><tt>bolcom.mitre.org$ hub -server_locations_file double.loc</tt> <br>
+    <tt>---------------------------------------------------------</tt> <br>
+    <tt>feta.mitre.org$ double -server_locations_file double.loc -slf_name
+ "[double]"</tt><br>
+    <tt>----------------------------------------------------------</tt> <br>
+    <tt>somewhere.mitre.org$ multiply -server_locations double.loc</tt> </p>
+       
+<p>The result is that it's possible to configure a suite of servers and Hub
+  with a single configuration file, and no scripts or program files need
+to   be changed. </p>
+       
+<p><b>Note</b>: this utility does not currently provide a facility for ensuring
+  that the listener is started on the correct host. The crudest version of
+ this support would be to shut down if the specified host wasn't the host
+the listener was running on, but it's not clear whether this would work for
+DHCP connections, for instance. </p>
+           
+<h3> Server locations files and other command line arguments</h3>
+     The server locations files override all other port information. On the 
+ Hub side, it supersedes the host and port information in the program file 
+ and in the <tt>-locations</tt> command line argument. On the server side, 
+ it supersedes the information in the server declaration header file, as well
+ as the <tt>-port</tt> and <tt>-contact_hub</tt> command line arguments.
+ On  both the Hub and server sides, the specified port for the listener is
+ required;  the listener startup process will not search for the first available
+ port,  but rather fail if the specified port is not available.     
+<p><b>Note</b>: this override mechanism only works in the Hub when there
+is at most one service provider for the named service type. </p>
+       
+<p> </p>
+       
+<hr>   
+<center>    
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+       <tbody>
+         <tr>
+           <td valign="middle" align="left" width="10%"><a
+ href="../advanced/environment.html"><img src="../../arrow_left.gif"
+ alt="" width="30" height="30">
+         </a></td>
+           <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation 
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+           <td valign="middle" align="right" width="10%"><a
+ href="synch_vs_asynch.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+         </a></td>
+         </tr>
+                  
+  </tbody>     
+</table>
+     Last updated August 23, 2002</center>
+      <br>
+    <br>
+   <br>
+  <br>
+ <br>
+</body>
+</html>

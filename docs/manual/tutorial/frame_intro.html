@@ -1,0 +1,388 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Tutorial: Introducing Frames and Objects</title>
+     <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+  
+<center> 
+<h1> Galaxy Communicator Tutorial:<br>
+ <br>
+ Introducing Frames and Objects</h1>
+</center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "../../../contrib/MITRE/demos/docs/toy-travel-tut.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "basic_server.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+  
+<hr width="100%"> 
+<p>As we've already learned, the basic structure which is passed between
+server and Hub is called a <b>frame</b>. In this lesson, we'll learn how
+to manipulate frames, and also a little about how they're built. </p>
+<ul>
+ <li> <a href="#What's_in_a_frame">What's in a frame?</a></li>
+  <li> <a href="#Making_and_freeing_frames">Making and freeing frames</a></li>
+  <li> <a href="#Making,_using_and_freeing_objects">Making, using
+and freeing objects</a></li>
+  
+  <ul>
+ <li> <a href="#Wrapping_data_in_objects">Wrapping data in objects</a></li>
+  <li> <a
+ href="#Creating_and_accessing_key-value_pairs_in_frames">Creating 
+and accessing key-value pairs in frames</a></li>
+ 
+  </ul>
+  <li> <a href="#Summary">Summary</a></li>
+ 
+</ul>
+ Once you learn enough, you can consult the <a
+ href="../reference/frame.html">frame and object reference</a>. 
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="What's_in_a_frame"></a>What's in a frame?</h2>
+ A frame consists of 
+<ul>
+ <li> a type, which will always be a clause for us;</li>
+  <li> a name;</li>
+  <li> a set of pairs of keys and their associated values</li>
+ 
+</ul>
+ By convention, the names of keys start with a colon (":"). There are many
+available types for the values, but we will focus on integers, strings, lists,
+and frames. Here's what the printed representation of all these types looks
+like: 
+<center><img src="../../images/FrameDetail.jpg" nosave="" height="263"
+ width="623">
+</center>
+ A frame in C is a structure called a Gal_Frame. The values are all different
+basic C types: integers are C <tt>int</tt>, frames are C <tt>Gal_Frame</tt>,
+strings are C <tt>char *</tt>. In order to be able to manipulate these values
+with a common interface, they are wrapped in a C structure called a Gal_Object,
+which contains the data and a constant of type Gal_ObjectType indicating
+the data type. Lists, for instance, are implemented as arrays of Gal_Objects,
+so that it's possible to put elements of different types in the same list.
+Here's approximately what the frame above looks like, structurally: 
+<center><img src="../../images/FrameStructure.jpg" nosave=""
+ height="215" width="671">
+</center>
+  
+<p>Here's a table of the properties of the four types we'll be discussing. 
+<br>
+&nbsp; 
+<table border="1" width="100%" nosave="">
+ <tbody>
+    <tr nosave="">
+ <td nosave=""><b>Gal_ObjectType</b></td>
+  <td><b>C type</b></td>
+  <td><b>printed representation</b></td>
+  <td><b>comments</b></td>
+ </tr>
+  <tr nosave="">
+ <td nosave="">GAL_FRAME</td>
+  <td>Gal_Frame</td>
+  <td><tt>{&lt;type&gt; &lt;name&gt; &lt;key&gt; &lt;value&gt; ... }</tt></td>
+  <td>whitespace between opening bracket and type is forbidden; whitespace
+between elements (type, name, keys, values) is obligatory</td>
+ </tr>
+  <tr>
+ <td>GAL_STRING</td>
+  <td>(char *)</td>
+  <td><tt>"foo"</tt></td>
+  <td>whitespace in strings is preserved; escape character is backslash (\)</td>
+ </tr>
+  <tr>
+ <td>GAL_INT</td>
+  <td>32 bit integer</td>
+  <td><tt>5</tt></td>
+  <td>explicit sign prefixes (+,-) also recognized</td>
+ </tr>
+  <tr>
+ <td>GAL_LIST</td>
+  <td>an array of Gal_Objects</td>
+  <td><tt>( &lt;obj&gt; &lt;obj&gt; &lt;obj&gt; )</tt></td>
+  <td>lists are heterogeneous (multiple object types can appear in a single
+list); whitespace between elements is obligatory</td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="Making_and_freeing_frames"></a>Making and freeing frames</h2>
+ The fundamental functions for creating a frame is <a
+ href="../reference/frame.html#Gal_MakeFrame">Gal_MakeFrame</a>. In C, because
+you have to do your own memory management, you must also free the frames
+you use with the function <a
+ href="../reference/frame.html#Gal_FreeFrame">Gal_FreeFrame</a>. 
+<blockquote><tt>/* Create the frame */</tt> <br>
+  <tt>Gal_Frame f = Gal_MakeFrame("output", GAL_CLAUSE);</tt> 
+  <p><tt>/* Do something with the frame */</tt> <br>
+  <tt>...</tt> <br>
+  <tt>/* Free the frame */</tt> <br>
+  <tt>Gal_FreeFrame(f);</tt></p>
+</blockquote>
+ Alternatively, you can use the function <a
+ href="../reference/frame.html#Gal_ReadFrameFromString">Gal_ReadFrameFromString</a> 
+to convert the string representation of a frame into a Gal_Frame structure: 
+<blockquote><tt>/* Create the frame */</tt> <br>
+  <tt>Gal_Frame f = Gal_ReadFrameFromString("{c output }");</tt> 
+  <p><tt>/* Do something with the frame */</tt> <br>
+  <tt>...</tt> <br>
+  <tt>/* Free the frame */</tt> <br>
+  <tt>Gal_FreeFrame(f);</tt></p>
+</blockquote>
+  
+<hr width="100%"> 
+<h2> <a name="Making,_using_and_freeing_objects"></a>Making, using and freeing
+objects</h2>
+  
+<h3> <a name="Wrapping_data_in_objects"></a>Wrapping data in objects</h3>
+ For each type, there's a function for creating an appropriate Gal_Object,
+as well as a function for extracting that datatype from the created Gal_Object: 
+<br>
+&nbsp; 
+<table border="1" cols="3" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td><b>Gal_ObjectType</b></td>
+  <td><b>Creating a Gal_Object</b></td>
+  <td><b>Extracting the data from the Gal_Object</b></td>
+ </tr>
+  <tr>
+ <td>GAL_FRAME</td>
+  <td><a href="../reference/frame.html#Gal_FrameObject">Gal_FrameObject</a></td>
+  <td><a href="../reference/frame.html#Gal_FrameValue">Gal_FrameValue</a></td>
+ </tr>
+  <tr>
+ <td>GAL_STRING</td>
+  <td><a href="../reference/frame.html#Gal_StringObject">Gal_StringObject</a></td>
+  <td><a href="../reference/frame.html#Gal_StringValue">Gal_StringValue</a></td>
+ </tr>
+  <tr>
+ <td>GAL_INT</td>
+  <td><a href="../reference/frame.html#Gal_IntObject">Gal_IntObject</a></td>
+  <td><a href="../reference/frame.html#Gal_IntValue">Gal_IntValue</a></td>
+ </tr>
+  <tr>
+ <td>GAL_LIST</td>
+  <td><a href="../reference/frame.html#Gal_ListObject">Gal_ListObject</a></td>
+  <td><a href="../reference/frame.html#Gal_ListValue">Gal_ListValue</a></td>
+ </tr>
+ 
+  </tbody>
+</table>
+  
+<p>All these objects can be freed using the function <a
+ href="../reference/frame.html#Gal_FreeObject">Gal_FreeObject</a>. Here are
+some examples with frames, strings and integers: </p>
+<blockquote><tt>Gal_Object frame_obj, string_obj, int_obj, list_obj;</tt> 
+  <br>
+  <tt>Gal_Object list_array[3];</tt> <br>
+  <tt>Gal_Frame output_frame;</tt> <br>
+  <tt>char *foo;</tt> <br>
+  <tt>int five;</tt> <br>
+  <tt>int list_length;</tt> <br>
+  <tt>Gal_Object *list_contents;</tt> 
+  <p><tt>/* Create a frame and wrap an object around it */</tt> <br>
+  <tt>frame_obj = Gal_FrameObject(Gal_ReadFrameFromString("{c output }"));</tt> 
+  </p>
+  <p><tt>/* Wrap an object around a string */</tt> <br>
+  <tt>string_obj = Gal_StringObject("foo");</tt> </p>
+  <p><tt>/* Wrap an object around an integer */</tt> <br>
+  <tt>int_obj = Gal_IntObject(5);</tt> </p>
+  <p><tt>/* Extract the frame from the object */</tt> <br>
+  <tt>output_frame = Gal_FrameValue(frame_obj);</tt> </p>
+  <p><tt>/* Extract the string from the object */</tt> <br>
+  <tt>foo = Gal_StringValue(string_obj);</tt> </p>
+  <p><tt>/* Extract the integer from the object */</tt> <br>
+  <tt>five = Gal_IntValue(int_object);</tt> </p>
+  <p><tt>/* Populate the list array */</tt> <br>
+  <tt>list_array[0] = frame_obj;</tt> <br>
+  <tt>list_array[1] = string_obj;</tt> <br>
+  <tt>list_array[3] = int_obj;</tt> </p>
+  <p><tt>/* Wrap a list around the array.</tt> <br>
+  <tt>&nbsp;&nbsp; Printed representation of the list is</tt> </p>
+  <p><tt>&nbsp;&nbsp; ( {c output } "foo" 5 )</tt> <br>
+  <tt>*/</tt> <br>
+  <tt>list_obj = Gal_ListObject(list_array, 3);</tt> </p>
+  <p><tt>/* Extract the list from the object. The list_length integer will</tt> 
+  <br>
+  <tt>&nbsp;&nbsp; contain the length of the list (i.e., 3) */</tt> <br>
+  <tt>list_contents = Gal_ListValue(list_array, &amp;list_length);</tt> </p>
+  <p><tt>/* Free the list object. See the memory management note. */</tt> 
+  <br>
+  <tt>Gal_FreeObject(list_obj);</tt></p>
+</blockquote>
+ <b>Memory management note</b>. The rules of memory management for frames
+and objects is a little complicated, and we won't go into it here. The only
+point worth noting at this point is that for the set of functions we use
+here, when frames and objects are freed, all the frames and objects in them
+are freed. The <a href="../reference/frame.html">full reference</a> has complete
+details, as well as alternative functions which give you more control over
+memory management. 
+<h3> <a name="Creating_and_accessing_key-value_pairs_in_frames"></a>Creating 
+and accessing key-value pairs in frames</h3>
+ The two basic functions for manipulating objects in frames are <a
+ href="../reference/frame.html#Gal_SetProp">Gal_SetProp</a> and <a
+ href="../reference/frame.html#Gal_GetObject">Gal_GetObject</a>. Let's use
+strings as an example: 
+<blockquote><tt>Gal_Object string_obj;</tt> <br>
+  <tt>char *string;</tt> <br>
+  <tt>/* Create the frame */</tt> <br>
+  <tt>Gal_Frame f = Gal_MakeFrame("output", GAL_CLAUSE);</tt> 
+  <p><tt>/* Add a string. Printed representation of the frame is now</tt> 
+  </p>
+  <p><tt>&nbsp; {c output :output_string "hello" }</tt> <br>
+  <tt>*/</tt> <br>
+  <tt>Gal_SetProp(f, ":output_string", Gal_StringObject("hello"));</tt> </p>
+  <p><tt>/* Extract the string object. */</tt> <br>
+  <tt>string_obj = Gal_GetObject(f, ":output_string");</tt> <br>
+  <tt>string = Gal_StringValue(string_obj);</tt></p>
+</blockquote>
+ To extract the data from the frames directly, there's a set of shorthand
+functions that we frequently use. These functions find the appropriate key-value
+pair and check to see that the value is of the appropriate type: <br>
+&nbsp; 
+<table border="1" cols="2" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td><b>Gal_ObjectType</b></td>
+  <td><b>Extracting the data from the frame</b></td>
+ </tr>
+  <tr>
+ <td>GAL_FRAME</td>
+  <td><a href="../reference/frame.html#Gal_GetFrame">Gal_GetFrame</a></td>
+ </tr>
+  <tr>
+ <td>GAL_STRING</td>
+  <td><a href="../reference/frame.html#Gal_GetString">Gal_GetString</a></td>
+ </tr>
+  <tr>
+ <td>GAL_INT</td>
+  <td><a href="../reference/frame.html#Gal_GetInt">Gal_GetInt</a></td>
+ </tr>
+  <tr>
+ <td>GAL_LIST</td>
+  <td><a href="../reference/frame.html#Gal_GetList">Gal_GetList</a></td>
+ </tr>
+ 
+  </tbody>
+</table>
+  
+<p>So the example above could be rewritten as follows: </p>
+<blockquote><tt>char *string;</tt> <br>
+  <tt>/* Create the frame */</tt> <br>
+  <tt>Gal_Frame f = Gal_MakeFrame("output", GAL_CLAUSE);</tt> 
+  <p><tt>/* Add a string. Printed representation of the frame is now</tt> 
+  </p>
+  <p><tt>&nbsp; {c output :output_string "hello" }</tt> <br>
+  <tt>*/</tt> <br>
+  <tt>Gal_SetProp(f, ":output_string", Gal_StringObject("hello"));</tt> </p>
+  <p><tt>/* Extract the string object. */</tt> <br>
+  <tt>string = Gal_GetString(f, ":output_string");</tt></p>
+</blockquote>
+ Lists and integers have some special properties. For integers, the problem
+is that all these functions return NULL when they don't find the appropriate
+key-value pair. This is a problem for Gal_GetInt, because NULL is equivalent
+in C to 0; as a result, Gal_GetInt can't distinguish between a value of 0
+and the absence of a key. So we recommend using Gal_GetObject followed by
+Gal_IntValue if the distinction is important to you. 
+<p>For lists, there is an additional function <a
+ href="../reference/frame.html#Gal_GetListObject">Gal_GetListObject</a> which
+extracts the nth element of a list in a key-value pair: </p>
+<blockquote><tt>Gal_Frame f = Gal_ReadFrameFromString("{c listframe :list 
+( 5 6 7 ) }");</tt> <br>
+  <tt>Gal_Object int_obj;</tt> 
+  <p><tt>/* int_obj will be a Gal_Object wrapped around the integer 7 */</tt> 
+  <br>
+  <tt>int_obj = Gal_GetListObject(f, ":list", 2);</tt></p>
+</blockquote>
+  
+<hr width="100%"> 
+<h2> <a name="Summary"></a>Summary</h2>
+ There are many more ways of manipulating frames and objects. There are functions
+to 
+<ul>
+ <li> compare frames and objects</li>
+  <li> copy frames and objects</li>
+  <li> create objects wrapped around expandable lists and arrays</li>
+  <li> extract the name and type of frames</li>
+  <li> create frames and objects using explicit memory management</li>
+  <li> manipulate many other data types, such as arrays of 8-, 16-, 32- and
+64-bit integers</li>
+  <li> print frames and objects in a number of different formats</li>
+  <li> extract and check the type of objects</li>
+  <li> and more</li>
+ 
+</ul>
+ You can find all this information in the <a
+ href="../reference/frame.html">frame and object reference</a>. However,
+for the purposes of this course, we've introduced in this lesson all the
+functions you'll need to understand how frames and objects are being manipulated: 
+<ul>
+ <li> frames: <a href="../reference/frame.html#Gal_MakeFrame">Gal_MakeFrame</a>, 
+    <a href="../reference/frame.html#Gal_FreeFrame">Gal_FreeFrame</a>, <a
+ href="../reference/frame.html#Gal_ReadFrameFromString">Gal_ReadFrameFromString</a></li>
+  <li> frames in other frames: <a
+ href="../reference/frame.html#Gal_FrameObject">Gal_FrameObject</a>, <a
+ href="../reference/frame.html#Gal_FrameValue">Gal_FrameValue</a>, <a
+ href="../reference/frame.html#Gal_GetFrame">Gal_GetFrame</a></li>
+  <li> strings: <a href="../reference/frame.html#Gal_StringObject">Gal_StringObject</a>, 
+    <a href="../reference/frame.html#Gal_StringValue">Gal_StringValue</a>, 
+    <a href="../reference/frame.html#Gal_GetString">Gal_GetString</a></li>
+  <li> integers: <a href="../reference/frame.html#Gal_IntObject">Gal_IntObject</a>, 
+    <a href="../reference/frame.html#Gal_IntValue">Gal_IntValue</a>, <a
+ href="../reference/frame.html#Gal_GetInt">Gal_GetInt</a></li>
+  <li> lists: <a href="../reference/frame.html#Gal_ListObject">Gal_ListObject</a>, 
+    <a href="../reference/frame.html#Gal_ListValue">Gal_ListValue</a>, <a
+ href="../reference/frame.html#Gal_GetList">Gal_GetList</a>, <a
+ href="../reference/frame.html#Gal_GetListObject">Gal_GetListObject</a></li>
+  <li> objects: <a href="../reference/frame.html#Gal_FreeObject">Gal_FreeObject</a>, 
+    <a href="../reference/frame.html#Gal_SetProp">Gal_SetProp</a>, <a
+ href="../reference/frame.html#Gal_GetObject">Gal_GetObject</a></li>
+ 
+</ul>
+ In the next lesson, we'll see how these are used in writing Communicator-compliant
+servers. 
+<p><b>Next</b>: <a href="basic_server.html">Server basics</a> </p>
+<p> </p>
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "../../../contrib/MITRE/demos/docs/toy-travel-tut.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "basic_server.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated September 12, 2001</center>
+  <br>
+</body>
+</html>

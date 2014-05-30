@@ -1,0 +1,406 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Logging</title>
+     <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+  
+<center> 
+<h1> Galaxy Communicator Documentation:</h1>
+</center>
+  
+<center> 
+<h1> Logging</h1>
+</center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "pgm.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "brokering.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+  
+<hr width="100%"> 
+<ul>
+ <li> <a href="#What_Can_Be_Logged_and_Why">What Can Be Logged
+and Why</a></li>
+  <li> <a
+ href="#Adding_Logfile_Instructions_to_the_Program_File">Adding 
+Logfile Instructions to the Program File</a></li>
+  
+  <ul>
+ <li> <a href="#Global_Parameters">Global Parameters</a></li>
+  
+    <ul>
+ <li> <a href="#LOG_DIR:">LOG_DIR:</a></li>
+  <li> <a href="#LOG_VERSION:">LOG_VERSION:</a></li>
+  <li> <a href="#LOG_HUB_ACTIVITY:">LOG_HUB_ACTIVITY:</a></li>
+  <li> <a href="#TIMESTAMP:">TIMESTAMP:</a></li>
+  <li> <a href="#USER_ID:">USER_ID:</a></li>
+ 
+    </ul>
+  <li> <a href="#Parameters_within_the_Scope_of_a_Rule">Parameters 
+within the Scope of a Rule</a></li>
+  
+    <ul>
+ <li> <a href="#LOG_IN:">LOG_IN:</a></li>
+  <li> <a href="#LOG_OUT:">LOG_OUT:</a></li>
+ 
+    </ul>
+  <li> <a
+ href="#Parameters_within_the_Scope_of_a_Program_or_Message">Parameters 
+within the Scope of a Program or Message</a></li>
+ 
+  </ul>
+  <li> <a href="#Audio_Logging">Audio Logging</a></li>
+  <li> <a href="#When_and_How_Data_Get_Logged">When and How Data
+Get Logged</a></li>
+  
+  <ul>
+ <li> <a href="#Key_Values_and_Frame_Contents">Key Values and Frame
+Contents</a></li>
+  <li> <a href="#Timestamps">Timestamps</a></li>
+  <li> <a href="#Audio">Audio</a></li>
+ 
+  </ul>
+  <li> <a href="#Where_Logfiles_and_Data_are_Stored">Where Logfiles
+and Data are Stored</a></li>
+ 
+</ul>
+  
+<p><br>
+ </p>
+<hr width="100%"> 
+<h2> <a name="What_Can_Be_Logged_and_Why"></a>What Can Be Logged and Why</h2>
+ Execution of server operations, contents of key values, and spoken utterances
+can be logged for purposes of debugging or playback.&nbsp; Logfile instructions
+are useful for spot checking the system, and the resulting logs display attributes
+important for debugging. 
+<p>As of version 2.0, it is now possible to log incoming Hub messages and
+keys in both scripted and scriptless modes, as well as Hub activity such
+as alarm expirations, etc. Also, it is now possible to version your logs. 
+<br>
+&nbsp; </p>
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="Adding_Logfile_Instructions_to_the_Program_File"></a>Adding 
+Logfile Instructions to the Program File</h2>
+ There is no simple way to "turn on" logging, but one can tailor a <a
+ href="pgm.html">program file</a> to log specific data. <br>
+&nbsp; 
+<h4> <a name="Global_Parameters"></a>Global Parameters</h4>
+  
+<p><br>
+Some logging parameters are defined globally in the <a href="pgm.html">program
+file</a>.&nbsp; These instruct what to log and when.&nbsp; The following
+table contains the logfile instruction parameters that need to be defined
+globally in the <a href="pgm.html">program file</a>. Note that any line breaks
+in these entries are the result of browser formatting; no linebreaks are
+permitted in these entries. <br>
+&nbsp; 
+<table border="1" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td><b>logging variable</b></td>
+  <td><b>description</b></td>
+  <td><b>what can be logged</b></td>
+  <td><b>example</b></td>
+ </tr>
+  <tr>
+ <td><a name="LOG_DIR:"></a>LOG_DIR:</td>
+  <td> <li> top level logging directory</li>
+  <li> path can be relative or absolute</li>
+  <li> logging will not occur if not declared (no default value)</li>
+  <li> if this directory does not exist, it is created</li>
+ </td>
+  <td>n/a</td>
+  <td><tt>LOG_DIR:&nbsp; /usr/users/communicator/logs</tt></td>
+ </tr>
+  <tr>
+ <td><a name="LOG_HUB_ACTIVITY:"></a>LOG_HUB_ACTIVITY:</td>
+  <td> <li> list of Hub events to log</li>
+ </td>
+  <td>legal values are <tt>serve_any_session serve_this_session_only</tt> 
+      <br>
+      <tt>get_session_lock release_session_lock alarm_activity system_errors</tt></td>
+  <td><tt>LOG_HUB_ACTIVITY:serve_any_session system_errors</tt></td>
+ </tr>
+  <tr>
+ <td><a name="LOG_VERSION:"></a>LOG_VERSION:</td>
+  <td> <li> user string to track log versions</li>
+ </td>
+  <td>an arbitrary string which can be used to differentiate different strategies
+for logging a system (if, for instance, you change the names of your keys
+or operations and your automatic annotation tools need to be able to tell
+which strategy is being used)</td>
+  <td><tt>LOG_VERSION: "travel demo, version 2.3"</tt></td>
+ </tr>
+  <tr>
+ <td><a name="TIMESTAMP:"></a>TIMESTAMP:</td>
+  <td> <li> server operations or programs/messages to log with timestamps</li>
+  <li> timestamps are recorded whenever the specified operations are executed
+or programs are invoked (<a
+ href="#When_and_How_Data_Get_Logged">see below</a>)</li>
+  <li> legal values are any message name, with an optional <a
+ href="../advanced/provider_id.html#Service_type_and_provider_prefixes">operation 
+name prefix</a></li>
+  <li> entries match by identical string match or by description (.e.g, <tt>[parser].Parse</tt> 
+forces a timestamp entry for any&nbsp; <tt>Parse</tt> message routed to or
+from the provider with the provider ID <tt>[parser]</tt>)</li>
+  <li> only one <tt>TIMESTAMP:</tt> line per program file (subsequent declarations
+override)</li>
+      <li>the special key <tt>:hub_all_operations</tt> &nbsp;forces all operations
+to be timestamped<br>
+      </li>
+ </td>
+  <td>server operations</td>
+  <td><tt>TIMESTAMP:&nbsp; create_frame context_tracking_in paraphrase_request 
+turn_management [context].paraphrase_reply&nbsp;</tt></td>
+ </tr>
+  <tr>
+ <td><a name="USER_ID:"></a>USER_ID:</td>
+  <td> <li> user identification</li>
+  <li> name of logging subdirectory (under &lt;<tt>LOG_DIR:</tt>&gt;)</li>
+  <li> used as prefix to the logfile</li>
+  <li> if not specified, default value is '<tt>sls'</tt></li>
+ </td>
+  <td>n/a</td>
+  <td><tt>USER_ID: travel_audio</tt></td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<h4> <a name="Parameters_within_the_Scope_of_a_Rule"></a>Parameters within
+the Scope of a Rule</h4>
+  
+<p><br>
+Other logging parameters can be defined within the scope of a given rule.&nbsp;
+The variables below allow specific key values to be logged in association
+with the execution of a particular operation. <br>
+&nbsp; 
+<table border="1" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td><b>logging variable</b></td>
+  <td><b>description</b></td>
+  <td><b>what can be logged</b></td>
+  <td><b>example</b></td>
+ </tr>
+  <tr>
+ <td><a name="LOG_IN:"></a>LOG_IN:</td>
+  <td> <li> associated with a particular program file rule or program/message</li>
+  <li> keys are specified within the scope of a rule</li>
+  <li> values are stored before the rule is fired</li>
+  <li> keys are logged from message, not from token</li>
+  <li> using LOG_IN:&nbsp;forces a timestamp to be recorded</li>
+ </td>
+  <td>values of keys, frame contents</td>
+  <td><tt>RULE: !:thin_frame &amp; !:parse_frame &amp; :input_string --&gt; 
+nl.create_frame</tt> <br>
+      <tt>IN: :input_string :domain</tt> <br>
+      <b><tt>LOG_IN: :input_string</tt></b> <br>
+      <tt>OUT: :thin_frame :parse_status</tt></td>
+ </tr>
+  <tr nosave="">
+ <td><a name="LOG_OUT:"></a>LOG_OUT:</td>
+  <td> <li> associated with a particular program file rule or program/message</li>
+  <li> keys are specified within the scope of a rule</li>
+  <li> values are stored upom return from the server</li>
+  <li> keys are logged from message, not from token</li>
+  <li> using LOG_OUT:&nbsp;forces a timestamp to be recorded</li>
+ </td>
+  <td>values of keys, frame contents</td>
+  <td nosave=""><tt>RULE: !:thin_frame &amp; !:parse_frame &amp; :input_string 
+--&gt; nl.create_frame</tt> <br>
+      <tt>IN: :input_string :domain</tt> <br>
+      <tt>OUT: :thin_frame :parse_status</tt> <br>
+      <b><tt>LOG_OUT: :thin_frame :parse_status</tt></b></td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>It is also possible to use specify mappings between local and remote keys,
+as you can with <a href="pgm.html#Input_Parameters">IN:</a> and <a
+ href="pgm.html#Output_Parameters">OUT:</a> </p>
+<blockquote><tt>LOG_IN: (:parse_frame :input_frame)</tt></blockquote>
+ Both normal and error replies will be logged if you have LOG_OUT: keys specified.
+All error replies are logged. 
+<h4> <a name="Parameters_within_the_Scope_of_a_Program_or_Message"></a>Parameters 
+within the Scope of a Program or Message</h4>
+ The LOG_IN:&nbsp;and LOG_OUT:&nbsp;directives can also be used to log messages
+which the Hub receives (and the replies the Hub sends to the originating
+server). There are two ways to do this. 
+<p>If the Hub finds a matching program, you can use LOG_IN:/LOG_OUT: in at
+the top level of the PROGRAM: block. LOG_OUT:&nbsp;will only be respected
+if the server is awaiting a reply. </p>
+<blockquote><tt>SERVER: parser</tt> <br>
+  <tt>OPERATIONS: parse_nl</tt> 
+  <p><tt>PROGRAM: main</tt> <br>
+  <tt>LOG_IN: :string</tt> </p>
+  <p><tt>RULE: :string --&gt; parser.parse_nl</tt></p>
+</blockquote>
+ In scriptless mode, you can use LOG_IN: and/or LOG_OUT: under the MESSAGE:
+declaration: <br>
+&nbsp; 
+<table border="1" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td><b>logging variable</b></td>
+  <td><b>description</b></td>
+  <td><b>what can be logged</b></td>
+  <td><b>example</b></td>
+ </tr>
+  <tr>
+ <td><a name="MESSAGE:"></a>MESSAGE:</td>
+  <td>the name of a message which the Hub may receive</td>
+  <td>n/a</td>
+  <td><tt>MESSAGE: parse_string</tt></td>
+ </tr>
+ 
+  </tbody>
+</table>
+  
+<p>This declaration might be used as follows: </p>
+<blockquote><tt>SERVER: parser</tt> <br>
+  <tt>OPERATIONS: parse_nl</tt> 
+  <p><tt>MESSAGE: parse_nl</tt> <br>
+  <tt>LOG_IN: :string</tt></p>
+</blockquote>
+ When the Hub receives the <tt>parse_nl</tt> message, it will log the <tt>:string</tt> 
+key value before it passes the message on to the appropriate server. If the
+originating server is awaiting a reply, LOG_OUT:&nbsp;is also respected. Unlike
+the PROGRAM:&nbsp;directive, but like the <a href="#TIMESTAMP:">TIMESTAMP:</a>&nbsp;directive, 
+the MESSAGE:&nbsp;directive matches both by literal name and by description; 
+so <tt>MESSAGE:&nbsp;parser.parse</tt> will support logging of any incoming
+message or outgoing reply whose name is either literally <tt>parser.parse</tt> 
+or any <tt>parse</tt> message which is intended for a provider of service
+type <tt>parser</tt>. This latter case is possible if the caller explicitly
+<a href="../advanced/provider_id.html#Bypassing_Hub_programs">forces the
+Hub program matching to be bypassed</a>. 
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="Audio_Logging"></a>Audio Logging</h2>
+ The MIT audio server implements a fairly complex way of logging audio. We
+no longer document this method, because the MIT audio server is no longer
+being distributed with Galaxy Communicator. If you're writing an audio server,
+this server needs to do some basic things: 
+<ul>
+ <li> It should capture the audio and write it to a file, allowing the filename
+path and prefix to be set by calling dispatch functions</li>
+  <li> It should report the filename back to the Hub</li>
+ 
+</ul>
+ The fact that audio is typically shipped around by brokering can cause some
+difficulty, because the Hub can't log the audio (since it doesn't pass through
+the Hub), and if the Hub and audio servers can't access the same file system,
+the audio files will have to be moved to the appropriate location by some
+outside process. 
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="When_and_How_Data_Get_Logged"></a>When and How Data Get Logged</h2>
+  
+<ul>
+ <li> <a href="#Key_Values_and_Frame_Contents">Key Values and Frame
+Contents</a></li>
+  <li> <a href="#Timestamps">Timestamps</a></li>
+  <li> <a href="#Audio">Audio</a></li>
+ 
+</ul>
+  
+<h4> <a name="Key_Values_and_Frame_Contents"></a>Key Values and Frame Contents</h4>
+ Parameters (key values and frame contents) are logged either before or after
+the associated rule is fired.&nbsp; LOG_IN: parameters are stored before
+the operation is executed.&nbsp; LOG_OUT: parameters are logged upon return
+from the server. 
+<h4> <a name="Timestamps"></a>Timestamps</h4>
+ Explicit timestamps from the <a href="#TIMESTAMP:">TIMESTAMP:</a>&nbsp;directive 
+are recorded whenever the listed operations are called or programs/messages 
+are invoked. Implicit timestamps resulting from the presence of LOG_IN:&nbsp;or 
+LOG_OUT:&nbsp;parameters are logged in the appropriate circumstance; those 
+in the context of the RULE:&nbsp;directive are recorded when the operations 
+are called, and those in the context of the PROGRAM:&nbsp;or MESSAGE:&nbsp;directives 
+are recorded when a new message is received by the Hub or when a reply message
+is returned to the caller. <br>
+&nbsp; 
+<h4> <a name="Audio"></a>Audio</h4>
+ Audio should be logged by the audio server when the audio server is done
+processing it. 
+<hr width="100%"> 
+<h2> <a name="Where_Logfiles_and_Data_are_Stored"></a>Where Logfiles and
+Data are Stored</h2>
+ Text logfiles are stored in the logfile directory as &lt;<tt>LOG_DIR:</tt>&gt;/&lt;<tt>USER_ID<i>:&gt;</i>/<i><a
+ href="#date">date</a></i>/<i><a href="#call_number">counter</a></i>/&lt;USER_ID:&gt;-<i><a
+ href="#date">date</a></i>-<i><a href="#call_number">counter</a></i>-<a
+ href="#hublog.text">hublog.txt</a></tt>, where: <br>
+&nbsp; 
+<table border="1" width="100%" nosave="">
+ <tbody>
+    <tr nosave="">
+ <td nosave="">USER_ID:</td>
+  <td> <li> <a href="#USER_ID:">user identification</a> as specified in <a
+ href="pgm.html">program file</a></li>
+  <li> default value is 'sls'</li>
+ </td>
+ </tr>
+  <tr>
+ <td><a name="date"></a><i><tt>date</tt></i></td>
+  <td> <li> date of log in <b><tt>yyyymmdd</tt></b> format</li>
+ </td>
+ </tr>
+  <tr>
+ <td><a name="call_number"></a><i><tt>counter</tt></i></td>
+  <td> <li> 3-digit session identifcation in <b><tt>ddd</tt></b> format</li>
+ </td>
+ </tr>
+  <tr>
+ <td><a name="hublog.text"></a>hublog.text</td>
+  <td> <li> default suffix</li>
+ </td>
+ </tr>
+ 
+  </tbody>
+</table>
+  
+<p>The location of audio log files depends on the configuration of your audio
+server. The value of LOG_DIR: and the remainder of the logfile prefix are
+<a href="pgm.html#Special_logging_session_keys">available in the Hub
+scripting language</a> to pass to your servers if necessary. </p>
+<p> </p>
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "pgm.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "brokering.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated May 25, 2002</center>
+  <br>
+</body>
+</html>

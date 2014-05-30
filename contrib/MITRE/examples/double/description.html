@@ -1,0 +1,177 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+        
+  <meta name="GENERATOR"
+ content="Mozilla/4.75 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Example: The Double Server</title>
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+    
+<center>  
+<h1> Galaxy Communicator Documentation: <br>
+ <br>
+ Double server example</h1>
+ </center>
+   
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+     <tbody>
+       <tr>
+         <td valign="middle" align="left" width="10%"><a
+ href="../../../../docs/manual/reference/glossary.html"><img
+ src="../../../../docs/arrow_left.gif" alt="" width="30" height="30">
+       </a></td>
+         <td valign="middle" align="center">          <a
+ href="../../../../LICENSE">License</a> / <a
+ href="../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+        </td>
+         <td valign="middle" align="right" width="10%"><a
+ href="../audio/description.html"><img
+ src="../../../../docs/arrow_right.gif" alt="" width="30" height="30">
+       </a></td>
+       </tr>
+          
+  </tbody>   
+</table>
+    
+<hr> In this example, we demonstrate the basic functionality of the Communicator 
+server architecture.  
+<p>This example can be found in the distribution in <tt>contrib/MITRE/examples/double</tt>.
+ </p>
+ 
+<h3> Source files</h3>
+  double_core.c: demonstrates a number of basic capabilities and important 
+details of writing a Communicator server, including  
+<ul>
+  <li> using the command line argument parsing utilities</li>
+   <li> writing a simple dispatch function</li>
+   <li> sending a message to the Hub</li>
+   <li> manipulating frames</li>
+   <li> defining _GalSS_init_server()</li>
+   <li> defining the special reinitialize() dispatch function</li>
+   <li> raising and handling errors</li>
+   <li> defining message signatures (see double_server.h)</li>
+   <li> setting up continuations</li>
+   
+</ul>
+  multiply.c: demonstrates the use of the INIT: keyword in the program file, 
+as well as implementing the second server for the complex double example.
+ 
+<p>headerless_double.c: illustrates the same basic capabilities as double.c, 
+but in addition shows how to declare server information without using the 
+server headers. </p>
+ 
+<h3> Running the example</h3>
+ All configurations in this example can be accessed by invoking the process 
+monitor, as follows.<br>
+ 
+<blockquote><tt><b>Unix</b><br>
+   <br>
+ % cd &lt;root_of_GC&gt;<br>
+ % ./contrib/MITRE/tools/bin/process_monitor contrib/MITRE/examples/double/double.config<br>
+   <br>
+   <b>Windows</b><br>
+   <br>
+ C:\&gt; set GC_HOME=&lt;root_of_GC&gt;<br>
+ C:\&gt; python %GC_HOME%\</tt><tt>contrib\MITRE\tools\src\process_monitor\process_monitor.py 
+%GC_HOME%\contrib\MITRE\examples\double\double.config</tt><br>
+ </blockquote>
+ In addition, on Unix, we generate the following scripts.<br>
+ <br>
+  double.csh: runs the double server and the Hub, using the double.pgm program 
+file. You can play with the headerless_double server by substituting it into 
+this script.  
+<p>complex_double.csh: runs the double server, the multiply server, and the 
+Hub, using the complex_double.pgm program file. </p>
+ 
+<p>validating_complex_double.csh: runs the double server, the multiply server, 
+and the Hub, using the wrong_complex_double.pgm program file. This program 
+file contains several errors, warning for which are printed out by the Hub, 
+which is started with the -validate flag. See the program file for details.
+ </p>
+ 
+<p>scriptless_complex_double.csh: runs the double server, the multiply server, 
+and the Hub, using the scriptless_complex_double.pgm program file. This program 
+file has no programs. </p>
+ 
+<p>logging_complex_double.csh: runs the double server, the multiply server, 
+and the Hub, using the logging_complex_double.pgm program file. This demo 
+exemplifies partial scripting and logging. </p>
+ 
+<p>client_complex_double.csh: runs the double server, the multiply server, 
+and the Hub, using the client_complex_double.pgm program file. This demo exemplifies
+the listener-in-Hub capability. To run this example, start the Hub first,
+then the multiply server, then the double server. </p>
+ 
+<p>continuation_double.csh: runs the double server and the Hub, using the 
+continuation_double.pgm program file. This example demonstrates how to use 
+continuations, and in particular how they can be used to resolve deadlocks. 
+See the comments in the program file for details. </p>
+ 
+<h3> Language bindings</h3>
+  The python/ subdirectory contains Python versions of the double and multiply 
+servers. These servers are completely interchangeable with the C versions. 
+In order to play with them, you can substitute them into the scripts.  
+<p>The acl/ subdirectory contains Allegro Common Lisp versions of the double 
+and multiply servers. These servers are completely interchangeable with the 
+C versions. In order to play with them, you can substitute them into the scripts.
+</p>
+ 
+<p>The java/ subdirectory contains a Java version of the double and multiply 
+servers. These servers are completely interchangeable with the C versions. 
+In order to play with them, you can substitute them into the scripts. Note 
+that the command line arguments for the Java version of the listener-in-Hub 
+capability are slightly different than the other bindings. </p>
+ 
+<h3> Compilation</h3>
+  On Unix, typing "make" in this directory will create the servers, MIT-style 
+Makefiles, scripts, and Python, Java and Allegro Common Lisp servers.  
+<p>The C version of this server contains a MSVC workspace for Windows, which 
+is also included in the toplevel MSVC workspace for the Galaxy Communicator 
+distribution. </p>
+ 
+<h3> Discussion</h3>
+  See the documentation on <a
+ href="../../../../docs/manual/reference/adding.html">adding a server</a>.
+ 
+<p> </p>
+ 
+<hr> 
+<center>  
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+     <tbody>
+       <tr>
+         <td valign="middle" align="left" width="10%"><a
+ href="../../../../docs/manual/reference/glossary.html"><img
+ src="../../../../docs/arrow_left.gif" alt="" width="30" height="30">
+       </a></td>
+         <td valign="middle" align="center">          <a
+ href="../../../../LICENSE">License</a> / <a
+ href="../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+        </td>
+         <td valign="middle" align="right" width="10%"><a
+ href="../audio/description.html"><img
+ src="../../../../docs/arrow_right.gif" alt="" width="30" height="30">
+       </a></td>
+       </tr>
+          
+  </tbody>   
+</table>
+   Last updated August 8, 2002</center>
+   <br>
+ <br>
+</body>
+</html>

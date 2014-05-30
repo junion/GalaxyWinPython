@@ -1,0 +1,22 @@
+;; Use extended syntax (new in version 3.0).
+
+PGM_SYNTAX: extended
+
+SERVICE_TYPE: UI
+CLIENT_PORT: 14500
+
+SERVICE_TYPE: Audio
+CLIENT_PORT: 14500
+OPERATIONS: Play
+
+SERVER: Synthesizer
+HOST: localhost
+PORT: 15500
+OPERATIONS: Synthesize
+
+PROGRAM: FromSynthesizer
+
+RULE: :proxy --> Audio.Play
+IN: :proxy :encoding_format :sample_rate
+
+PROGRAM: OpenAudioSession

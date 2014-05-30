@@ -1,0 +1,639 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>MITRE Demos: Toy Travel "System"</title>
+</head>
+<body style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#0000FF">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:<br>
+<br>
+MITRE Demo: Toy Travel "System"</h1></center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "../../../../docs/servers/hub_gui.html"><img src="../../../../docs/arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../../LICENSE">License</a> / <a href = "../../../../docs/manual/index.html">Documentation home</a> / <a href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "../../bindings/java/index.html"><img src="../../../../docs/arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+
+<hr WIDTH="100%">
+<p>In order to illustrate how to assemble
+an end-to-end system, we've constructed an example which operates according
+to a preset sequence of messages. Below, we describe the configuration
+of servers, how to run them, and what they illustrate.
+<ul>
+<li>
+<a href="#The_configuration_file">The configuration
+file</a></li>
+
+<li>
+<a href="#The_servers">The servers</a></li>
+
+<li>
+<a href="#The_program_file">The program file</a></li>
+
+<li>
+<a href="#Running_the_demo">Running the demo</a></li>
+
+<li>
+<a href="#Examining_the_logs">Examining the
+logs</a></li>
+</ul>
+
+<hr WIDTH="100%">
+<h2>
+<a NAME="The_configuration_file"></a>The configuration
+file</h2>
+The configuration file which is distributed
+with the distribution looks like this:
+<blockquote><tt>(</tt>
+<br><tt>( {c dialogue_output</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :frame {c greeting } }</tt>
+<br><tt>&nbsp; {c generator_output</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :output_string "Welcome to Communicator.
+How may I help you?" }</tt>
+<br><tt>&nbsp; {c synthesizer_output</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :sample_rate 8000</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :encoding_format "linear16"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :num_samples 14520 } )</tt><tt></tt>
+<p><tt>( {c audio_input</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :sample_rate 8000</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :encoding_format "linear16"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :num_samples 16560 }</tt>
+<br><tt>&nbsp; {c text_input</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :input_string "I WANT TO FLY TO LOS ANGELES"
+}</tt>
+<br><tt>&nbsp; {c recognizer_output</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :input_string "I WANT TO FLY LOS ANGELES"
+}</tt>
+<br><tt>&nbsp; {c parser_output</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :frame {c flight</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+:destination "LOS ANGELES" } }</tt>
+<br><tt>&nbsp; {c dialogue_output</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :frame {c query_departure } }</tt>
+<br><tt>&nbsp; {c generator_output</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :output_string "Where are you traveling
+from?" }</tt>
+<br><tt>&nbsp; {c synthesizer_output</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :sample_rate 8000</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :encoding_format "linear16"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :num_samples 9560 } )</tt><tt></tt>
+<p><tt>( {c audio_input</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :sample_rate 8000</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :encoding_format "linear16"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :num_samples 4580 }</tt>
+<br><tt>&nbsp; {c text_input</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :input_string "BOSTON" }</tt>
+<br><tt>&nbsp; {c recognizer_output</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :input_string "BOSTON" }</tt>
+<br><tt>&nbsp; {c parser_output</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :frame {c flight</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+:city "BOSTON" } }</tt>
+<br><tt>&nbsp; {c backend_query</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :sql_query "select airline, flight_number,
+departure_datetime from flight_table where departure_aiport = 'BOS' and
+arrival_airport = 'LAX'" }</tt>
+<br><tt>&nbsp; {c backend_output</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :column_names ( "airline" "flight_number"
+"departure_datetime" )</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :nfound 2</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :values ( ( "AA" "115" "1144" )</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+( "UA" "436" "1405" ) ) }</tt>
+<br><tt>&nbsp; {c dialogue_output</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :frame {c db_result</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+:column_names ( "airline" "flight_number" "departure_datetime" )</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+:tuples ( ( "AA" "115" "1144" )</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+( "UA" "436" "1405" ) ) } }</tt>
+<br><tt>&nbsp; {c generator_output</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :output_string "American Airlines flight
+115 leaves at 11:44 AM, and United flight 436 leaves at 2:05 PM" }</tt>
+<br><tt>&nbsp; {c synthesizer_output</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :sample_rate 8000</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :encoding_format "linear16"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; :num_samples 35068 } )</tt><tt></tt>
+<p><tt>)</tt></blockquote>
+The file is a list of lists. Each list corresponds
+to the consequences of a single user input (either "typed input" or "spoken
+input"). Each user input list is a sequence of frames. The name of each
+frame corresponds to a processing stage, and each processing stage has
+a set of key-value pairs which are recognized. Here are the steps and keys:
+<br>&nbsp;
+<table BORDER COLS=3 WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Step</b></td>
+
+<td><b>Frame name</b></td>
+
+<td><b>keys</b></td>
+</tr>
+
+<tr>
+<td>Audio gesture from the Audio server to
+Recognizer</td>
+
+<td><tt>audio_input</tt></td>
+
+<td><tt>:sample_rate</tt> (integer), <tt>:encoding_format</tt>
+(string), <tt>:num_samples</tt> (integer)</td>
+</tr>
+
+<tr>
+<td>Text gesture from UI&nbsp;server to Parser</td>
+
+<td><tt>text_input</tt></td>
+
+<td><tt>:input_string</tt> (string)</td>
+</tr>
+
+<tr>
+<td>From Recognizer to Parser</td>
+
+<td><tt>recognizer_output</tt></td>
+
+<td><tt>:input_string</tt> (string)</td>
+</tr>
+
+<tr>
+<td>From Parser to Dialogue</td>
+
+<td><tt>parser_output</tt></td>
+
+<td><tt>:frame</tt> (frame)</td>
+</tr>
+
+<tr>
+<td>Query from Dialogue to Backend</td>
+
+<td><tt>backend_query</tt></td>
+
+<td><tt>:sql_query</tt> (string)</td>
+</tr>
+
+<tr>
+<td>Result of query to Backend</td>
+
+<td><tt>backend_output</tt></td>
+
+<td><tt>:column_names</tt> (list of strings),
+<tt>:nfound</tt> (integer), <tt>:values</tt>
+(list of lists of strings)</td>
+</tr>
+
+<tr>
+<td>New message to user from Dialogue server
+to to Generator</td>
+
+<td><tt>dialogue_output</tt></td>
+
+<td><tt>:frame</tt> (frame)</td>
+</tr>
+
+<tr>
+<td>From Generator, to Synthesizer or UI</td>
+
+<td><tt>generator_output</tt></td>
+
+<td><tt>:output_string</tt> (string)</td>
+</tr>
+
+<tr>
+<td>From Synthesizer to Audio</td>
+
+<td><tt>synthesizer_output</tt></td>
+
+<td><tt>:sample_rate</tt> (integer),&nbsp;<tt>:encoding_format</tt>
+(string), <tt>:num_samples</tt> (integer)</td>
+</tr>
+</table>
+
+<p>Each list is treated as a single set of
+actions. Each server works by looking for an action set which contains
+the data corresponding to the input it gets in the appropriate step. If
+it finds the appropriate input, and the action set also contains an appropriate
+output, it produces the output.
+<ul>
+<li>
+For the Parser, Generator and Backend servers,
+the process is maximally simple, since there's only one possible input
+and one possible output for each of these servers.</li>
+
+<li>
+For the Dialogue server, its output depends
+on whether the action set has a query to the backend or not. If it does,
+it will query the backend before sending something to the user; otherwise,
+it will send something to the user regardless.</li>
+
+<li>
+For the UI&nbsp;and Audio servers, each searches
+the action list in order, looking for actions which&nbsp; contain audio
+or text gestures. When the server runs out of qualifying action sets, it
+exits.</li>
+
+<li>
+Whether the output from the generator goes
+to the UI&nbsp;or to the Audio server depends on which server connected
+to that session. This is handled in the Hub programs <tt>OpenAudioSession</tt>
+and <tt>OpenTextSession</tt>, below.</li>
+</ul>
+
+<hr WIDTH="100%">
+<h2>
+<a NAME="The_servers"></a>The servers</h2>
+This demo consists of several sample servers.
+None of these servers actually recognize speech, or parse text, or track
+dialogue; they illustrate only the ways such servers might interact, and
+how these servers might be constructed (especially in the more complex
+cases). The servers are:
+<ul>
+<li>
+A recognizer</li>
+
+<li>
+A synthesizer</li>
+
+<li>
+A parser</li>
+
+<li>
+A generator</li>
+
+<li>
+A database</li>
+
+<li>
+A dialogue module</li>
+
+<li>
+An audio server</li>
+
+<li>
+A text in/text out module</li>
+</ul>
+We've made a serious attempt to make the wrappers
+for these servers (<tt>Parser.c</tt>,
+<tt>Generator.c</tt>, etc.)&nbsp;into
+plausible wrappers for the appropriate functionality. The file <tt>component_engine.c</tt>
+contains the code which "implements" the appropriate functionality and
+defines a plausible API for it. This file also contains the code which
+digests the configuration file.
+<h3>
+Parser, generator, database, dialogue</h3>
+All these servers work fairly straightforwardly.
+The first three servers simply receive a frame and return a response. The
+Dialogue server both exercises server-to-server subdialogues using <a href="../../../../docs/manual/reference/adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</a>()
+and issues the result as a new message to the Hub.
+<h3>
+Recognizer, synthesizer</h3>
+Both these servers use <a href="../../../../docs/manual/reference/brokering.html">brokering</a>
+to interact with the audio server. These servers exchange 16 bit samples
+with the audio server, consisting of random data whose length is dictated
+by the configuration file. These files might serve as useful templates
+for constructing brokered servers of this type. Notice in the recognizer
+that when audio data is brokered, whatever processing is performed on the
+data (such as running the recognizer and sending the results to the Hub)
+has to happen in a broker callback or a broker finalizer, which means that
+it must <a href="../../../../docs/manual/reference/adding.html#Invoking_the_Hub">contact
+the Hub</a> with a new message when it's done.
+<h3>
+<a NAME="Audio,_text_in/text_out"></a>Audio,
+text in/text out</h3>
+These servers are the most complex, because
+they must monitor some input source other than the Hub. We've used the
+MITRE <a href="../../utilities/docs/stdin_poll.html">stdin polling mechanism</a>
+to stand in for the audio or GUI input source. When you start the server,
+it will connect to the Hub; each you press the carriage return, it will
+send the next predetermined input; and so on until it runs out of inputs,
+at which point it will disconnect and shut down. You can restart the server
+and rerun these inputs as many times as you like; each time a separate
+session will be created.
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="The_program_file"></a>The program
+file</h2>
+The toy travel demo uses the following program
+file, which we have annotated extensively.
+<blockquote><tt>;; The value of LOG_VERSION: will be used in</tt>
+<br><tt>;; the annotation rules.</tt><tt></tt>
+<p><tt>LOG_VERSION: "toy travel, version 1"</tt><tt></tt>
+<p><tt>;; Use extended syntax (new in version 3.0).</tt><tt></tt>
+<p><tt>PGM_SYNTAX: extended</tt><tt></tt>
+<p><tt>;; This means that the log directory hierarchy</tt>
+<br><tt>;; will start in the directory where the Hub is run.</tt><tt></tt>
+<p><tt>LOG_DIR: .</tt><tt></tt>
+<p><tt>;; Both audio and UI will be HUB clients, and</tt>
+<br><tt>;; they will share a port.</tt><tt></tt>
+<p><tt>SERVICE_TYPE: Audio</tt>
+<br><tt>CLIENT_PORT: 2800</tt>
+<br><tt>OPERATIONS: Play</tt><tt></tt>
+<p><tt>SERVICE_TYPE: UI</tt>
+<br><tt>CLIENT_PORT: 2800</tt>
+<br><tt>OPERATIONS: Print</tt><tt></tt>
+<p><tt>SERVER: Parser</tt>
+<br><tt>HOST: localhost</tt>
+<br><tt>PORT: 10000</tt>
+<br><tt>OPERATIONS: Parse</tt><tt></tt>
+<p><tt>SERVER: Dialogue</tt>
+<br><tt>HOST: localhost</tt>
+<br><tt>PORT: 18500</tt>
+<br><tt>OPERATIONS: DoDialogue DoGreeting</tt><tt></tt>
+<p><tt>SERVER: Generator</tt>
+<br><tt>HOST: localhost</tt>
+<br><tt>PORT: 16000</tt>
+<br><tt>OPERATIONS: Generate</tt><tt></tt>
+<p><tt>SERVER: Backend</tt>
+<br><tt>HOST: localhost</tt>
+<br><tt>PORT: 13000</tt>
+<br><tt>OPERATIONS: Retrieve</tt><tt></tt>
+<p><tt>SERVER: Recognizer</tt>
+<br><tt>HOST: localhost</tt>
+<br><tt>PORT: 11000</tt>
+<br><tt>OPERATIONS: Recognize</tt><tt></tt>
+<p><tt>SERVER: Synthesizer</tt>
+<br><tt>HOST: localhost</tt>
+<br><tt>PORT: 15500</tt>
+<br><tt>OPERATIONS: Synthesize</tt><tt></tt>
+<p><tt>SERVER: IOMonitor</tt>
+<br><tt>HOST: localhost</tt>
+<br><tt>PORT: 10050</tt>
+<br><tt>OPERATIONS: ReportIO</tt><tt></tt>
+<p><tt>;; We use four crucial functions in the Builtin server.</tt><tt></tt>
+<p><tt>SERVER: Builtin</tt>
+<br><tt>OPERATIONS: new_session end_session call_program nop hub_break</tt><tt></tt>
+<p><tt>;; For logging, I will timestamp everything. Since</tt>
+<br><tt>;; I'm also logging all the relevant keys, I really</tt>
+<br><tt>;; don't need to timestamp, since they'll be added</tt>
+<br><tt>;; automatically, but it's harmless and good practice.</tt><tt></tt>
+<p><tt>TIMESTAMP: Play Print Parse DoDialogue DoGreeting Generate Retrieve
+\</tt>
+<br><tt>Recognize Synthesize new_session end_session call_program \</tt>
+<br><tt>FromAudio OpenAudioSession OpenTextSession \</tt>
+<br><tt>FromRecognizer FromUI UserInput \</tt>
+<br><tt>FromDialogue DBQuery FromSynthesizer</tt><tt></tt>
+<p><tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt>
+<br><tt>;;</tt>
+<br><tt>;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+AUDIO INPUT</tt>
+<br><tt>;;</tt>
+<br><tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt><tt></tt>
+<p><tt>;; This first program handles input from the audio</tt>
+<br><tt>;; server. The :host and :port and :call_id are</tt>
+<br><tt>;; typically the information required to establish</tt>
+<br><tt>;; a brokering connection.</tt><tt></tt>
+<p><tt>PROGRAM: FromAudio</tt><tt></tt>
+<p><tt>RULE: :host &amp; :port &amp; :call_id --> Recognizer.Recognize</tt>
+<br><tt>IN: :host :port :encoding_format :sample_rate :call_id</tt>
+<br><tt>LOG_IN: :host :port :encoding_format :sample_rate :call_id</tt>
+<br><tt>OUT: none!</tt><tt></tt>
+<p><tt>;; This program handles opening</tt>
+<br><tt>;; an audio session. It marks audio available for the session</tt>
+<br><tt>;; by using a key whose prefix is :hub_session_.</tt><tt></tt>
+<p><tt>PROGRAM: OpenAudioSession</tt><tt></tt>
+<p><tt>;; Notice that we use the nop dispatch function to</tt>
+<br><tt>;; "host" a call to OUT: to set a session variable.</tt><tt></tt>
+<p><tt>RULE: --> Builtin.nop</tt>
+<br><tt>OUT: ($in(:audio_available session) 1)</tt><tt></tt>
+<p><tt>;; Now we create a session. This is not technically</tt>
+<br><tt>;; necessary, since the audio server creates a</tt>
+<br><tt>;; session by virtue of how it connects using the</tt>
+<br><tt>;; listener-in-Hub functionality.</tt><tt></tt>
+<p><tt>RULE: --> Builtin.new_session</tt><tt></tt>
+<p><tt>;; Finally, I kick off the system greeting.</tt><tt></tt>
+<p><tt>RULE: --> Dialogue.DoGreeting</tt><tt></tt>
+<p><tt>;; This program dispatches recognizer results to</tt>
+<br><tt>;; the general program which handles user input.</tt><tt></tt>
+<p><tt>PROGRAM: FromRecognizer</tt><tt></tt>
+<p><tt>RULE: :input_string --> Builtin.call_program</tt>
+<br><tt>IN: (:program "UserInput") :input_string</tt>
+<br><tt>OUT: none!</tt><tt></tt>
+<p><tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt>
+<br><tt>;;</tt>
+<br><tt>;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+TEXT INPUT</tt>
+<br><tt>;;</tt>
+<br><tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt><tt></tt>
+<p><tt>;; This program handles opening</tt>
+<br><tt>;; a text in/text out session. It creates a session</tt>
+<br><tt>;; and kicks off the user greeting.</tt><tt></tt>
+<p><tt>PROGRAM: OpenTextSession</tt><tt></tt>
+<p><tt>RULE: --> Builtin.new_session</tt><tt></tt>
+<p><tt>RULE: --> Dialogue.DoGreeting</tt><tt></tt>
+<p><tt>;; This function relays the typed input to the</tt>
+<br><tt>;; main body of the input processing.</tt><tt></tt>
+<p><tt>PROGRAM: FromUI</tt><tt></tt>
+<p><tt>RULE: :input_string --> Builtin.call_program</tt>
+<br><tt>IN: (:program "UserInput") :input_string</tt><tt></tt>
+<p><tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt>
+<br><tt>;;</tt>
+<br><tt>;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+MAIN INPUT BODY</tt>
+<br><tt>;;</tt>
+<br><tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt><tt></tt>
+<p><tt>;; This program handles the main input text processing.</tt>
+<br><tt>;; It passes the result of the parsing to the dialogue</tt>
+<br><tt>;; manager, and if there's a response, it relays it</tt>
+<br><tt>;; to the output processing program.</tt><tt></tt>
+<p><tt>PROGRAM: UserInput</tt><tt></tt>
+<p><tt>RULE: :input_string --> IOMonitor.ReportIO</tt>
+<br><tt>IN: (:utterance :input_string) (:who "user")</tt>
+<br><tt>OUT: none!</tt><tt></tt>
+<p><tt>RULE: :input_string --> Parser.Parse</tt>
+<br><tt>IN: :input_string</tt>
+<br><tt>OUT: :frame</tt>
+<br><tt>LOG_IN: :input_string</tt>
+<br><tt>LOG_OUT: :frame</tt><tt></tt>
+<p><tt>;; We're not waiting for a reply, so the errors will be</tt>
+<br><tt>;; signalled by new messages.</tt><tt></tt>
+<p><tt>RULE: :frame --> Dialogue.DoDialogue</tt>
+<br><tt>IN: :frame</tt>
+<br><tt>LOG_IN: :frame</tt>
+<br><tt>OUT: none!</tt><tt></tt>
+<p><tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt>
+<br><tt>;;</tt>
+<br><tt>;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+MAIN OUTPUT BODY</tt>
+<br><tt>;;</tt>
+<br><tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt><tt></tt>
+<p><tt>;; This program handles the response from the dialogue</tt>
+<br><tt>;; manager which may take one of a number of</tt>
+<br><tt>;; forms (database tuples to be described, or perhaps</tt>
+<br><tt>;; an already-formatted frame).</tt><tt></tt>
+<p><tt>PROGRAM: FromDialogue</tt><tt></tt>
+<p><tt>RULE: :output_frame --> Generator.Generate</tt>
+<br><tt>IN: :output_frame</tt>
+<br><tt>OUT: :output_string</tt>
+<br><tt>LOG_IN: :output_frame</tt>
+<br><tt>LOG_OUT: :output_string</tt><tt></tt>
+<p><tt>RULE: :output_string --> IOMonitor.ReportIO</tt>
+<br><tt>IN: (:utterance :output_string) (:who "system")</tt>
+<br><tt>OUT: none!</tt><tt></tt>
+<p><tt>;; At this point, we need to decide whether to respond</tt>
+<br><tt>;; using audio or not. We condition this on our Hub</tt>
+<br><tt>;; session variable.</tt><tt></tt>
+<p><tt>RULE: $in(:audio_available session) &amp; :output_string --> Synthesizer.Synthesize</tt>
+<br><tt>IN: :output_string</tt>
+<br><tt>LOG_IN: :output_string</tt>
+<br><tt>OUT: none!</tt><tt></tt>
+<p><tt>RULE: ! $in(:audio_available session) &amp; :output_string --> UI.Print</tt>
+<br><tt>IN: :output_string</tt>
+<br><tt>LOG_IN: :output_string</tt>
+<br><tt>OUT: none!</tt><tt></tt>
+<p><tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt>
+<br><tt>;;</tt>
+<br><tt>;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DB SUBQUERY</tt>
+<br><tt>;;</tt>
+<br><tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt><tt></tt>
+<p><tt>;; This program handles the server-to-server subdialogue</tt>
+<br><tt>;; through which the dialogue manager queries the database.</tt><tt></tt>
+<p><tt>PROGRAM: DBQuery</tt><tt></tt>
+<p><tt>RULE: :sql_query --> Backend.Retrieve</tt>
+<br><tt>IN: :sql_query</tt>
+<br><tt>OUT: :column_names :nfound :values</tt>
+<br><tt>LOG_IN: :sql_query</tt>
+<br><tt>LOG_OUT: :column_names :nfound :values</tt><tt></tt>
+<p><tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt>
+<br><tt>;;</tt>
+<br><tt>;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+AUDIO OUTPUT</tt>
+<br><tt>;;</tt>
+<br><tt>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</tt><tt></tt>
+<p><tt>;; Finally, the synthesizer chooses to produce a new</tt>
+<br><tt>;; message. We could also accomplish the same</tt>
+<br><tt>;; result by returning a value from the synthesizer and</tt>
+<br><tt>;; adding more rules to the FromDialogue program above.</tt><tt></tt>
+<p><tt>PROGRAM: FromSynthesizer</tt><tt></tt>
+<p><tt>RULE: :host &amp; :port &amp; :call_id --> Audio.Play</tt>
+<br><tt>IN: :host :port :encoding_format :sample_rate :call_id :num_samples</tt>
+<br><tt>LOG_IN: :host :port :encoding_format :sample_rate :call_id :num_samples</tt></blockquote>
+
+<hr WIDTH="100%">
+<h2>
+<a NAME="Running_the_demo"></a>Running the
+demo</h2>
+The process monitor configuration file <tt>contrib/MITRE/demos/toy-travel/toy-travel.config</tt>
+can be used to start up a process monitor in compressed mode (a single
+pane with buttons to select the different processes). This process monitor
+handles the Hub and creates additional process monitors for the the UI
+elements. Start it up like this:
+<blockquote><tt>% cd contrib/MITRE/demos/toy-travel</tt>
+<br><tt>% ../../tools/bin/process_monitor toy-travel.config -- example.frames
+toy-travel.pgm &amp;</tt></blockquote>
+If you select "Process Control --> Restart
+all", all the servers will be started in order, and the Hub. Also, two
+additional process monitors will be started for the UI&nbsp;and Audio servers.
+Both these servers use the interaction paradigm described for <a href="#Audio,_text_in/text_out">audio
+and text</a>. Both these servers can be running at the same time, and both
+of them can be connected at the same time; the sessions will be distinguished
+appropriately.
+<p>Please note that in the case of audio simulation,
+the audio data being passed around is an array of randomly generated bytes.
+The computer's audio device is not involved, and you will not hear any
+audio played at any point.
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Examining_the_logs"></a>Examining
+the logs</h2>
+As a final step, we've also included an <a href="../toy-travel/annotation_rules.xml">annotation
+rules file</a> which supports the <a href="../../tools/docs/log_tools.html">log
+analysis tools</a>. So you can look at the results using these tools. You
+should also consult the <a href="../../../../docs/manual/reference/logging.html">logging
+documentation</a> to learn more about how logs are created and where they're
+stored.
+<blockquote><tt>% cd contrib/MITRE/demos/toy-travel</tt>
+<br><tt>% ../../tools/bin/process_monitor toy-travel.config -- example.frames
+toy-travel.pgm &amp;</tt>
+<br><tt>[...after running the example...]</tt>
+<br><tt>% ../../tools/bin/xml_summarize --rule_base annotation_rules.xml
+sls/[datedir]/[sessionnum]</tt>
+<br><tt>Checking: sls/20000804/018</tt>
+<br><tt>Reading raw Hub log: sls/20000804/018/sls-20000804-018-hublog.txt</tt>
+<br><tt>...read.</tt>
+<br><tt>Converting to XML: sls/20000804/018/sls-20000804-018-hublog.txt</tt>
+<br><tt>...converted.</tt>
+<br><tt>Reading rule file: annotation_rules.xml</tt>
+<br><tt>...read.</tt>
+<br><tt>Applying rules: annotation_rules.xml</tt>
+<br><tt>...succeeded.</tt>
+<br><tt>Resegmenting...</tt>
+<br><tt>...resegmented.</tt>
+<br><tt>Fri Aug 4 2000 at 21:40:21.89: Task-specific portion and overall
+task ended.</tt>
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<p><tt>Fri Aug 4 2000 at 21:40:16.54: New system turn began.</tt>
+<p><tt>Fri Aug 4 2000 at 21:40:16.56 to Fri Aug 4 2000 at 21:40:16.58:
+System started speaking.</tt>
+<br><tt>Fri Aug 4 2000 at 21:40:16.56 to Fri Aug 4 2000 at 21:40:16.58:
+System finished speaking.</tt>
+<br><tt>System said: Welcome to Communicator. How may I help you?</tt>
+<br>&nbsp;
+<p><tt>Fri Aug 4 2000 at 21:40:17.78: New user turn began.</tt>
+<p><tt>Fri Aug 4 2000 at 21:40:17.78: User started speaking.</tt>
+<br><tt>Fri Aug 4 2000 at 21:40:17.78: User finished speaking.</tt>
+<br><tt>Recognizer heard: I WANT TO FLY LOS ANGELES</tt>
+<br>&nbsp;
+<p><tt>Fri Aug 4 2000 at 21:40:17.93: New system turn began.</tt>
+<p><tt>Fri Aug 4 2000 at 21:40:17.95 to Fri Aug 4 2000 at 21:40:17.96:
+System started speaking.</tt>
+<br><tt>Fri Aug 4 2000 at 21:40:17.95 to Fri Aug 4 2000 at 21:40:17.96:
+System finished speaking.</tt>
+<br><tt>System said: Where are you traveling from?</tt>
+<br>&nbsp;
+<p><tt>Fri Aug 4 2000 at 21:40:19.02: New user turn began.</tt>
+<p><tt>Fri Aug 4 2000 at 21:40:19.02: User started speaking.</tt>
+<br><tt>Fri Aug 4 2000 at 21:40:19.02: User finished speaking.</tt>
+<br><tt>Recognizer heard: BOSTON</tt>
+<br>&nbsp;
+<p><tt>Fri Aug 4 2000 at 21:40:19.19: New system turn began.</tt>
+<p><tt>Fri Aug 4 2000 at 21:40:19.23 to Fri Aug 4 2000 at 21:40:19.25:
+System started speaking.</tt>
+<br><tt>Fri Aug 4 2000 at 21:40:19.23 to Fri Aug 4 2000 at 21:40:19.25:
+System finished speaking.</tt>
+<br><tt>System said: American Airlines flight 115 leaves at 11:44 AM, and
+United flight 436 leaves at 2:05 PM</tt></blockquote>
+The timestamps for the start and end of speech
+are identical because our audio server doesn't send separate notifications
+for audio start and end. It also doesn't log the audio and report the logfile
+back to the Hub. A true audio server would do both these things.
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "../../../../docs/servers/hub_gui.html"><img src="../../../../docs/arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../../LICENSE">License</a> / <a href = "../../../../docs/manual/index.html">Documentation home</a> / <a href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "../../bindings/java/index.html"><img src="../../../../docs/arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated September 24, 2001</center>
+
+</body>
+</html>

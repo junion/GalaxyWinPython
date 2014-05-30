@@ -1,0 +1,1651 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                          
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                          
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>The Builtin Server</title>
+                             <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+            
+<center>     
+<h1> Galaxy Communicator Documentation:<br>
+       <br>
+       The Builtin Server</h1>
+      </center>
+     
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="verify_program.html"><img src="../arrow_left.gif" alt=""
+ width="30" height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../LICENSE">License</a> / <a href="../manual/index.html">Documentation
+ home</a> / <a href="../manual/index.html#Getting_help">Help and feedback</a> 
+        </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="../../contrib/MITRE/utilities/docs/install.html"><img
+ src="../arrow_right.gif" alt="" width="30" height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+             
+<hr width="100%">     
+<p>The builtin server is built into the Hub. It provides administrative support,
+   as well as an additional body of functionality the MIT group has found
+useful.   </p>
+          
+<p> </p>
+          
+<hr width="100%">     
+<h2> Usage</h2>
+       Built into the Hub. Does not need to be declared in the program file.
+        
+<p> </p>
+          
+<hr width="100%">     
+<h2> Message Set</h2>
+  The message set in the Builtin server has grown over the years to include
+ functionality for general use as well as functionality used mostly by MIT.
+ We do not provide support for the MIT-specific messages.<br>
+   
+<h3>MIT functionality</h3>
+            
+<ul>
+       <li> <a href="#hub_turn_management">hub_turn_management</a></li>
+        <li> <a href="#dispatch_token">dispatch_token</a></li>
+        <li> <a href="#dispatch_to_main">dispatch_to_main</a></li>
+        <li> <a href="#increment_utterance">increment_utterance</a></li>
+        <li> <a href="#abort_main">abort_main</a></li>
+        <li> <a href="#reset_history">reset_history</a></li>
+   
+</ul>
+    
+<h3>General functionality</h3>
+   
+<ul>
+        <li> <a href="#call_program">call_program</a></li>
+        <li> <a href="#new_session">new_session</a></li>
+        <li> <a href="#end_session">end_session</a></li>
+        <li> <a href="#destroy">destroy</a></li>
+        <li> <a href="#nop">nop</a></li>
+        <li> <a href="#log_keys">log_keys</a></li>
+        <li> <a href="#modify_properties">modify_properties</a></li>
+        <li> <a href="#get_properties">get_properties</a></li>
+        <li> <a href="#set_session">set_session</a></li>
+        <li> <a href="#hub_print">hub_print</a></li>
+        <li> <a href="#hub_break">hub_break</a></li>
+        <li> <a href="#hub_exit">hub_exit</a></li>
+        <li> <a href="#hub_raise_error">hub_raise_error</a></li>
+        <li> <a href="#hub_available_servers">hub_available_servers</a></li>
+       <li><a href="#hub_ping">hub_ping</a><br>
+       </li>
+        <li> <a href="#hub_token_owner">hub_token_owner</a></li>
+        <li> <a href="#hub_pause">hub_pause</a></li>
+     <li><a href="#hub_sleep">hub_sleep</a><br>
+     </li>
+        <li> <a href="#hub_set_verbosity">hub_set_verbosity</a></li>
+        <li> <a href="#hub_continue">hub_continue</a></li>
+        <li> <a href="#hub_gui_notify">hub_gui_notify</a></li>
+      <li><a href="#hub_token_timestamp">hub_token_timestamp</a></li>
+      <li><a href="#hub_gc_version">hub_gc_version</a><br>
+      </li>
+           
+</ul>
+            
+<p><br>
+       </p>
+          
+<hr width="100%"> <br>
+      <a name="hub_turn_management"></a><b><big>hub_turn_management</big></b> 
+  invokes a Hub-local version of turn management, which relies on actions 
+identified  by the parser to determine its behavior. Unlike BIANCA-style turn
+management,  only one action applies. In the MIT program files, this message
+is invoked  when the domain that the parser identifies is "local". <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:parse_frame</tt></td>
+        <td>frame</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>the name of the frame is the action</td>
+       </tr>
+        <tr>
+       <td><b>OUT:</b></td>
+        <td><tt>:reply_frame</tt></td>
+        <td>frame</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>the name of the frame is the return value of the action. If the 
+ :parse_frame  contains a :domain key/value pair, the :reply_frame is also 
+ guaranteed to  have the same value for :domain. If the return value of the 
+ action is NULL,  then the :reply_frame is retrieved from the toplevel frame 
+ (the action will  have set it).</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+            
+<p>The actions are: </p>
+          
+<ul>
+       <li> scratch_that: removes the last utterance from processing and
+the   discourse  history.</li>
+                        
+  <table border="1" width="100%" nosave="">
+       <tbody>
+            <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:session_id</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>string which identifies the session; defaults to "Default"</td>
+       </tr>
+                                   
+    </tbody>                 
+  </table>
+       &nbsp;Returns one of the strings "scratched", "unscratched". <br>
+      &nbsp; <li> clear_history: clears the discourse history.</li>
+                        
+  <table border="1" width="100%" nosave="">
+       <tbody>
+            <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:session_id</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>string which identifies the session; defaults to "Default"</td>
+       </tr>
+                                   
+    </tbody>                 
+  </table>
+       &nbsp;Returns the string "history_cleared". <br>
+      &nbsp; <li> close_off: interpretation of user's utterance "goodbye"</li>
+                        
+  <table border="1" width="100%" nosave="">
+       <tbody>
+            <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>OUT:</b></td>
+        <td><tt>:close_off</tt></td>
+        <td>integer</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>value is 1</td>
+       </tr>
+                                   
+    </tbody>                 
+  </table>
+       &nbsp;Returns the string "goodbye". <br>
+      &nbsp; <li> greetings: interpretation of user's utterance "hello"</li>
+                        
+  <table border="1" width="100%" nosave="">
+       <tbody>
+            <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>OUT:</b></td>
+        <td><tt>:greetings</tt></td>
+        <td>integer</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>value is 1</td>
+       </tr>
+                                   
+    </tbody>                 
+  </table>
+       &nbsp;Returns the string "greetings". <br>
+      &nbsp; <li> praise: interpretation of user's praise of the system</li>
+                        
+  <table border="1" width="100%" nosave="">
+       <tbody>
+            <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>OUT:</b></td>
+        <td><tt>:praise</tt></td>
+        <td>integer</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>value is 1</td>
+       </tr>
+                                   
+    </tbody>                 
+  </table>
+       &nbsp;Returns the string "praise". <br>
+      &nbsp; <li> vacuous: interpretation of vacuous user utterance</li>
+                        
+  <table border="1" width="100%" nosave="">
+       <tbody>
+            <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>OUT:</b></td>
+        <td><tt>:vacuous</tt></td>
+        <td>integer</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>value is 1</td>
+       </tr>
+                                   
+    </tbody>                 
+  </table>
+       &nbsp;Returns the string "vacuous". <br>
+      &nbsp; <li> domain_switch: switches the current domain for the session</li>
+                        
+  <table border="1" width="100%" nosave="">
+       <tbody>
+            <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:session_id</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>string which identifies the session; defaults to "Default"</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:parse_frame</tt></td>
+        <td>frame</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>the :parse_frame should have the form <br>
+              <tt>{...&nbsp;</tt> <br>
+              <tt>&nbsp;&nbsp; :topic {...</tt> <br>
+              <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  :name "&lt;name&gt;"&nbsp;</tt> <br>
+              <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  ...</tt> <br>
+              <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</tt>           <br>
+              <tt>&nbsp;&nbsp; ...</tt> <br>
+              <tt>}</tt></td>
+       </tr>
+        <tr>
+       <td><b>OUT:</b></td>
+        <td><tt>:new_domain</tt></td>
+        <td>string</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>Domain being switched to.</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:reply_frame</tt></td>
+        <td>frame</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>If the domain being switched to was previously encountered, this
+  value  is set (a continuation?).</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:welcome_frame</tt></td>
+        <td>frame</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>If the domain being switched to was not previously encountered, 
+ this  value is set.</td>
+       </tr>
+                                   
+    </tbody>                 
+  </table>
+       Returns NULL. <br>
+      &nbsp; <li> unknown_word:</li>
+                        
+  <table border="1" width="100%" nosave="">
+       <tbody>
+            <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>OUT:</b></td>
+        <td><tt>:reply_frame</tt></td>
+        <td>frame</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>copies the value of :parse_frame</td>
+       </tr>
+                                   
+    </tbody>                 
+  </table>
+       &nbsp;Returns NULL. <br>
+      &nbsp; <li> no_parse</li>
+                        
+  <table border="1" width="100%" nosave="">
+       <tbody>
+            <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:session_id</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>string which identifies the session; defaults to "Default"</td>
+       </tr>
+        <tr>
+       <td><b>OUT:</b></td>
+        <td><tt>:reply_frame</tt></td>
+        <td>frame</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>will be <br>
+              <tt>{c rejection_&lt;num&gt;</tt> <br>
+              <tt>&nbsp;&nbsp; :no_parse 1</tt> <br>
+              <tt>&nbsp;&nbsp; :domain &lt;domain&gt;</tt> <br>
+              <tt>}</tt> <br>
+      :domain will be set if the session has a domain specified; &lt;num&gt;
+  is  an internal index of failed parses.</td>
+       </tr>
+                                   
+    </tbody>                 
+  </table>
+       &nbsp;Returns NULL. <br>
+      &nbsp; <li> call_me</li>
+                        
+  <table border="1" width="100%" nosave="">
+       <tbody>
+            <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:parse_frame</tt></td>
+        <td>frame</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>the parse frame should have the form <br>
+              <tt>...&nbsp;</tt> <br>
+              <tt>&nbsp;&nbsp; :topic {...</tt> <br>
+              <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  :country_code "&lt;country_code&gt;"&nbsp;</tt> <br>
+              <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  :area_code "&lt;area_code&gt;"</tt> <br>
+              <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  :exchange "&lt;exchange&gt;"</tt> <br>
+              <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  :core "&lt;core&gt;"</tt> <br>
+              <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</tt>           <br>
+              <tt>&nbsp;&nbsp; :calling_domain &lt;optional string: provides
+  domain  for session&gt;</tt> <br>
+              <tt>&nbsp;&nbsp; ...</tt> <br>
+              <tt>}</tt> <br>
+      where the phone number in the result will be &lt;country_code&gt;-&lt;area_code&gt;-&lt;exchange&gt;-&lt;core&gt;.</td>
+       </tr>
+        <tr>
+       <td><b>OUT:</b></td>
+        <td><tt>:callback_channel</tt></td>
+        <td>string</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>value is "telephone"</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:callback_address</tt></td>
+        <td>string</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>value is "&lt;country_code&gt;-&lt;area_code&gt;-&lt;exchange&gt;-&lt;core&gt;"</td>
+       </tr>
+                                   
+    </tbody>                 
+  </table>
+       &nbsp;Returns the string "answer_phone". <li> erase_all_history</li>
+        <br>
+      Clears the Hub database history. Returns the string "history_cleared".
+       
+</ul>
+       This message returns a frame.       
+<p><a name="dispatch_token"></a><b><big>dispatch_token</big></b> handles
+the details of invoking the program named in the <tt>:program</tt> key (default
+   is "main") using the current message. It creates a new message by changing
+   the name of the frame to the program name and removing the internal Hub
+ state  information from the frame. It updates session information from :out_lang,
+   :para_lang, :kv_lang and :domain. The dispatch function&nbsp;<a
+ name="dispatch_to_main"></a><b><big>dispatch_to_main</big></b> simply deletes
+   its incoming :program key and calls dispatch_token. </p>
+          
+<p><b>These messages are special</b> because they will relay arbitrary keys
+   to the new message, not just the keys which are listed here. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:session_id</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>string which identifies the session</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:program</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>program name to dispatch to; default is main</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:server_id</tt></td>
+        <td>frame</td>
+        <td>yes</td>
+        <td>absence of :session_id</td>
+        <td>should be {... :server_name &lt;string&gt; :host &lt;string&gt; 
+ :port  &lt;int&gt; :sock &lt;int&gt; ...}. All keys are optional. Used to 
+ compute  value of :session_id, which ultimately defaults to "Default"</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:out_lang</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>output language for the session</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:para_lang</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>paraphrase language for the session</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:synth_lang</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>synthesizer "language" for the session (that is, the name of
+the   Genesis  catalog for transduction from a string to a legal synthesizer
+input)</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:kv_lang</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>key-value "language" for the session</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:domain</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>name of the domain.&nbsp;</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:utterance_id</tt></td>
+        <td>integer</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>the utterance index</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:reply_clause_name</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>for generating a :reply_frame for the "local" domain (that is,
+ the   builtin server)</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:no_abort</tt></td>
+        <td>(not checked)</td>
+        <td>yes</td>
+        <td>value of :session_id and :utterance_id (after computation of
+output    values)</td>
+        <td>blocks a previously-set abort for all utterances with this :utterance_id</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message returns NULL. </p>
+                  
+<p><a name="increment_utterance"></a><b><big>increment_utterance</big></b> 
+  increments the various indices for recording how many utterances have been 
+   made. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:session_id</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>string which identifies the session; defaults to "Default"</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:domain</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>name of the domain.&nbsp;</td>
+       </tr>
+        <tr>
+       <td><b>OUT:</b></td>
+        <td><tt>:utterance_id</tt></td>
+        <td>integer</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>new utterance index</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message returns a frame. </p>
+          
+<p><a name="abort_main"></a><b><big>abort_main</big></b> sets an abort for
+   a specified utterance. This function returns NULL. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:session_id</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>string which identifies the session; defaults to "Default"</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:server_id</tt></td>
+        <td>frame</td>
+        <td>yes</td>
+        <td>absence of :session_id</td>
+        <td>should be {... :server_name &lt;string&gt; :host &lt;string&gt; 
+ :port  &lt;int&gt; :sock &lt;int&gt; ...}. All keys are optional. Used to 
+ compute  value of :session_id, which ultimately defaults to "Default"</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:utterance_id</tt></td>
+        <td>integer</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>utterance index; defaults to the utterance index of the located 
+ session</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message does not return a frame.<br>
+ </p>
+ 
+<p><a name="reset_history"></a><b><big>reset_history</big></b> saves away
+   the existing history when a domain switch happens, and restores a previously
+   stored history for the new domain (if it exists). <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:session_id</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>string which identifies the session; defaults to "Default". If
+ there's   no session, returns without switching</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:new_domain</tt></td>
+        <td>string</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>name of the new domain</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+           
+<p>This message returns a frame. </p>
+ 
+<p><a name="call_program"></a><b><big>call_program</big></b> is a streamlined
+   version of <a
+ href="file:///afs/rcf/project/communicator/users/sam/GalaxyCommunicator2/docs/servers/builtin.html#dispatch_token">dispatch_token</a>, 
+which does not do  any special processing on the current message beyond copying 
+it, removing   the Hub state information, and invoking the named program. 
+It returns the   final token state of the called program. </p>
+           
+<p><b>This message is special</b> because it relays arbitrary keys to the
+   called program, and in fact does not pass the :program key at all. It
+also    returns arbitrary keys. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:session_id</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>string which identifies the session</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:program</tt></td>
+        <td>string</td>
+        <td>&nbsp;<br>
+           </td>
+        <td>&nbsp;</td>
+        <td>program name to dispatch to</td>
+       </tr>
+         <tr>
+           <td valign="top">&nbsp;<br>
+           </td>
+           <td valign="top"><tt>:inherit_timestamp<br>
+           </tt></td>
+           <td valign="top">integer<br>
+           </td>
+           <td valign="top">yes<br>
+           </td>
+           <td valign="top">&nbsp;<br>
+           </td>
+           <td valign="top">if present and non-zero, causes the new message 
+ to  inherit the timestamp of the current token using <a
+ href="file:///afs/rcf/project/communicator/users/sam/GalaxyCommunicator2/docs/manual/advanced/timestamps.html#GalSS_EnvInheritTokenTimestamp">GalSS_EnvInheritTokenTimestamp</a>.<br>
+           </td>
+         </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+           
+<p>This message returns a frame. </p>
+ 
+<p> </p>
+          
+<p><a name="new_session"></a><b><big>new_session</big></b> resets a session
+   (opens a new logfile, resets utterance counter). If the session does not
+  exist, it will be created. To make sure that logfiles are managed correctly
+  when session IDs are reused, this function only opens a new logfile the
+second   time it's called and each subsequent time. See the <a
+ href="../manual/advanced/session.html#Starting_and_ending_sessions">session 
+   management documentation</a> for details. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:session_id</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>string which identifies the session; defaults to "Default"</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message returns a frame. </p>
+          
+<p><a name="end_session"></a><b><big>end_session</big></b> terminates the
+   specified session. If a logfile is open, it will be closed. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:session_id</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>string which identifies the session; defaults to "Default"</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message returns a frame. </p>
+          
+<p><a name="destroy"></a><b><big>destroy</big></b> destroys the token. </p>
+          
+<p>This message returns a destroy token message reply. It does not return
+   a normal reply. </p>
+          
+<p><a name="nop"></a><b><big>nop</big></b> is a no-op. It returns what is
+   passed in. </p>
+                  
+<p><a name="log_keys"></a><b><big>log_keys</big></b> invokes the logger.
+<b>This message is special</b> because it logs whatever keys are in the frame
+passed to it. The keys will be logged under a timestamped instance of the
+log_keys operation. This message returns the frame passed to it. </p>
+          
+<p><a name="modify_properties"></a><b><big>modify_properties</big></b> updates
+   properties in either the session or server Hub states. It deletes before
+  it sets. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:namespace</tt></td>
+        <td>string</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>identifies the <a
+ href="../manual/reference/pgm.html#Key-value_pairs">Hub namespace</a> to 
+ retrieve from (options are <tt>server</tt> or <tt>session</tt>)</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:properties_to_delete</tt></td>
+        <td>list</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>a list of keys to delete from the specified namespace</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:properties_to_set</tt></td>
+        <td>frame</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>a frame containing key-value pairs to add to the specified namespace
+   (the name of the frame is ignored).</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message returns NULL. See the <a
+ href="../manual/advanced/hub_properties.html">Hub properties documentation</a>. 
+   </p>
+          
+<p><a name="get_properties"></a><b><big>get_properties</big></b> retrieves
+   properties for either the session or server Hub states. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:namespace</tt></td>
+        <td>string</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>identifies the <a
+ href="../manual/reference/pgm.html#Key-value_pairs">Hub namespace</a> to 
+ retrieve from (options are <tt>server</tt> or <tt>session</tt>)</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:properties</tt></td>
+        <td>list</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>a list of keys to retrieve from the specified namespace</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message returns a frame containing the specified keys. See the <a
+ href="../manual/advanced/hub_properties.html">Hub properties documentation</a>. 
+   </p>
+          
+<p><a name="set_session"></a><b><big>set_session</big></b> possibly creates
+   a new session, and optionally assigns some session locks to it. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:session_id</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>string which identifies the session; defaults to "Default".</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:lock_info</tt></td>
+        <td>integer</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>a logical OR of flags controlling how this session should be
+locked.    See <a
+ href="../manual/advanced/hub_properties.html#GalSS_EnvSetSession">GalSS_EnvSetSession</a>. 
+   If absent, the locks from the previous session will be used, if present.</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:previous_session_id</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>a session to transfer locks from, if appropriate</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message returns NULL. </p>
+          
+<p><a name="hub_print"></a><b><big>hub_print</big></b> prints a message or
+   the contents of a Hub namespace. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:namespace</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>identifies the <a
+ href="../manual/reference/pgm.html#Key-value_pairs">Hub namespace</a> to 
+ display the contents of</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:message</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>a string to display</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:verbosity</tt></td>
+        <td>integer</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>if present, restricts the printing to situations where GAL_VERBOSE
+   exceeds the specified verbosity</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:session_locks</tt></td>
+        <td>integer</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>if nonzero, causes the Hub to print the status of all session 
+locks</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:db</tt></td>
+        <td>integer</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>if nonzero, causes the Hub to print the contents of the current 
+ session  utterance history DB</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message returns NULL. </p>
+          
+<p><a name="hub_break"></a><b><big>hub_break</big></b> enters a loop which
+   allows the user to explore the current state of the Hub. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>OUT:</b></td>
+        <td><tt>:disable_break</tt></td>
+        <td>integer</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>if 1, indicates that the user exited the loop requesting no further
+   breaks</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message returns a frame </p>
+          
+<p><a name="hub_exit"></a><b><big>hub_exit</big></b> causes the Hub to exit
+   gracefully. This message returns NULL. </p>
+          
+<p><a name="hub_raise_error"></a><b><big>hub_raise_error</big></b> raises
+   an error using <a
+ href="../manual/reference/adding.html#GalSS_EnvError">GalSS_EnvError</a>. 
+   This function can be useful if you've caught an error using the <a
+ href="../manual/reference/pgm.html#ERROR:">ERROR:</a> directive in a Hub
+   program but you still want to raise an error for the caller. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:error_description</tt></td>
+        <td>string</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>the description of the error to be passed to <a
+ href="../manual/reference/adding.html#GalSS_EnvError">GalSS_EnvError</a>.</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message returns NULL. </p>
+          
+<p><a name="hub_available_servers"></a><b><big>hub_available_servers</big></b> 
+  returns the active service types in the Hub. This list may not match the 
+ list of defined service types due to the use of the <a
+ href="../manual/reference/pgm.html#SERVERS:">SERVERS:</a> directive in the
+   program file. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>OUT:</b></td>
+        <td><tt>:servers</tt></td>
+        <td>list of strings</td>
+        <td>no</td>
+        <td>&nbsp;</td>
+        <td>a list of names of active service types</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message returns a frame.<br>
+     </p>
+         
+<p><b><big><a name="hub_ping"></a>hub_ping</big></b> checks the status of 
+  a specified service provider or service type. &nbsp; </p>
+         
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:service_provider</tt></td>
+        <td>string</td>
+        <td>yes<br>
+           </td>
+        <td>&nbsp;</td>
+        <td>A <a
+ href="../manual/advanced/provider_id.html##The_syntax_of_provider_names">provider 
+  name</a> or service type, which will select the first qualifying provider<br>
+           </td>
+       </tr>
+         <tr>
+           <td valign="middle">&nbsp;<br>
+           </td>
+           <td valign="middle"><tt>:service_type</tt><br>
+           </td>
+           <td valign="middle">string<br>
+           </td>
+           <td valign="middle">yes<br>
+           </td>
+           <td valign="middle"><br>
+           </td>
+           <td valign="middle">If <tt>:service_provider</tt> isn't present, 
+ the  name of a service type, all of whose providers will be selected<br>
+           </td>
+         </tr>
+         <tr>
+           <td valign="middle"><b>OUT:</b><br>
+           </td>
+           <td valign="middle"><tt>:connected</tt><br>
+           </td>
+           <td valign="middle">integer<br>
+           </td>
+           <td valign="middle">&nbsp;<br>
+           </td>
+           <td valign="middle">&nbsp;<br>
+           </td>
+           <td valign="middle">The number of selected providers which are 
+connected<br>
+           </td>
+         </tr>
+         <tr>
+           <td valign="middle">&nbsp;<br>
+           </td>
+           <td valign="middle"><tt>:known</tt><br>
+           </td>
+           <td valign="middle">integer<br>
+           </td>
+           <td valign="middle">&nbsp;<br>
+           </td>
+           <td valign="middle">&nbsp;<br>
+           </td>
+           <td valign="middle">The number of selected providers<br>
+           </td>
+         </tr>
+                       
+  </tbody>     
+</table>
+             
+<p>This message returns a frame.<br>
+     <br>
+     </p>
+          
+<p><a name="hub_token_owner"></a><b><big>hub_token_owner</big></b> returns
+   the name of the service type of the provider originating the current token. 
+   <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>OUT:</b></td>
+        <td><tt>:owner</tt></td>
+        <td>string</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>The name of the service type for the provider originating the 
+current   token</td>
+       </tr>
+    <tr>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><tt>:owner_id</tt><br>
+      </td>
+      <td valign="top">string<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">The <a
+ href="../manual/advanced/provider_id.html#The_syntax_of_provider_names">provider
+ID</a> of the provider originating the current token<br>
+      </td>
+    </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message returns a frame. </p>
+          
+<p><a name="hub_pause"></a><b><big>hub_pause</big></b> sets a pause after
+   each message dispatch. This can be useful for demoing and debugging. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:milliseconds</tt></td>
+        <td>integer</td>
+        <td>yes&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>If present, the length of the pause in milliseconds</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message returns NULL.<br>
+   </p>
+     
+<p><a name="hub_sleep"></a><b><big>hub_sleep</big></b> sleeps for the specified 
+ number of milliseconds.<br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:milliseconds</tt></td>
+        <td>integer</td>
+        <td>yes&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>If present, the length of the sleep in milliseconds</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message returns NULL. </p>
+     
+<p> </p>
+          
+<p><a name="hub_set_verbosity"></a><b><big>hub_set_verbosity</big></b> sets
+   the verbosity level for the Hub, in addition to the command line argument 
+   to the Hub and the GAL_VERBOSE environment variable. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:verbosity</tt></td>
+        <td>integer</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td><a href="../manual/advanced/util.html#Printing">Verbosity level</a>
+  (0 to&nbsp; 6)</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message returns NULL. </p>
+          
+<p><a name="hub_continue"></a><b><big>hub_continue</big></b> listens for
+a new message of the specified form and treats it as a reply or error. See
+the section on <a
+ href="../manual/advanced/synch_vs_asynch.html#Hub/server_expectation_mismatches">Hub 
+ continuations</a> for a discussion. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:reply_matches</tt></td>
+        <td>list of frames</td>
+        <td>yes&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>If present, a sequence of frames one of which should match an 
+incoming   new message, which will then be treated as a normal reply. Matching 
+is done   using <a href="../manual/reference/frame.html#Gal_MatchFrame">Gal_MatchFrame</a>. 
+   One of this and <tt>:error_matches</tt> must be specified.</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:error_matches</tt></td>
+        <td>list of frames</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>If present, a sequence of frames one of which should match an 
+incoming   new message, which will then be treated as an error reply. Matching 
+is done   using <a href="../manual/reference/frame.html#Gal_MatchFrame">Gal_MatchFrame</a>. 
+   One of this and <tt>:reply_matches</tt> must be specified.</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:service_type</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>If present, the name of a service type known to the Hub, which
+ will   serve as a filter on which providers will be monitored for new messages</td>
+       </tr>
+        <tr>
+       <td>&nbsp;</td>
+        <td><tt>:service_provider</tt></td>
+        <td>string</td>
+        <td>yes</td>
+        <td>&nbsp;</td>
+        <td>If present, a <a
+ href="../manual/advanced/provider_id.html##The_syntax_of_provider_names">provider 
+  name</a> or service type which will server as a filter on which providers 
+  will be monitored for new messages. Overrides the value for <tt>:service_type</tt> 
+  if it conflicts.</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+        </p>
+          
+<p>This message returns the frame which matches one of the elements in <tt>:reply_matches</tt> 
+  or <tt>:error_matches</tt>. </p>
+          
+<p><big><b><a name="hub_gui_notify"></a>hub_gui_notify</b></big> relays messages
+   to the <a href="hub_gui.html">Hub GUI</a>, if there is one.<br>
+      </p>
+          
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>IN:</b></td>
+        <td><tt>:msgs</tt></td>
+        <td>list of frames</td>
+        <td>yes<br>
+            </td>
+        <td>&nbsp;</td>
+        <td>If present, each frame in the list will be sent in order as a 
+message   to the Hub GUI.<br>
+            </td>
+       </tr>
+          <tr>
+            <td valign="top">&nbsp;<br>
+            </td>
+            <td valign="top"><tt>:msg</tt><br>
+            </td>
+            <td valign="top">frame<br>
+            </td>
+            <td valign="top">yes<br>
+            </td>
+            <td valign="top"><tt>:msgs</tt><br>
+            </td>
+            <td valign="top">If present and <tt>:msgs</tt> is not, the value
+  will  be sent as a message to the Hub GUI.<br>
+            </td>
+          </tr>
+                       
+  </tbody>     
+</table>
+            
+<p> </p>
+      This message returns NULL.<br>
+         
+<p><b><big><a name="hub_token_timestamp"></a>hub_token_timestamp</big></b> 
+  retrieves the&nbsp;<a href="../manual/advanced/timestamps.html">timestamp</a>
+  for the current token.<br>
+                 </p>
+       
+<table border="1" width="100%" nosave="">
+      <tbody>
+        <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>OUT:</b></td>
+        <td><tt>:seconds</tt></td>
+        <td>integer</td>
+        <td>&nbsp;<br>
+            </td>
+        <td>&nbsp;</td>
+        <td>The integral component of the <a
+ href="../manual/advanced/timestamps.html">timestamp</a>.<br>
+            </td>
+       </tr>
+          <tr>
+            <td valign="top">&nbsp;<br>
+            </td>
+            <td valign="top"><tt>:milliseconds</tt><br>
+            </td>
+            <td valign="top">integer<br>
+            </td>
+            <td valign="top">&nbsp;<br>
+            </td>
+            <td valign="top">&nbsp;<br>
+            </td>
+            <td valign="top">The fractional component of the&nbsp;<a
+ href="../manual/advanced/timestamps.html">timestamp</a> in milliseconds<br>
+          </td>
+        </tr>
+               
+  </tbody>    
+</table>
+       
+<p>This message returns a frame.<br>
+    </p>
+       
+<p><b><big><a name="hub_gc_version"></a>hub_gc_version</big></b> returns
+the current version of the Galaxy Communicator infrastructure. These values
+can be used to conditionalize behavior in Hub programs.<br>
+                  </p>
+         
+<table border="1" width="100%" nosave="">
+     <tbody>
+        <tr>
+       <td>&nbsp;</td>
+        <td><b>parameter</b></td>
+        <td><b>type</b></td>
+        <td><b>optional</b></td>
+        <td><b>depends on</b></td>
+        <td><b>description/constraints</b></td>
+       </tr>
+        <tr nosave="">
+       <td nosave=""><b>OUT:</b></td>
+        <td><tt>:major</tt></td>
+        <td>integer</td>
+        <td>&nbsp;<br>
+            </td>
+        <td>&nbsp;</td>
+        <td>The major version of the Communicator infrastructure, i.e., 4 
+in  4.0.3.<br>
+            </td>
+       </tr>
+          <tr>
+            <td valign="middle">&nbsp;<br>
+            </td>
+            <td valign="middle"><tt>:minor</tt><br>
+            </td>
+            <td valign="middle">integer<br>
+            </td>
+            <td valign="middle">&nbsp;<br>
+            </td>
+            <td valign="middle">&nbsp;<br>
+            </td>
+            <td valign="middle">The minor version of the Communicator infrastructure,
+  i.e., 0 in 4.0.3.<br>
+     </td>
+        </tr>
+        <tr>
+          <td valign="middle">&nbsp;<br>
+          </td>
+          <td valign="middle"><tt>:sub_minor</tt><br>
+          </td>
+          <td valign="middle">integer<br>
+          </td>
+          <td valign="middle">&nbsp;<br>
+          </td>
+          <td valign="middle">&nbsp;<br>
+          </td>
+          <td valign="middle">The subminor version of the Communicator infrastructure,
+  i.e., 3 in 4.0.3.<br>
+          </td>
+        </tr>
+               
+  </tbody>     
+</table>
+    <br>
+    This message returns a frame.<br>
+    <br>
+          
+<hr>  
+<center>   
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="verify_program.html"><img src="../arrow_left.gif" alt=""
+ width="30" height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../LICENSE">License</a> / <a href="../manual/index.html">Documentation
+ home</a> / <a href="../manual/index.html#Getting_help">Help and feedback</a> 
+        </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="../../contrib/MITRE/utilities/docs/install.html"><img
+ src="../arrow_right.gif" alt="" width="30" height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+    Last updated August 13, 2002</center>
+        <br>
+      <br>
+     <br>
+    <br>
+   <br>
+   <br>
+</body>
+</html>

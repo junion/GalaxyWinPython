@@ -1,0 +1,259 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+            
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+            
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Tutorial: How to Use the Process Monitor</title>
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+      
+<center>   
+<h1> Galaxy Communicator Tutorial:<br>
+   <br>
+   How to Use the Process Monitor</h1>
+  </center>
+     
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="../../../../docs/manual/tutorial/how_it_works.html"><img
+ src="../../../../docs/arrow_left.gif" alt="" width="30" height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../../LICENSE">License</a> / <a
+ href="../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a> 
+        </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="../../demos/docs/toy-travel-tut.html"><img
+ src="../../../../docs/arrow_right.gif" alt="" width="30" height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+       
+<hr width="100%">   
+<p>The process monitor is a tool which allows the user to control and monitor
+ system processes in a variety of configurations. This tools is used extensively
+ in the tutorial and in the examples in the Galaxy Communicator distribution.
+ In this lesson, we learn about the various parts of the process monitor
+and  how to use them. </p>
+   
+<ul>
+   <li> <a href="#Starting_the_process_monitor">Starting the process monitor</a></li>
+    <li> <a href="#The_menu_bar">The menu bar</a></li>
+    <li> <a href="#The_process_panes">The process panes</a></li>
+    <li> <a href="#Using_the_menu_bar">Using the menu bar</a></li>
+     
+</ul>
+   Once you feel comfortable with the process monitor, if you want to know
+ more, you can consult the <a href="process_monitor_ref.html">process monitor
+ reference</a>.   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Starting_the_process_monitor"></a>Starting the process monitor</h2>
+   There are a couple different ways to start the process monitor, but we'll
+ be starting it with a file which describes the configuration of processes
+ that it will run. The process monitor executable can be found at <tt>$GC_HOME/contrib/MITRE/tools/bin/process_monitor</tt>. 
+ Let's start it up to run a couple of simple Unix applications.   
+<blockquote><b><tt>[Process monitor exercise 1]<br>
+  <br>
+Unix:<br>
+  </tt></b>       
+  <p><tt>% process_monitor $GC_HOME/tutorial/process_monitor/dir.config 1
+ &amp;<br>
+  </tt></p>
+  <p><tt><b>Windows:</b><br>
+  </tt></p>
+  <p><tt>C:\&gt; python %PM_DIR%\process_monitor.py %GC_HOME%\tutorial\process_monitor\dir.config
+3<br>
+  </tt></p>
+  </blockquote>
+   (If the shell can't find the process monitor application, make sure you've
+ <a href="../../../../docs/manual/tutorial/getting_started.html">configured 
+ your environment correctly</a>.) You'll get a window which looks like this
+(on Unix; it will look a little different on Windows)::   
+<center><img src="../../../../docs/images/ProcessMonitor.jpg" nosave=""
+ height="431" width="671">
+  </center>
+      
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="The_menu_bar"></a>The menu bar</h2>
+   The process monitor contains a menu bar, which controls the overall configuration
+ of the process monitor and the collection of processes.   
+<h3> The File menu</h3>
+   The File menu contains the Quit command, which shuts down all the processes
+ and exits the process monitor.   
+<h3> The Process Control menu</h3>
+   The Process Control menu contains three commands:   
+<ul>
+   <li> Stop all, which stops all the processes</li>
+    <li> Clear all, which resets all the scrollable output histories</li>
+    <li> Restart all, which stops all the processes which are running and 
+then starts all the processes</li>
+     
+</ul>
+      
+<h3> The Configuration menu</h3>
+   The Configuration menu allows you to choose between two different configurations: 
+  
+<ul>
+   <li> Column configuration, which displays all the processes in one, two
+ or three columns</li>
+    <li> Compressed configuration, which displays only a single process at
+ a time, which you can switch between with a set of radio buttons; you can
+ select one, two or three rows of buttons</li>
+     
+</ul>
+ 
+<h3>The Process Set menu</h3>
+ If the configuration file you're using has more than one set of processes 
+it can run, the Process Set menu will switch between different sets of processes. 
+When you switch between process sets, the current process set (if there is 
+one) will be shut down.<br>
+ <br>
+      
+<hr width="100%">   
+<h2> <a name="The_process_panes"></a>The process panes</h2>
+   The process monitor presents each process as four panes:   
+<ul>
+   <li> A command bar, which includes the Hide/Show button as well as the 
+title of the process</li>
+    <li> A scrollable output history, which contains the command to be executed,
+ in square brackets, and the output of the command (both standard output
+and  standard error)</li>
+    <li> An editable command line</li>
+    <li> A control bar, which contains the Start/Stop button, the Keep alive/Let
+ die button, the Clear button and the Pause output/Resume output button</li>
+     
+</ul>
+   Whether or not all these panes are visible depends on the Hide/Show button.
+ In the example here, there are two processes, one which has all four panes
+ visible, and one which has only the command bar.   
+<h3> Hide/Show</h3>
+   Press the button marked "Hide" on the command bar titled "Current directory".
+ See how the lower three panes for the process vanish. Like the command bar
+ titled "Directory contents", the run status now appears on the command bar
+ on the far right, and this button now reads "Show". Press it again to restore
+ the configuration.   
+<h3> Start/Stop</h3>
+   Press the button marked "Start". The process monitor will now run a command
+which prints the current working directory, and you'll see something like
+the following output in the scrollable output  history:   
+<blockquote><b><tt>[Scrollable output pane]<br>
+  <br>
+Unix:<br>
+  </tt></b>       
+  <p><tt>[exec pwd 2&gt;&amp;1]</tt> <br>
+    <tt>/usr/GalaxyCommunicator-3.2</tt> <br>
+    <tt>======================================<br>
+  </tt></p>
+  <p><b><tt>Windows:</tt></b></p>
+  <p><tt>[cmd.exe /c chdir]<br>
+C:\<br>
+======================================<br>
+  </tt></p>
+  </blockquote>
+   Note the row of equals signs ("="). This indicates that the process has
+ halted. You may also have noticed that for the instant the process is running,
+ this button reads "Stop". While the button reads "Stop", you can press it
+ to stop the process.   
+<h3> Keep alive/Let die</h3>
+   Press the button marked "Keep alive". The process will now be automatically
+ restarted if it dies of its own accord. The button now reads "Let die".
+Press  "Start" and notice how the command is called over and over. Press
+"Stop"  to halt this sequence, and "Let die" to disable automatic restart.
+  
+<h3> Clear</h3>
+   Press the button marked "Clear". The scrollable output history is cleared
+ and the command to be executed is rewritten to the output pane.   
+<h3> Pause output/Resume output</h3>
+   This final toggle button pauses and resumes the output. Press "Keep alive"
+ again, and then "Start". As the process is running over and over, press
+"Pause  output", and note that nothing is now being added to the scrollable
+output  pane. The button now reads "Resume output". Press "Resume output",
+then "Stop",  then "Let die".   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Using_the_menu_bar"></a>Using the menu bar</h2>
+   Press "Show" on the command bar titled "Directory contents". Select "Process
+ Control -&gt; Restart all". Both processes run and terminate. Select "Process
+ Control -&gt; Clear all" to clear all the scrollable output panes.   
+<p>Next, we'll switch configurations. Select "Configuration -&gt; Compressed
+ configuration -&gt; One button row". Now the process monitor displays a
+single  output history, command line and control bar, with a row of buttons
+directly  below the menu bar to select the displayed process. Try switching
+between  the two processes, and start, stop and clear the processes to convince
+yourself  that the process displayed in the pane corresponds to the selected
+process  in the button row. </p>
+   
+<p>The "Detach this pane" button at the bottom allows you to view a given
+ process in its own window with its own set of panes. Press this button.
+The  button corresponding to the current process disappears from the button
+row,  and the new window which appears has a no menu bar and a button at
+the bottom  which says "Reattach this pane". When the separate window is
+reattached, the corresponding button is re-added to the button row on the
+main window.<br>
+ <br>
+ Finally, let's switch process sets. Select "Process Set -&gt; Environment 
+settings". Now the process monitor displays a single process, different from 
+the others. Start this process. Now use the "Process Set" menu to switch between
+the two process sets. Notice that each process set is in the state you left
+it in.<br>
+   </p>
+   
+<p>Once you're done exploring the process monitor, select "File -&gt; Quit"
+ to exit. </p>
+   
+<p><b>Next</b>: <a href="../../demos/docs/toy-travel-tut.html">A sample end-to-end
+ system: MITRE's toy travel demo</a> </p>
+   
+<hr>  
+<center>   
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="../../../../docs/manual/tutorial/how_it_works.html"><img
+ src="../../../../docs/arrow_left.gif" alt="" width="30" height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../../LICENSE">License</a> / <a
+ href="../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a> 
+        </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="../../demos/docs/toy-travel-tut.html"><img
+ src="../../../../docs/arrow_right.gif" alt="" width="30" height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+    Last updated August 6, 2002</center>
+      
+<p><br>
+   </p>
+  <br>
+  <br>
+ <br>
+</body>
+</html>

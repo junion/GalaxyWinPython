@@ -1,0 +1,625 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>Galaxy Communicator Documentation: Turn Management</title>
+<!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+<body style="font-family: Helvetica;" style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#3333FF" vlink="#993399" alink="#FF0000">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:<br>
+<br>
+Turn Management</h1></center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "../../contrib/MITRE/examples/many_conns/description.html"><img src="../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../LICENSE">License</a> / <a href = "../manual/index.html">Documentation home</a> / <a href="../manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "libGalaxyEnhancements.html"><img src="../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+
+<hr WIDTH="100%">
+<br>&nbsp;
+<p>MIT provides a way of controlling servers
+using Turn Management, a set of resources which was one of the initial
+inspirations for the<a href="../manual/reference/pgm.html"> Hub program
+files</a>.&nbsp; The Galaxy library provides a dispatch function named
+<tt><a href="#turn_management">turn_management</a></tt>
+which implements this toplevel control.&nbsp; We describe it briefly here.&nbsp;
+At least part of this documentation will take the form of server documentation,
+since this is a good deal of the behavior from the programmer's point of
+view.
+<hr>
+<br>&nbsp;
+<h2>
+Using Turn Management for Dialogue Control</h2>
+
+<ul>
+<li>
+<a href="#Implement_the_Dialogue_Control_Functions">Implement
+the Server Dialogue Control Functions</a></li>
+
+<li>
+<a href="#Dialogue_Control_File">Create a
+Dialogue Control File</a></li>
+
+<ul>
+<li>
+<a href="#Command_line_arguments">Command
+Line Arguments</a></li>
+
+<li>
+<a href="#Dialogue_Control_Script">Dialogue
+Control Script</a></li>
+
+<li>
+<a href="#The_Header_File,_functions.h">Header
+File</a></li>
+</ul>
+
+<li>
+<a href="#Initialization">Initialize Turn
+Management</a></li>
+
+<li>
+<a href="#Message_Set">Turn Management Message
+Set</a></li>
+
+<ul>
+<li>
+<a href="#turn_management">turn_management</a></li>
+</ul>
+</ul>
+
+<p><br>As an illustration
+of how to use Turn Management for dialogue control, we will use the pegasus
+server, a flight reservations server.
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Implement_the_Dialogue_Control_Functions"></a>Implement
+the Server Dialogue Control Functions</h2>
+Implement the functions to handle the dialogue
+control.&nbsp; All dialogue control functions are assumed to be of the
+form:
+<blockquote>int <i>function_name</i> (GAL_DOMAIN_SVR
+*<i>dc</i>);</blockquote>
+Valid return values are:
+<ul>
+<li>
+<tt>DIALOGUE_CONTINUE</tt></li>
+
+<li>
+<tt>DIALOGUE_STOP</tt></li>
+
+<li>
+<tt>DIALOGUE_RESTART</tt></li>
+</ul>
+See below for an explanation of the implications
+of these <a href="#Valid_return_values">return values</a>.
+<p>The file containing the functions should
+be kept in the server directory.&nbsp; A header file, containing dialogue
+control function prototypes, will be automatically generated at compile
+time.&nbsp; (<a href="#The_Header_File,_functions.h">See below</a>.)
+<p>As an example, pegasus has a function called
+<tt><a href="#default_action">default_action</a></tt>
+which handles the undefined case by replying with a "cant_handle" clause.
+<blockquote><tt>int&nbsp;<a NAME="default_action"></a><b><big>default_action</big></b>(GAL_DOMAIN_SVR
+*dc)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; if (!dc->reply_frame)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; dc->reply_frame = <a href="../manual/reference/frame.html#Gal_MakeFrame">Gal_MakeFrame</a>("cant_handle",
+GAL_CLAUSE);</tt>
+<p><tt>&nbsp; return(DIALOGUE_STOP);</tt>
+<br><tt>}</tt></blockquote>
+See below for an <a href="#--> default_action">example
+rule</a> which states the required conditions in order for <tt><a href="#default_action">default_action</a></tt>
+to be executed.
+<br>&nbsp;
+<p>Another example is
+the
+<tt><a href="#need_destination">need_destination</a></tt>
+function.&nbsp; A "need_destination" clause is created for the given topic
+and then added to the system initiative.
+<blockquote><tt>int&nbsp;<a NAME="need_destination"></a><b><big>need_destination</big></b>(GAL_DOMAIN_SVR
+*dc)</tt>
+<br><tt>{ Nframe topic;</tt>
+<br><tt>&nbsp; topic = <a href="../manual/reference/frame.html#Gal_GetFrame">Gal_GetFrame</a>(dc->request_frame,
+":topic");</tt>
+<br><tt>&nbsp; dc->reply_frame = <a href="../manual/reference/frame.html#Gal_MakeFrame">Gal_MakeFrame</a>("need_destination",
+GAL_CLAUSE);</tt>
+<br><tt>&nbsp; fr_setsprop(dc->reply_frame, ":topic",
+make_tframe(copy_nframe(topic)));</tt>
+<br><tt>&nbsp; <a href="libGalaxyEnhancements.html#Gal_AddSystemInitiative">Gal_AddSystemInitiative</a>(dc,
+"destination", NULL);</tt>
+<br><tt>&nbsp; return(DIALOGUE_STOP);</tt>
+<br><tt>}</tt></blockquote>
+See below for an <a href="#--> need_destination">example
+rule</a> which states the required conditions in order for <tt><a href="#need_destination">need_destination</a></tt>
+to be executed.
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Dialogue_Control_File"></a>Create
+a Dialogue Control File</h2>
+The dialogue control file dictates the behavior
+of the dialogue control.&nbsp; It contains a single <a href="#Dialogue_Control_Script">script</a>
+of rules.
+<p>The default dialogue control file is assumed
+to be ../System/&lt;<i>server_name</i>>.dctl.&nbsp; The dialogue control
+file can also be specified as a <a href="#Command_line_arguments">command
+line argument</a>.&nbsp; If no file is specified and the default file does
+not exist, execution is aborted.
+<p>A header file, based on the dialogue control
+file, is automatically generated at compile time.&nbsp; This header file
+contains the function prototypes for each operation listed in the dialogue
+control file.&nbsp;&nbsp; See <a href="#The_Header_File,_functions.h">below</a>
+for more details.
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Command_line_arguments"></a>Command
+Line Arguments</h2>
+The dialogue control flow is regulated via
+the <a href="#Dialogue_Control_File">dialogue script</a> which can be provided
+as a command line argument.&nbsp; If not provided, the dialogue file defaults
+to "../System/&lt;<i>server_name</i>>.dctl"
+<blockquote><tt>static char *oas[] = {</tt>
+<br><tt>&nbsp; "-dialogue_script name", "script for dialogue control in
+domain server", NULL, NULL</tt>
+<br><tt>};</tt></blockquote>
+This server also accepts the <a href="../manual/reference/adding.html#_GalSS_init_server">standard
+server arguments</a>. See the <a href="../manual/advanced/util.html#Command_line_argument_parsing">oa
+library</a> for details.
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Dialogue_Control_Script"></a>Dialogue
+Control Script</h2>
+The <a href="#Dialogue_Control_File">dialogue
+control file</a> contains a dialogue control script.&nbsp; The dialogue
+control script is similar to a <a href="../manual/reference/pgm.html#Hub_Programs">Hub
+program</a> in that it contains a script consisting of a set of rules.&nbsp;
+Each rule specifies conditions that must be satisfied in order for a given
+operation to be executed.&nbsp; When <a href="#turn_management">turn_management</a>
+is called, each rule is evaluated, and the subsequent operations are called.
+<p>Each operation returns a value which has
+implications for the flow of control through the script.
+<br><a NAME="Valid_return_values"></a>Valid
+return values are:
+<ul>
+<li>
+<tt>DIALOGUE_CONTINUE</tt> --> resume flow
+of control immediately after operation was executed</li>
+
+<li>
+<tt>DIALOGUE_STOP</tt> --> do not resume flow
+of control</li>
+
+<li>
+<tt>DIALOGUE_RESTART</tt> --> resume flow
+of control at top of script</li>
+</ul>
+
+<p><br>A rule in a dialogue control script
+is similar to a <a href="../manual/reference/pgm.html#Rules">rule in a
+Hub program</a> except that the <tt>RULE:</tt>
+identifier is not used.&nbsp; Otherwise, the syntax is identical:
+<blockquote>&lt;alphanumeric expression> -->
+&lt;operation>
+<p>where the alphanumeric expression is (
+[!] [X %] &lt;key> [comparison] [&lt;value>] [&amp;] [|])</blockquote>
+See the table of <a href="../manual/reference/pgm.html#Rule_conditions">Valid
+Operators for Constructing Rules</a>.
+<p>A dialogue control script can also contain
+comments.&nbsp; Any line beginning with a semicolon is interpreted as a
+comment.
+<br>&nbsp;
+<br>&nbsp;
+<h4>
+<a NAME="Examples_of_Valid_Rules"></a><b>Examples
+of Valid Rules</b></h4>
+
+<ul><tt>clause help --> give_help</tt>
+<br>; If <tt>clause</tt>
+is equal to <tt>help</tt> then execute
+the <tt>give_help</tt> operation.
+<p><tt>on_time which | departure_time %which | arrival_time %which -->
+mark_status</tt>
+<br><tt>; on_time</tt> must be equal to <tt>which,</tt>
+or <tt>departure_time</tt> must contain
+<tt>which,</tt>
+or <tt>arrival_time</tt> must contain
+which in order for the <tt>mark_status</tt>
+operation to be called.
+<p><tt>destination &amp; filtered !% to --> filter_to_airport</tt>
+<br>; If <tt>destination</tt>
+exists and <tt>filtered</tt> does not
+contain <tt>to</tt>, then call execute
+<tt>filter_to_airport</tt>.
+<p><tt>num_found >1 --> speak_multiple</tt>
+<br>; If <tt>num_found</tt>
+is greater than 1, execute <tt>speak_multiple</tt>.
+<p><tt>!sql_query &amp; !destination &amp; !flight_number&nbsp;<a NAME="--> need_destination"></a>-->
+<a href="#need_destination">need_destination</a></tt>
+<br>; If there is no <tt>sql_query</tt>
+and no <tt>destination</tt> and no
+<tt>flight_number</tt>,
+execute <tt><a href="#need_destination">need_destination</a></tt>.
+<p><a NAME="--> default_action"></a><tt>--> <a href="#default_action">default_action</a></tt>
+<br>; If no other rule's conditions have been
+satisfied, execute <tt><a href="#default_action">default_action</a></tt>.&nbsp;
+In order for this to work as the default, the rule has to be the last rule
+in the set.</ul>
+
+<br>&nbsp;
+<br>&nbsp;
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="The_Header_File,_functions.h"></a>The
+Header File</h2>
+The new style for generating header files
+for dialogue control is described here. The old style is no longer supported.
+See the <a href="../manual/admin/upgrade.html#Updating_your_header_files">upgrade
+notes</a>.
+<h3>
+<a NAME="The_new_style"></a>The new style</h3>
+In the new style, the user creates a declarations
+file of this form:
+<blockquote><tt>GAL_DIALOGUE_FUNCTION(&lt;op_name>)</tt>
+<br><tt>GAL_DIALOGUE_FUNCTION(&lt;op_name>)</tt>
+<br><tt>...</tt></blockquote>
+with a <tt>GAL_DIALOGUE_FUNCTION</tt>
+declaration for each server dialogue control function. Then the user adds
+the following header information to exactly one of the server source files:
+<blockquote><tt>#define SERVER_FUNCTIONS_INCLUDE "&lt;server_declaration_file_name>"</tt>
+<br><tt>#include &lt;galaxy/server_functions.h></tt>
+<p><tt>#include &lt;domain_svr/domain_svr.h></tt>
+<br><tt>#define DIALOGUE_FUNCTIONS_INCLUDE "&lt;dctl_declarations_file_name>"</tt>
+<br><tt>#include &lt;domain_svr/dialogue_functions.h></tt></blockquote>
+where <tt>&lt;server_declaration_file_name></tt>
+and
+<tt>&lt;dctl_declaration_file_name></tt>
+are replaced with the appropriate names of the server declarations file
+and the file created here, respectively., As with the old style of server
+header generation, the server header file includes the appropriate behavior
+for the dialogue header file. Note that this new style works in conjunction
+with the <a href="../manual/reference/adding.html#Declare_server_information">new
+style of declaring server information</a>; in particular, the GAL_SERVER_SW_PACKAGE()
+macro is used to <a href="../manual/reference/adding.html#Incorporating_other_software_packages">incorporate
+the dialogue control module</a>.
+<p>Here is an example of what the MIT pegasus
+server would look like if it used the new style of headers:
+<blockquote><tt>------ pegasus-dialogue.h</tt>
+<p><tt>GAL_DIALOGUE_FUNCTION(give_help)</tt>
+<br><tt>GAL_DIALOGUE_FUNCTION(repeat_response)</tt>
+<br><tt>...</tt>
+<p><tt>------ pegasus-server.h</tt>
+<p><tt>GAL_SERVER_NAME(pegasus)</tt>
+<br><tt>GAL_SERVER_PORT(11100)</tt>
+<br><tt>GAL_SERVER_OP(turn_management)</tt>
+<br><tt>GAL_SERVER_SW_PACKAGE(MITDialogue)</tt>
+<p><tt>------ functions.c</tt>
+<p><tt>...</tt>
+<br><tt>#define SERVER_FUNCTIONS_INCLUDE "pegasus-server.h"</tt>
+<br><tt>#include &lt;galaxy/server_functions.h></tt>
+<br><tt>#include &lt;domain_svr/domain_svr.h></tt>
+<br><tt>#define DIALOGUE_FUNCTIONS_INCLUDE "pegasus-dialogue.h"</tt>
+<br><tt>#include &lt;domain_svr/dialogue_functions.h></tt>
+<br><tt>...</tt></blockquote>
+
+<hr WIDTH="100%">
+<h2>
+<a NAME="Initialization"></a>Initialize Turn
+Management</h2>
+In order to use turn management, your domain
+server must call an initialization function, <a href="#Gal_DialogueInitServer">Gal_DialogueInitServer</a>
+, provided by the Galaxy library.
+<ul><tt>void *_GalSS_init_server(GalIO_ServerStruct *<i>server</i>, int
+<i>argc</i>, char **<i>argv</i>)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; return(<a href="#Gal_DialogueInitServer">Gal_DialogueInitServer</a>(<a href="../manual/reference/server_structure.html#GalIO_GetServerName">GalIO_GetServerName</a>(<i>server</i>),
+<i>argc</i>,
+<i>argv</i>));</tt>
+<br><tt>}</tt></ul>
+void *<a NAME="Gal_DialogueInitServer"></a><b><big>Gal_DialogueInitServer</big></b>(char
+*<i>server_name</i>, int <i>argc</i>, char **<i>argv</i>)
+<br>Initializes and returns the server specified
+by <i>server_name.</i> This function calls <a href="#Gal_InitTM">Gal_InitTM</a>.
+<p>GAL_DOMAIN_SVR *<a NAME="Gal_InitTM"></a><b><big>Gal_InitTM</big></b>(int
+<i>argc</i>,
+char **<i>argv</i>)
+<br>Initializes the domain server.&nbsp; The
+dialogue script may be specified by the <tt>-dialogue_script</tt>
+argument shown <a href="#Command_line_arguments">above</a>; otherwise,
+the dialogue file defaults to "../System/&lt;<i>server_name</i>>.dctl".&nbsp;
+If no dialogue script is provided and the default file is not found, the
+function returns a fatal error.&nbsp; This function is called by <a href="#Gal_DialogueInitServer">Gal_DialogueInitServer</a>.
+<p>You can also add support for printing out
+usage information as follows:
+<blockquote><tt>void _GalSS_print_usage(int argc, char **argv)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; Gal_DialoguePrintUsage(argc, argv);</tt>
+<br><tt>}</tt></blockquote>
+void&nbsp;<a NAME="Gal_DialoguePrintUsage"></a><b><big>Gal_DialoguePrintUsage</big></b>(int
+<i>argc</i>,
+char **<i>argv</i>)
+<br>Prints out usage information for turn
+management.
+<br>&nbsp;
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Message_Set"></a>Turn Management
+Message Set</h2>
+
+<ul>
+<li>
+<a href="#turn_management">turn_management</a></li>
+</ul>
+
+<p><br>
+<hr WIDTH="100%">
+<p><a NAME="turn_management"></a><b><big>turn_management
+</big></b>runs
+the dialogue control tools (via the <a href="#Dialogue_Control_File">dialogue
+control file</a>) and generates a domain-specific response.
+<br>&nbsp;
+<table BORDER WIDTH="100%" NOSAVE >
+<tr>
+<td>&nbsp;</td>
+
+<td><b>parameter</b></td>
+
+<td><b>type</b></td>
+
+<td><b>optional</b></td>
+
+<td><b>depends on</b></td>
+
+<td><b>description/constraints</b></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE><b>IN:</b></td>
+
+<td><tt>:key_value</tt></td>
+
+<td>string</td>
+
+<td>yes</td>
+
+<td>&nbsp;</td>
+
+<td>key/value paraphrase of input</td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td><tt>:kv_lang</tt></td>
+
+<td>string</td>
+
+<td>yes</td>
+
+<td>&nbsp;</td>
+
+<td>key/value paraphrase language; if not
+present in input, will be set from system's default key-value language,
+which is "dialogue"</td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td><tt>:parse_frame</tt></td>
+
+<td>frame</td>
+
+<td>&nbsp;</td>
+
+<td>&nbsp;</td>
+
+<td>parsed input string</td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td><tt>:request_frame</tt></td>
+
+<td>frame</td>
+
+<td>&nbsp;</td>
+
+<td>&nbsp;</td>
+
+<td>input plus context</td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td><tt>:tm_state</tt></td>
+
+<td>frame</td>
+
+<td>yes</td>
+
+<td>&nbsp;</td>
+
+<td>previous state of turn manager</td>
+</tr>
+
+<tr>
+<td><b>OUT:</b></td>
+
+<td><tt>:reply_frame</tt></td>
+
+<td>frame</td>
+
+<td>&nbsp;</td>
+
+<td>&nbsp;</td>
+
+<td>will have the form {... :domain &lt;string>
+:comment_tlist &lt;list> :continuant &lt;frame> :db_tlist &lt;list> ...}</td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td><tt>:list</tt></td>
+
+<td>&nbsp;</td>
+
+<td>yes</td>
+
+<td>&nbsp;</td>
+
+<td>(no examples)</td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td><tt>:map</tt></td>
+
+<td>&nbsp;</td>
+
+<td>yes</td>
+
+<td>&nbsp;</td>
+
+<td>(no examples)</td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td><tt>:image</tt></td>
+
+<td>&nbsp;</td>
+
+<td>yes</td>
+
+<td>&nbsp;</td>
+
+<td>(no examples)</td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td><tt>:tm_state</tt></td>
+
+<td>frame</td>
+
+<td>yes</td>
+
+<td>&nbsp;</td>
+
+<td>previous dialogue state</td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td><tt>:filter_list</tt></td>
+
+<td>frame</td>
+
+<td>&nbsp;</td>
+
+<td>&nbsp;</td>
+
+<td>value is {... :Flist &lt;list of strings>
+:Ftype &lt;string> :Fcategory &lt;string> :Fkey &lt;string> ....}. Describes
+words which ought to be present in the :parse_frame.&nbsp; Used by a number
+of servers to provide preferences for choosing among frames.&nbsp;</td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td><tt>:discourse_update</tt></td>
+
+<td>frame</td>
+
+<td>yes</td>
+
+<td>&nbsp;</td>
+
+<td>frame for context tracking out to add
+to the discourse history</td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td><tt>:system_initiative</tt></td>
+
+<td>frame</td>
+
+<td>yes</td>
+
+<td>&nbsp;</td>
+
+<td>query to present to the user</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<br>&nbsp;
+<p>Because many servers utilitize the Turn
+Management dialogue control capabilities, it is recommended that the dot
+notation be used for specific servers when the <tt><a href="#turn_management">turn_management</a></tt>
+operation is included in a <a href="../manual/reference/pgm.html">Hub program</a>
+rule:
+<blockquote><tt>RULE: :request_frame &amp; :key_value &amp; :domain Pegasus
+--> pegasus.turn_management</tt>
+<br><tt>RULE: :request_frame &amp; :key_value &amp; :domain Jupiter -->
+jupiter.turn_management</tt></blockquote>
+
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "../../contrib/MITRE/examples/many_conns/description.html"><img src="../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../LICENSE">License</a> / <a href = "../manual/index.html">Documentation home</a> / <a href="../manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "libGalaxyEnhancements.html"><img src="../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated December 6, 2000</center>
+
+</body>
+</html>

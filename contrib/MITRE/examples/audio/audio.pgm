@@ -1,0 +1,34 @@
+;; This file (c) Copyright 1998 - 2002 The MITRE Corporation
+;; 
+;; This file is part of the Galaxy Communicator system. It is licensed
+;; under the conditions described in the file LICENSE in the root 
+;; directory of the Galaxy Communicator system.
+
+;;
+;; this is a sample control file for the darpa hub
+;; using various MIT servers
+;;
+
+;; -------------------------------------------------
+;;   SERVERS
+;; -------------------------------------------------
+
+SERVER: testaudio_send
+HOST:localhost
+PORT:12345
+OPERATIONS: reinitialize notify
+
+SERVER: testaudio_receive
+HOST:localhost
+PORT:12346
+OPERATIONS: receive_audio
+
+PROGRAM: main
+
+;; -------------------------------------------------
+;;   CONDITIONS  (default order)
+;; -------------------------------------------------
+
+RULE: :binary_port & :binary_host & :call_id  --> receive_audio
+IN: :binary_port :binary_host :call_id
+OUT: none!

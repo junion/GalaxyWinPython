@@ -1,0 +1,1395 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                                                      
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                                                      
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Brokering and Audio Data</title>
+                                                         <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+                          
+<center>            
+<h1> Galaxy Communicator Documentation:<br>
+              <br>
+              Brokering and Audio Data</h1>
+             </center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="logging.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="server_structure.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+                           
+<hr width="100%">            
+<p>In Communicator, there are two ways of moving data from server to server. 
+      First, you can package the data into a frame and send it to another 
+server      via the Hub, using the <a
+ href="adding.html#Invoking_the_Hub">standard      frame dispatch functions</a>. 
+Alternatively, you can use the Hub to establish      a direct connection between
+servers (called a <i>broker connection</i>),     through which you can send
+data. This latter technique is most typically    used for transmitting audio
+data from the audio server to the recognizer,    and from the synthesizer 
+to the audio server; however, it can be used between    any two servers, for
+any type of data. In this document, we describe and   exemplify this brokering
+tool. </p>
+                       
+<p>As of version 4.0, you can now encapsulate this brokered data in an object 
+      called a <b>broker proxy</b>, for which there is a basic frame object 
+  type.    These broker proxies improve on the original broker method (which 
+  will continue   to be supported)&nbsp;in two ways: </p>
+                       
+<ul>
+              <li> The data in the frame which describes a broker connection
+  is  now   uniquely  identifiable, which provides for more reliable interactions 
+   and   also raises  the possibility for bridges to other infrastructures 
+ or  through   firewalls  can reliable identify brokered connections.</li>
+               <li> The broker proxy encodes type information, which is an
+ added    benefit   in cases where the information sent through the broker
+ is homoegeneous    (e.g.,   a series of arrays of 16-bit integers which
+represent  a single  audio  utterance).</li>
+                         
+</ul>
+                       
+<p>As of version 4.0, we recommend that everyone upgrade from the old broker
+       API to the new broker proxy API, because of the advantages it presents.
+      We've constructed an <a
+ href="../../../contrib/MITRE/examples/audio/">example</a>     which consists
+  of two sides of a broker connection which transmits the   contents  of
+a  file containing raw 8-bit audio data and and outputs the data  to the
+ audio  device. This example illustrates all the possible combinations  
+of brokering,   and we'll refer to this example in the discussion below.<br>
+              </p>
+                       
+<p>By default, the brokering mechanisms use the <a
+ href="../advanced/timed_tasks.html">timed  task loop</a>. For information 
+     on how to handle brokering when you can't use the timed task loop, look 
+   <a href="../advanced/special_mainloop.html">here</a>.<br>
+ </p>
+ 
+<p>If you use threads, be careful to read the section about <a
+ href="#Delaying_broker_activation">delaying broker activation</a>.<br>
+ </p>
+                       
+<hr width="100%"><br>
+                   
+<h2><a name="The_types_of_broker_proxies"></a>The types of broker proxies</h2>
+             Broker proxies are designed specifically for conveying references
+   to  data   through frames. Typically, what this means is that when you
+create    a broker   proxy, you almost always want to wrap a Gal_Object around
+it.   However,  this is not always the case. Accordingly, most of the functions 
+   in the broker   proxy API come in pairs: one for the Gal_Object, and one 
+  for the proxy directly.<br>
+                   
+<p>There are four different types of broker proxies, which can be differentiated 
+     by the type information encoded in them, as well as whether they're created
+     from a Gal_Object (see <a href="#GalSS_ProxifyObject">GalSS_ProxifyObject</a>) 
+     or just an <a href="frame.html#Object_Types">object type</a> (see <a
+ href="#GalSS_ProxifyObjectType">GalSS_ProxifyObjectType</a>).</p>
+                   
+<h3><a name="Atomic_proxies"></a>Atomic proxies</h3>
+           These proxies encode the types GAL_FRAME, GAL_STRING, GAL_INT, 
+GAL_FLOAT,      and GAL_PROXY (yes, you can wrap a proxy around a proxy, although
+we can't     think of any reason to do so). These proxies are self-terminating, 
+in that    you can write exactly one object to them, after which they'll automatically
+    mark themselves as done. If you create the proxy from an object instead
+  of  an object type, it'll be marked as done immediately, since creating
+a  proxy  from an object is exactly the same as creating it from an object
+type  and  writing the object to it. So for atomic proxies, it's most straightforward
+    to create the proxy from an object. <br>
+                   
+<h3><a name="Array_proxies"></a>Array proxies</h3>
+           These proxies encode one of the array types: GAL_BINARY, GAL_INT_16, 
+   etc.   If the proxy is created from an array object, and the object is 
+not   expandable   (see <a href="frame.html#Gal_BinaryObject">Gal_BinaryObject</a>), 
+   the proxy   is self-terminating; otherwise, multiple objects of the appropriate 
+   type  may be written to it, and it must be terminated explicitly (see <a
+ href="#GalSS_ProxyDone">GalSS_ProxyDone</a>). These multiple objects are 
+     treated as successive portions of the same array.<br>
+                   
+<h3><a name="List_proxies"></a>List proxies</h3>
+           These proxies encode the GAL_LIST type. If the proxy is created
+ from   an  object, and the object is not expandable (see <a
+ href="frame.html#Gal_ListObject">Gal_ListObject</a>), the proxy is self-terminating; 
+     otherwise (see <a href="frame.html#Gal_CreateListObject">Gal_CreateListObject</a>), 
+     multiple objects may be written to it, and it must be terminated explicitly 
+     (see <a href="#GalSS_ProxyDone">GalSS_ProxyDone</a>). These objects may
+   be  of any type; each one is interpreted as a member of the list.<br>
+                   
+<p>List proxies are a little tricky, because lists can appear inside lists. 
+     So if you write a list object to a list proxy, the object will be treated 
+     as a list within the overall list. If you want to append the new list 
+ to   the list proxy, you must write the individual elements of the new list. 
+  This  means that when you create a list proxy from an object, the individual 
+  elements   of the list object are written, not the list object itself.<br>
+           </p>
+                   
+<h3><a name="Any_proxies"></a>"Any" proxies</h3>
+           It's not necessary for a proxy to encode a specific type. If you 
+ create    a proxy using <a href="#GalSS_ProxifyObjectType">GalSS_ProxifyObjectType</a> 
+    and you use -1 as the type, the proxy will not encode any type. This proxy
+     will not be self-terminating. Like a list proxy, you can write any type
+   of  object to it; but unlike a list proxy, the elements you write will
+not   be  interpreted as elements of a single object, but rather just an
+unstructured     sequence of objects. This behavior is very similar to the
+original lower-level     broker API; however, you still derive the benefit 
+of having the broker  information   automatically encoded in a distinguished 
+and recognizable way.<br>
+                   
+<p>int&nbsp;<a name="GalSS_ProxySelfTerminates"></a><b><big>GalSS_ProxySelfTerminates</big></b>(GalSS_BrokerProxy
+       *<i>p</i>)<br>
+             int&nbsp;<a name="GalSS_ObjProxySelfTerminates"></a><b><big>GalSS_ObjProxySelfTerminates</big></b>(Gal_Object
+       <i>obj</i>)<br>
+             Returns 1 if the broker proxy <i>p</i>, or the broker proxy
+contained      in  object <i>obj</i> of type GAL_PROXY, is an outbound broker
+which does     not  require an explicit call to <a
+ href="#GalSS_ProxyDone">GalSS_ProxyDone</a>.       This will be the case
+for all non-expandable lists and arrays, and for    all   other types. All
+expandable lists and arrays require an explicit call   to  GalSS_ProxyDone.<br>
+           <br>
+              </p>
+                   
+<hr width="100%" size="2"><br>
+                       
+<h2> <a name="Sending_broker_proxy_data"></a>Sending broker proxy data</h2>
+                       
+<p>When you create an outbound broker proxy, you can do it either via an object
+or an object type. We'll illustrate the first situation here. This case is
+not illustrated in our audio example, mostly because it's more appropriate 
+     to <a href="#Atomic_proxies">atomic proxies</a>; however, for the sake 
+  of   parallelism, we'll use audio data here as well: <br>
+             </p>
+                       
+<blockquote><tt>static Gal_Frame prepare_audio_frame(GalSS_Environment *env,<br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+     char *filename)<br>
+             {<br>
+             &nbsp; Gal_Frame f = Gal_MakeFrame("main", GAL_CLAUSE);<br>
+             &nbsp; int total = 0;<br>
+             &nbsp; char *buf = (char *) NULL;<br>
+             &nbsp; Gal_Object proxy;<br>
+             &nbsp; Gal_Object data;<br>
+             &nbsp; <br>
+             &nbsp; /* In the code omitted here, the data from the named
+file   is    <br>
+             &nbsp; &nbsp; &nbsp;read into buf, and total is the number of
+ bytes    in  buf  */<br>
+             &nbsp;<br>
+             &nbsp; /* .... */<br>
+               <br>
+             &nbsp; /* We create an non-expandable binary object from the 
+data   in  buf.<br>
+           &nbsp; &nbsp; &nbsp;The new object will manage buf. */<br>
+               <br>
+             &nbsp; data = Gal_BinaryObject((void *) buf, total);<br>
+               <br>
+             &nbsp; proxy = GalSS_ObjProxifyObject(env, data, 0, 10);<br>
+             &nbsp; if (proxy) {<br>
+             &nbsp;&nbsp;&nbsp; Gal_SetProp(f, ":binary_proxy", proxy);<br>
+             &nbsp; }<br>
+             &nbsp;<br>
+             &nbsp; return f;<br>
+             }<br>
+               <br>
+               </tt></blockquote>
+              The important steps here are to set up the outgoing broker
+proxy,    sending    the frame containing that proxy to the Hub (in this
+case, by  a  call to GalSS_EnvWriteFrame,   not shown), writing the appropriate
+data  to  the broker proxy, and announcing   that no more data will be sent.
+            
+<h3> Step 1: setting up the outgoing broker proxy</h3>
+                       
+<p>GalSS_BrokerProxy *<a name="GalSS_ProxifyObject"></a><b><big>GalSS_ProxifyObject</big></b>(GalSS_Environment
+       *<i>env</i>, Gal_Object <i>obj</i>, int <i>poll_ms</i>, int <i>timeout_seconds</i>)<br>
+             Gal_Object&nbsp;<a name="GalSS_ObjProxifyObject"></a><b><big>GalSS_ObjProxifyObject</big></b>(GalSS_Environment
+       *<i>env</i>, Gal_Object <i>obj</i>, int <i>poll_ms</i>, int <i>timeout_seconds</i>)<br>
+             A broker proxy is created based on the object <i>obj</i>. GalSS_ObjProxifyObject 
+      wraps a Gal_Object around this proxy, so it can be directly inserted 
+ into     the frame. An <a href="#Sending_broker_data">outbound broker</a> 
+ is   constructed  and associated with the broker proxy. The outbound broker 
+ uses   the server's listener as its listener port. If the server is a <a
+ href="../advanced/hub_listener.html">Hub client</a> and doesn't have an open
+listener, the broker sets up a listener for the server to host. The outbound
+broker&nbsp; accesses the server via the connection in <i>env</i>. The <i>poll_ms</i>
+ is the time in milliseconds that the timed task loop is supposed to check
+ the broker connection; as with <a
+ href="libgalaxy_io.html#GalIO_ServerInit">GalIO_ServerInit</a>, 0 is the 
+      default (100 ms), a positive number is an actual number of milliseconds,
+      and &lt; 0 means not to set up a timed task. The <i>timeout_seconds</i>
+   is  how long before the broker expires; -1 means never expire, 0 means
+use    the  default (which is 10 seconds). You can write to an expired broker
+ proxy,    but it will accept no more connections; when all the data is written
+ to  the  existing connections, the broker inside the proxy will be destroyed. 
+     </p>
+                   
+<p>It's important to set the timeout intelligently, because outgoing brokers 
+      can accept multiple connections. This means that they must cache the 
+ data    which is written through them for subsequent subscribers. If the 
+broker  never  times out, significant memory bloat might result.<br>
+ </p>
+ 
+<p>If you need to <a href="#Delaying_broker_activation">delay broker activation</a>, 
+pass -1 as <i>poll_ms</i>.<br>
+ </p>
+                       
+<blockquote>                                     
+  <h4>Memory management</h4>
+             The proxy owns the object <i>obj</i>; that is, <i>obj</i> will 
+ be  freed    when the proxy is freed. The underlying broker, however, is 
+neither  shut   down nor destroyed; it manages its own cleanup, and may continue
+  to  run after  the proxy which created it has been destroyed.<br>
+           </blockquote>
+                   
+<h4>Using object types instead of objects</h4>
+           You may neither need or want to rely on an intermediate Gal_Object 
+  to  base  your broker proxy on. In some circumstances, you may not want 
+to  associate    a type with the broker proxy at all. For these situations, 
+there's  an alternative    way of creating an outbound broker, based on object 
+types  instead of objects.    We illustrate from our audio example:<br>
+                   
+<blockquote><tt>static Gal_Frame prepare_audio_frame(GalSS_Environment *env,<br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+     char *filename)<br>
+             {<br>
+             &nbsp; Gal_Frame f = Gal_MakeFrame("main", GAL_CLAUSE);<br>
+             &nbsp; int total = 0;<br>
+             &nbsp; char *buf = (char *) NULL;<br>
+             &nbsp; Gal_Object proxy;<br>
+             &nbsp; <br>
+             &nbsp; /* In the code omitted here, the data from the named
+file   is    <br>
+             &nbsp; &nbsp; &nbsp;read into buf, and total is the number of
+ bytes    in  buf  */<br>
+             &nbsp;<br>
+             &nbsp; /* .... */<br>
+         <br>
+             &nbsp; proxy = GalSS_ObjProxifyObjectType(env, GAL_BINARY, 0,
+ 10);<br>
+             &nbsp; if (proxy) {<br>
+             &nbsp; &nbsp;     GalSS_ObjProxyArrayAdd(proxy,  buf, total);<br>
+       &nbsp; &nbsp; /* Because the data object is a streaming object, it 
+must<br>
+             &nbsp; &nbsp; &nbsp; &nbsp;be marked as done. */<br>
+             &nbsp;&nbsp;&nbsp; GalSS_ObjProxyDone(proxy);<br>
+       &nbsp; &nbsp; Gal_SetProp(f, ":binary_proxy", proxy);<br>
+             &nbsp; }<br>
+             &nbsp;<br>
+             &nbsp; return f;<br>
+             }<br>
+         </tt>                                </blockquote>
+                   
+<p>GalSS_BrokerProxy *<a name="GalSS_ProxifyObjectType"></a><b><big>GalSS_ProxifyObjectType</big></b>(GalSS_Environment
+       *<i>env</i>, Gal_ObjectType <i>t</i>, int <i>poll_ms</i>, int <i>timeout_seconds</i>)<br>
+             Gal_Object&nbsp;<a name="GalSS_ObjProxifyObjectType"></a><b><big>GalSS_ObjProxifyObjectType</big></b>(GalSS_Environment
+       *<i>env</i>, Gal_ObjectType <i>t</i>, int <i>poll_ms</i>, int <i>timeout_seconds</i>)<br>
+           Identical to <a href="#GalSS_ProxifyObject">GalSS_ProxifyObject</a>, 
+   except   that the proxy encodes type information without an actual Gal_Object 
+   to base  it on. If <i>t</i> is -1, the proxy is an <a
+ href="#Any_proxies">"any" proxy</a>,  which has no type restrictions. All 
+   <a href="#Array_proxies">array</a>, <a href="#List_proxies">list</a> and 
+  "any" proxies created with these functions   are not self-terminating.</p>
+ 
+<p>If you need to <a
+ href="file:///afs/rcf/project/communicator/users/sam/GalaxyCommunicator2/docs/manual/reference/brokering.html#Delaying_broker_activation">delay 
+broker activation</a>, pass -1 as <i>poll_ms</i>.<br>
+ </p>
+                         
+<h3> Step 2: writing data to the broker proxy, if necessary</h3>
+           If you create a proxy from an object, and the proxy is self-terminating, 
+     you won't be able to write any more data to the proxy, even if you wanted 
+     to. However, if you create a proxy from an object type, or you created 
+  it   from an expandable list or array object, you can write more data to 
+ the proxy.<br>
+                         
+<p>int&nbsp;<a name="GalSS_ProxyWrite"></a><b><big>GalSS_ProxyWrite</big></b>(GalSS_BrokerProxy
+       *<i>p</i>, Gal_Object <i>obj</i>, int <i>manage_memory</i>)<br>
+             int&nbsp;<a name="GalSS_ObjProxyWrite"></a><b><big>GalSS_ObjProxyWrite</big></b>(Gal_Object
+       <i>proxy_obj</i>, Gal_Object <i>obj</i>, int <i>manage_memory</i>)<br>
+           Writes <i>obj</i> to proxy <i>p</i>, or to the proxy in the Gal_Object 
+    <i>proxy_obj</i>.  The data in the object will be written to the underlying 
+    outbound proxy. If the proxy was created from an expandable object, <i>obj</i> 
+   will be added  to the underlying object. If <i>manage_memory</i> is 1, 
+the    proxy will take  responsibility for freeing <i>obj</i> when it's done 
+with    it. Returns 1 for  success, -1 for failure. </p>
+                       
+<p>int&nbsp;<a name="GalSS_ProxyListAdd"></a><b><big>GalSS_ProxyListAdd</big></b>(GalSS_BrokerProxy
+       *<i>p</i>, Gal_Object <i>elt</i>)<br>
+             int&nbsp;<a name="GalSS_ObjProxyListAdd"></a><b><big>GalSS_ObjProxyListAdd</big></b>(Gal_Object
+       <i>obj</i>, Gal_Object <i>elt</i>)<br>
+           Writes <i>elt</i> to the proxy <i>p</i>, or the proxy in the Gal_Object
+     <i>obj</i>, if that proxy represents an expandable list type which has
+  not   been terminated yet, otherwise does nothing. Returns 1 for success,
+  -1 for   failure. If it succeeds, it takes responsibility for freeing <i>elt</i>
+   when  it's done with it. If the proxy was created from an object, <i>elt</i>
+   will  be added to the underlying object.&nbsp; </p>
+                       
+<p>int&nbsp;<a name="GalSS_ProxyArrayAdd"></a><b><big>GalSS_ProxyArrayAdd</big></b>(GalSS_BrokerProxy
+       *<i>p</i>, void *<i>data</i>, int <i>size</i>)<br>
+             int&nbsp;<a name="GalSS_ObjProxyArrayAdd"></a><b><big>GalSS_ObjProxyArrayAdd</big></b>(Gal_Object
+       <i>obj</i>, void *<i>data</i>, int <i>size</i>)<br>
+           Writes <i>data</i> of <i>size</i> elements to the array proxy
+<i>p</i>,      or the array proxy in the object <i>obj</i>, if that proxy
+represents  an   expandable array type which has not been terminated yet,
+otherwise does   nothing.  Returns 1 for success, -1 for failure. If the
+proxy was created   from an object,  <i>data</i> will be added to the underlying
+object. This   function is convenient  for streaming array data to a broker
+without wrapping   a Gal_Object around  it. </p>
+                       
+<h3> Step 3: announcing the end of the data, if necessary</h3>
+           If proxies are self-terminating, you don't need to explicitly
+mark   them   as done. If you do need to do so, use this function.<br>
+                       
+<p>void <a name="GalSS_ProxyDone"></a><b><big>GalSS_ProxyDone</big></b>(GalSS_BrokerProxy 
+  *<i>p</i>)<br>
+             void&nbsp;<a name="GalSS_ObjProxyDone"></a><b><big>GalSS_ObjProxyDone</big></b>(Gal_Object
+       <i>obj</i>)<br>
+           Marks the outbound proxy <i>p</i>, or the proxy in the object
+<i>obj</i>,      as done. This means that no further data can be written
+to it.<br>
+           <br>
+           </p>
+                   
+<hr width="100%">            
+<h2><a name="Streaming_data_to_proxies"></a> Streaming data to proxies</h2>
+               There is a minor problem with the example we've presented
+here:    the   broker  proxy setup both establishes the broker proxy and
+writes the   data.   In an application without <a
+ href="../admin/threads.html">threads</a>,    this   means that the receiving
+broker won't be able to connect to the sending   broker  until all the data
+is written to the outgoing broker proxy (because   the server  won't have
+a chance to accept connections for the outgoing broker    until the  broker
+setup returns).              
+<p>For some applications, this may be acceptable, but it's almost certainly 
+      the case that you'll want to "stream" audio data, so that the receiving 
+    broker  can start making use of it as soon as possible (say, to start 
+speech    recognition).  In these cases, you need to exploit the <a
+ href="../advanced/timed_tasks.html">timed task loop</a> to send outbound 
+      data at periodic intervals (say, by polling the audio device and relaying 
+      the data when it's available), so that the server has a chance to accept 
+     connections. </p>
+                        
+<p>Here's a version of the broker proxy setup which exemplifies this strategy. 
+     This is a bit unnatural, since all the data is immediately available 
+in   a  file, but it illustrates the streaming:<br>
+           </p>
+                   
+<blockquote><tt>static Gal_Frame prepare_audio_frame(GalSS_Environment *env,<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+     char *filename)<br>
+              {<br>
+              &nbsp; Gal_Frame f = Gal_MakeFrame("main", GAL_CLAUSE);<br>
+              &nbsp; FILE *fp;<br>
+            &nbsp; OutData *o = (OutData *) calloc(1, sizeof(OutData));<br>
+              &nbsp; Gal_Object proxy;<br>
+              &nbsp; <br>
+              &nbsp; /* In the code omitted here, the file is opened  */<br>
+              &nbsp;<br>
+              &nbsp; /* .... */<br>
+             <br>
+              &nbsp; proxy = GalSS_ObjProxifyObjectType(env, GAL_BINARY,
+0,  10);<br>
+              &nbsp; if (proxy) {<br>
+              &nbsp; &nbsp;&nbsp;o-&gt;proxy = proxy;<br>
+           &nbsp; &nbsp; o-&gt;fp = fp;<br>
+              &nbsp;&nbsp;&nbsp; /* The frame f will be freed on  write,
+so  we  have   to<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; copy it to  make sure
+the   proxy    survives, since<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; we plan on  writing to 
+it.   */<br>
+              &nbsp;&nbsp;&nbsp; Gal_SetProp(f, ":binary_proxy",  Gal_CopyObject(proxy));<br>
+              &nbsp;&nbsp;&nbsp; Gal_AddTask(__write_data, (void  *) o, 10, 
+ 0,  NULL);<br>
+              &nbsp; }<br>
+              &nbsp;<br>
+              &nbsp; return f;<br>
+              }<br>
+             </tt>                          </blockquote>
+               Note that we use <a
+ href="../advanced/timed_tasks.html#Gal_AddTask">Gal_AddTask</a>   to set 
+    up a task to start writing the data in 10 milliseconds. Here's the   task:
+                 
+<blockquote><tt>static void __write_data(Gal_TaskPkg *p) <br>
+            { <br>
+            &nbsp; OutData *o = (OutData *) Gal_TaskPkgData(p); <br>
+            &nbsp; FILE *fp = o-&gt;fp; &nbsp;<br>
+            &nbsp; char *buf = (char *) malloc(BLOCKSIZE * sizeof(char)); 
+    <br>
+            &nbsp; int count = fread(buf, sizeof(char), BLOCKSIZE, fp);<br>
+           &nbsp;<br>
+                &nbsp; if (count) { <br>
+                &nbsp;&nbsp;&nbsp; GalSS_ObjProxyArrayAdd(o-&gt;proxy, buf, 
+ count);       <br>
+                &nbsp; } <br>
+                &nbsp; free(buf); <br>
+                &nbsp; if (count == BLOCKSIZE) { <br>
+                &nbsp;&nbsp;&nbsp; /* Not done yet. */ <br>
+                &nbsp;&nbsp;&nbsp; Gal_ReAddTask(p, (void *) o, 10, 0, NULL); 
+      <br>
+                &nbsp; } else { <br>
+                &nbsp;&nbsp;&nbsp; GalSS_ObjProxyDone(o-&gt;proxy);<br>
+           &nbsp; &nbsp; /* Freeing the proxy doesn't free the underlying<br>
+           &nbsp; &nbsp; &nbsp; &nbsp;broker; it frees itself when it's done
+  writing<br>
+           &nbsp; &nbsp; &nbsp; &nbsp;data to its connections. */<br>
+           &nbsp; &nbsp; GalSS_FreeBrokerProxy(o-&gt;proxy); <br>
+                &nbsp;&nbsp;&nbsp; fclose(fp); <br>
+                &nbsp;&nbsp;&nbsp; free(o); <br>
+                &nbsp; } <br>
+                }</tt>                          </blockquote>
+               We keep resetting the task until we run out of data.<br>
+           <br>
+                        
+<hr width="100%">                    
+<h2>Receiving broker proxies</h2>
+         There are three different ways of receiving data via broker proxies: 
+  either   by object, by typed callback, or by untyped callback. We cover 
+each  of these   in turn.<br>
+               
+<h3>Receiving data by object</h3>
+         This is by far the simplest way of receiving broker data. Here's 
+how   it  works in our audio example:<br>
+                      
+<blockquote>      <tt>Gal_Frame receive_audio(Gal_Frame f, void *server_data)
+        <br>
+             { &nbsp;<br>
+             &nbsp; GalSS_Environment *env = (GalSS_Environment *) server_data;<br>
+        &nbsp; GalSS_BrokerProxy *proxy;<br>
+          <br>
+         &nbsp; /* We get the proxy object, and if it's a proxy, we<br>
+         &nbsp;&nbsp;&nbsp;&nbsp; synchronously retrieve the data. The object 
+  which   is<br>
+         &nbsp;&nbsp;&nbsp;&nbsp; returned is cached in the proxy object, 
+which    retains<br>
+         &nbsp;&nbsp;&nbsp;&nbsp; "ownership" of it. Therefore, it will be
+ freed    when<br>
+         &nbsp;&nbsp;&nbsp;&nbsp; the dispatch function exits. */<br>
+         &nbsp; proxy = Gal_GetObject(f, ":binary_proxy");<br>
+          <br>
+         &nbsp; if (Gal_Proxyp(proxy)) {<br>
+         &nbsp;&nbsp;&nbsp; Gal_Object bdata = GalSS_ObjUnproxifyObject(env,
+  proxy);<br>
+          <br>
+         &nbsp;&nbsp;&nbsp; if (Gal_Binaryp(bdata)) {<br>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int size;<br>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void *data;<br>
+          <br>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; data = Gal_BinaryValue(bdata, &amp;size);<br>
+          <br>
+         &nbsp; &nbsp; &nbsp; /* Now, do with the data whatever you want. 
+*/<br>
+          <br>
+         &nbsp; &nbsp; &nbsp; /* ... */<br>
+         &nbsp; &nbsp; }<br>
+         &nbsp; }<br>
+             &nbsp; return (Gal_Frame) NULL; <br>
+             }</tt>                    </blockquote>
+               When the server receives the <tt>receive_audio</tt> message, 
+ it  invokes    this dispatch function. The information in the broker proxy 
+ is  used to contact the sending server; the data is transferred and converted
+   into a Gal_Object.         
+<p>Gal_Object&nbsp;<a name="GalSS_UnproxifyObject"></a><b><big>GalSS_UnproxifyObject</big></b>(GalSS_Environment
+       *<i>env</i>, GalSS_BrokerProxy *<i>p</i>)<br>
+             Gal_Object&nbsp;<a name="GalSS_ObjUnproxifyObject"></a><b><big>GalSS_ObjUnproxifyObject</big></b>(GalSS_Environment
+       *<i>env</i>, Gal_Object <i>obj</i>)<br>
+         The proxy <i>p</i>, or the proxy inside the Gal_Object <i>obj</i>, 
+ creates    an inbound broker which contacts the sending server and transfers 
+ the data.    The data is converted into a Gal_Object, which is returned.<br>
+         </p>
+               
+<blockquote>                         
+  <h4>Memory management</h4>
+         The proxy retains ownership of the object it returns; if you want
+ to  hold   onto it beyond the life of the proxy, you must copy it.<br>
+         </blockquote>
+               
+<h3>Receiving data by typed callback</h3>
+        Receiving data by object, while convenient, exhibits problems analogous 
+   to those faced on the outbound side: without threads, nothing happens in
+  the server until all the data is received. You may prefer to set up a callback
+   to handle the data, either bit by bit or when it's all been received.<br>
+              
+<p>Note that your choice of whether to retrieve by object or by typed callback
+    is independent of how the broker proxy was created. You can create an
+outbound    broker from an object, and read the inbound side by stream, or
+vice versa.    The outbound side will determine how many <b>chunks</b> of
+data you get,   however. If you write a single large array to an outbound
+broker, you'll  read a single chunk on the inbound side, even if you try
+to read by stream.<br>
+        </p>
+              
+<p>Here's an illustration of this second strategy.</p>
+               
+<blockquote><tt>/* This is the data handler for the proxy. In the way<br>
+         &nbsp;&nbsp; we've set up, it's called once, at the end. Remember, 
+ we<br>
+         &nbsp;&nbsp; own the object passed in, so we have to free it. */<br>
+          <br>
+         void proxy_audio_handler(GalSS_Environment *env, Gal_ObjectType
+proxy_type,<br>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+   Gal_Object elt, void *caller_data)<br>
+         {<br>
+         &nbsp; if (proxy_type == GAL_BINARY) {<br>
+         &nbsp;&nbsp;&nbsp; int size;<br>
+         &nbsp;&nbsp;&nbsp; void *data;<br>
+          <br>
+         &nbsp;&nbsp;&nbsp; data = Gal_BinaryValue(elt, &amp;size);<br>
+          <br>
+         &nbsp;&nbsp;&nbsp;&nbsp;/* Now, do with the data whatever you want.
+  */<br>
+          <br>
+         &nbsp; &nbsp; /* ... */<br>
+         &nbsp; }<br>
+         &nbsp; Gal_FreeObject(elt);<br>
+         }<br>
+          <br>
+         /* This is the done handler for the proxy. */<br>
+          <br>
+         void __proxy_report_done(GalSS_Environment *env, Gal_ObjectType
+proxy_type,<br>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+   void *caller_data)<br>
+         {<br>
+         &nbsp; __env_notify(env, "Audio received.");<br>
+         }<br>
+          <br>
+         /* This is the abort handler for the proxy. */<br>
+          <br>
+         void __proxy_report_abort(GalSS_Environment *env, Gal_ObjectType 
+proxy_type,<br>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+   void *caller_data)<br>
+         {<br>
+         &nbsp; __env_notify(env, "Audio aborted.");<br>
+         }<br>
+          <br>
+        Gal_Frame receive_audio(Gal_Frame f, void *server_data)    <br>
+             { &nbsp;<br>
+              &nbsp; GalSS_Environment *env = (GalSS_Environment *) server_data;<br>
+        &nbsp; GalSS_BrokerProxy *proxy;<br>
+          <br>
+          &nbsp; /* We get the proxy object, and proceed asynchronously.
+The<br>
+        &nbsp;&nbsp;&nbsp;&nbsp; object passed into the callback is owned 
+by  the   callback.<br>
+        &nbsp;&nbsp;&nbsp;&nbsp; We use a non-immediate callback, which will
+  cache   all the<br>
+        &nbsp;&nbsp;&nbsp;&nbsp; data for us and call the data handler when 
+ it's   done. */<br>
+          &nbsp; proxy = Gal_GetObject(f, ":binary_proxy");<br>
+          <br>
+          &nbsp; if (Gal_Proxyp(proxy)) {<br>
+          &nbsp;&nbsp;&nbsp; GalSS_ObjUnproxify(env, proxy, proxy_audio_handler,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   __proxy_report_done, __proxy_report_abort,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   0, 0, NULL, NULL);<br>
+          <br>
+          &nbsp; &nbsp; }<br>
+          &nbsp; }<br>
+              &nbsp; return (Gal_Frame) NULL; <br>
+              }<br>
+          </tt>                              </blockquote>
+        typedef void (*<a name="GalSS_ProxyDataHandler"></a><big><b>GalSS_ProxyDataHandler</b></big>)(GalSS_Environment 
+    *<i>env</i>, Gal_ObjectType <i>proxy_type</i>, Gal_Object <i>elt</i>, 
+void    *<i>caller_data</i>);<br>
+        This is the function signature for the data callbacks. The <i>proxy_type</i>
+   is the type associated with the proxy; it can be -1, indicating an <a
+ href="#Any_proxies">"any" proxy</a>. The <i>elt</i> is the data; it can
+either represent all the data read, or a portion of it, depending on how
+the inbound proxy is set up. The <i>caller_data</i> is arbitrary data passed
+to the inbound proxy when it's set up.&nbsp; <br>
+               
+<p> typedef void (*<a name="GalSS_ProxyDataEventHandler"></a><big><b>GalSS_ProxyDataEventHandler</b></big>)(GalSS_Environment 
+    *<i>env</i>, Gal_ObjectType <i>proxy_type</i>, void *<i>caller_data</i>);<br>
+        This is the function signature for the event callbacks associated 
+with   the  proxy. The <i>proxy_type</i> is the type associated with the proxy;
+ it can  be -1, indicating an <a href="#Any_proxies">"any"  proxy</a>. The
+ <i>caller_data</i> is arbitrary data passed to the inbound  proxy when it's
+ set up.<br>
+        </p>
+              
+<p>void&nbsp;<a name="GalSS_Unproxify"></a><b><big>GalSS_Unproxify</big></b>(GalSS_Environment
+       *<i>env</i>, GalSS_BrokerProxy *<i>p</i>, GalSS_ProxyDataHandler <i>fn</i>,
+       GalSS_ProxyDataEventHandler <i>done_fn</i>, GalSS_ProxyDataEventHandler
+     <i>abort_fn</i>, int <i>immediate</i>, int <i>poll_ms</i>, void *<i>caller_data</i>,
+     void (*<i>caller_data_free_fn</i>)(void *))<br>
+        void&nbsp;<a name="GalSS_ObjUnproxify"></a><b><big>GalSS_ObjUnproxify</big></b>(GalSS_Environment
+       *<i>env</i>, Gal_Object <i>obj</i>, GalSS_ProxyDataHandler <i>fn</i>,
+   GalSS_ProxyDataEventHandler    <i>done_fn</i>, GalSS_ProxyDataEventHandler
+   <i>abort_fn</i>, int <i>immediate</i>,    int <i>poll_ms</i>, void *<i>caller_data</i>,
+   void (*<i>caller_data_free_fn</i>)(void    *))<br>
+        The call environment <i>env</i> is stored away and made available 
+to  <i>fn</i>,   <i>done_fn</i> and <i>abort_fn</i> via the function <a
+ href="#GalSS_BrokerGetEnvironment">GalSS_BrokerGetEnvironment</a>.   The
+    proxy <i>p</i>, or the proxy in the object <i>obj</i>, establishes a
+broker     connection to the appropriate server. The <i>fn</i> is a function
+of type     <a href="#GalSS_ProxyDataHandler">GalSS_ProxyDataHandler</a>
+which will   be    called every time an object is read from the broker stream
+(if <i>immediate</i>    is 1), or once on the accumulated data once all the
+data has been read (if    <i>immediate</i> is 0). The <i>done_fn</i> is called
+on the proxy after  all  the data has been processed; the <i>abort_fn</i>
+is called if the connection    aborts before completing. The <i>caller_data</i>
+is arbitrary   data which    will be stored in the broker proxy, and will
+be freed   when the broker  proxy  is destroyed using the <i>caller_data_free_fn</i>.
+This data is passed  to  all the callbacks. As usual, <i>poll_ms</i> is the
+number of milliseconds       for the timed task; 0 means 100 ms, &gt; 0 is
+a value in ms, &lt; 0 means      not to set up a timed task.<br>
+ </p>
+ 
+<p>If you need to <a
+ href="file:///afs/rcf/project/communicator/users/sam/GalaxyCommunicator2/docs/manual/reference/brokering.html#Delaying_broker_activation">delay 
+broker activation</a>, pass -1 as <i>poll_ms</i>.<br>
+  </p>
+                        
+<blockquote>                            
+  <h4>Memory management</h4>
+                       The data passed to the data handler callback function
+  is  not freed by the caller.   It is up to the callback function itself
+to  free  the data when it's done  with it.    </blockquote>
+              
+<h3>Receiving data by untyped callback</h3>
+        This final method is the closest method to the <a
+ href="#Receiving_broker_data">original broker API</a>. The broker proxy
+  doesn't do any work for you beyond encapsulating the contact information;
+    you're entirely responsible for collecting the data and establishing
+the    callbacks. We don't recommend using this mechanism, even if you're
+decoding    an "any" proxy. However, if you want a simple upgrade path to
+using proxies    without having to rewrite the code for the receiving end,
+this is the path    of least resistance.<br>
+              
+<p>Here's an example of a dispatch function:</p>
+              
+<blockquote>      <tt>Gal_Frame receive_audio(Gal_Frame f, void *server_data)
+        <br>
+             { <br>
+             &nbsp; DataHandler *d = (DataHandler *) malloc(sizeof(DataHandler));<br>
+        &nbsp; GalSS_Environment *env = (GalSS_Environment *) server_data;
+   <br>
+             &nbsp; GalIO_BrokerStruct *b; <br>
+        &nbsp; GalSS_ProxyObject *proxy = Gal_GetObject(f, ":binary_proxy");
+     <br>
+             &nbsp; d-&gt;data_buf = (char *) NULL; <br>
+             &nbsp; d-&gt;size = 0; <br>
+             &nbsp; if (proxy) { <br>
+             &nbsp;&nbsp;&nbsp; b = GalSS_EnvBrokerProxyObjInInit(env, proxy, 
+  env_audio_handler,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   &nbsp;0, d, __FreeDataHandler); <br>
+             &nbsp;&nbsp;&nbsp; if (b) { &nbsp;<br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_AddBrokerCallback(b, GAL_BROKER_ABORT_EVENT,
+           <br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      __report_abort, (void *) NULL); <br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_AddBrokerCallback(b, GAL_BROKER_DATA_DONE_EVENT,
+           <br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      __report_done, (void *) NULL);<br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_SetBrokerActive(b);&nbsp;<br>
+             &nbsp;&nbsp;&nbsp; } <br>
+             &nbsp; } else { <br>
+             &nbsp;&nbsp;&nbsp; free(d); <br>
+             &nbsp; } <br>
+             &nbsp; return (Gal_Frame) NULL; <br>
+             }</tt>  </blockquote>
+                           
+<p>GalIO_BrokerStruct *<a name="GalSS_EnvBrokerProxyInInit"></a><b><big>GalSS_EnvBrokerProxyInInit</big></b>(GalSS_Environment
+       *<i>env</i>, GalSS_BrokerProxy *<i>p</i>, GalIO_BrokerDataHandler
+<i>fnptr</i>,        int <i>poll_ms</i>, void *<i>refptr</i>, void (*<i>free_fn</i>)(void
+  *))<br>
+             GalIO_BrokerStruct *<a name="GalSS_EnvBrokerProxyObjInInit"></a><b><big>GalSS_EnvBrokerProxyObjInInit</big></b>(GalSS_Environment
+       *<i>env</i>, Gal_Object <i>proxy</i>, GalIO_BrokerDataHandler <i>fnptr</i>,
+       int <i>poll_ms</i>, void *<i>refptr</i>, void (*<i>free_fn</i>)(void
+  *))<br>
+        Identical to <a href="#GalSS_EnvBrokerDataInInit">GalIO_EnvBrokerDataInInit</a>,
+    except that all connection information is stored in the proxy <i>p</i>,
+  or  in the proxy in the object <i>proxy</i>. For details about the types
+ of the  callbacks, etc., see&nbsp;<a href="#GalSS_EnvBrokerDataInInit">GalIO_EnvBrokerDataInInit</a>.
+    &nbsp;   </p>
+                       
+<hr width="100%" size="2">           
+<h2>Administrative functions for broker proxy objects</h2>
+                       
+<p>GalSS_BrokerProxy *<a name="GalSS_CreateBrokerProxy"></a><b><big>GalSS_CreateBrokerProxy</big></b>(const
+ char *<i>host</i>, int <i>port</i>, const char *<i>call_id</i>, Gal_ObjectType
+ <i>object_type</i>,      Gal_Object <i>obj_data</i>) <br>
+             This function creates a broker proxy which represents <i>obj_data</i>
+    of  <i>obj_type</i> being available at <i>host</i> on <i>port</i>, indexed
+     by  the unique <i>call_id</i>. This function is used internally; the
+programmer      should never need it.<br>
+             </p>
+                       
+<p>&nbsp;void&nbsp;<a name="GalSS_FreeBrokerProxy"></a><b><big>GalSS_FreeBrokerProxy</big></b>(GalSS_BrokerProxy
+       *<i>p</i>)<br>
+             The broker proxy <i>p</i> is freed. If <i>p</i> contains a Gal_Object
+     (either  by virtue of being an outbound broker wrapped around an object
+   or  an inbound  broker which has read its data), the object is freed using
+   <a href="frame.html#Gal_FreeObject">Gal_FreeObject</a>.<br>
+             </p>
+                       
+<p>GalSS_BrokerProxy *<a name="GalSS_CopyBrokerProxy"></a><b><big>GalSS_CopyBrokerProxy</big></b>(GalSS_BrokerProxy
+       *<i>bp</i>)<br>
+             The broker proxy <i>bp</i> is copied. If bp contains a Gal_Object
+   (either    by virtue of being an outbound broker wrapped around an object
+   or an inbound    broker which has read its data), the object is copied
+using   <a href="frame.html#Gal_CopyObject">Gal_CopyObject</a>.<br>
+              </p>
+                       
+<p>GalIO_BrokerStruct *<a name="GalSS_BrokerProxyBroker"></a><b><big>GalSS_BrokerProxyBroker</big></b>(GalSS_BrokerProxy
+       *<i>bp</i>)<br>
+             Returns the broker object associated with the broker proxy <i>bp</i>.
+     &nbsp;This  broker can be an inbound or outbound broker. It's not advisable
+     to manipulate  this broker object directly, except to <a
+ href="#Delaying_broker_activation">start the broker</a>.<br>
+              </p>
+                       
+<p>Gal_ObjectType&nbsp;<a name="GalSS_BrokerProxyObjectType"></a><b><big>GalSS_BrokerProxyObjectType</big></b>(GalSS_BrokerProxy
+       *<i>bp</i>)<br>
+             Returns the object type associated with the broker proxy <i>bp</i>.
+    The   type can be -1, which means that there are no type restrictions
+imposed    on  the broker proxy.<br>
+              </p>
+                       
+<p>Gal_Object&nbsp;<a name="GalSS_BrokerProxyObject"></a><b><big>GalSS_BrokerProxyObject</big></b>(GalSS_BrokerProxy
+       *<i>bp</i>)<br>
+             Returns the object associated with the broker proxy <i>bp</i>. 
+ If  you   use  this object for anything, remember that the broker proxy "owns"
+  it,  so if  you intend that it outlast the broker proxy, you should copy
+ the object   using  <a href="frame.html#Gal_CopyObject">Gal_CopyObject</a>
+  before you  store it  anywhere.<br>
+             </p>
+                       
+<p>GAL_SOCKET&nbsp;<a name="GalSS_GetBrokerProxySocket"></a><b><big>GalSS_GetBrokerProxySocket</big></b>(GalSS_BrokerProxy
+       *<i>bp</i>)<br>
+             Returns the socket associated with the inbound broker proxy
+<i>bp</i>.      <br>
+             </p>
+                                
+<p>void&nbsp;<a name="GalSS_ForceProxyExpiration"></a><b><big>GalSS_ForceProxyExpiration</big></b>(GalSS_BrokerProxy
+       *<i>bp</i>)<br>
+             Forces the broker associated with the outbound broker proxy
+<i>bp</i>     to  time out. See <a href="#GalIO_ForceBrokerExpiration">GalIO_ForceBrokerExpiration</a>.&nbsp;
+      <br>
+        <br>
+        </p>
+                                   
+<hr width="100%">            
+<h2> <a name="Sending_broker_data"></a>Sending broker data</h2>
+             We now turn to the original broker API. Here's a code fragment 
+ which    illustrates   how the sender uses the broker connection:       
+      
+<blockquote>     <tt>static Gal_Frame prepare_audio_frame(GalSS_Environment 
+   *env,<br>
+       &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;char *filename)
+       <br>
+            { <br>
+            &nbsp; Gal_Frame f = Gal_MakeFrame("main", GAL_CLAUSE); <br>
+            &nbsp; int total = 0; <br>
+            &nbsp; char *buf = (char *) NULL; <br>
+            &nbsp; GalIO_BrokerStruct *b;    <br>
+            &nbsp; /* In the code omitted here, the data from the named file
+   is    <br>
+               &nbsp;&nbsp;&nbsp;&nbsp; read into buf, and total is the number
+   of  bytes  in buf */ <br>
+            &nbsp; /* .... */ <br>
+            &nbsp; /* Now that we have the audio, we write the binary data
+      <br>
+               &nbsp;&nbsp;&nbsp;&nbsp; through the broker. */ <br>
+            &nbsp; b = GalIO_BrokerDataOutInit(GalSS_EnvComm(env), 0, 10);
+   <br>
+               &nbsp; if (b &amp;&amp; (GalIO_GetBrokerListenPort(b) &gt; 
+0))   {       <br>
+               &nbsp;&nbsp;&nbsp; GalIO_BrokerPopulateFrame(b, f, ":binary_host", 
+    ":binary_port");     <br>
+               &nbsp;&nbsp;&nbsp; GalIO_BrokerWriteBinary(b, buf, total); 
+  <br>
+               &nbsp;&nbsp;&nbsp; GalIO_BrokerDataOutDone(b); <br>
+               &nbsp; } <br>
+               &nbsp; free(buf); <br>
+               &nbsp; return f; <br>
+               } <br>
+             &nbsp;</tt>                           </blockquote>
+              The important steps here are to set up the outgoing broker
+stream,     constructing   a well-formed frame for initiating a broker connection,
+ sending   the frame   to the Hub (in this case, by a call to GalSS_EnvWriteFrame,
+  not  shown), writing  the appropriate data to the connection, and announcing
+  that  no more data will be sent.              
+<h3> Step 1: setting up the outgoing broker stream</h3>
+              GalIO_BrokerStruct *<a name="GalIO_BrokerDataOutInit"></a><b><big>GalIO_BrokerDataOutInit</big></b>(GalIO_CommStruct
+       *<i>gcomm</i>, int <i>poll_ms</i>, int <i>timeout_seconds</i>) <br>
+             The outgoing broker uses the server's listener as its listener 
+ port.    If  the server is a <a href="../advanced/hub_listener.html">Hub 
+client</a>   and  doesn't have an open listener, the broker sets up a listener 
+for the    server  to host. The outgoing broker accesses the server via <i>gcomm</i>. 
+    The <i>poll_ms</i>  and <i>timeout_seconds</i> are as for <a
+ href="#GalSS_ProxifyObject">GalSS_ProxifyObject</a>;&nbsp;  see that function 
+    for more details about the broker object.<br>
+ 
+<p>If you need to <a
+ href="file:///afs/rcf/project/communicator/users/sam/GalaxyCommunicator2/docs/manual/reference/brokering.html#Delaying_broker_activation">delay 
+broker activation</a>, pass -1 as <i>poll_ms</i>.<br>
+  </p>
+               
+<h3> Step 2: constructing a well-formed frame</h3>
+           If you're not using a broker proxy, you must ensure that all the 
+ information     that would go in the proxy (host, port, unique ID) is inserted 
+ into the   outgoing  frame (and is relayed to the receiving server by the 
+ Hub). A well-formed    frame for initiating a broker connection contains 
+the following keys:              
+<ul>
+              <li> The key designated by <tt><a
+ href="reserved_keys.html">GAL_BROKER_CALL_ID_FRAME_KEY</a></tt>,       
+which sets a unique ID which allows the server to distinguish between   
+connections</li>
+               <li> some key which stores the host name, which the connection 
+  receiver     must expect</li>
+               <li> some key which stores the port number, which the connection 
+   receiver    must expect</li>
+                         
+</ul>
+              As of version 3.0, it is no longer the programmer's responsibility
+    to  construct  a unique call ID for the brokers. In addition to being
+more    convenient,  much  existing brokering code doesn't take into account
+the   possibility that  servers  may have multiple outgoing brokers simultaneously
+   available.              
+<p>void&nbsp;<a name="GalIO_BrokerPopulateFrame"></a><b><big>GalIO_BrokerPopulateFrame</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, Gal_Frame <i>f</i>, const char *<i>host_key</i>, const
+char  *<i>port_key</i>)       <br>
+             Populates the frame <i>f</i> with the appropriate broker information,
+     including  the call ID, host and port. The <i>host_key</i> is the key
+ to   store the hostname  in the frame, and the <i>port_key</i> is the key
+ to store  the port in. The  call ID is stored in the key designated by <tt><a
+ href="reserved_keys.html">GAL_BROKER_CALL_ID_FRAME_KEY</a></tt>. </p>
+                       
+<p>unsigned short&nbsp;<a name="GalIO_GetBrokerListenPort"></a><b><big>GalIO_GetBrokerListenPort</big></b>(GalIO_BrokerStruct
+       *<i>b</i>) <br>
+             Returns the port number the broker <i>b</i> is listening on. 
+If  this   value   is not 0, the broker has been set up correctly. </p>
+                       
+<p>char *<a name="GalIO_GetBrokerCallID"></a><b><big>GalIO_GetBrokerCallID</big></b>(GalIO_BrokerStruct
+       *<i>b</i>) <br>
+             Returns the call ID the broker <i>b</i> is using. You should 
+not   typically     need to use this function. </p>
+                       
+<p>void&nbsp;<a name="GalIO_FrameSetBrokerCallID"></a><b><big>GalIO_FrameSetBrokerCallID</big></b>(Gal_Frame
+       <i>f</i>, const char *<i>call_id</i>) <br>
+             Sets the unique ID for broker confirmation. You should not typically 
+    need   to use this function. </p>
+                       
+<p>char *<a name="GalIO_IPAddress"></a><b><big>GalIO_IPAddress</big></b>(void)
+       <br>
+             This function returns the IP address of the host, for use in 
+creating     contact  information for the broker connection. You should not 
+typically    need to use  this function. </p>
+                       
+<h3> Step 3: writing data to the broker</h3>
+              Since brokers now accept multiple connections, all data which 
+ is  written    to an outgoing broker is cached until the broker expires. 
+Each  new client    is guaranteed of getting all the data written to the broker,
+ in the order    in which it was written.              
+<p>int&nbsp;<a name="GalIO_BrokerWriteFrame"></a><b><big>GalIO_BrokerWriteFrame</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, Gal_Frame <i>frame</i>) <br>
+             int&nbsp;<a name="GalIO_BrokerWriteInt"></a><b><big>GalIO_BrokerWriteInt</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, int <i>i</i>) <br>
+             int&nbsp;<a name="GalIO_BrokerWriteFloat"></a><b><big>GalIO_BrokerWriteFloat</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, float <i>f</i>) <br>
+             int&nbsp;<a name="GalIO_BrokerWriteList"></a><b><big>GalIO_BrokerWriteList</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, Gal_Object *<i>elts</i>, int <i>n_elts</i>) <br>
+             int&nbsp;<a name="GalIO_BrokerWriteString"></a><b><big>GalIO_BrokerWriteString</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, char *<i>str)</i> <br>
+             int&nbsp;<a name="GalIO_BrokerWriteBinary"></a><b><big>GalIO_BrokerWriteBinary</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, void *<i>data</i>, int <i>n_bytes</i>) <br>
+             int&nbsp;<a name="GalIO_BrokerWriteInt16"></a><b><big>GalIO_BrokerWriteInt16</big></b>(GalIO_BrokerStruct
+       *<i>b,</i> void *<i>data</i>, int <i>n_ints</i>) <br>
+             int&nbsp;<a name="GalIO_BrokerWriteInt32"></a><b><big>GalIO_BrokerWriteInt32</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, void *<i>data</i>, int <i>n_ints</i>) <br>
+             int&nbsp;<a name="GalIO_BrokerWriteInt64"></a><b><big>GalIO_BrokerWriteInt64</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, void *<i>data</i>, int <i>n_ints</i>) <br>
+             int&nbsp;<a name="GalIO_BrokerWriteFloat32"></a><b><big>GalIO_BrokerWriteFloat32</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, void *<i>data</i>, int <i>n_floats</i>) <br>
+             int&nbsp;<a name="GalIO_BrokerWriteFloat64"></a><b><big>GalIO_BrokerWriteFloat64</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, void *<i>data</i>, int <i>n_floats</i>) <br>
+             These functions send data through the broker connection. The 
+encoding     for  these elements is identical to their encoding within frames 
+during   message   transport. These functions correspond in the obvious way 
+to the   Communicator    <a href="frame.html#Object_Types">object types</a>. 
+</p>
+                       
+<p>int&nbsp;<a name="GalIO_BrokerWriteObject"></a><b><big>GalIO_BrokerWriteObject</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, Gal_Object <i>o</i>) <br>
+             Write a Gal_Object of any type through the broker connection.
+ The   encoding    for these elements is identical to their encoding within
+ frames   during message   transport. </p>
+                       
+<h3> Step 4: announcing the end of the data</h3>
+              void&nbsp;<a name="GalIO_BrokerDataOutDone"></a><b><big>GalIO_BrokerDataOutDone</big></b>(GalIO_BrokerStruct
+       *<i>b</i>) <br>
+             This function should be called on the broker structure when
+all   the   data   has been sent. If you do not call this function, the incoming
+  broker   on the  other end of the broker connection will never terminate.
+               
+<p>void<a name="GalIO_ForceBrokerExpiration"></a><b><big>GalIO_ForceBrokerExpiration</big></b>(GalIO_BrokerStruct
+       *<i>b</i>) <br>
+             This function causes the broker to expire immediately. You can 
+ use   this   in conjunction with <a
+ href="server_structure.html#GalIO_AddBrokerCallback">GalIO_AddBrokerCallback</a>
+      to force a broker to expire after it's accepted a certain number of
+connections,       for instance. </p>
+                       
+<p>int&nbsp;<a name="GalIO_BrokerIsDone"></a><b><big>GalIO_BrokerIsDone</big></b>(GalIO_BrokerStruct
+       *<i>b</i>) <br>
+             Returns 1 if the broker is already marked as done, 0 otherwise.
+  <br>
+           <br>
+           </p>
+                          
+<hr width="100%">            
+<h2> <a name="Streaming_broker_data"></a>Streaming broker data</h2>
+           The <a href="#Streaming_data_to_proxies">streaming problem described 
+   for   proxies</a> also exists for the old API, for the same reasons. Here's 
+   the   solution to that problem in terms of the old API:              
+<blockquote>   <tt>static Gal_Frame prepare_audio_frame(GalIO_CommStruct
+*gcomm,  char *filename) <br>
+          { <br>
+           &nbsp; Gal_Frame f = Gal_MakeFrame("main", GAL_CLAUSE); <br>
+           &nbsp; FILE *fp; <br>
+           &nbsp; GalIO_BrokerStruct *b; <br>
+           &nbsp; OutData *o = (OutData *) calloc(1, sizeof(OutData));  
+      <br>
+           &nbsp; /* In the code omitted here, the file is opened */ <br>
+           &nbsp; /* .... */ <br>
+           &nbsp; /* If we're the sending direction, we read binary data
+from    the   file,   <br>
+               &nbsp;&nbsp;&nbsp;&nbsp; relaying it to the broker, until
+we  find   EOF.  */ <br>
+           &nbsp; b = GalIO_BrokerDataOutInit(gcomm, 0, 10); <br>
+               &nbsp; if (b &amp;&amp; (GalIO_GetBrokerListenPort(b) &gt; 
+0))   {       <br>
+               &nbsp;&nbsp;&nbsp; GalIO_BrokerPopulateFrame(b, f, ":binary_host", 
+    ":binary_port");     <br>
+               &nbsp;&nbsp;&nbsp; o-&gt;fp = fp; <br>
+               &nbsp;&nbsp;&nbsp; o-&gt;b = b; <br>
+               &nbsp;&nbsp;&nbsp; Gal_AddTask(__write_data, (void *) o, 10, 
+ 0,  NULL);       <br>
+               &nbsp; } <br>
+           &nbsp; return f; <br>
+               }<br>
+            <br>
+          static void __write_data(Gal_TaskPkg *p)  { <br>
+           &nbsp; OutData *o = (OutData *) Gal_TaskPkgData(p); <br>
+           &nbsp; FILE *fp = o-&gt;fp; <br>
+           &nbsp; GalIO_BrokerStruct *b = o-&gt;b; <br>
+           &nbsp; char *buf = (char *) malloc(BLOCKSIZE * sizeof(char));
+    <br>
+           &nbsp; int count;       <br>
+           &nbsp; count = fread(buf, sizeof(char), BLOCKSIZE, fp); <br>
+               &nbsp; if (count) { <br>
+               &nbsp;&nbsp;&nbsp; GalIO_BrokerWriteBinary(b, buf, count); 
+  <br>
+               &nbsp; } <br>
+               &nbsp; free(buf); <br>
+               &nbsp; if (count == BLOCKSIZE) { <br>
+               &nbsp;&nbsp;&nbsp; /* Not done yet. */ <br>
+               &nbsp;&nbsp;&nbsp; Gal_ReAddTask(p, (void *) o, 10, 0, NULL);
+      <br>
+               &nbsp; } else { <br>
+               &nbsp;&nbsp;&nbsp; GalIO_BrokerDataOutDone(b); <br>
+               &nbsp;&nbsp;&nbsp; fclose(fp); <br>
+               &nbsp;&nbsp;&nbsp; free(o); <br>
+               &nbsp; } <br>
+               }                          </tt>   </blockquote>
+                      
+<p> </p>
+                       
+<hr width="100%">            
+<h2> <a name="Receiving_broker_data"></a>Receiving broker data</h2>
+              Here's the other end of the connection from our example, using
+  the   old broker API. The DataHandler   structure is not part of the Communicator
+    package; we use it for illustration:                
+<blockquote>      <tt>Gal_Frame receive_audio(Gal_Frame f, void *server_data)
+        <br>
+             { <br>
+             &nbsp; DataHandler *d = (DataHandler *) malloc(sizeof(DataHandler)); 
+      <br>
+             &nbsp; GalIO_BrokerStruct *b; <br>
+             &nbsp; char *host = Gal_GetString(f, ":binary_host"); <br>
+             &nbsp; int port = Gal_GetInt(f, ":binary_port"); <br>
+             &nbsp; d-&gt;data_buf = (char *) NULL; <br>
+             &nbsp; d-&gt;size = 0; <br>
+             &nbsp; if (host &amp;&amp; port) { <br>
+             &nbsp;&nbsp;&nbsp; b = GalSS_EnvBrokerDataInInit((GalSS_Environment
+    *)  server_data,      <br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      host, port, f, <br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      env_audio_handler, 0, d, __FreeDataHandler); <br>
+             &nbsp;&nbsp;&nbsp; if (b) { &nbsp;<br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_AddBrokerCallback(b, GAL_BROKER_ABORT_EVENT,
+           <br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      __report_abort, (void *) NULL); <br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_AddBrokerCallback(b, GAL_BROKER_DATA_DONE_EVENT,
+           <br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      __report_done, (void *) NULL);<br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_SetBrokerActive(b);&nbsp;<br>
+             &nbsp;&nbsp;&nbsp; } <br>
+             &nbsp; } else { <br>
+             &nbsp;&nbsp;&nbsp; free(d); <br>
+             &nbsp; } <br>
+             &nbsp; return (Gal_Frame) NULL; <br>
+             }</tt>  </blockquote>
+              When the server receives the <tt>receive_audio</tt> message,
+ it  invokes     this dispatch function. If it can find the appropriate host 
+ and  port set,     it sets up a broker receiving connection, makes it active, 
+ and exits. This    connection takes a callback function and data to be stored 
+  in the broker   structure for the callback function to use. If the broker 
+  is set up appropriately,   this function will also set up other callbacks 
+  which are invoked when the   broker is notified of a broker abort or that 
+  data is done (see the documentation    on <a
+ href="server_structure.html#GalIO_AddBrokerCallback">GalIO_AddBrokerCallback</a>
+      and the <a href="server_structure.html#Event-driven_programming">event-driven
+       programming model</a> in general for further details).           
+  
+<p>GalIO_BrokerStruct *<a name="GalSS_EnvBrokerDataInInit"></a><b><big>GalSS_EnvBrokerDataInInit</big></b>(GalSS_Environment
+       *<i>env</i>, const char *<i>host</i>, unsigned short <i>port</i>,
+Gal_Frame    <i>frame</i>,    GalIO_BrokerDataHandler <i>fnptr</i>, int <i>poll_ms</i>,
+   void *<i>refptr</i>,    void (*<i>free_fn</i>)(void *)) <br>
+             The call environment <i>env</i> is stored away and made available
+   to  the   broker data handler <i>fnptr</i> via the function GalSS_BrokerGetEnvironment. 
+      The <i>host </i>and <i>port</i> are the location of the server to contact. 
+      The <i>frame</i> is the frame which delivered the connection message, 
+  which    is forwarded to the other end of the broker connection to verify 
+  that the    correct connection is being made. It must contain the <tt>:call_id</tt> 
+   key.  The <i>fnptr </i>is a function of type <a
+ href="#GalIO_BrokerDataHandler">GalIO_BrokerDataHandler</a> which will be 
+      called when there is data to be read, and the <i>refptr</i> is arbitrary 
+      data which will be stored in the broker structure (for instance, an 
+object      to collect the binary data, as show in the example here) and will
+be freed     when the broker is destroyed using the <i>free_fn</i>. This
+  data  can be retrieved using the function <a
+ href="#GalIO_GetBrokerData">GalIO_GetBrokerData</a>,    as illustrated below. 
+ As usual, <i>poll_ms</i> is the number of milliseconds    for the timed task;
+ 0 means 100 ms, &gt; 0 is a value in ms, &lt; 0 means    not to set up a
+timed task.<br>
+ </p>
+ 
+<p>If you need to <a
+ href="file:///afs/rcf/project/communicator/users/sam/GalaxyCommunicator2/docs/manual/reference/brokering.html#Delaying_broker_activation">delay 
+broker activation</a>, pass -1 as <i>poll_ms</i>.<br>
+  </p>
+                       
+<blockquote>                         
+  <h4>Memory management</h4>
+                      The data passed to the callback function is not freed 
+ by  the  caller.   It is up to the callback function itself to free the data
+ when it's done  with it.    </blockquote>
+              Here's an example of a callback function:<br>
+                 
+<blockquote>   <tt>static void env_audio_handler(GalIO_BrokerStruct *broker_struct,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+    void *data, Gal_ObjectType data_type,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+    int n_samples)<br>
+          {<br>
+          &nbsp; DataHandler *d = (DataHandler *) GalIO_GetBrokerData(broker_struct);<br>
+          &nbsp; switch (data_type) { <br>
+          &nbsp; case GAL_BINARY: <br>
+          &nbsp;&nbsp;&nbsp; if (d-&gt;data_buf) <br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; d-&gt;data_buf = (char *) realloc(d-&gt;data_buf, 
+     n_samples + d-&gt;size); <br>
+          &nbsp;&nbsp;&nbsp; else <br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; d-&gt;data_buf = (char *) malloc(n_samples 
+     + d-&gt;size); <br>
+          &nbsp;&nbsp;&nbsp; bcopy(data, d-&gt;data_buf + d-&gt;size, n_samples); 
+      <br>
+          &nbsp;&nbsp;&nbsp; d-&gt;size += n_samples; <br>
+          &nbsp;&nbsp;&nbsp; free(data); <br>
+          &nbsp;&nbsp;&nbsp; break; <br>
+          &nbsp; default: <br>
+          &nbsp;&nbsp;&nbsp; GalUtil_Warn("Unknown data type %s\n", Gal_ObjectTypeString(data_type)); 
+       <br>
+          &nbsp; } <br>
+          }</tt> </blockquote>
+          &nbsp;<br>
+              You can see how the types which are checked correspond to the 
+ <a href="frame.html#Object_Types">types of the data</a> which are sent. You
+      can also see how the DataHandler object is retrieved from the broker 
+ structure.     Finally, observe that the callback function frees the data 
+ it's passed  after   processing it.<br>
+               
+<p>When the broker receives a notification that it's done, it calls its&nbsp;<tt>GAL_BROKER_DATA_DONE_EVENT</tt> 
+   callback to finish things up (in the case of this example, the callback 
+ writes   the audio data to <tt>/dev/audio</tt> and sends a notification message
+ back   to the Hub). Here's an example of a broker event callback, in this
+ case the  one that's fired when   the broker is notified of an abort: </p>
+                       
+<blockquote><tt>void __report_abort(GalIO_BrokerStruct *b, void *data) <br>
+             { <br>
+             &nbsp; Gal_Frame f; <br>
+             &nbsp; GalSS_Environment *env = GalSS_BrokerGetEnvironment(b);<br>
+               <br>
+             &nbsp; f = Gal_MakeFrame("notify", GAL_CLAUSE); <br>
+             &nbsp; Gal_SetProp(f, ":notification", Gal_StringObject("Audio 
+ aborted."));        <br>
+             &nbsp; GalSS_EnvWriteFrame(env, f, 0); <br>
+             &nbsp; Gal_FreeFrame(f); <br>
+             }</tt></blockquote>
+              You can see here how the callback uses <a
+ href="#GalSS_BrokerGetEnvironment">GalSS_BrokerGetEnvironment</a> to send 
+      a message with the appropriate context to the Hub.              
+<p>void&nbsp;<a name="GalIO_SetBrokerActive"></a><b><big>GalIO_SetBrokerActive</big></b>(GalIO_BrokerStruct
+       *<i>b</i>) <br>
+             Enables the broker to process the data handler. Nothing will 
+happen    with   the data until this function is called on the broker structure.
+ This   is to  allow the user to control when the broker structures are activated
+    (if, for  instance, they play audio output as a side effect). </p>
+                       
+<p>typedef void (*<a name="GalIO_BrokerDataHandler"></a><b><big>GalIO_BrokerDataHandler</big></b>)(GalIO_BrokerStruct
+       *<i>broker_struct</i>, void *<i>object</i>, Gal_ObjectType <i>object_type</i>,
+       int <i>object_count</i>) <br>
+             This is the type of the callback functions. The <i>broker_struct 
+  </i>is    the broker structure which has been set up to receive the data. 
+  The <i>object</i>    is the data itself. The <i>type</i> is the type of 
+the  object, and the <i>object_count</i>   is how many elements of the data 
+there  are (this is interesting mostly in   the case of array data sent by 
+<a href="#GalIO_BrokerWriteBinary">GalIO_BrokerWriteBinary</a>,   <a
+ href="#GalIO_BrokerWriteInt16">GalIO_BrokerWriteInt16</a>, etc.). </p>
+                       
+<p>void *<a name="GalIO_GetBrokerData"></a><b><big>GalIO_GetBrokerData</big></b>(GalIO_BrokerStruct
+       *<i>b</i>) <br>
+             This function retrieves from the broker structure <i>b</i> the 
+ data   which   was passed in to the <i>refptr </i>argument to <a
+ href="#GalIO_CommBrokerDataInInit">GalIO_CommBrokerDataInInit</a>. </p>
+                       
+<p>void&nbsp;<a name="GalIO_SetBrokerData"></a><b><big>GalIO_SetBrokerData</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, void *<i>caller_data</i>, void (*<i>free_fn</i>)(void *))
+  <br>
+             If you need to update the caller data at any point, this function
+   will   free  the old data using the previously set free function and update
+   the  caller  data to <i>caller_data</i> and the free function to <i>free_fn</i>. 
+    </p>
+                       
+<p>void&nbsp;<a name="GalIO_BrokerDataDone"></a><b><big>GalIO_BrokerDataDone</big></b>(GalIO_BrokerStruct
+       *<i>b</i>) <br>
+             This function should be called on the broker structure if the
+ client    decides   it's done before all the data is read. </p>
+                       
+<p>void&nbsp;<a name="GalSS_BrokerSetEnvironment"></a><b><big>GalSS_BrokerSetEnvironment</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, GalSS_Environment *<i>env</i>) <br>
+             Sets the environment associated with the broker <i>b</i> to
+<i>env</i>.       You should not typically need to use this function. </p>
+                       
+<p>GalSS_Environment *<a name="GalSS_BrokerGetEnvironment"></a><b><big>GalSS_BrokerGetEnvironment</big></b>(GalIO_BrokerStruct
+       *<i>b</i>) <br>
+             Retrieves the environment associated with the broker <i>b</i>. 
+ </p>
+                       
+<p>Gal_Frame&nbsp;<a name="GalIO_GetBrokerFrame"></a><b><big>GalIO_GetBrokerFrame</big></b>(GalIO_BrokerStruct
+       *<i>b</i>) <br>
+             Returns the internal copy of the frame passed to <a
+ href="#GalIO_CommBrokerDataInInit">GalIO_CommBrokerDataInInit</a>. You should 
+      not typically need to use this function. </p>
+                       
+<p>If you're dealing with multiple incoming broker objects simultaneously, 
+      you might wish to use the broker queues. Broker objects can be connected 
+     in a doubly-linked list for the purposes of ordering their processing. 
+  </p>
+                       
+<p>GalIO_BrokerStruct *<a name="GalIO_BrokerStructQueueAppend"></a><b><big>GalIO_BrokerStructQueueAppend</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, GalIO_BrokerStruct *<i>bqueue</i>) <br>
+             Adds the broker structure <i>b</i> to the end of the queue <i>bqueue</i>. 
+      If <i>bqueue</i> is NULL, <i>b</i> is returned, otherwise <i>bqueue</i> 
+   is  returned. </p>
+                       
+<p>GalIO_BrokerStruct *<a name="GalIO_BrokerStructQueuePop"></a><b><big>GalIO_BrokerStructQueuePop</big></b>(GalIO_BrokerStruct
+       *<i>bqueue</i>) <br>
+             Removed all finished broker structure from the queue and returns 
+  the   broker   structure which corresponds to the new head of the active 
+ queue.   The broker   structure is destroyed. </p>
+                       
+<p>GalIO_BrokerStruct *<a name="GalIO_BrokerStructDequeue"></a><b><big>GalIO_BrokerStructDequeue</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, GalIO_BrokerStruct *<i>bqueue</i>) <br>
+             Removes a broker structure from the queue and returns the new
+ queue.<br>
+ </p>
+ 
+<hr width="100%" size="2"> 
+<h2><a name="Delaying_broker_activation"></a>Delaying broker activation</h2>
+ When you construct a broker or a broker proxy, typically the task associated 
+with the broker proxy is started immediately. In some cases, especially in 
+<a
+ href="file:///afs/rcf/project/communicator/users/sam/GalaxyCommunicator2/docs/manual/admin/threads.html#Threads_and_taskbrokerproxy_creation">threading</a>,
+ this isn't what you want. If you need to modify the broker in any way, and
+ you expect to run the code in threaded mode, you should pass in -1 for the
+ value of <i>poll_ms</i> in all these functions and use <a
+ href="file:///afs/rcf/project/communicator/users/sam/GalaxyCommunicator2/docs/manual/reference/brokering.html#GalIO_CommStartBroker">GalIO_CommStartBroker</a> 
+or <a
+ href="file:///afs/rcf/project/communicator/users/sam/GalaxyCommunicator2/docs/manual/reference/brokering.html#GalSS_EnvStartBroker">GalSS_EnvStartBroker</a> 
+when the broker is set up. If you're using a proxy, use the function <a
+ href="file:///afs/rcf/project/communicator/users/sam/GalaxyCommunicator2/docs/manual/reference/brokering.html#GalSS_BrokerProxyBroker">GalSS_BrokerProxyBroker</a> 
+to access the underlying broker.<br>
+ 
+<p>Here's a list of functions which modify the broker or proxy, which would 
+require you to delay broker activation in the threaded case:<br>
+ </p>
+ 
+<ul>
+   <li><a href="server_structure.html#GalIO_AddBrokerCallback">GalIO_AddBrokerCallback</a></li>
+   <li><a href="#GalSS_BrokerSetEnvironment">GalIO_BrokerSetEnvironment</a></li>
+   <li><a href="#GalIO_SetBrokerData">GalIO_SetBrokerData</a></li>
+   <li><a href="#GalIO_BrokerSetFinalizer">GalIO_BrokerSetFinalizer</a> (deprecated)<br>
+   </li>
+ 
+</ul>
+  Once all the changes you want are set, you can start the broker using GalIO_CommStartBroker 
+or GalSS_EnvStartBroker. Here's a version of an example of <a
+ href="#Receiving_broker_data">receiving broker data</a> which uses this approach:&nbsp;
+ 
+<blockquote>      <tt>Gal_Frame receive_audio(Gal_Frame f, void *server_data)
+        <br>
+             { <br>
+             &nbsp; DataHandler *d = (DataHandler *) malloc(sizeof(DataHandler)); 
+      <br>
+             &nbsp; GalIO_BrokerStruct *b; <br>
+             &nbsp; char *host = Gal_GetString(f, ":binary_host"); <br>
+             &nbsp; int port = Gal_GetInt(f, ":binary_port"); <br>
+             &nbsp; d-&gt;data_buf = (char *) NULL; <br>
+             &nbsp; d-&gt;size = 0; <br>
+             &nbsp; if (host &amp;&amp; port) { <br>
+             &nbsp;&nbsp;&nbsp; <b>b = GalSS_EnvBrokerDataInInit((GalSS_Environment
+    *)  server_data,      <br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      host, port, f, <br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      env_audio_handler, -1, d, __FreeDataHandler);</b> <br>
+             &nbsp;&nbsp;&nbsp; if (b) { &nbsp;<br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_AddBrokerCallback(b, GAL_BROKER_ABORT_EVENT,
+           <br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      __report_abort, (void *) NULL); <br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_AddBrokerCallback(b, GAL_BROKER_DATA_DONE_EVENT,
+           <br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      __report_done, (void *) NULL);<br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_SetBrokerActive(b);<br>
+ &nbsp; &nbsp; &nbsp; <b>GalSS_EnvStartBroker((GalSS_Environment *) server_data, 
+b, 0);</b><br>
+             &nbsp;&nbsp;&nbsp; } <br>
+             &nbsp; } else { <br>
+             &nbsp;&nbsp;&nbsp; free(d); <br>
+             &nbsp; } <br>
+             &nbsp; return (Gal_Frame) NULL; <br>
+             }</tt>  </blockquote>
+ 
+<p>void <a name="GalIO_CommStartBroker"></a><b><big>GalIO_CommStartBroker</big></b>(GalIO_CommStruct 
+*<i>gcomm</i>, GalIO_BrokerStruct *<i>b</i>, int <i>poll_ms</i>)<br>
+ Updates the polling interval for the broker <i>b </i>to <i>poll_ms</i>,
+and takes the appropriate actions associated with broker startup for the
+connection <i>gcomm</i> to start the polling task.<br>
+ </p>
+ 
+<p>void <a name="GalSS_EnvStartBroker"></a><b><big>GalSS_EnvStartBroker</big></b>(GalSS_Environment 
+*<i>env</i>, GalIO_BrokerStruct *<i>b</i>, int <i>poll_ms</i>)<br>
+ Identical to GalIO_CommStartBroker, except uses the connection stored in 
+the environment <i>env</i>  </p>
+                                            
+<hr width="100%">            
+<h2> Backward compatibility</h2>
+              These functions are provided for backward compatibility with
+ releases     of  the Galaxy Communicator infrastructure previous to 3.0.
+They are all    inadequate  in one way or another, and should be avoided.
+They will not  be  deprecated  or removed yet, however.              
+<p>GalIO_BrokerStruct *<a name="GalIO_BrokerDataInInit"></a><b><big>GalIO_BrokerDataInInit</big></b>(const
+ char *<i>host</i>, unsigned short <i>port</i>, Gal_Frame <i>frame</i>, GalIO_BrokerDataHandler
+       <i>fnptr</i>, void *<i>caller_data</i>, int <i>poll_ms</i>) <br>
+             Like <a href="#GalIO_CommBrokerDataInInit">GalIO_CommBrokerDataInInit</a>,
+       but doesn't allow the programmer to pass in the host connection or
+a  free     function for the data. </p>
+                       
+<p>void *<a name="GalIO_GetBrokerCallerData"></a><b><big>GalIO_GetBrokerCallerData</big></b>(GalIO_BrokerStruct
+       *<i>b</i>) <br>
+             Identical to <a href="#GalIO_GetBrokerData">GalIO_GetBrokerData</a>
+   but   does not conform to consistent naming conventions. </p>
+                       
+<p>typedef void (*<b><big>GalIO_BrokerDataFinalizer</big></b>)(GalIO_BrokerStruct
+       *, void *caller_data) <br>
+             void&nbsp;<a name="GalIO_BrokerSetFinalizer"></a><b><big>GalIO_BrokerSetFinalizer</big></b>(GalIO_BrokerStruct
+       *<i>b</i>, GalIO_BrokerDataFinalizer <i>finalizer</i>) <br>
+             Sets a finalizer for the broker structure. This finalizer is 
+called    when   the broker structure is destroyed. This can be used, for 
+instance,    to pop   a broker queue and activate the next element in the 
+queue. The  finalizer   is called with the contents of the <i>refptr</i> argument
+passed  in to GalIO_BrokerDataInInit.    This function has been superseded
+by the  addition of a free function in  <a
+ href="#GalIO_CommBrokerDataInInit">GalIO_CommBrokerDataInInit</a>    and 
+by  the callback architecture described <a href="server_structure.html">here</a>. 
+   </p>
+                       
+<p>GalIO_BrokerStruct *<a name="GalIO_CommBrokerDataInInit"></a><b><big>GalIO_CommBrokerDataInInit</big></b>(GalIO_CommStruct
+       *<i>host_gcomm</i>, const char *<i>host</i>, unsigned short <i>port</i>,
+ Gal_Frame       <i>frame</i>, GalIO_BrokerDataHandler <i>fnptr</i>, int
+<i>poll_ms</i>,      void *<i>caller_data</i>, void (*<i>caller_data_free_fn</i>)(void
+*))  <br>
+             This function provides almost the same functionality as <a
+ href="#GalSS_EnvBrokerDataInInit">GalSS_EnvBrokerDataInInit</a>, except that
+the <i>host_gcomm</i> is the connection which hosts the callback from which
+the broker was created; it is provided to support the <a
+ href="server_structure.html#Event-driven_programming">event-driven programming 
+      model</a>. All other arguments are as they are for <a
+ href="#GalSS_EnvBrokerDataInInit">GalSS_EnvBrokerDataInInit</a>.</p>
+                       
+<p> </p>
+                                    
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="logging.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="server_structure.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated July 9, 2002</center>
+<br>
+ <br>
+</body>
+</html>

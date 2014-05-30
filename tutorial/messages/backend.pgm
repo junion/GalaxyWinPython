@@ -1,0 +1,17 @@
+;; Use extended syntax (new in version 3.0).
+
+PGM_SYNTAX: extended
+
+SERVICE_TYPE: UI
+CLIENT_PORT: 14500
+
+SERVER: Backend
+HOST: localhost
+PORT: 13000
+OPERATIONS: Retrieve
+
+PROGRAM: DBQuery
+
+RULE: :sql_query --> Backend.Retrieve
+IN: :sql_query
+OUT: :column_names :nfound :values

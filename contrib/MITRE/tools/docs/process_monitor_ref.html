@@ -1,0 +1,529 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                    
+  <meta name="GENERATOR"
+ content="Mozilla/4.78 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Process Monitor Reference</title>
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+          
+<center>     
+<h1> Galaxy Communicator Documentation:<br>
+     <br>
+     Process Monitor Reference</h1>
+    </center>
+         
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+        <tbody>
+          <tr>
+            <td valign="middle" align="left" width="10%"><a
+ href="index.html"><img src="../../../../docs/arrow_left.gif" alt=""
+ width="30" height="30">
+          </a></td>
+            <td valign="middle" align="center">          <a
+ href="../../../../LICENSE">License</a> / <a
+ href="../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a> 
+         </td>
+            <td valign="middle" align="right" width="10%"><a
+ href="unit_tester_ref.html"><img src="../../../../docs/arrow_right.gif"
+ alt="" width="30" height="30">
+          </a></td>
+          </tr>
+                      
+  </tbody>      
+</table>
+           
+<hr width="100%">     
+<h2> Command line</h2>
+     <tt>&lt;GC_HOME&gt;/contrib/MITRE/tools/bin/process_monitor &lt;flags&gt;</tt> 
+  <br>
+    <tt>&lt;GC_HOME&gt;/contrib/MITRE/tools/bin/process_monitor &lt;config_file&gt; 
+  [&lt;config_name_or_index&gt;] [-- &lt;arg&gt;*]</tt> <br>
+    <tt>&lt;GC_HOME&gt;/contrib/MITRE/tools/bin/csh_process_monitor &lt;flags&gt;</tt> 
+     
+<p>Both these tools manage the behavior of the Hub and multiple servers (although
+  they can be used to manage any arbitrary executable). The <tt>process_monitor</tt> 
+  is a Python GUI which provides a pane for each managed executable; the panes
+ can be hidden and redisplayed, and each process can be stopped and restarted.
+ The <tt>csh_process_monitor </tt>is a version which provides a separate
+xterm  for each process (so it does not provide some of the process management
+support).  If <tt>&lt;GC_HOME&gt;/templates/config.make</tt> has not enabled
+Python at compilation time, <tt>process_monitor</tt> will be identical to
+<tt>csh_process_monitor</tt>.  </p>
+       
+<p>There are two different ways of configuring the Python GUI: through command
+  line flags or through a configuration file. You may use one or the other,
+  but not both. For the csh tool, only the command line flag option is available. 
+  </p>
+       
+<p>You can also consult the <a href="process_monitor_tut.html">process monitor
+  tutorial</a>.<a href="process_monitor_tut.html"><br>
+ </a></p>
+ 
+<hr width="100%" size="2"> 
+<h2>What processes can be controlled?<br>
+ </h2>
+ 
+<p>The process monitor spawns a subprocess for each executable, and controls 
+the process through the process ID of the process it spawns. What this means 
+is that when the process monitor kills a subprocess, it can only kill the 
+subprocess it spawned, not any of that process's children. This imposes some 
+limitations and requirements on these subprocesses on the various platforms.<br>
+ </p>
+ 
+<h3>Unix</h3>
+ Each subprocess is passed as a command line to <tt>/bin/sh</tt>. This has 
+an advantage and a disadvantage. The advantage is that you can invoke any 
+command, including shell built-ins like <tt>printenv</tt>. The disadvantage 
+is that any real executable is now a child of the spawned process. This is 
+why, when you see the invoked subprocess in the process monitor display pane, 
+the subprocess is prefixed with <tt>exec</tt>. This shell built-in substitutes 
+the new process for the old in the current process space, so in effect, <tt>/bin/sh</tt> 
+turns into the process you wanted to call.<br>
+ 
+<p>This set of requirements imposes some restrictions on the command lines 
+you can invoke. You can use shell redirection of I/O, but you shouldn't use 
+pipes (separated by "|") or sequences (separated by ":"), even though you 
+have a shell. The reason is that both of these constructs implicitly spawn 
+a shell for each component, and even if you <tt>exec</tt> the entire line, 
+you'll still end up killing the parent of what you really want to kill. Similarly, 
+if your executable is a shell script, you must ensure that the shell script 
+<tt>exec</tt>s the executable it ultimately calls, or you'll once again end 
+up killing the parent of what you really want to kill. (Note that this also 
+imposes some restrictions on what sorts of shell scripts you can control.) 
+So the following script is kosher:<br>
+ </p>
+ 
+<blockquote><tt>#!/bin/sh<br>
+   <br>
+ exec /usr/bin/my_executable</tt><br>
+ </blockquote>
+ 
+<p>but the following script is not:<br>
+ </p>
+ 
+<blockquote><tt>#!/bin/sh<br>
+   <br>
+ /usr/bin/my_executable</tt><br>
+ </blockquote>
+ 
+<h3>Windows</h3>
+ On Windows, the command line you provide is the command line that gets invoked, 
+because there's no such thing as <tt>exec</tt> among the MS-DOS batch commands. 
+This means that the restrictions are a little different. First, if you want 
+any MS-DOS built-ins, you have to prefix them with <tt>cmd.exe /c</tt>. Second, 
+you shouldn't execute batch files at all as subprocesses, because the executables 
+they invoke are guaranteed to be orphaned with the process monitor kills the
+batch shell that invoked them.<br>
+       
+<p> </p>
+       
+<hr width="100%">     
+<h2> Command line flags</h2>
+     The relevant arguments for the two monitors differ slightly, but both
+ processes  will accept the entire set of arguments (and ignore the ones
+that  aren't relevant). The command line arguments are "chunked"; there is
+a set  of arguments for each process, for which the command line argument
+-c terminates  each "chunk". <br>
+    &nbsp;     
+<table border="1" width="100%" nosave="">
+     <tbody>
+        <tr>
+     <td><b>Argument</b></td>
+      <td><b>Applicable to Python</b></td>
+      <td><b>Appicable to csh</b></td>
+      <td><b>Description</b></td>
+     </tr>
+      <tr nosave="">
+     <td><tt>-T &lt;string&gt;</tt></td>
+      <td>yes</td>
+      <td nosave="">yes</td>
+      <td>The title of the particular process</td>
+     </tr>
+      <tr>
+     <td><tt>--open</tt></td>
+      <td>yes</td>
+      <td>&nbsp;</td>
+      <td>Should the pane start open? (default is closed in Python, always
+ open  in csh)</td>
+     </tr>
+      <tr>
+     <td><tt>--start</tt></td>
+      <td>yes</td>
+      <td>&nbsp;</td>
+      <td>Should the process be started automatically? (default is no in
+Python,   always started in csh)</td>
+     </tr>
+      <tr>
+     <td><tt>--keep_alive</tt></td>
+      <td>yes</td>
+      <td>&nbsp;</td>
+      <td>If specified, restart this process if it dies</td>
+     </tr>
+      <tr>
+     <td><tt>--input_line</tt></td>
+      <td>yes</td>
+      <td>&nbsp;</td>
+      <td>Should a typein window be provided for this process? (default is
+ no  in Python, always available in csh)</td>
+     </tr>
+      <tr>
+     <td><tt>--input_return</tt></td>
+      <td>yes</td>
+      <td>&nbsp;</td>
+      <td>Should a button be provided for inputting a carriage return? (default
+  is no in Python, always available in csh)</td>
+     </tr>
+      <tr>
+     <td><tt>-c &lt;string&gt;</tt></td>
+      <td>yes</td>
+      <td>yes</td>
+      <td>The command line of the process. This command line should always
+ be  something that can be preceded with "exec".</td>
+     </tr>
+                 
+  </tbody>    
+</table>
+          
+<p>In addition to these arguments there are five other, global arguments: 
+  </p>
+       
+<ul>
+     <li> <tt>--ncols &lt;int&gt;</tt> (Python): how many columns should
+the   process panes be arranged in? This argument can appear anywhere in
+the command   line. Default is 1.</li>
+      <li> <tt>--compressed</tt> (Python): if specified, start up in a compressed
+  configuration, with a single process viewer and buttons to switch the viewer
+  between processes. When <tt>--compressed</tt> is specified, <tt>--ncols</tt>
+  becomes the number of button rows. This argument can appear anywhere in
+the  command line.</li>
+      <li> <tt>--clear_history &lt;int&gt;</tt> (Python): if specified, clears
+  the history of each pane after the specified number of lines are written.
+  This means that long-running processes won't grind to a halt because of
+Tcl  update delays.</li>
+      <li> <tt>--master_title &lt;title&gt;</tt> (Python): if specified,
+sets   the title of the main window (default is "Process monitor").</li>
+      <li> <tt>--sleep &lt;int&gt;</tt> (csh): how many seconds should the
+ xterm  sleep before starting the process? This argument can be interspersed
+ anywhere  in the command line, and applies to the current "chunk" and all
+ subsequent  chunks; this argument can be repeated. Initial default is 0.</li>
+         
+</ul>
+     In the Python version, the command line is echoed both in the history
+ window  and in a typein window. You can modify the command line in the typein
+ window  and the changes will be recognized on restart. Also, the "keepalive"
+ behavior  and the window configuration can be reconfigured after startup
+via the process  monitor GUI.     
+<p> </p>
+       
+<hr width="100%">     
+<h2> <a name="Command_line_flag_example"></a>Command line flag example</h2>
+     This example shows how you might use the process monitor in a C shell
+ to  start up a configuration of servers to interact with a database. Each
+ of the command lines is a single line, in spite of the wrapping imposed
+by  your browser.     
+<blockquote><tt>% setenv MITRE_ROOT $GC_HOME/contrib/MITRE</tt> <br>
+      <tt>% setenv DEMO_ROOT $MITRE_ROOT/examples/sql_explore</tt> <br>
+      <tt>% $MITRE_ROOT/tools/bin/process_monitor --master_title "DB Interaction" 
+  \</tt> <br>
+      <tt>&nbsp;&nbsp;&nbsp; -T "DB" --open -c "$MITRE_ROOT/tools/bin/run_server 
+  $GC_HOME/contrib/MITRE/servers/bin/db_server -dblogin galaxy/galaxy" \</tt> 
+    <br>
+      <tt>&nbsp;&nbsp;&nbsp; -T "SQL Monitor" --open --input_line -c "$MITRE_ROOT/servers/bin/c_ui 
+  -prompt 'Type a query: ' -verbosity 0" \</tt> <br>
+      <tt>&nbsp;&nbsp;&nbsp; -T "Hub" --open -c "$GC_HOME/bin/hub -pgm_file 
+ $DEMO_ROOT/bare_query.pgm"</tt></blockquote>
+     This invocation of the process monitor creates three panes, all of which
+  are open at startup, all of which must be started by the user by hand.
+    
+<ul>
+     <li> The first is a database server, which is started by the <tt>run_server</tt>
+  script.</li>
+      <li> The second is a typein server which has a space to type in a line.</li>
+      <li> The third is the Galaxy Communicator Hub executable.</li>
+         
+</ul>
+          
+<hr width="100%">     
+<h2><a name="Configuration_file"></a> Configuration file</h2>
+     All the information which can be specified on the command line can be
+ specified  in the configuration file, and more. A configuration file consists
+ of a number  of process blocks, as well as global information. Each of the
+ process blocks  may contain multiple processes, and each process block corresponds
+ to a possible  invocation of the process monitor. If there are multiple
+process  blocks, and the name or index of the desired block has not been
+specified  on the command line, the process monitor will list the available
+blocks and  exit.     
+<p>All arguments after a double dash ("--") on the command line are passed
+  to the configuration file, to be substituted into the command lines in
+the   same way that the <tt>EXPAND:</tt> directive does. These arguments
+are made   available as $1, $2, etc., or as the name listed in the corresponding
+position   in the <tt>ARGUMENTS:</tt> directive. </p>
+       
+<p>All entries in the configuration file are a single line long. Lines starting
+  with a pound sign ("#") are ignored, as are lines consisting entirely of
+ whitespace. The first token in the line is the directive, and the remaining
+ data is the value. By convention, all the directives end with a colon (":").
+  <br>
+    &nbsp;     
+<table border="1" width="100%" nosave="">
+     <tbody>
+        <tr>
+     <td><b>Directive</b></td>
+      <td><b>Value</b></td>
+      <td><b>Scope</b></td>
+      <td><b>Starts block</b></td>
+      <td><b>Description</b></td>
+     </tr>
+      <tr nosave="">
+     <td><tt>PROCESS:</tt></td>
+      <td>yes</td>
+      <td>process</td>
+      <td>yes</td>
+      <td nosave="">The command line of the process. This command line should
+  always be something that can be preceded with "exec". Identical to <tt>-c</tt>.</td>
+     </tr>
+      <tr>
+     <td><tt>PROCESS_KEEP_ALIVE:</tt></td>
+      <td>no</td>
+      <td>process</td>
+      <td>no</td>
+      <td>f specified, restart this process if it dies. Identical to <tt>--keep_alive</tt>.</td>
+     </tr>
+      <tr>
+     <td><tt>PROCESS_TITLE:</tt></td>
+      <td>yes</td>
+      <td>process</td>
+      <td>no</td>
+      <td>The title of the particular process. Identical to <tt>-T</tt>.</td>
+     </tr>
+      <tr>
+     <td><tt>PROCESS_MONITOR_ARGS:</tt></td>
+      <td>yes</td>
+      <td>process</td>
+      <td>no</td>
+      <td>Additional command line arguments to specify, such as <tt>--input_return</tt>,
+  etc. These will be digested as they would in the corresponding set of arguments 
+  describing a process on the command line.</td>
+     </tr>
+      <tr>
+     <td><tt>TITLE:</tt></td>
+      <td>yes</td>
+      <td>process block</td>
+      <td>yes</td>
+      <td>The name of the process block. This name can be used as the second
+  argument to the process monitor to specify one of a number of process blocks
+  in a configuration file. Identical to <tt>--master_title</tt>.</td>
+     </tr>
+      <tr>
+     <td><tt>EXPAND:</tt></td>
+      <td>yes</td>
+      <td>global</td>
+      <td>no</td>
+      <td>A pair of tokens, the first being a string to be substituted, the 
+ second a string to substitute for. If there is no second token, the empty
+ string is used as the substitution value. This can be used anywhere in the
+ values for any subsequent entry, but are primarily intended to serve as
+shorthand  in the command line. These expansions can also be chained; that
+is, subsequent        <tt>EXPAND:</tt>  entries can refer to previous <tt>EXPAND:</tt>
+entries.  By convention, these expansions start with a dollar sign ("$"),
+to evoke the notion of environment variables.<br>
+                       
+      <p>There are three expansions which are set automatically by the process 
+ monitor:<br>
+         </p>
+                       
+      <ul>
+           <li><tt>$GC_HOME</tt> is set the root of the Galaxy Communicator 
+ installation.</li>
+           <li><tt>$ARCHOS</tt> is set to the current       <a
+ href="../../../../docs/manual/admin/install.html#config">ARCHOS value</a>.</li>
+           <li><tt>$OSTYPE</tt> is set to one of <tt>posix</tt>, <tt>dos</tt>, 
+           <tt>nt</tt> to indicate the "family" of the OS.</li>
+                       
+      </ul>
+      <br>
+The process monitor also loads <tt>$GC_HOME/templates/$ARCHOS/config.values</tt>,
+which is generated automatically during the compilation process from the
+configuration settings for the distribution.<br>
+          </td>
+     </tr>
+      <tr>
+      <td valign="top"><tt>REQUIRES:</tt><br>
+      </td>
+      <td valign="top">yes<br>
+      </td>
+      <td valign="top">process block<br>
+      </td>
+      <td valign="top">no<br>
+      </td>
+      <td valign="top">A sequence of tokens which will be checked against
+the expansions provided. Each token will be prefixed with a dollar sign ("$")
+and the result will be looked up in the expansions. If the token isn't found,
+the process block will be skipped. In this way, it's possible to skip process
+blocks if various expansions aren't defined (e.g., <tt>$JDK_HOME</tt>).<br>
+      <br>
+As a special case, if the token contains an equals sign ("="), the substring
+before the equals sign will be used as the lookup key, and the substring
+after the equals sign will be used as the required value of the expansion.
+So, for instance, an entry <tt>OSTYPE=posix</tt> in the <tt>REQUIRES:</tt>
+entry means that the process block will be executed only if the value of
+      <tt>$OSTYPE</tt> is <tt>posix</tt>.<br>
+      </td>
+    </tr>
+    <tr>
+         <td valign="top"><tt>TEMPFILE:</tt><br>
+         </td>
+         <td valign="top">yes<br>
+         </td>
+         <td valign="top">global<br>
+         </td>
+         <td valign="top">no<br>
+         </td>
+         <td valign="top">The value is a symbol which will be inserted into 
+ the list of expansions. The value of this expansion will be a distinguished 
+ temporary file. The scope of this temporary file is the process block. When 
+ the process block is started, a new filename is created, and when the block 
+ is terminated, the file, if it exists, will be deleted.<br>
+         </td>
+       </tr>
+       <tr>
+          <td valign="top"><tt>INCLUDE:</tt><br>
+          </td>
+          <td valign="top">yes<br>
+          </td>
+          <td valign="top">global<br>
+          </td>
+          <td valign="top">no<br>
+          </td>
+          <td valign="top">The name of another file whose contents will be
+ inserted  at this point. You can use any substitutions in the value which
+ have already  been registered via <tt>EXPAND:</tt> at the point where this
+ directive is  read.<br>
+          </td>
+        </tr>
+        <tr>
+     <td><tt>SUPPRESS_EXPANSIONS:</tt></td>
+      <td>no</td>
+      <td>global</td>
+      <td>no</td>
+      <td>If present, the expansions specified in <tt>EXPAND:</tt> will only
+  be applied when the command is actually executed; for display purposes,
+the  unexpanded string will be used</td>
+     </tr>
+      <tr>
+     <td><tt>NUM_DIVISIONS:</tt></td>
+      <td>yes</td>
+      <td>global</td>
+      <td>no</td>
+      <td>How many columns should the process panes be arranged in? Identical
+  to&nbsp; <tt>--ncols</tt>.</td>
+     </tr>
+      <tr>
+     <td><tt>COMPRESSED:</tt></td>
+      <td>no</td>
+      <td>global</td>
+      <td>no</td>
+      <td>if specified, start up in a compressed configuration, with a single
+  process viewer and buttons to switch the viewer between processes. When
+      <tt>COMPRESSED:</tt>  is specified, <tt>NUM_DIVISIONS:</tt> becomes
+the number of button rows.  This argument can appear anywhere in the command
+line. Identical to <tt>--compressed</tt>.</td>
+     </tr>
+      <tr>
+     <td><tt>CLEAR_HISTORY:</tt></td>
+      <td>yes</td>
+      <td>global</td>
+      <td>no</td>
+      <td>If specified, clears the history of each pane after the specified 
+ number of lines are written. This means that long-running processes won't 
+ grind to a halt because of Tcl update delays. Identical to <tt>--clear_history</tt>.</td>
+     </tr>
+      <tr>
+     <td><tt>ARGUMENTS:</tt></td>
+      <td>yes</td>
+      <td>global</td>
+      <td>no</td>
+      <td>If specified, provides a sequence of tokens which corresponds to
+ the  arguments expected after the double dash (<tt>"--"</tt>). No optional
+ arguments  are permitted. If not all arguments are present, the process
+monitor  will  fail. If there are extra arguments, they will be ignored.
+The resulting  bound  arguments can be referred to by name or position, with
+a prefixed dollar sign (<tt>$</tt>).</td>
+     </tr>
+                 
+  </tbody>    
+</table>
+      </p>
+       
+<p> </p>
+       
+<hr width="100%">     
+<h2> Configuration file example</h2>
+     The following configuration file does exactly the same thing as the
+<a href="#Command_line_flag_example">command line flag example</a>. Again,
+all directives are single lines, in spite of the wrapping in your browser:
+    
+<blockquote><tt>EXPAND: $MITRE_ROOT $GC_HOME/contrib/MITRE</tt> <br>
+      <tt>EXPAND: $DEMO_ROOT $MITRE_ROOT/examples/sql_explore</tt>      
+      
+  <p><tt>TITLE: DB Interaction</tt> <br>
+      <tt>PROCESS: $MITRE_ROOT/tools/bin/run_server $MITRE_ROOT/servers/bin/db_server 
+  -dblogin galaxy/galaxy</tt> <br>
+      <tt>PROCESS_TITLE: DB</tt> <br>
+      <tt>PROCESS_MONITOR_ARGS: --open</tt> <br>
+      <tt>PROCESS: $MITRE_ROOT/servers/bin/c_ui -prompt 'Type a query: '
+-verbosity   0</tt> <br>
+      <tt>PROCESS_TITLE: SQL Monitor</tt> <br>
+      <tt>PROCESS_MONITOR_ARGS: --open --input_line</tt> <br>
+      <tt>PROCESS: $GC_HOME/bin/hub -pgm_file $DEMO_ROOT/bare_query.pgm</tt> 
+   <br>
+      <tt>PROCESS_MONITOR_ARGS: -T "Hub" --open</tt></p>
+    </blockquote>
+          
+<hr>    
+<center>     
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+        <tbody>
+          <tr>
+            <td valign="middle" align="left" width="10%"><a
+ href="index.html"><img src="../../../../docs/arrow_left.gif" alt=""
+ width="30" height="30">
+          </a></td>
+            <td valign="middle" align="center">          <a
+ href="../../../../LICENSE">License</a> / <a
+ href="../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a> 
+         </td>
+            <td valign="middle" align="right" width="10%"><a
+ href="unit_tester_ref.html"><img src="../../../../docs/arrow_right.gif"
+ alt="" width="30" height="30">
+          </a></td>
+          </tr>
+                      
+  </tbody>      
+</table>
+      Last updated August 6, 2002</center>
+          
+<p><br>
+     </p>
+    <br>
+    <br>
+   <br>
+  <br>
+ <br>
+</body>
+</html>

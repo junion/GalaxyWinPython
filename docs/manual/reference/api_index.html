@@ -1,0 +1,1474 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.78 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: API Index</title>
+     <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+  
+<center> 
+<h1> Galaxy Communicator Documentation:<br>
+ <br>
+ Alphabetical Index of API Calls</h1>
+</center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "reserved_keys.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "libgalaxy.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+  
+<hr width="100%"> 
+<P>GalIO_CommStruct *<B><BIG><A HREF="libgalaxy_io.html#GalIO_AcceptUniqueConnection">GalIO_AcceptUniqueConnection</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>GalIO_Callback *<B><BIG><A HREF="server_structure.html#GalIO_AddBrokerCallback">GalIO_AddBrokerCallback</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, int <I>callback_event</I>, GalIO_BrokerCallbackFn <I>fn</I>, void *<I>callback_data</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_AddCommDispatchFunctionEntry">GalIO_AddCommDispatchFunctionEntry</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, const char *<I>name</I>, Gal_FrameDataFnPtr <I>fn_with_data</I>, Gal_DispatchFnSignatureKeyEntry *<I>in_key_array</I>, int <I>allow_other_in_keys</I>, int <I>reply_provided</I>, Gal_DispatchFnSignatureKeyEntry *<I>out_key_array</I>, int <I>allow_other_out_keys</I>)
+
+<P>GalIO_Callback *<B><BIG><A HREF="server_structure.html#GalIO_AddConnectionBrokerCallback">GalIO_AddConnectionBrokerCallback</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, int <I>callback_event</I>, GalIO_ConnectionBrokerCallbackFn <I>connect_callback</I>, void *<I>callback_data</I>)
+
+<P>GalIO_Callback *<B><BIG><A HREF="server_structure.html#GalIO_AddConnectionCallback">GalIO_AddConnectionCallback</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, int <I>callback_event</I>, GalIO_ConnectionCallbackFn <I>connect_callback</I>, void *<I>callback_data</I>)
+
+<P>GalIO_Callback *<B><BIG><A HREF="server_structure.html#GalIO_AddConnectionDispatchFnCallback">GalIO_AddConnectionDispatchFnCallback</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, GalIO_ConnectionDispatchFnCallbackFn <I>dispatch_callback</I>, void *<I>callback_data</I>)
+
+<P>GalIO_Callback *<B><BIG><A HREF="server_structure.html#GalIO_AddServerCallback">GalIO_AddServerCallback</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>, int <I>callback_event</I>, GalIO_ServerCallbackFn <I>fn</I>, void *<I>callback_data</I>)
+
+<P>GalIO_Callback *<B><BIG><A HREF="server_structure.html#GalIO_AddServerConnectCallback">GalIO_AddServerConnectCallback</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>, GalIO_ServerConnectCallbackFn <I>connect_callback</I>, void *<I>callback_data</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_AddServerDispatchFunctionEntry">GalIO_AddServerDispatchFunctionEntry</A></BIG></B>(GalIO_ServerStruct *<I>server</I>, const char *<I>name</I>, Gal_FrameDataFnPtr <I>fn_with_data</I>, Gal_DispatchFnSignatureKeyEntry *<I>in_key_array</I>, int <I>allow_other_in_keys</I>, int <I>reply_provided</I>, Gal_DispatchFnSignatureKeyEntry *<I>out_key_array</I>, int <I>allow_other_out_keys</I>)
+
+<P>GalIO_ServerLocation *<B><BIG><A HREF="libgalaxy_io.html#GalIO_AddServerLocation">GalIO_AddServerLocation</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>, const char *<I>host</I>, unsigned short <I>port</I>, int <I>client_poll_flags</I>)
+
+<P>void <B><BIG><A HREF="../advanced/hub_properties.html#GalIO_AddServiceType">GalIO_AddServiceType</A></BIG></B>(GalIO_ServerStruct *<I>server</I>, const char *<I>stype</I>)
+
+<P>void <B><BIG><A HREF="brokering.html#GalIO_BrokerDataDone">GalIO_BrokerDataDone</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>int <B><BIG><A HREF="../advanced/special_mainloop.html#GalIO_BrokerDataInCallbackHandler">GalIO_BrokerDataInCallbackHandler</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, int <I>read_blocking</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_BrokerDataInHandler">GalIO_BrokerDataInHandler</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>GalIO_BrokerStruct *<B><BIG><A HREF="brokering.html#GalIO_BrokerDataInInit">GalIO_BrokerDataInInit</A></BIG></B>(const char *<I>host</I>, unsigned short <I>port</I>, Gal_Frame <I>frame</I>, GalIO_BrokerDataHandler <I>fnptr</I>, void *<I>refptr</I>, int <I>poll_ms</I>)
+
+<P>int <B><BIG><A HREF="../advanced/special_mainloop.html#GalIO_BrokerDataOutCallbackHandler">GalIO_BrokerDataOutCallbackHandler</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>void <B><BIG><A HREF="brokering.html#GalIO_BrokerDataOutDone">GalIO_BrokerDataOutDone</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_BrokerDataOutHandler">GalIO_BrokerDataOutHandler</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>GalIO_BrokerStruct *<B><BIG><A HREF="brokering.html#GalIO_BrokerDataOutInit">GalIO_BrokerDataOutInit</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, int <I>poll_ms</I>, int <I>timeout_seconds</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalIO_BrokerIsDone">GalIO_BrokerIsDone</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>void <B><BIG><A HREF="brokering.html#GalIO_BrokerPopulateFrame">GalIO_BrokerPopulateFrame</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, Gal_Frame <I>f</I>, const char *<I>host_key</I>, const char *<I>port_key</I>)
+
+<P>int <B><BIG><A HREF="../advanced/special_mainloop.html#GalIO_BrokerReadReady">GalIO_BrokerReadReady</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>void <B><BIG><A HREF="brokering.html#GalIO_BrokerSetFinalizer">GalIO_BrokerSetFinalizer</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, GalIO_BrokerDataFinalizer <I>finalizer</I>)
+
+<P>GalIO_BrokerStruct *<B><BIG><A HREF="brokering.html#GalIO_BrokerStructDequeue">GalIO_BrokerStructDequeue</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, GalIO_BrokerStruct *<I>bqueue</I>)
+
+<P>GalIO_BrokerStruct *<B><BIG><A HREF="brokering.html#GalIO_BrokerStructQueueAppend">GalIO_BrokerStructQueueAppend</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, GalIO_BrokerStruct *<I>bqueue</I>)
+
+<P>GalIO_BrokerStruct *<B><BIG><A HREF="brokering.html#GalIO_BrokerStructQueuePop">GalIO_BrokerStructQueuePop</A></BIG></B>(GalIO_BrokerStruct *<I>bqueue</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalIO_BrokerWriteBinary">GalIO_BrokerWriteBinary</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, void *<I>data</I>, int <I>n_bytes</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalIO_BrokerWriteFloat">GalIO_BrokerWriteFloat</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, float <I>f</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalIO_BrokerWriteFloat32">GalIO_BrokerWriteFloat32</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, void *<I>data</I>, int <I>n_floats</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalIO_BrokerWriteFloat64">GalIO_BrokerWriteFloat64</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, void *<I>data</I>, int <I>n_floats</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalIO_BrokerWriteFrame">GalIO_BrokerWriteFrame</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, Gal_Frame <I>frame</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalIO_BrokerWriteInt">GalIO_BrokerWriteInt</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, int <I>i</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalIO_BrokerWriteInt16">GalIO_BrokerWriteInt16</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, void *<I>data</I>, int <I>n_ints</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalIO_BrokerWriteInt32">GalIO_BrokerWriteInt32</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, void *<I>data</I>, int <I>n_ints</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalIO_BrokerWriteInt64">GalIO_BrokerWriteInt64</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, void *<I>data</I>, int <I>n_ints</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalIO_BrokerWriteList">GalIO_BrokerWriteList</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, Gal_Object *<I>elts</I>, int <I>n_elts</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalIO_BrokerWriteObject">GalIO_BrokerWriteObject</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, Gal_Object <I>o</I>)
+
+<P>int <B><BIG><A HREF="../advanced/special_mainloop.html#GalIO_BrokerWriteReady">GalIO_BrokerWriteReady</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalIO_BrokerWriteString">GalIO_BrokerWriteString</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, char *<I>str</I>)
+
+<P>GalIO_CommStruct *<B><BIG><A HREF="../advanced/exec.html#GalIO_ClientConnect">GalIO_ClientConnect</A></BIG></B>(const char *<I>name</I>, const char *<I>host</I>, unsigned short <I>port</I>, int <I>silent</I>, Gal_Frame <I>welcome_frame</I>, Gal_Frame *<I>reply_frame</I>)
+
+<P>GalIO_CommStruct *<B><BIG><A HREF="libgalaxy_io.html#GalIO_ClientInit">GalIO_ClientInit</A></BIG></B>(const char *<I>host</I>, unsigned short <I>port</I>, GalIO_FrameHandler <I>fnptr</I>, int <I>poll_ms</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_CloseCommSocket">GalIO_CloseCommSocket</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_CloseServerListenSocket">GalIO_CloseServerListenSocket</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>GalIO_BrokerStruct *<B><BIG><A HREF="brokering.html#GalIO_CommBrokerDataInInit">GalIO_CommBrokerDataInInit</A></BIG></B>(GalIO_CommStruct *<I>host_gcomm</I>, const char *<I>host</I>, unsigned short <I>port</I>, Gal_Frame <I>frame</I>, GalIO_BrokerDataHandler <I>fnptr</I>, int <I>poll_ms</I>, void *<I>caller_data</I>, void (*<I>caller_data_free_fn</I>)(void *<I></I>))
+
+<P>Gal_Frame <B><BIG><A HREF="libgalaxy_io.html#GalIO_CommDispatchFrame">GalIO_CommDispatchFrame</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, Gal_Frame <I>dispatch</I>, GalIO_MsgType *<I>msg_type_ptr</I>, const char *<I>reply_key</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_CommFlushOutQueue">GalIO_CommFlushOutQueue</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_CommReadFrame">GalIO_CommReadFrame</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, Gal_Frame *<I>frame</I>, int <I>do_block</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_CommReadMessage">GalIO_CommReadMessage</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, Nframe *<I>frame</I>, GalIO_MsgType *<I>msg_type_ptr</I>, int <I>do_block</I>)
+
+<P>int <B><BIG><A HREF="../advanced/special_mainloop.html#GalIO_CommReadReady">GalIO_CommReadReady</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>GalIO_ServerStruct *<B><BIG><A HREF="libgalaxy_io.html#GalIO_CommServer">GalIO_CommServer</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>int <B><BIG><A HREF="server_structure.html#GalIO_CommValidating">GalIO_CommValidating</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>int <B><BIG><A HREF="server_structure.html#GalIO_CommWriteFrame">GalIO_CommWriteFrame</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, Gal_Frame <I>frame</I>, int <I>do_block</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_CommWriteMessage">GalIO_CommWriteMessage</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, Gal_Frame <I>frame</I>, GalIO_MsgType <I>msg_type</I>, int <I>do_block</I>)
+
+<P>int <B><BIG><A HREF="../advanced/special_mainloop.html#GalIO_CommWriteReady">GalIO_CommWriteReady</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>int <B><BIG><A HREF="../advanced/special_mainloop.html#GalIO_ConnectionCallbackHandler">GalIO_ConnectionCallbackHandler</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, int <I>read_blocking</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_ConnectionPoll">GalIO_ConnectionPoll</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>GalIO_CommStruct *<B><BIG><A HREF="server_structure.html#GalIO_ContactHub">GalIO_ContactHub</A></BIG></B>(const char *<I>host</I>, unsigned short <I>port</I>, GalIO_ServerStruct *<I>scomm</I>, const char *<I>session_id</I>, int <I>client_poll_flags</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="libgalaxy_io.html#GalIO_CreateErrorFrame">GalIO_CreateErrorFrame</A></BIG></B>(int <I>errnum</I>, const char *<I>error</I>)
+
+<P>GalIO_SockQueueStruct *<B><BIG><A HREF="libgalaxy_io.html#GalIO_CreateSockQueue">GalIO_CreateSockQueue</A></BIG></B>(GAL_SOCKET <I>sockfd</I>, int <I>in_size</I>, int <I>out_size</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_DestroyBrokerStruct">GalIO_DestroyBrokerStruct</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_DestroyCommStruct">GalIO_DestroyCommStruct</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_DestroyServerStruct">GalIO_DestroyServerStruct</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_DestroySockQueue">GalIO_DestroySockQueue</A></BIG></B>(GalIO_SockQueueStruct *<I>q</I>)
+
+<P>GalIO_ServerLocation *<B><BIG><A HREF="../reference/server_structure.html#GalIO_DigestServerLocations">GalIO_DigestServerLocations</A></BIG></B>(const char *<I>client_pair_string</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="server_structure.html#GalIO_DispatchViaHub">GalIO_DispatchViaHub</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, Gal_Frame <I>frame</I>, GalIO_MsgType *<I>msg_type_ptr</I>)
+
+<P>void <B><BIG><A HREF="server_structure.html#GalIO_EnableDispatchFnValidation">GalIO_EnableDispatchFnValidation</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>void <B><BIG><A HREF="brokering.html#GalIO_ForceBrokerExpiration">GalIO_ForceBrokerExpiration</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>void <B><BIG><A HREF="brokering.html#GalIO_FrameSetBrokerCallID">GalIO_FrameSetBrokerCallID</A></BIG></B>(Gal_Frame <I>f</I>, const char *<I>call_id</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_FreeServerLocations">GalIO_FreeServerLocations</A></BIG></B>(GalIO_ServerLocation *<I>loc</I>)
+
+<P>char *<B><BIG><A HREF="brokering.html#GalIO_GetBrokerCallID">GalIO_GetBrokerCallID</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>void *<B><BIG><A HREF="brokering.html#GalIO_GetBrokerCallerData">GalIO_GetBrokerCallerData</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>void *<B><BIG><A HREF="brokering.html#GalIO_GetBrokerData">GalIO_GetBrokerData</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="brokering.html#GalIO_GetBrokerFrame">GalIO_GetBrokerFrame</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>unsigned short <B><BIG><A HREF="brokering.html#GalIO_GetBrokerListenPort">GalIO_GetBrokerListenPort</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>GAL_SOCKET <B><BIG><A HREF="libgalaxy_io.html#GalIO_GetBrokerListenSocket">GalIO_GetBrokerListenSocket</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>GAL_SOCKET <B><BIG><A HREF="libgalaxy_io.html#GalIO_GetBrokerSocket">GalIO_GetBrokerSocket</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>void *<B><BIG><A HREF="server_structure.html#GalIO_GetCommClientData">GalIO_GetCommClientData</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, const char *<I>name</I>)
+
+<P>void *<B><BIG><A HREF="server_structure.html#GalIO_GetCommData">GalIO_GetCommData</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>Gal_DispatchFnPkg *<B><BIG><A HREF="libgalaxy_io.html#GalIO_GetCommDispatchFnPkg">GalIO_GetCommDispatchFnPkg</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy_io.html#GalIO_GetCommHost">GalIO_GetCommHost</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>void *<B><BIG><A HREF="server_structure.html#GalIO_GetCommServerData">GalIO_GetCommServerData</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>char *<B><BIG><A HREF="server_structure.html#GalIO_GetCommServerName">GalIO_GetCommServerName</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>GAL_SOCKET <B><BIG><A HREF="libgalaxy_io.html#GalIO_GetCommSocket">GalIO_GetCommSocket</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>int <B><BIG><A HREF="adding.html#GalIO_GetError">GalIO_GetError</A></BIG></B>(Gal_Frame <I>f</I>, char **<I>err_desc</I>)
+
+<P>void *<B><BIG><A HREF="server_structure.html#GalIO_GetServerClientData">GalIO_GetServerClientData</A></BIG></B>(GalIO_ServerStruct *<I>server</I>, const char *<I>name</I>)
+
+<P>void *<B><BIG><A HREF="server_structure.html#GalIO_GetServerData">GalIO_GetServerData</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>unsigned short <B><BIG><A HREF="server_structure.html#GalIO_GetServerDefaultPort">GalIO_GetServerDefaultPort</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>Gal_DispatchFnPkg *<B><BIG><A HREF="libgalaxy_io.html#GalIO_GetServerDispatchFnPkg">GalIO_GetServerDispatchFnPkg</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>unsigned short <B><BIG><A HREF="server_structure.html#GalIO_GetServerListenPort">GalIO_GetServerListenPort</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>GAL_SOCKET <B><BIG><A HREF="libgalaxy_io.html#GalIO_GetServerListenSocket">GalIO_GetServerListenSocket</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>GalIO_ServerLocation *<B><BIG><A HREF="../reference/server_structure.html#GalIO_GetServerLocations">GalIO_GetServerLocations</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>int <B><BIG><A HREF="server_structure.html#GalIO_GetServerMaxConnections">GalIO_GetServerMaxConnections</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>char *<B><BIG><A HREF="server_structure.html#GalIO_GetServerName">GalIO_GetServerName</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>int <B><BIG><A HREF="server_structure.html#GalIO_GetServerNumConnections">GalIO_GetServerNumConnections</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_GetSockQueueError">GalIO_GetSockQueueError</A></BIG></B>(GalIO_SockQueueStruct *<I>q</I>)
+
+<P>GalIO_CommStruct *<B><BIG><A HREF="server_structure.html#GalIO_GetUniqueConnection">GalIO_GetUniqueConnection</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>char *<B><BIG><A HREF="brokering.html#GalIO_IPAddress">GalIO_IPAddress</A></BIG></B>(void <I></I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_InHandler">GalIO_InHandler</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>GalIO_ServerStruct *<B><BIG><A HREF="libgalaxy_io.html#GalIO_ListenerCreate">GalIO_ListenerCreate</A></BIG></B>(unsigned short <I>port</I>, int <I>require_port</I>, GalIO_FrameHandler <I>foo_ptr</I>, void *<I>server_data</I>, int <I>poll_ms</I>, int <I>max_connections</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy_io.html#GalIO_MsgTypeToName">GalIO_MsgTypeToName</A></BIG></B>(GalIO_MsgType <I>mt</I>)
+
+<P>char *<B><BIG><A HREF="../reference/server_structure.html#GalIO_NthHostAndPort">GalIO_NthHostAndPort</A></BIG></B>(GalIO_ServerLocation *<I>locs</I>, int <I>i</I>, unsigned short *<I>port</I>)
+
+<P>int <B><BIG><A HREF="../reference/server_structure.html#GalIO_NumServerLocations">GalIO_NumServerLocations</A></BIG></B>(GalIO_ServerLocation *<I>locs</I>)
+
+<P>void <B><BIG><A HREF="server_structure.html#GalIO_OperateOnConnections">GalIO_OperateOnConnections</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>, void *<I>arg</I>, void (*<I>op</I>)(GalIO_CommStruct *<I></I>, void *<I></I>))
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_OutHandler">GalIO_OutHandler</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_QueueProcessOut">GalIO_QueueProcessOut</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, int <I>do_block</I>)
+
+<P>void <B><BIG><A HREF="server_structure.html#GalIO_RemoveBrokerCallback">GalIO_RemoveBrokerCallback</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, GalIO_Callback *<I>cb</I>)
+
+<P>void <B><BIG><A HREF="server_structure.html#GalIO_RemoveConnectionCallback">GalIO_RemoveConnectionCallback</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, GalIO_Callback *<I>cb</I>)
+
+<P>void <B><BIG><A HREF="server_structure.html#GalIO_RemoveServerCallback">GalIO_RemoveServerCallback</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>, GalIO_Callback *<I>cb</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_ResetCommSockets">GalIO_ResetCommSockets</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>int <B><BIG><A HREF="../advanced/special_mainloop.html#GalIO_ServerCallbackHandler">GalIO_ServerCallbackHandler</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>, int <I>read_blocking</I>, GalIO_CommStruct **<I>new_conn_ptr</I>)
+
+<P>void <B><BIG><A HREF="../advanced/special_mainloop.html#GalIO_ServerCheckHubContacts">GalIO_ServerCheckHubContacts</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>GalIO_ServerStruct *<B><BIG><A HREF="libgalaxy_io.html#GalIO_ServerCreate">GalIO_ServerCreate</A></BIG></B>(unsigned short <I>port</I>, int <I>require_port</I>, GalIO_FrameHandler <I>fnptr</I>, void *<I>server_data</I>, int <I>poll_ms</I>, int <I>max_connections</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_ServerHandler">GalIO_ServerHandler</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>, GalIO_CommStruct **<I>new_conn_ptr</I>)
+
+<P>GalIO_ServerStruct *<B><BIG><A HREF="libgalaxy_io.html#GalIO_ServerInit">GalIO_ServerInit</A></BIG></B>(unsigned short <I>port</I>, int <I>require_port</I>, GalIO_FrameHandler <I>fnptr</I>, void *<I>server_data</I>, int <I>poll_ms</I>, int <I>max_connections</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_ServerIsClient">GalIO_ServerIsClient</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_ServerIsListener">GalIO_ServerIsListener</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>int <B><BIG><A HREF="server_structure.html#GalIO_ServerListenStatus">GalIO_ServerListenStatus</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_ServerListensForBrokers">GalIO_ServerListensForBrokers</A></BIG></B>(GalIO_ServerStruct *<I>s</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_ServerListensForConnections">GalIO_ServerListensForConnections</A></BIG></B>(GalIO_ServerStruct *<I>s</I>)
+
+<P>void <B><BIG><A HREF="../advanced/hub_properties.html#GalIO_ServerModifyProperties">GalIO_ServerModifyProperties</A></BIG></B>(GalIO_ServerStruct *<I>server</I>, Gal_Frame <I>new_properties</I>, char **<I>delete_properties</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_ServerPoll">GalIO_ServerPoll</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="../advanced/hub_properties.html#GalIO_ServerProperties">GalIO_ServerProperties</A></BIG></B>(GalIO_ServerStruct *<I>server</I>)
+
+<P>char *<B><BIG><A HREF="server_structure.html#GalIO_ServerSessionID">GalIO_ServerSessionID</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>GalIO_ServerStruct *<B><BIG><A HREF="libgalaxy_io.html#GalIO_ServerStart">GalIO_ServerStart</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>int <B><BIG><A HREF="server_structure.html#GalIO_ServerUsesTimedTasks">GalIO_ServerUsesTimedTasks</A></BIG></B>(GalIO_ServerStruct *<I>server</I>)
+
+<P>void <B><BIG><A HREF="brokering.html#GalIO_SetBrokerActive">GalIO_SetBrokerActive</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>void <B><BIG><A HREF="brokering.html#GalIO_SetBrokerData">GalIO_SetBrokerData</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, void *<I>caller_data</I>, void (*<I>free_fn</I>)(void *<I></I>))
+
+<P>void <B><BIG><A HREF="server_structure.html#GalIO_SetCommClientData">GalIO_SetCommClientData</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, const char *<I>name</I>, void *<I>client_data</I>)
+
+<P>void <B><BIG><A HREF="server_structure.html#GalIO_SetCommData">GalIO_SetCommData</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, void *<I>data</I>, void (*<I>free_fn</I>)(void *<I></I>))
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_SetCommDispatchFnPkg">GalIO_SetCommDispatchFnPkg</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, Gal_DispatchFnPkg *<I>pkg</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_SetCommDone">GalIO_SetCommDone</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_SetDisconnectCallback">GalIO_SetDisconnectCallback</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, void (*<I>disconnect_callback</I>)(GalIO_CommStruct *<I>server_data</I>))
+
+<P>void <B><BIG><A HREF="server_structure.html#GalIO_SetServerClientData">GalIO_SetServerClientData</A></BIG></B>(GalIO_ServerStruct *<I>server</I>, const char *<I>name</I>, void *<I>client_data</I>)
+
+<P>void <B><BIG><A HREF="server_structure.html#GalIO_SetServerData">GalIO_SetServerData</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>, void *<I>data</I>, void (*<I>free_fn</I>)(void *<I></I>))
+
+<P>void <B><BIG><A HREF="server_structure.html#GalIO_SetServerDefaultPort">GalIO_SetServerDefaultPort</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>, unsigned short <I>port</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_SetServerDisconnectCallback">GalIO_SetServerDisconnectCallback</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>, void (*<I>disconnect_callback</I>)(GalIO_CommStruct *<I>server_data</I>))
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_SetServerDispatchFnPkg">GalIO_SetServerDispatchFnPkg</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>, Gal_DispatchFnPkg *<I>pkg</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_SetServerDone">GalIO_SetServerDone</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_SetServerListenStatus">GalIO_SetServerListenStatus</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>, int <I>server_listen_status</I>, const char *<I>client_pair_string</I>, const char *<I>session_id</I>)
+
+<P>void <B><BIG><A HREF="server_structure.html#GalIO_SetServerMaxConnections">GalIO_SetServerMaxConnections</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>, int <I>max</I>)
+
+<P>void <B><BIG><A HREF="server_structure.html#GalIO_SetServerName">GalIO_SetServerName</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>, char *<I>name</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#GalIO_SetSockQueueComment">GalIO_SetSockQueueComment</A></BIG></B>(GalIO_SockQueueStruct *<I>q</I>, char *<I>comment</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_SockQueueProcessReceive">GalIO_SockQueueProcessReceive</A></BIG></B>(GalIO_SockQueueStruct *<I>q</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_SockQueueProcessSend">GalIO_SockQueueProcessSend</A></BIG></B>(GalIO_SockQueueStruct *<I>q</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_SockQueueRead">GalIO_SockQueueRead</A></BIG></B>(GalIO_SockQueueStruct *<I>q</I>, char *<I>data</I>, int <I>max_data_len</I>, int *<I>data_len</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_SockQueueReadAtom">GalIO_SockQueueReadAtom</A></BIG></B>(GalIO_SockQueueStruct *<I>q</I>, char *<I>data</I>, int <I>data_len</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_SockQueueWrite">GalIO_SockQueueWrite</A></BIG></B>(GalIO_SockQueueStruct *<I>q</I>, void *<I>data</I>, long <I>len</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_StartClient">GalIO_StartClient</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_StartListener">GalIO_StartListener</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>, int <I>additional_flags</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy_io.html#GalIO_VerificationHandler">GalIO_VerificationHandler</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>void <B><BIG><A HREF="adding.html#GalSS_AddDispatchFunction">GalSS_AddDispatchFunction</A></BIG></B>(GalIO_ServerStruct *<I>i</I>, const char *<I>name</I>, Gal_FrameDataFnPtr <I>fn</I>, Gal_DispatchFnSignatureKeyEntry *<I>in_key_array</I>, int <I>allow_other_in_keys</I>, int <I>reply_provided</I>, Gal_DispatchFnSignatureKeyEntry *<I>out_key_array</I>, int <I>allow_other_out_keys</I>)
+
+<P>GalSS_Environment *<B><BIG><A HREF="brokering.html#GalSS_BrokerGetEnvironment">GalSS_BrokerGetEnvironment</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>)
+
+<P>GalIO_BrokerStruct *<B><BIG><A HREF="brokering.html#GalSS_BrokerProxyBroker">GalSS_BrokerProxyBroker</A></BIG></B>(GalSS_BrokerProxy *<I>bp</I>)
+
+<P>int <B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_BrokerProxyInCallbackHandler">GalSS_BrokerProxyInCallbackHandler</A></BIG></B>(GalSS_BrokerProxy *<I>bp</I>)
+
+<P>Gal_Object <B><BIG><A HREF="brokering.html#GalSS_BrokerProxyObject">GalSS_BrokerProxyObject</A></BIG></B>(GalSS_BrokerProxy *<I>bp</I>)
+
+<P>Gal_ObjectType <B><BIG><A HREF="brokering.html#GalSS_BrokerProxyObjectType">GalSS_BrokerProxyObjectType</A></BIG></B>(GalSS_BrokerProxy *<I>bp</I>)
+
+<P>int <B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_BrokerProxyOutCallbackHandler">GalSS_BrokerProxyOutCallbackHandler</A></BIG></B>(GalSS_BrokerProxy *<I>bp</I>)
+
+<P>int <B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_BrokerProxyReadReady">GalSS_BrokerProxyReadReady</A></BIG></B>(GalSS_BrokerProxy *<I>bp</I>)
+
+<P>int <B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_BrokerProxyWriteReady">GalSS_BrokerProxyWriteReady</A></BIG></B>(GalSS_BrokerProxy *<I>bp</I>)
+
+<P>void <B><BIG><A HREF="brokering.html#GalSS_BrokerSetEnvironment">GalSS_BrokerSetEnvironment</A></BIG></B>(GalIO_BrokerStruct *<I>b</I>, GalSS_Environment *<I>env</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="libserverstub.html#GalSS_CallServerFunction">GalSS_CallServerFunction</A></BIG></B>(Gal_Frame <I>frame</I>, GalSS_Environment *<I>env</I>, int <I>optional</I>)
+
+<P>GalIO_ServerStruct *<B><BIG><A HREF="server_structure.html#GalSS_CmdlineInitializeServer">GalSS_CmdlineInitializeServer</A></BIG></B>(int <I>argc</I>, char **<I>argv</I>)
+
+<P>GalIO_ServerStruct *<B><BIG><A HREF="server_structure.html#GalSS_CmdlineSetupServer">GalSS_CmdlineSetupServer</A></BIG></B>(int <I>argc</I>, char **<I>argv</I>)
+
+<P>GalIO_ServerStruct *<B><BIG><A HREF="server_structure.html#GalSS_CmdlineSetupServerForHubContact">GalSS_CmdlineSetupServerForHubContact</A></BIG></B>(int <I>argc</I>, char **<I>argv</I>, char **<I>client_string_ptr</I>, char **<I>session_id_ptr</I>, int <I>allow_listener</I>, int <I>client_poll_flags</I>, int <I>loop_type</I>)
+
+<P>GalSS_BrokerProxy *<B><BIG><A HREF="brokering.html#GalSS_CopyBrokerProxy">GalSS_CopyBrokerProxy</A></BIG></B>(GalSS_BrokerProxy *<I>bp</I>)
+
+<P>GalSS_BrokerProxy *<B><BIG><A HREF="brokering.html#GalSS_CreateBrokerProxy">GalSS_CreateBrokerProxy</A></BIG></B>(const char *<I>host</I>, int <I>port</I>, const char *<I>call_id</I>, Gal_ObjectType <I>object_type</I>, Gal_Object <I>obj_data</I>)
+
+<P>GalSS_ServerArgs *<B><BIG><A HREF="server_structure.html#GalSS_DefaultServerArgs">GalSS_DefaultServerArgs</A></BIG></B>(<I></I>)
+
+<P>GalSS_ServerLocationEntry *<B><BIG><A HREF="libserverstub.html#GalSS_DigestServerLocationFile">GalSS_DigestServerLocationFile</A></BIG></B>(const char *<I>filename</I>)
+
+<P>GalIO_BrokerStruct *<B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRBroker">GalSS_ELRBroker</A></BIG></B>(GalSS_ELR *<I>elr</I>)
+
+<P>GalSS_ELR *<B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRCopy">GalSS_ELRCopy</A></BIG></B>(GalSS_ELR *<I>source</I>)
+
+<P>GalSS_ELR *<B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRCreate">GalSS_ELRCreate</A></BIG></B>(GalIO_ServerStruct *<I>scomm</I>, GalSS_ELTimerSetFn <I>timer_set_fn</I>, GalSS_ELUnsetFn <I>timer_unset_fn</I>, GalSS_ELFDSetFn <I>fd_set_fn</I>, GalSS_ELUnsetFn <I>fd_unset_fn</I>, GalSS_ELBehaviorFn <I>behavior_fn</I>, int <I>timer_is_persistent</I>)
+
+<P>void <B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRDestroy">GalSS_ELRDestroy</A></BIG></B>(GalSS_ELR *<I>elr</I>)
+
+<P>void <B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRDoCallback">GalSS_ELRDoCallback</A></BIG></B>(GalSS_ELR *<I>elr</I>, int <I>timer_or_fd</I>)
+
+<P>GalIO_CommStruct *<B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRGComm">GalSS_ELRGComm</A></BIG></B>(GalSS_ELR *<I>elr</I>)
+
+<P>void *<B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRGetLoopData">GalSS_ELRGetLoopData</A></BIG></B>(GalSS_ELR *<I>elr</I>)
+
+<P>GalIO_ServerStruct *<B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRSComm">GalSS_ELRSComm</A></BIG></B>(GalSS_ELR *<I>elr</I>)
+
+<P>void <B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRSetBrokerInCallback">GalSS_ELRSetBrokerInCallback</A></BIG></B>(GalSS_ELR *<I>elr</I>, GalSS_ELCallbackFn <I>fn</I>)
+
+<P>void <B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRSetBrokerOutCallback">GalSS_ELRSetBrokerOutCallback</A></BIG></B>(GalSS_ELR *<I>elr</I>, GalSS_ELCallbackFn <I>fn</I>)
+
+<P>void <B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRSetConnectionCallback">GalSS_ELRSetConnectionCallback</A></BIG></B>(GalSS_ELR *<I>elr</I>, GalSS_ELCallbackFn <I>fn</I>)
+
+<P>void <B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRSetLoopData">GalSS_ELRSetLoopData</A></BIG></B>(GalSS_ELR *<I>elr</I>, void *<I>loop_data</I>, void (*<I>loop_data_free_fn</I>)(void *<I></I>))
+
+<P>void <B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRSetServerClientCallback">GalSS_ELRSetServerClientCallback</A></BIG></B>(GalSS_ELR *<I>elr</I>, GalSS_ELCallbackFn <I>fn</I>)
+
+<P>void <B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRSetServerListenerCallback">GalSS_ELRSetServerListenerCallback</A></BIG></B>(GalSS_ELR *<I>elr</I>, GalSS_ELCallbackFn <I>fn</I>)
+
+<P>GalSS_ELR *<B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRSetupServer">GalSS_ELRSetupServer</A></BIG></B>(GalSS_ServerArgs *<I>external_arg_pkg</I>, int <I>argc</I>, char **<I>argv</I>, GalSS_ELTimerSetFn <I>timer_set_fn</I>, GalSS_ELUnsetFn <I>timer_unset_fn</I>, GalSS_ELFDSetFn <I>fd_set_fn</I>, GalSS_ELUnsetFn <I>fd_unset_fn</I>, GalSS_ELBehaviorFn <I>behavior_fn</I>, void *<I>loop_data</I>, void (*<I>loop_data_free_fn</I>)(void *<I></I>), int <I>timer_is_persistent</I>)
+
+<P>void <B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRShutdown">GalSS_ELRShutdown</A></BIG></B>(GalSS_ELR *<I>elr</I>)
+
+<P>void <B><BIG><A HREF="../advanced/special_mainloop.html#GalSS_ELRUpdatePollIntervals">GalSS_ELRUpdatePollIntervals</A></BIG></B>(GalSS_ELR *<I>elr</I>, int <I>server_client_poll_ms</I>, int <I>conn_ms</I>, int <I>broker_ms</I>)
+
+<P>Gal_TaskPkg *<B><BIG><A HREF="../advanced/environment.html#GalSS_EnvAddTask">GalSS_EnvAddTask</A></BIG></B>(GalSS_Environment *<I>env</I>, void (*<I>task</I>)(Gal_TaskPkg *<I></I>), void *<I>caller_data</I>, long <I>num_millisecs</I>, int <I>read_blocking_available</I>, GAL_SOCKET *<I>read_socket</I>, GAL_SOCKET *<I>write_socket</I>, GAL_SOCKET *<I>err_socket</I>, FILE *<I>read_file</I>, FILE *<I>write_file</I>, FILE*<I>err_file</I>, Gal_TaskConditionFn <I>condition</I>, void (*<I>cleanup_fn</I>)(void *<I></I>))
+
+<P>GalIO_BrokerStruct *<B><BIG><A HREF="brokering.html#GalSS_EnvBrokerDataInInit">GalSS_EnvBrokerDataInInit</A></BIG></B>(GalSS_Environment *<I>env</I>, const char *<I>host</I>, unsigned short <I>port</I>, Gal_Frame <I>frame</I>, GalIO_BrokerDataHandler <I>fnptr</I>, int <I>poll_ms</I>, void *<I>refptr</I>, void (*<I>free_fn</I>)(void *<I></I>))
+
+<P>GalIO_BrokerStruct *<B><BIG><A HREF="brokering.html#GalSS_EnvBrokerProxyInInit">GalSS_EnvBrokerProxyInInit</A></BIG></B>(GalSS_Environment *<I>env</I>, GalSS_BrokerProxy *<I>p</I>, GalIO_BrokerDataHandler <I>fnptr</I>, int <I>poll_ms</I>, void *<I>refptr</I>, void (*<I>free_fn</I>)(void *<I></I>))
+
+<P>GalIO_BrokerStruct *<B><BIG><A HREF="brokering.html#GalSS_EnvBrokerProxyObjInInit">GalSS_EnvBrokerProxyObjInInit</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_Object <I>proxy</I>, GalIO_BrokerDataHandler <I>fnptr</I>, int <I>poll_ms</I>, void *<I>refptr</I>, void (*<I>free_fn</I>)(void *<I></I>))
+
+<P>GalIO_CommStruct *<B><BIG><A HREF="server_structure.html#GalSS_EnvComm">GalSS_EnvComm</A></BIG></B>(GalSS_Environment *<I>env</I>)
+
+<P>GalSS_Environment *<B><BIG><A HREF="../advanced/environment.html#GalSS_EnvCopy">GalSS_EnvCopy</A></BIG></B>(GalSS_Environment *<I>old_env</I>)
+
+<P>GalSS_Environment *<B><BIG><A HREF="../advanced/environment.html#GalSS_EnvCopyNoLock">GalSS_EnvCopyNoLock</A></BIG></B>(GalSS_Environment *<I>old_env</I>)
+
+<P>GalSS_Environment *<B><BIG><A HREF="../advanced/environment.html#GalSS_EnvCreate">GalSS_EnvCreate</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>)
+
+<P>void <B><BIG><A HREF="../advanced/hub_properties.html#GalSS_EnvDeleteServerProperties">GalSS_EnvDeleteServerProperties</A></BIG></B>(GalSS_Environment *<I>env</I>, char **<I>keys</I>)
+
+<P>void <B><BIG><A HREF="../advanced/hub_properties.html#GalSS_EnvDeleteSessionProperties">GalSS_EnvDeleteSessionProperties</A></BIG></B>(GalSS_Environment *<I>env</I>, char **<I>keys</I>)
+
+<P>int <B><BIG><A HREF="adding.html#GalSS_EnvDestroyToken">GalSS_EnvDestroyToken</A></BIG></B>(GalSS_Environment *<I>env</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="adding.html#GalSS_EnvDispatchFrame">GalSS_EnvDispatchFrame</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_Frame <I>frame</I>, GalIO_MsgType *<I>t</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="../advanced/provider_id.html#GalSS_EnvDispatchFrameToProvider">GalSS_EnvDispatchFrameToProvider</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_Frame <I>frame</I>, const char *<I>provider_id</I>, GalIO_MsgType *<I>t</I>)
+
+<P>int <B><BIG><A HREF="../advanced/synch_vs_asynch.html#GalSS_EnvDispatchFrameToProviderWithContinuation">GalSS_EnvDispatchFrameToProviderWithContinuation</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_Frame <I>frame</I>, const char *<I>provider</I>, GalSS_ContinuationFn <I>fn</I>, void *<I>continuation_state</I>, void (*<I>continuation_state_free_fn</I>)(void *<I></I>))
+
+<P>int <B><BIG><A HREF="../advanced/synch_vs_asynch.html#GalSS_EnvDispatchFrameWithContinuation">GalSS_EnvDispatchFrameWithContinuation</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_Frame <I>frame</I>, GalSS_ContinuationFn <I>fn</I>, void *<I>continuation_state</I>, void (*<I>continuation_state_free_fn</I>)(void *<I></I>))
+
+<P>int <B><BIG><A HREF="adding.html#GalSS_EnvError">GalSS_EnvError</A></BIG></B>(GalSS_Environment *<I>env</I>, const char *<I>description</I>)
+
+<P>int <B><BIG><A HREF="libserverstub.html#GalSS_EnvErrorOfType">GalSS_EnvErrorOfType</A></BIG></B>(GalSS_Environment *<I>env</I>, int <I>type</I>, const char *<I>description</I>)
+
+<P>void *<B><BIG><A HREF="adding.html#GalSS_EnvGetClientData">GalSS_EnvGetClientData</A></BIG></B>(GalSS_Environment *<I>env</I>, const char *<I>name</I>)
+
+<P>void *<B><BIG><A HREF="adding.html#GalSS_EnvGetCommData">GalSS_EnvGetCommData</A></BIG></B>(GalSS_Environment *<I>env</I>)
+
+<P>char *<B><BIG><A HREF="../advanced/provider_id.html#GalSS_EnvGetOriginatingProvider">GalSS_EnvGetOriginatingProvider</A></BIG></B>(GalSS_Environment *<I>env</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="../advanced/hub_properties.html#GalSS_EnvGetServerProperties">GalSS_EnvGetServerProperties</A></BIG></B>(GalSS_Environment *<I>env</I>, char **<I>keys</I>)
+
+<P>char *<B><BIG><A HREF="../advanced/session.html#GalSS_EnvGetSessionID">GalSS_EnvGetSessionID</A></BIG></B>(GalSS_Environment *<I>env</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="../advanced/hub_properties.html#GalSS_EnvGetSessionProperties">GalSS_EnvGetSessionProperties</A></BIG></B>(GalSS_Environment *<I>env</I>, char **<I>keys</I>)
+
+<P>double <B><BIG><A HREF="../advanced/timestamps.html#GalSS_EnvGetTokenTimestamp">GalSS_EnvGetTokenTimestamp</A></BIG></B>(GalSS_Environment *<I>env</I>)
+
+<P>void <B><BIG><A HREF="../advanced/timestamps.html#GalSS_EnvInheritTokenTimestamp">GalSS_EnvInheritTokenTimestamp</A></BIG></B>(GalSS_Environment *<I>env</I>)
+
+<P>void <B><BIG><A HREF="../advanced/environment.html#GalSS_EnvLock">GalSS_EnvLock</A></BIG></B>(GalSS_Environment *<I>env</I>)
+
+<P>void <B><BIG><A HREF="../advanced/environment.html#GalSS_EnvMaintainInLocation">GalSS_EnvMaintainInLocation</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, const char *<I>initial_session_id</I>, GalSS_Environment **<I>env_loc</I>)
+
+<P>void <B><BIG><A HREF="../advanced/hub_properties.html#GalSS_EnvModifyServerProperties">GalSS_EnvModifyServerProperties</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_Frame <I>properties_to_set</I>, char **<I>properties_to_delete</I>)
+
+<P>void <B><BIG><A HREF="../advanced/hub_properties.html#GalSS_EnvModifySessionProperties">GalSS_EnvModifySessionProperties</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_Frame <I>properties_to_set</I>, char **<I>properties_to_delete</I>)
+
+<P>int <B><BIG><A HREF="../advanced/synch_vs_asynch.html#GalSS_EnvPostponeReply">GalSS_EnvPostponeReply</A></BIG></B>(GalSS_Environment *<I>env</I>)
+
+<P>int <B><BIG><A HREF="adding.html#GalSS_EnvReply">GalSS_EnvReply</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_Frame <I>f</I>)
+
+<P>int <B><BIG><A HREF="../advanced/environment.html#GalSS_EnvReturnRequired">GalSS_EnvReturnRequired</A></BIG></B>(GalSS_Environment *<I>env</I>)
+
+<P>void <B><BIG><A HREF="adding.html#GalSS_EnvSetCommData">GalSS_EnvSetCommData</A></BIG></B>(GalSS_Environment *<I>env</I>, void *<I>data</I>, void (*<I>free_fn</I>)(void *<I></I>))
+
+<P>void <B><BIG><A HREF="../advanced/hub_properties.html#GalSS_EnvSetServerProperties">GalSS_EnvSetServerProperties</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_Frame <I>properties</I>)
+
+<P>void <B><BIG><A HREF="../advanced/hub_properties.html#GalSS_EnvSetSession">GalSS_EnvSetSession</A></BIG></B>(GalSS_Environment *<I>env</I>, const char *<I>session_name</I>, int <I>lock_info</I>)
+
+<P>void <B><BIG><A HREF="../advanced/hub_properties.html#GalSS_EnvSetSessionProperties">GalSS_EnvSetSessionProperties</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_Frame <I>properties</I>)
+
+<P>void <B><BIG><A HREF="../advanced/environment.html#GalSS_EnvUnlock">GalSS_EnvUnlock</A></BIG></B>(GalSS_Environment *<I>env</I>)
+
+<P>void <B><BIG><A HREF="../advanced/session.html#GalSS_EnvUpdateSessionID">GalSS_EnvUpdateSessionID</A></BIG></B>(GalSS_Environment *<I>env</I>, const char *<I>session_id</I>)
+
+<P>int <B><BIG><A HREF="adding.html#GalSS_EnvWriteFrame">GalSS_EnvWriteFrame</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_Frame <I>frame</I>, int <I>do_block</I>)
+
+<P>int <B><BIG><A HREF="../advanced/provider_id.html#GalSS_EnvWriteFrameToProvider">GalSS_EnvWriteFrameToProvider</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_Frame <I>frame</I>, const char *<I>provider_id</I>, int <I>do_block</I>)
+
+<P>GalSS_ServerArgs *<B><BIG><A HREF="server_structure.html#GalSS_ExtractCmdlineServerArgs">GalSS_ExtractCmdlineServerArgs</A></BIG></B>(GalSS_ServerArgs *<I>arg_pkg</I>, int <I>argc</I>, char **<I>argv</I>, int *<I>new_argc_ptr</I>, char ***<I>new_argv_ptr</I>)
+
+<P>GalSS_ServerArgs *<B><BIG><A HREF="server_structure.html#GalSS_ExtractServerArgs">GalSS_ExtractServerArgs</A></BIG></B>(int <I>argc</I>, char **<I>argv</I>, int *<I>new_argc_ptr</I>, char ***<I>new_argv_ptr</I>)
+
+<P>GalSS_ServerLocationEntry *<B><BIG><A HREF="libserverstub.html#GalSS_FindServerLocationEntry">GalSS_FindServerLocationEntry</A></BIG></B>(const char *<I>filename</I>, const char *<I>server_name</I>)
+
+<P>void <B><BIG><A HREF="brokering.html#GalSS_ForceProxyExpiration">GalSS_ForceProxyExpiration</A></BIG></B>(GalSS_BrokerProxy *<I>bp</I>)
+
+<P>char *<B><BIG><A HREF="libserverstub.html#GalSS_FormatProviderSpec">GalSS_FormatProviderSpec</A></BIG></B>(GalSS_ProviderSpec *<I>spec</I>, Gal_StringBuffer **<I>bufptr</I>)
+
+<P>int <B><BIG><A HREF="libserverstub.html#GalSS_FrameHandler">GalSS_FrameHandler</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, Gal_Frame <I>frame</I>)
+
+<P>void <B><BIG><A HREF="server_structure.html#GalSS_FreeArgPkg">GalSS_FreeArgPkg</A></BIG></B>(GalSS_ServerArgs *<I>arg_pkg</I>)
+
+<P>void <B><BIG><A HREF="server_structure.html#GalSS_FreeArgv">GalSS_FreeArgv</A></BIG></B>(int <I>argc</I>, char **<I>argv</I>)
+
+<P>void <B><BIG><A HREF="brokering.html#GalSS_FreeBrokerProxy">GalSS_FreeBrokerProxy</A></BIG></B>(GalSS_BrokerProxy *<I>p</I>)
+
+<P>void <B><BIG><A HREF="libserverstub.html#GalSS_FreeProviderSpec">GalSS_FreeProviderSpec</A></BIG></B>(GalSS_ProviderSpec *<I>spec</I>)
+
+<P>GAL_SOCKET <B><BIG><A HREF="brokering.html#GalSS_GetBrokerProxySocket">GalSS_GetBrokerProxySocket</A></BIG></B>(GalSS_BrokerProxy *<I>bp</I>)
+
+<P>GalIO_ServerStruct *<B><BIG><A HREF="server_structure.html#GalSS_InitializeServer">GalSS_InitializeServer</A></BIG></B>(unsigned short <I>server_port</I>, int <I>max_conns</I>, int <I>use_color</I>, int <I>do_assert</I>, int <I>use_ttloop</I>, int <I>validate</I>, int <I>new_argc</I>, char **<I>new_argv</I>)
+
+<P>void <B><BIG><A HREF="adding.html#GalSS_InitializeServerDefaults">GalSS_InitializeServerDefaults</A></BIG></B>(GalIO_ServerStruct *<I>gcomm</I>, char *<I>name</I>, unsigned short <I>port</I>)
+
+<P>GalIO_ServerStruct *<B><BIG><A HREF="server_structure.html#GalSS_InitializeServerFromServerArgs">GalSS_InitializeServerFromServerArgs</A></BIG></B>(GalSS_ServerArgs *<I>arg_pkg</I>, int <I>new_argc</I>, char **<I>new_argv</I>)
+
+<P>GalIO_ServerStruct *<B><BIG><A HREF="server_structure.html#GalSS_InitializeServerToplevel">GalSS_InitializeServerToplevel</A></BIG></B>(unsigned short <I>server_port</I>, int <I>max_conns</I>, int <I>use_color</I>, int <I>do_assert</I>, int <I>loop_type</I>, int <I>validate</I>, int <I>verbosity</I>, int <I>server_listen_status</I>, const char *<I>client_pair_string</I>, const char *<I>session_id</I>, int <I>new_argc</I>, char **<I>new_argv</I>)
+
+<P>Gal_Object <B><BIG><A HREF="brokering.html#GalSS_ObjProxifyObject">GalSS_ObjProxifyObject</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_Object <I>obj</I>, int <I>poll_ms</I>, int <I>timeout_seconds</I>)
+
+<P>Gal_Object <B><BIG><A HREF="brokering.html#GalSS_ObjProxifyObjectType">GalSS_ObjProxifyObjectType</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_ObjectType <I>t</I>, int <I>poll_ms</I>, int <I>timeout_seconds</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalSS_ObjProxyArrayAdd">GalSS_ObjProxyArrayAdd</A></BIG></B>(Gal_Object <I>obj</I>, void *<I>data</I>, int <I>size</I>)
+
+<P>void <B><BIG><A HREF="brokering.html#GalSS_ObjProxyDone">GalSS_ObjProxyDone</A></BIG></B>(Gal_Object <I>obj</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalSS_ObjProxyListAdd">GalSS_ObjProxyListAdd</A></BIG></B>(Gal_Object <I>obj</I>, Gal_Object <I>elt</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalSS_ObjProxySelfTerminates">GalSS_ObjProxySelfTerminates</A></BIG></B>(Gal_Object <I>obj</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalSS_ObjProxyWrite">GalSS_ObjProxyWrite</A></BIG></B>(Gal_Object <I>proxy_obj</I>, Gal_Object <I>obj</I>, int <I>manage_memory</I>)
+
+<P>void <B><BIG><A HREF="brokering.html#GalSS_ObjUnproxify">GalSS_ObjUnproxify</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_Object <I>obj</I>, GalSS_ProxyDataHandler <I>fn</I>, GalSS_ProxyDataEventHandler <I>done_fn</I>, GalSS_ProxyDataEventHandler <I>abort_fn</I>, int <I>immediate</I>, int <I>poll_ms</I>, void *<I>caller_data</I>, void (*<I>caller_data_free_fn</I>)(void *<I></I>))
+
+<P>Gal_Object <B><BIG><A HREF="brokering.html#GalSS_ObjUnproxifyObject">GalSS_ObjUnproxifyObject</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_Object <I>obj</I>)
+
+<P>GalSS_BrokerProxy *<B><BIG><A HREF="brokering.html#GalSS_ProxifyObject">GalSS_ProxifyObject</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_Object <I>obj</I>, int <I>poll_ms</I>, int <I>timeout_seconds</I>)
+
+<P>GalSS_BrokerProxy *<B><BIG><A HREF="brokering.html#GalSS_ProxifyObjectType">GalSS_ProxifyObjectType</A></BIG></B>(GalSS_Environment *<I>env</I>, Gal_ObjectType <I>t</I>, int <I>poll_ms</I>, int <I>timeout_seconds</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalSS_ProxyArrayAdd">GalSS_ProxyArrayAdd</A></BIG></B>(GalSS_BrokerProxy *<I>p</I>, void *<I>data</I>, int <I>size</I>)
+
+<P>void <B><BIG><A HREF="brokering.html#GalSS_ProxyDone">GalSS_ProxyDone</A></BIG></B>(GalSS_BrokerProxy *<I>p</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalSS_ProxyListAdd">GalSS_ProxyListAdd</A></BIG></B>(GalSS_BrokerProxy *<I>p</I>, Gal_Object <I>elt</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalSS_ProxySelfTerminates">GalSS_ProxySelfTerminates</A></BIG></B>(GalSS_BrokerProxy *<I>p</I>)
+
+<P>int <B><BIG><A HREF="brokering.html#GalSS_ProxyWrite">GalSS_ProxyWrite</A></BIG></B>(GalSS_BrokerProxy *<I>p</I>, Gal_Object <I>obj</I>, int <I>manage_memory</I>)
+
+<P>void <B><BIG><A HREF="server_structure.html#GalSS_RunServer">GalSS_RunServer</A></BIG></B>(GalIO_ServerStruct *<I>server</I>)
+
+<P>int <B><BIG><A HREF="server_structure.html#GalSS_SAFixAssert">GalSS_SAFixAssert</A></BIG></B>(GalSS_ServerArgs *<I>arg_pkg</I>, int <I>assert</I>)
+
+<P>int <B><BIG><A HREF="server_structure.html#GalSS_SAFixColor">GalSS_SAFixColor</A></BIG></B>(GalSS_ServerArgs *<I>arg_pkg</I>, int <I>color</I>)
+
+<P>char *<B><BIG><A HREF="server_structure.html#GalSS_SAFixContactHubInfo">GalSS_SAFixContactHubInfo</A></BIG></B>(GalSS_ServerArgs *<I>arg_pkg</I>, const char *<I>client_pair_status</I>, const char *<I>session_id</I>, char **<I>old_session_id_ptr</I>)
+
+<P>int <B><BIG><A HREF="server_structure.html#GalSS_SAFixLoopType">GalSS_SAFixLoopType</A></BIG></B>(GalSS_ServerArgs *<I>arg_pkg</I>, int <I>loop_type</I>)
+
+<P>int <B><BIG><A HREF="server_structure.html#GalSS_SAFixMaxConns">GalSS_SAFixMaxConns</A></BIG></B>(GalSS_ServerArgs *<I>arg_pkg</I>, int <I>max_conns</I>)
+
+<P>unsigned short <B><BIG><A HREF="server_structure.html#GalSS_SAFixPort">GalSS_SAFixPort</A></BIG></B>(GalSS_ServerArgs *<I>arg_pkg</I>, unsigned short <I>port</I>)
+
+<P>int <B><BIG><A HREF="server_structure.html#GalSS_SAFixServerListenStatus">GalSS_SAFixServerListenStatus</A></BIG></B>(GalSS_ServerArgs *<I>arg_pkg</I>, int <I>server_listen_status</I>)
+
+<P>char *<B><BIG><A HREF="server_structure.html#GalSS_SAFixServerLocations">GalSS_SAFixServerLocations</A></BIG></B>(GalSS_ServerArgs *<I>arg_pkg</I>, const char *<I>server_locations_file</I>)
+
+<P>int <B><BIG><A HREF="server_structure.html#GalSS_SAFixValidate">GalSS_SAFixValidate</A></BIG></B>(GalSS_ServerArgs *<I>arg_pkg</I>, int <I>validate</I>)
+
+<P>int <B><BIG><A HREF="server_structure.html#GalSS_SAFixVerbosity">GalSS_SAFixVerbosity</A></BIG></B>(GalSS_ServerArgs *<I>arg_pkg</I>, int <I>verbosity</I>)
+
+<P>int <B><BIG><A HREF="libserverstub.html#GalSS_SessionDecodeLocks">GalSS_SessionDecodeLocks</A></BIG></B>(Gal_Frame <I>fr</I>, int *<I>mask_ptr</I>, int *<I>value_ptr</I>)
+
+<P>GalIO_CommStruct *<B><BIG><A HREF="server_structure.html#GalSS_SetupConnection">GalSS_SetupConnection</A></BIG></B>(const char *<I>host</I>, unsigned short <I>port</I>, char *<I>retrieved_contact_info</I>, int <I>shutdown_after</I>, GalIO_ServerStruct *<I>scomm</I>)
+
+<P>GalSS_Environment *<B><BIG><A HREF="server_structure.html#GalSS_SetupEnvironment">GalSS_SetupEnvironment</A></BIG></B>(const char *<I>host</I>, unsigned short <I>port</I>, const char *<I>session_id</I>, char *<I>retrieved_contact</I>, char *<I>retrieved_session</I>, int <I>shutdown_after</I>, GalIO_ServerStruct *<I>scomm</I>)
+
+<P>GalIO_ServerStruct *<B><BIG><A HREF="server_structure.html#GalSS_SetupServer">GalSS_SetupServer</A></BIG></B>(GalSS_ServerArgs *<I>arg_pkg</I>, int <I>new_argc</I>, char **<I>new_argv</I>)
+
+<P>int <B><BIG><A HREF="server_structure.html#GalSS_StartAndRunServer">GalSS_StartAndRunServer</A></BIG></B>(GalIO_ServerStruct *<I>server</I>)
+
+<P>GalSS_Environment *<B><BIG><A HREF="../advanced/environment.html#GalSS_TaskGetEnvironment">GalSS_TaskGetEnvironment</A></BIG></B>(Gal_TaskPkg *<I>p</I>)
+
+<P>void <B><BIG><A HREF="../advanced/environment.html#GalSS_TaskSetEnvironment">GalSS_TaskSetEnvironment</A></BIG></B>(Gal_TaskPkg *<I>p</I>, GalSS_Environment *<I>env</I>)
+
+<P>void <B><BIG><A HREF="brokering.html#GalSS_Unproxify">GalSS_Unproxify</A></BIG></B>(GalSS_Environment *<I>env</I>, GalSS_BrokerProxy *<I>p</I>, GalSS_ProxyDataHandler <I>fn</I>, GalSS_ProxyDataEventHandler <I>done_fn</I>, GalSS_ProxyDataEventHandler <I>abort_fn</I>, int <I>immediate</I>, int <I>poll_ms</I>, void *<I>caller_data</I>, void (*<I>caller_data_free_fn</I>)(void *<I></I>))
+
+<P>Gal_Object <B><BIG><A HREF="brokering.html#GalSS_UnproxifyObject">GalSS_UnproxifyObject</A></BIG></B>(GalSS_Environment *<I>env</I>, GalSS_BrokerProxy *<I>p</I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_Assert">GalUtil_Assert</A></BIG></B>(int <I>truth</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_CPInfo1">GalUtil_CPInfo1</A></BIG></B>(int <I>fore</I>, int <I>back</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_CPInfo1WithLocation">GalUtil_CPInfo1WithLocation</A></BIG></B>(const char *<I>fn</I>, int <I>fore</I>, int <I>back</I>, const char *<I>fmt</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_CPInfo2">GalUtil_CPInfo2</A></BIG></B>(int <I>fore</I>, int <I>back</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="frame.html#GalUtil_CPPFrame">GalUtil_CPPFrame</A></BIG></B>(int <I>gal_verbose_level</I>, int <I>fore</I>, int <I>back</I>, Gal_Frame <I>fr</I>)
+
+<P>void <B><BIG><A HREF="frame.html#GalUtil_CPPObject">GalUtil_CPPObject</A></BIG></B>(int <I>gal_verbose_level</I>, int <I>fore</I>, int <I>back</I>, Gal_Object <I>to</I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_CPrint">GalUtil_CPrint</A></BIG></B>(int <I>level</I>, int <I>fore</I>, int <I>back</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="libutil.html#GalUtil_ConditionBroadcast">GalUtil_ConditionBroadcast</A></BIG></B>(GalUtil_ConditionVar *<I>condVar</I>)
+
+<P>void <B><BIG><A HREF="libutil.html#GalUtil_ConditionWait">GalUtil_ConditionWait</A></BIG></B>(GalUtil_ConditionVar *<I>condVar</I>, GalUtil_LocalMutex *<I>mutex</I>)
+
+<P>GalUtil_LocalMutex*<B><BIG><A HREF="libutil.html#GalUtil_CreateLocalMutex">GalUtil_CreateLocalMutex</A></BIG></B>(void <I></I>)
+
+<P>GalUtil_PrintPkg *<B><BIG><A HREF="../advanced/util.html#GalUtil_CreatePrintPkg">GalUtil_CreatePrintPkg</A></BIG></B>(GalVPrintfFunc <I>fatal_func</I>, GalVPrintfFunc <I>error_func</I>, GalVPrintfFunc <I>warn_func</I>, GalVLevelFunc <I>level_func</I>, GalVCLevelFunc <I>clevel_func</I>, GalVPrintfFunc <I>pinfo1_func</I>, GalVPrintfFunc <I>pinfo2_func</I>, GalVCPrintfFunc <I>cpinfo1_func</I>, GalVCPrintfFunc <I>cpinfo2_func</I>, GalVPrintfFunc <I>debug1_func</I>, GalVPrintfFunc <I>debug2_func</I>, void *<I>client_data</I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_Debug1">GalUtil_Debug1</A></BIG></B>(const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_Debug2">GalUtil_Debug2</A></BIG></B>(const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="libutil.html#GalUtil_DestroyConditionVar">GalUtil_DestroyConditionVar</A></BIG></B>(GalUtil_ConditionVar *<I>condVar</I>)
+
+<P>void <B><BIG><A HREF="libutil.html#GalUtil_DestroyLocalMutex">GalUtil_DestroyLocalMutex</A></BIG></B>(GalUtil_LocalMutex *<I>mutex</I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_Error">GalUtil_Error</A></BIG></B>(const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_Fatal">GalUtil_Fatal</A></BIG></B>(const char *<I>format</I>, ... <I></I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_IP4Address">GalUtil_IP4Address</A></BIG></B>(unsigned long *<I>inaddr</I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_IPFromHostname">GalUtil_IPFromHostname</A></BIG></B>(char *<I>hostname</I>)
+
+<P>void <B><BIG><A HREF="libutil.html#GalUtil_InitConditionVar">GalUtil_InitConditionVar</A></BIG></B>(GalUtil_ConditionVar *<I>condVar</I>)
+
+<P>void <B><BIG><A HREF="libutil.html#GalUtil_InitMainWin32Thread">GalUtil_InitMainWin32Thread</A></BIG></B>(<I></I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_InitVerbose">GalUtil_InitVerbose</A></BIG></B>(<I></I>)
+
+<P>void <B><BIG><A HREF="libutil.html#GalUtil_MilliSleep">GalUtil_MilliSleep</A></BIG></B>(int <I>msecs</I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_Mkdirp">GalUtil_Mkdirp</A></BIG></B>(const char *<I>pathname</I>, mode_t <I>mode</I>)
+
+<P>int <B><BIG><A HREF="../advanced/util.html#GalUtil_OACheckUsage">GalUtil_OACheckUsage</A></BIG></B>(int <I>argc</I>, char **<I>argv</I>, char **<I>oas</I>, int *<I>first_real_arg</I>)
+
+<P>GalUtil_OASDescription *<B><BIG><A HREF="libutil.html#GalUtil_OADigest">GalUtil_OADigest</A></BIG></B>(char **<I>oas</I>)
+
+<P>int <B><BIG><A HREF="../advanced/util.html#GalUtil_OAExtract">GalUtil_OAExtract</A></BIG></B>(int <I>argc</I>, char **<I>argv</I>, char **<I>oas</I>, const char *<I>key</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_OAExtractAsserting">GalUtil_OAExtractAsserting</A></BIG></B>(int <I>argc</I>, char **<I>argv</I>, char **<I>oas</I>, const char *<I>key</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="libutil.html#GalUtil_OAPrintOptions">GalUtil_OAPrintOptions</A></BIG></B>(int <I>argc</I>, char **<I>argv</I>, char **<I>oas</I>, char *<I>tag</I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_OAPrintUsage">GalUtil_OAPrintUsage</A></BIG></B>(int <I>argc</I>, char **<I>argv</I>, char **<I>oas</I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_OASplitArgs">GalUtil_OASplitArgs</A></BIG></B>(int <I>argc</I>, char **<I>argv</I>, char **<I>oas</I>, int *<I>first_real_arg</I>, int *<I>in_argc</I>, char ***<I>in_argv</I>, int *<I>ex_argc</I>, char ***<I>ex_argv</I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_OAUiCheckUsage">GalUtil_OAUiCheckUsage</A></BIG></B>(const char *<I>progname</I>, int <I>argc</I>, char **<I>argv</I>, char **<I>oas</I>, int *<I>first_real_arg</I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_OAUiExtract">GalUtil_OAUiExtract</A></BIG></B>(int <I>argc</I>, char **<I>argv</I>, char **<I>oas</I>, const char *<I>key</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="libutil.html#GalUtil_OAUiExtractAsserting">GalUtil_OAUiExtractAsserting</A></BIG></B>(int <I>argc</I>, char **<I>argv</I>, char **<I>oas</I>, const char *<I>key</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="libutil.html#GalUtil_OAUiPrintUsage">GalUtil_OAUiPrintUsage</A></BIG></B>(const char *<I>progname</I>, int <I>argc</I>, char **<I>argv</I>, char **<I>oas</I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_PInfo1">GalUtil_PInfo1</A></BIG></B>(const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_PInfo1WithLocation">GalUtil_PInfo1WithLocation</A></BIG></B>(const char *<I>fn</I>, const char *<I>fmt</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_PInfo2">GalUtil_PInfo2</A></BIG></B>(const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="frame.html#GalUtil_PPFrame">GalUtil_PPFrame</A></BIG></B>(int <I>gal_verbose_level</I>, Gal_Frame <I>fr</I>)
+
+<P>void <B><BIG><A HREF="frame.html#GalUtil_PPObject">GalUtil_PPObject</A></BIG></B>(int <I>gal_verbose_level</I>, Gal_Object <I>to</I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_PkgAssert">GalUtil_PkgAssert</A></BIG></B>(GalUtil_PrintPkg *<I>pkg</I>, int <I>truth</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_PkgCPInfo1">GalUtil_PkgCPInfo1</A></BIG></B>(GalUtil_PrintPkg *<I>pkg</I>, int <I>fore</I>, int <I>back</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_PkgCPInfo2">GalUtil_PkgCPInfo2</A></BIG></B>(GalUtil_PrintPkg *<I>pkg</I>, int <I>fore</I>, int <I>back</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_PkgCPrint">GalUtil_PkgCPrint</A></BIG></B>(GalUtil_PrintPkg *<I>pkg</I>, int <I>level</I>, int <I>fore</I>, int <I>back</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_PkgDebug1">GalUtil_PkgDebug1</A></BIG></B>(GalUtil_PrintPkg *<I>pkg</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_PkgDebug2">GalUtil_PkgDebug2</A></BIG></B>(GalUtil_PrintPkg *<I>pkg</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_PkgError">GalUtil_PkgError</A></BIG></B>(GalUtil_PrintPkg *<I>pkg</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_PkgFatal">GalUtil_PkgFatal</A></BIG></B>(GalUtil_PrintPkg *<I>pkg</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_PkgPInfo1">GalUtil_PkgPInfo1</A></BIG></B>(GalUtil_PrintPkg *<I>pkg</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_PkgPInfo2">GalUtil_PkgPInfo2</A></BIG></B>(GalUtil_PrintPkg *<I>pkg</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_PkgPrint">GalUtil_PkgPrint</A></BIG></B>(GalUtil_PrintPkg *<I>pkg</I>, int <I>level</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_PkgWarn">GalUtil_PkgWarn</A></BIG></B>(GalUtil_PrintPkg *<I>pkg</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="frame.html#GalUtil_PrObject">GalUtil_PrObject</A></BIG></B>(int <I>gal_verbose_level</I>, Gal_Object <I>to</I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_Print">GalUtil_Print</A></BIG></B>(int <I>level</I>, const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="frame.html#GalUtil_PrintObject">GalUtil_PrintObject</A></BIG></B>(int <I>gal_verbose_level</I>, Gal_Object <I>to</I>, int <I>how</I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_PrintWithLocation">GalUtil_PrintWithLocation</A></BIG></B>(int <I>level</I>, const char *<I>fn</I>, const char *<I>fmt</I>, ... <I></I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_RemoveOASArg">GalUtil_RemoveOASArg</A></BIG></B>(GalUtil_OASDescription *<I>descr</I>, const char *<I>key</I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_SAExtract">GalUtil_SAExtract</A></BIG></B>(int <I>argc</I>, char **<I>argv</I>, const char *<I>key</I>, int <I>num</I>, ... <I></I>)
+
+<P>int <B><BIG><A HREF="../advanced/util.html#GalUtil_SetVerbose">GalUtil_SetVerbose</A></BIG></B>(int <I>verbose_level</I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_SockBlockOff">GalUtil_SockBlockOff</A></BIG></B>(GAL_SOCKET <I>sock</I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_SockBlockOn">GalUtil_SockBlockOn</A></BIG></B>(GAL_SOCKET <I>sock</I>)
+
+<P>long <B><BIG><A HREF="libutil.html#GalUtil_SockBytesWaiting">GalUtil_SockBytesWaiting</A></BIG></B>(GAL_SOCKET <I>sock</I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_SockCanRead">GalUtil_SockCanRead</A></BIG></B>(GAL_SOCKET <I>sock</I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_SockCanWrite">GalUtil_SockCanWrite</A></BIG></B>(GAL_SOCKET <I>sock</I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_SockClose">GalUtil_SockClose</A></BIG></B>(GAL_SOCKET <I>sock</I>)
+
+<P>GAL_SOCKET <B><BIG><A HREF="libutil.html#GalUtil_SockCreateClient">GalUtil_SockCreateClient</A></BIG></B>(char *<I>host</I>, unsigned short <I>port</I>)
+
+<P>GAL_SOCKET <B><BIG><A HREF="libutil.html#GalUtil_SockCreateServer">GalUtil_SockCreateServer</A></BIG></B>(unsigned short <I>port</I>, int <I>n_listen</I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_SockSelect">GalUtil_SockSelect</A></BIG></B>(int <I>maxfd</I>, fd_set *<I>read_fdset</I>, fd_set *<I>write_fdset</I>, fd_set *<I>err_fdset</I>, struct timeval *<I>tp</I>, int *<I>interrupted</I>)
+
+<P>GAL_SOCKET <B><BIG><A HREF="libutil.html#GalUtil_SockServerAcceptConnection">GalUtil_SockServerAcceptConnection</A></BIG></B>(GAL_SOCKET <I>sock</I>, char *<I>host</I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_SockServerBlockingCheckForConnection">GalUtil_SockServerBlockingCheckForConnection</A></BIG></B>(GAL_SOCKET <I>sock</I>, char *<I>host</I>, int *<I>client_sock</I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_SockServerCheckForConnection">GalUtil_SockServerCheckForConnection</A></BIG></B>(GAL_SOCKET <I>sock</I>, char *<I>host</I>, int *<I>client_sock</I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_SockServerHostnameToInaddr">GalUtil_SockServerHostnameToInaddr</A></BIG></B>(char *<I>hostname</I>, unsigned long *<I>inaddr</I>)
+
+<P>void <B><BIG><A HREF="libutil.html#GalUtil_SockServerInaddrToString">GalUtil_SockServerInaddrToString</A></BIG></B>(unsigned long <I>inaddr</I>, char *<I>s</I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_ThreadCancel">GalUtil_ThreadCancel</A></BIG></B>(GalUtil_ThreadID <I>tid</I>)
+
+<P>void <B><BIG><A HREF="libutil.html#GalUtil_ThreadCreate">GalUtil_ThreadCreate</A></BIG></B>(GalUtil_ThreadID *<I>tid</I>, void*(*<I>func</I>)(void*<I></I>), void *<I>arg</I>)
+
+<P>void <B><BIG><A HREF="libutil.html#GalUtil_ThreadExit">GalUtil_ThreadExit</A></BIG></B>(<I></I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_ThreadPopCleanup">GalUtil_ThreadPopCleanup</A></BIG></B>(int <I>execute</I>)
+
+<P>void <B><BIG><A HREF="libutil.html#GalUtil_ThreadPushCleanup">GalUtil_ThreadPushCleanup</A></BIG></B>(void (*<I>handler</I>)(void*<I></I>), void *<I>arg</I>)
+
+<P>void <B><BIG><A HREF="libutil.html#GalUtil_ThreadTestCancel">GalUtil_ThreadTestCancel</A></BIG></B>(<I></I>)
+
+<P>int <B><BIG><A HREF="libutil.html#GalUtil_TryLockLocalMutex">GalUtil_TryLockLocalMutex</A></BIG></B>(GalUtil_LocalMutex *<I>mutex</I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_VerboseUseBW">GalUtil_VerboseUseBW</A></BIG></B>(void <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_VerboseUseColor">GalUtil_VerboseUseColor</A></BIG></B>(void <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_Warn">GalUtil_Warn</A></BIG></B>(const char *<I>format</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_WarnLevelWithLocation">GalUtil_WarnLevelWithLocation</A></BIG></B>(int <I>level</I>, const char *<I>fn</I>, const char *<I>fmt</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_WarnWithLocation">GalUtil_WarnWithLocation</A></BIG></B>(const char *<I>fn</I>, const char *<I>fmt</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/util.html#GalUtil_fprintf">GalUtil_fprintf</A></BIG></B>(FILE *<I>fp</I>, const char *<I>fmt</I>, ... <I></I>)
+
+<P>Gal_DispatchFnPkg *<B><BIG><A HREF="libgalaxy.html#Gal_AddDispatchFunctionEntry">Gal_AddDispatchFunctionEntry</A></BIG></B>(Gal_DispatchFnPkg *<I>table</I>, const char *<I>name</I>, Gal_FrameDataFnPtr <I>fn_with_data</I>, Gal_DispatchFnSignatureKeyEntry *<I>in_key_array</I>, int <I>allow_other_in_keys</I>, int <I>reply_provided</I>, Gal_DispatchFnSignatureKeyEntry *<I>out_key_array</I>, int <I>allow_other_out_keys</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_AddErrorTags">Gal_AddErrorTags</A></BIG></B>(Gal_TagMap *<I>tmap</I>)
+
+<P>int <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_AddIdleFunction">Gal_AddIdleFunction</A></BIG></B>(Gal_IdleFunction <I>func</I>, void *<I>client_data</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_AddPred">Gal_AddPred</A></BIG></B>(Gal_Frame <I>fr</I>, Gal_Frame <I>pred</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_AddProgramTags">Gal_AddProgramTags</A></BIG></B>(Gal_TagMap *<I>tmap</I>)
+
+<P>void <B><BIG><A HREF="../advanced/signal.html#Gal_AddSignalHandler">Gal_AddSignalHandler</A></BIG></B>(int <I>sig</I>, void (*<I>handler</I>)(int <I></I>))
+
+<P>Gal_TaskPkg *<B><BIG><A HREF="../advanced/timed_tasks.html#Gal_AddTask">Gal_AddTask</A></BIG></B>(void (*<I>task</I>)(Gal_TaskPkg *<I></I>), void *<I>caller_data</I>, long <I>num_millisecs</I>, int <I>read_blocking_available</I>, void (*<I>cleanup_fn</I>)(void *<I></I>))
+
+<P>Gal_TaskPkg *<B><BIG><A HREF="../advanced/timed_tasks.html#Gal_AddTaskExtended">Gal_AddTaskExtended</A></BIG></B>(void (*<I>task</I>)(Gal_TaskPkg *<I></I>), void *<I>caller_data</I>, long <I>num_millisecs</I>, int <I>read_blocking_available</I>, GAL_SOCKET *<I>read_socket</I>, GAL_SOCKET *<I>write_socket</I>, GAL_SOCKET *<I>err_socket</I>, FILE *<I>read_file</I>, FILE *<I>write_file</I>, FILE*<I>err_file</I>, Gal_TaskConditionFn <I>condition</I>, void (*<I>cleanup_fn</I>)(void *<I></I>))
+
+<P>Gal_TaskPkg *<B><BIG><A HREF="../advanced/timed_tasks.html#Gal_AddTaskWithFileIO">Gal_AddTaskWithFileIO</A></BIG></B>(void (*<I>task</I>)(Gal_TaskPkg *<I></I>), void *<I>caller_data</I>, long <I>num_millisecs</I>, int <I>read_blocking_available</I>, FILE *<I>read_file</I>, FILE *<I>write_file</I>, void (*<I>cleanup_fn</I>)(void *<I></I>))
+
+<P>Gal_TaskPkg *<B><BIG><A HREF="../advanced/timed_tasks.html#Gal_AddTaskWithSocketIO">Gal_AddTaskWithSocketIO</A></BIG></B>(void (*<I>task</I>)(Gal_TaskPkg *<I></I>), void *<I>caller_data</I>, long <I>num_millisecs</I>, int <I>read_blocking_available</I>, GAL_SOCKET *<I>read_socket</I>, GAL_SOCKET *<I>write_socket</I>, void (*<I>cleanup_fn</I>)(void *<I></I>))
+
+<P>int <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_AddTimedTask">Gal_AddTimedTask</A></BIG></B>(void *<I>task</I>, void *<I>caller_data</I>, long <I>num_millisecs</I>)
+
+<P>int <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_AddTimedTaskWithFileIO">Gal_AddTimedTaskWithFileIO</A></BIG></B>(void *<I>task</I>, void *<I>caller_data</I>, long <I>num_millisecs</I>, FILE *<I>read_file</I>, FILE *<I>write_file</I>)
+
+<P>int <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_AddTimedTaskWithSocketIO">Gal_AddTimedTaskWithSocketIO</A></BIG></B>(void *<I>task</I>, void *<I>caller_data</I>, long <I>num_millisecs</I>, GAL_SOCKET *<I>read_socket</I>, GAL_SOCKET *<I>write_socket</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_AddToTagArray">Gal_AddToTagArray</A></BIG></B>(Gal_TagMap *<I>tag_map</I>, Gal_TagArray <I>tag_array</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_AddToTagTable">Gal_AddToTagTable</A></BIG></B>(Gal_TagMap *<I>tag_map</I>, Gal_HashTable <I>ht</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_ArrayObjectAdd">Gal_ArrayObjectAdd</A></BIG></B>(Gal_Object <I>obj</I>, void *<I>data</I>, int <I>size</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_ArrayObjectExpandable">Gal_ArrayObjectExpandable</A></BIG></B>(Gal_Object <I>obj</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_BinaryObject">Gal_BinaryObject</A></BIG></B>(void *<I>data</I>, int <I>size</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_BinarySize">Gal_BinarySize</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>void *<B><BIG><A HREF="frame.html#Gal_BinaryValue">Gal_BinaryValue</A></BIG></B>(Gal_Object <I>obj</I>, int *<I>size</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Binaryp">Gal_Binaryp</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_ByteBufferAppend">Gal_ByteBufferAppend</A></BIG></B>(Gal_StringBuffer *<I>b</I>, const char *<I>s</I>, int <I>size</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_ByteBufferBytes">Gal_ByteBufferBytes</A></BIG></B>(Gal_StringBuffer *<I>buf</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_ByteBufferDynamic">Gal_ByteBufferDynamic</A></BIG></B>(Gal_StringBuffer *<I>b</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_ByteBufferSize">Gal_ByteBufferSize</A></BIG></B>(Gal_StringBuffer *<I>buf</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_ClauseFramep">Gal_ClauseFramep</A></BIG></B>(Gal_Frame <I>fr</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_ClauseValue">Gal_ClauseValue</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Clausep">Gal_Clausep</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_ClearHash">Gal_ClearHash</A></BIG></B>(Gal_HashTable <I>hp</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_ClearPreds">Gal_ClearPreds</A></BIG></B>(Gal_Frame <I>fr</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_ClearProgramParser">Gal_ClearProgramParser</A></BIG></B>(Gal_ProgramParser *<I>pp</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_CloseControlFile">Gal_CloseControlFile</A></BIG></B>(Gal_FileStruct *<I>fs</I>)
+
+<P>Gal_DispatchFnSignatureKeyEntry *<B><BIG><A HREF="libgalaxy.html#Gal_CopyDispatchFnKeyArray">Gal_CopyDispatchFnKeyArray</A></BIG></B>(Gal_DispatchFnSignatureKeyEntry *<I>array</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_CopyFrame">Gal_CopyFrame</A></BIG></B>(Gal_Frame <I>fr</I>)
+
+<P>Gal_HashTable <B><BIG><A HREF="libgalaxy.html#Gal_CopyHash">Gal_CopyHash</A></BIG></B>(Gal_HashTable <I>old_ht</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_CopyObject">Gal_CopyObject</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>Gal_ProgramEntity *<B><BIG><A HREF="libgalaxy.html#Gal_CopyProgramEntity">Gal_CopyProgramEntity</A></BIG></B>(Gal_ProgramEntity *<I>old_entity</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_CreateBinaryObject">Gal_CreateBinaryObject</A></BIG></B>(void *<I>data</I>, int <I>size</I>, int <I>manage_memory</I>)
+
+<P>Gal_DispatchFnSignatureKeyEntry *<B><BIG><A HREF="adding.html#Gal_CreateDispatchFnKeyArray">Gal_CreateDispatchFnKeyArray</A></BIG></B>(int <I>ignore</I>, ... <I></I>)
+
+<P>Gal_DispatchFnSignature *<B><BIG><A HREF="libgalaxy.html#Gal_CreateDispatchFnSignature">Gal_CreateDispatchFnSignature</A></BIG></B>(const char *<I>name</I>, Gal_DispatchFnSignatureKeyEntry *<I>in_key_array</I>, int <I>allow_other_in_keys</I>, int <I>reply_provided</I>, Gal_DispatchFnSignatureKeyEntry *<I>out_key_array</I>, int <I>allow_other_out_keys</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_CreateFloat32Object">Gal_CreateFloat32Object</A></BIG></B>(void *<I>data</I>, int <I>num_float_32</I>, int <I>manage_memory</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_CreateFloat64Object">Gal_CreateFloat64Object</A></BIG></B>(void *<I>data</I>, int <I>num_float_64</I>, int <I>manage_memory</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_CreateFloatObject">Gal_CreateFloatObject</A></BIG></B>(float *<I>value</I>, int <I>manage_memory</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_CreateFrameObject">Gal_CreateFrameObject</A></BIG></B>(Gal_Frame <I>value</I>, int <I>manage_memory</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_CreateInt16Object">Gal_CreateInt16Object</A></BIG></B>(void *<I>data</I>, int <I>num_int_16</I>, int <I>manage_memory</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_CreateInt32Object">Gal_CreateInt32Object</A></BIG></B>(void *<I>data</I>, int <I>num_int_32</I>, int <I>manage_memory</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_CreateInt64Object">Gal_CreateInt64Object</A></BIG></B>(void *<I>data</I>, int <I>num_int_64</I>, int <I>manage_memory</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_CreateListObject">Gal_CreateListObject</A></BIG></B>(Gal_Object *<I>values</I>, int <I>n</I>, void (*<I>free_fn</I>)(void *<I></I>), int <I>manage_memory</I>)
+
+<P>Gal_ProgramEntity *<B><BIG><A HREF="libgalaxy.html#Gal_CreateNamespaceProgramEntity">Gal_CreateNamespaceProgramEntity</A></BIG></B>(const char *<I>key</I>, Gal_ProgramParser *<I>pp</I>)
+
+<P>Gal_ProgramEntity *<B><BIG><A HREF="libgalaxy.html#Gal_CreateProgramEntity">Gal_CreateProgramEntity</A></BIG></B>(ProgramObject *<I>p</I>, Gal_ProgramParser *<I>pp</I>, int <I>allow_complex</I>, int <I>allow_literal</I>, int <I>allow_key</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_CreateProxyObject">Gal_CreateProxyObject</A></BIG></B>(GalSS_BrokerProxy *<I>p</I>, int <I>manage_memory</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_CreateStringObject">Gal_CreateStringObject</A></BIG></B>(char *<I>cp</I>, int <I>manage_memory</I>)
+
+<P>Gal_Object <B><BIG><A HREF="libgalaxy.html#Gal_CreateTokenObject">Gal_CreateTokenObject</A></BIG></B>(char *<I>cp</I>, int <I>manage_memory</I>)
+
+<P>Gal_VarMapping *<B><BIG><A HREF="frame.html#Gal_CreateVarMapping">Gal_CreateVarMapping</A></BIG></B>(int <I>num_pairs</I>, ... <I></I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_DataBufferAppend">Gal_DataBufferAppend</A></BIG></B>(Gal_StringBuffer *<I>b</I>, const char *<I>s</I>, int <I>size</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_DataBufferByteCount">Gal_DataBufferByteCount</A></BIG></B>(Gal_StringBuffer *<I>buf</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_DataBufferData">Gal_DataBufferData</A></BIG></B>(Gal_StringBuffer *<I>buf</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_DataBufferSize">Gal_DataBufferSize</A></BIG></B>(Gal_StringBuffer *<I>buf</I>)
+
+<P>Gal_DispatchFnSignature *<B><BIG><A HREF="libgalaxy.html#Gal_DecodeDispatchFnSignatures">Gal_DecodeDispatchFnSignatures</A></BIG></B>(Gal_Object <I>maybe_list</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_DelPred">Gal_DelPred</A></BIG></B>(Gal_Frame <I>fr</I>, int <I>i</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_DelPredByName">Gal_DelPredByName</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>name</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_DelProp">Gal_DelProp</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_DeletePreds">Gal_DeletePreds</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>pred_name</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_DeleteProgramEntityLocation">Gal_DeleteProgramEntityLocation</A></BIG></B>(Gal_ProgramEntity *<I>e</I>, Gal_Frame *<I>namespace_array</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_DigitStringp">Gal_DigitStringp</A></BIG></B>(const char *<I>word</I>)
+
+<P>void *<B><BIG><A HREF="libgalaxy.html#Gal_DispatchFnPkgGetClientData">Gal_DispatchFnPkgGetClientData</A></BIG></B>(Gal_DispatchFnPkg *<I>pkg</I>, const char *<I>op_name</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_DispatchFnPkgSetClientData">Gal_DispatchFnPkgSetClientData</A></BIG></B>(Gal_DispatchFnPkg *<I>pkg</I>, const char *<I>op_name</I>, void *<I>data</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_DoPreds">Gal_DoPreds</A></BIG></B>(Gal_Frame <I>fr</I>, int (*<I>pred_fn</I>)(Gal_Object <I></I>, void *<I></I>), void *<I>caller_data</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_DoProperties">Gal_DoProperties</A></BIG></B>(Gal_Frame <I>fr</I>, int (*<I>prop_fn</I>)(const char *<I></I>, Gal_Object <I></I>, void *<I></I>), void *<I>caller_data</I>)
+
+<P>void <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_EnableTimedTaskThreads">Gal_EnableTimedTaskThreads</A></BIG></B>(<I></I>)
+
+<P>Gal_Object <B><BIG><A HREF="libgalaxy.html#Gal_EncodeDispatchFnPkgSigs">Gal_EncodeDispatchFnPkgSigs</A></BIG></B>(Gal_DispatchFnPkg *<I>pkg</I>)
+
+<P>Gal_Object <B><BIG><A HREF="libgalaxy.html#Gal_EncodeDispatchFnSignatures">Gal_EncodeDispatchFnSignatures</A></BIG></B>(Gal_DispatchFnPkg *<I>pkg</I>)
+
+<P>void <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_EndTasks">Gal_EndTasks</A></BIG></B>(int <I>immediate</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_ErrorTagString">Gal_ErrorTagString</A></BIG></B>(int <I>tag</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_FileCurrentLine">Gal_FileCurrentLine</A></BIG></B>(Gal_InputStream <I>gs</I>, char *<I>line</I>, int <I>max</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_FileNextLine">Gal_FileNextLine</A></BIG></B>(Gal_InputStream <I>gs</I>, char *<I>line</I>, int <I>max</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_FindDispatchFunctionEntry">Gal_FindDispatchFunctionEntry</A></BIG></B>(Gal_DispatchFnInvocation *<I>i</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_FindKey">Gal_FindKey</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key_name</I>)
+
+<P>Gal_DispatchFnSignature *<B><BIG><A HREF="libgalaxy.html#Gal_FindNamedSignature">Gal_FindNamedSignature</A></BIG></B>(Gal_DispatchFnSignature *<I>sigs</I>, const char *<I>name</I>)
+
+<P>Gal_NamespaceEntry *<B><BIG><A HREF="libgalaxy.html#Gal_FindNamespaceEntry">Gal_FindNamespaceEntry</A></BIG></B>(const char *<I>name</I>, Gal_NamespaceEntry *<I>ne</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_FindPred">Gal_FindPred</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>pred_name</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_FindPredParent">Gal_FindPredParent</A></BIG></B>(Gal_Frame <I>frame</I>, const char *<I>name</I>, Gal_Frame <I>parent</I>, int <I>findpar</I>, int <I>nth</I>)
+
+<P>Gal_NamespaceEntry *<B><BIG><A HREF="libgalaxy.html#Gal_FindProgramNamespace">Gal_FindProgramNamespace</A></BIG></B>(Gal_Object <I>o</I>, Gal_ProgramParser *<I>pp</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_FindTopic">Gal_FindTopic</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>topic_name</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Float32Size">Gal_Float32Size</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>void *<B><BIG><A HREF="frame.html#Gal_Float32Value">Gal_Float32Value</A></BIG></B>(Gal_Object <I>obj</I>, int *<I>size</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Float32p">Gal_Float32p</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Float64Size">Gal_Float64Size</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>void *<B><BIG><A HREF="frame.html#Gal_Float64Value">Gal_Float64Value</A></BIG></B>(Gal_Object <I>obj</I>, int *<I>size</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Float64p">Gal_Float64p</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_FloatObject">Gal_FloatObject</A></BIG></B>(float <I>value</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_FloatStringp">Gal_FloatStringp</A></BIG></B>(const char *<I>word</I>)
+
+<P>float <B><BIG><A HREF="frame.html#Gal_FloatValue">Gal_FloatValue</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Floatp">Gal_Floatp</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_FormatEntity">Gal_FormatEntity</A></BIG></B>(Gal_ProgramEntity *<I>e</I>, int <I>pedantic</I>, Gal_StringBuffer **<I>bufptr</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_FrameEqual">Gal_FrameEqual</A></BIG></B>(Gal_Frame <I>sf</I>, Gal_Frame <I>sem</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_FrameIsType">Gal_FrameIsType</A></BIG></B>(Gal_Frame <I>fr</I>, Gal_FrameType <I>type</I>)
+
+<P>char *<B><BIG><A HREF="frame.html#Gal_FrameName">Gal_FrameName</A></BIG></B>(Gal_Frame <I>fr</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_FrameNameEq">Gal_FrameNameEq</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>name</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_FrameNamesEq">Gal_FrameNamesEq</A></BIG></B>(Gal_Frame <I>fr1</I>, Gal_Frame <I>fr2</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_FrameObject">Gal_FrameObject</A></BIG></B>(Gal_Frame <I>value</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_FrameValue">Gal_FrameValue</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Framep">Gal_Framep</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_FreeByteBuffer">Gal_FreeByteBuffer</A></BIG></B>(Gal_StringBuffer *<I>buf</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_FreeConditionStruct">Gal_FreeConditionStruct</A></BIG></B>(Gal_ConditionStruct *<I>cond</I>)
+
+<P>void <B><BIG><A HREF="adding.html#Gal_FreeDispatchFnKeyArray">Gal_FreeDispatchFnKeyArray</A></BIG></B>(Gal_DispatchFnSignatureKeyEntry *<I>entry</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_FreeDispatchFnSignature">Gal_FreeDispatchFnSignature</A></BIG></B>(Gal_DispatchFnSignature *<I>sigs</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_FreeErrorTags">Gal_FreeErrorTags</A></BIG></B>(<I></I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_FreeFrame">Gal_FreeFrame</A></BIG></B>(Gal_Frame <I>fr</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_FreeHash">Gal_FreeHash</A></BIG></B>(Gal_HashTable <I>hp</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_FreeObject">Gal_FreeObject</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_FreePointerBuffer">Gal_FreePointerBuffer</A></BIG></B>(Gal_PointerBuffer *<I>buf</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_FreeProgramEntity">Gal_FreeProgramEntity</A></BIG></B>(Gal_ProgramEntity *<I>e</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_FreeProgramLine">Gal_FreeProgramLine</A></BIG></B>(ProgramObject *<I>p</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_FreeProgramObject">Gal_FreeProgramObject</A></BIG></B>(ProgramObject *<I>p</I>, int <I>starting_from</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_FreeProgramTags">Gal_FreeProgramTags</A></BIG></B>(<I></I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_FreeStringBuffer">Gal_FreeStringBuffer</A></BIG></B>(Gal_StringBuffer *<I>buf</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_FreeStringOutputStream">Gal_FreeStringOutputStream</A></BIG></B>(Gal_OutputStream <I>gs</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_FreeTagArray">Gal_FreeTagArray</A></BIG></B>(Gal_TagArray <I>tag_array</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_FreeTests">Gal_FreeTests</A></BIG></B>(Gal_TestClause *<I>c</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_FreeWrapper">Gal_FreeWrapper</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>void *<B><BIG><A HREF="frame.html#Gal_GetBinary">Gal_GetBinary</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>, int *<I>size</I>)
+
+<P>Gal_ObjectType <B><BIG><A HREF="frame.html#Gal_GetDetailedType">Gal_GetDetailedType</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>float <B><BIG><A HREF="frame.html#Gal_GetFloat">Gal_GetFloat</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>)
+
+<P>void *<B><BIG><A HREF="frame.html#Gal_GetFloat32">Gal_GetFloat32</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>, int *<I>size</I>)
+
+<P>void *<B><BIG><A HREF="frame.html#Gal_GetFloat64">Gal_GetFloat64</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>, int *<I>size</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_GetFrame">Gal_GetFrame</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>)
+
+<P>Gal_FrameType <B><BIG><A HREF="frame.html#Gal_GetFrameType">Gal_GetFrameType</A></BIG></B>(Gal_Frame <I>fr</I>)
+
+<P>Gal_Object <B><BIG><A HREF="libgalaxy.html#Gal_GetHash">Gal_GetHash</A></BIG></B>(const char *<I>str</I>, Gal_HashTable <I>hp</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_GetInt">Gal_GetInt</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>)
+
+<P>void *<B><BIG><A HREF="frame.html#Gal_GetInt16">Gal_GetInt16</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>, int *<I>size</I>)
+
+<P>void *<B><BIG><A HREF="frame.html#Gal_GetInt32">Gal_GetInt32</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>, int *<I>size</I>)
+
+<P>void *<B><BIG><A HREF="frame.html#Gal_GetInt64">Gal_GetInt64</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>, int *<I>size</I>)
+
+<P>Gal_Object *<B><BIG><A HREF="frame.html#Gal_GetList">Gal_GetList</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>, int *<I>length</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_GetListObject">Gal_GetListObject</A></BIG></B>(Gal_Object <I>to</I>, int <I>n</I>)
+
+<P>void *<B><BIG><A HREF="frame.html#Gal_GetListValue">Gal_GetListValue</A></BIG></B>(Gal_Object <I>to</I>, int <I>n</I>, Gal_ObjectType <I>type</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_GetObject">Gal_GetObject</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>)
+
+<P>Gal_ObjectType <B><BIG><A HREF="frame.html#Gal_GetObjectType">Gal_GetObjectType</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>char *<B><BIG><A HREF="frame.html#Gal_GetObjectTypeString">Gal_GetObjectTypeString</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_GetPred">Gal_GetPred</A></BIG></B>(Gal_Frame <I>fr</I>, int <I>i</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_GetPredByName">Gal_GetPredByName</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>name</I>)
+
+<P>Gal_Object <B><BIG><A HREF="libgalaxy.html#Gal_GetProgramEntity">Gal_GetProgramEntity</A></BIG></B>(Gal_ProgramEntity *<I>e</I>, Gal_Frame *<I>namespace_array</I>, int *<I>newly_created</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_GetProgramObjectTag">Gal_GetProgramObjectTag</A></BIG></B>(ProgramObject *<I>p</I>, int <I>i</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_GetProgramTag">Gal_GetProgramTag</A></BIG></B>(const char *<I>tag_name</I>)
+
+<P>Gal_HashTable <B><BIG><A HREF="libgalaxy.html#Gal_GetProgramTagHash">Gal_GetProgramTagHash</A></BIG></B>(void <I></I>)
+
+<P>char **<B><BIG><A HREF="frame.html#Gal_GetProperties">Gal_GetProperties</A></BIG></B>(Gal_Frame <I>fr</I>, int *<I>nkeys</I>)
+
+<P>GalSS_BrokerProxy *<B><BIG><A HREF="frame.html#Gal_GetProxy">Gal_GetProxy</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>)
+
+<P>char *<B><BIG><A HREF="frame.html#Gal_GetString">Gal_GetString</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_GetTagArrayTag">Gal_GetTagArrayTag</A></BIG></B>(int <I>tag</I>, Gal_TagArray <I>tag_array</I>)
+
+<P>Gal_Object <B><BIG><A HREF="libgalaxy.html#Gal_GetTagObject">Gal_GetTagObject</A></BIG></B>(const char *<I>str</I>)
+
+<P>Gal_HashTable <B><BIG><A HREF="libgalaxy.html#Gal_GetTagObjectHash">Gal_GetTagObjectHash</A></BIG></B>(void <I></I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_GetTopicFrame">Gal_GetTopicFrame</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_HashHasKey">Gal_HashHasKey</A></BIG></B>(const char *<I>key</I>, Gal_HashTable <I>ht</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_HashListNext">Gal_HashListNext</A></BIG></B>(Gal_HashTable <I>hp</I>, Gal_Object *<I>value</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_HashListRewind">Gal_HashListRewind</A></BIG></B>(Gal_HashTable <I>hp</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_InitializeProgramParser">Gal_InitializeProgramParser</A></BIG></B>(Gal_ProgramParser *<I>pp</I>, Gal_InputStream <I>gs</I>, Gal_FileStruct *<I>fs</I>, int <I>default_tag</I>, int <I>control_flags</I>)
+
+<P>void <B><BIG><A HREF="../advanced/signal.html#Gal_InitializeSignals">Gal_InitializeSignals</A></BIG></B>(<I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/exec.html#Gal_InitializeStatics">Gal_InitializeStatics</A></BIG></B>(void <I></I>)
+
+<P>Gal_TagArray <B><BIG><A HREF="libgalaxy.html#Gal_InitializeTagArray">Gal_InitializeTagArray</A></BIG></B>(Gal_TagMap *<I>tag_map</I>)
+
+<P>Gal_HashTable <B><BIG><A HREF="libgalaxy.html#Gal_InitializeTagTable">Gal_InitializeTagTable</A></BIG></B>(Gal_TagMap *<I>tag_map</I>, int <I>size</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_InputStreamNextChar">Gal_InputStreamNextChar</A></BIG></B>(Gal_InputStream <I>gs</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_InputStreamRewind">Gal_InputStreamRewind</A></BIG></B>(Gal_InputStream <I>gs</I>, int <I>i</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_InstantiateProgramObjectFromList">Gal_InstantiateProgramObjectFromList</A></BIG></B>(Gal_Object <I>list_obj</I>, ProgramObject *<I>p</I>, int <I>do_tags</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Int16Size">Gal_Int16Size</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>void *<B><BIG><A HREF="frame.html#Gal_Int16Value">Gal_Int16Value</A></BIG></B>(Gal_Object <I>obj</I>, int *<I>size</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Int16p">Gal_Int16p</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Int32Size">Gal_Int32Size</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>void *<B><BIG><A HREF="frame.html#Gal_Int32Value">Gal_Int32Value</A></BIG></B>(Gal_Object <I>obj</I>, int *<I>size</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Int32p">Gal_Int32p</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Int64Size">Gal_Int64Size</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>void *<B><BIG><A HREF="frame.html#Gal_Int64Value">Gal_Int64Value</A></BIG></B>(Gal_Object <I>obj</I>, int *<I>size</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Int64p">Gal_Int64p</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_IntObject">Gal_IntObject</A></BIG></B>(int <I>value</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_IntValue">Gal_IntValue</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Intp">Gal_Intp</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_IsFullPath">Gal_IsFullPath</A></BIG></B>(const char *<I>path</I>)
+
+<P>Gal_Object <B><BIG><A HREF="libgalaxy.html#Gal_KeywordObject">Gal_KeywordObject</A></BIG></B>(const char *<I>value</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_KeywordValue">Gal_KeywordValue</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_Keywordp">Gal_Keywordp</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_ListLength">Gal_ListLength</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_ListObject">Gal_ListObject</A></BIG></B>(Gal_Object *<I>values</I>, int <I>n</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_ListObjectAdd">Gal_ListObjectAdd</A></BIG></B>(Gal_Object <I>obj</I>, Gal_Object <I>elt</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_ListObjectExpandable">Gal_ListObjectExpandable</A></BIG></B>(Gal_Object <I>obj</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_ListObjectFromElements">Gal_ListObjectFromElements</A></BIG></B>(int <I>n</I>, ... <I></I>)
+
+<P>Gal_Object *<B><BIG><A HREF="frame.html#Gal_ListValue">Gal_ListValue</A></BIG></B>(Gal_Object <I>obj</I>, int *<I>length</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Listp">Gal_Listp</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>Gal_StringBuffer *<B><BIG><A HREF="libgalaxy.html#Gal_MakeByteBuffer">Gal_MakeByteBuffer</A></BIG></B>(char *<I>buf</I>, int <I>bufpos</I>, int <I>bufsize</I>, int <I>manage_memory</I>, int <I>dynamic</I>, int <I>increment</I>, int <I>padding</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_MakeClauseFrame">Gal_MakeClauseFrame</A></BIG></B>(const char *<I>name</I>)
+
+<P>Gal_StringBuffer *<B><BIG><A HREF="libgalaxy.html#Gal_MakeDataBuffer">Gal_MakeDataBuffer</A></BIG></B>(char *<I>buf</I>, int <I>bufpos</I>, int <I>bufsize</I>, int <I>manage_memory</I>, int <I>dynamic</I>, int <I>increment</I>, int <I>padding</I>, int <I>chunk_size</I>)
+
+<P>Gal_InputStream <B><BIG><A HREF="libgalaxy.html#Gal_MakeFileInputStream">Gal_MakeFileInputStream</A></BIG></B>(FILE *<I>fp</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_MakeFrame">Gal_MakeFrame</A></BIG></B>(const char *<I>name</I>, Gal_FrameType <I>type</I>)
+
+<P>Gal_HashTable <B><BIG><A HREF="libgalaxy.html#Gal_MakeHash">Gal_MakeHash</A></BIG></B>(int <I>size</I>)
+
+<P>Gal_PointerBuffer *<B><BIG><A HREF="libgalaxy.html#Gal_MakePointerBuffer">Gal_MakePointerBuffer</A></BIG></B>(void **<I>buf</I>, int <I>pointer_type</I>, int <I>bufpos</I>, int <I>bufsize</I>, int <I>manage_memory</I>, int <I>dynamic</I>, void (*<I>free_fn</I>)(void *<I></I>), int <I>increment</I>, int <I>padding</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_MakePredFrame">Gal_MakePredFrame</A></BIG></B>(const char *<I>name</I>)
+
+<P>Gal_StringBuffer *<B><BIG><A HREF="libgalaxy.html#Gal_MakeStringBuffer">Gal_MakeStringBuffer</A></BIG></B>(char *<I>buf</I>, int <I>bufsize</I>)
+
+<P>Gal_InputStream <B><BIG><A HREF="libgalaxy.html#Gal_MakeStringInputStream">Gal_MakeStringInputStream</A></BIG></B>(const char *<I>sp</I>)
+
+<P>Gal_OutputStream <B><BIG><A HREF="libgalaxy.html#Gal_MakeStringOutputStream">Gal_MakeStringOutputStream</A></BIG></B>(char *<I>buf</I>, int <I>bufsize</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_MakeTopicFrame">Gal_MakeTopicFrame</A></BIG></B>(const char *<I>name</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_MapHash">Gal_MapHash</A></BIG></B>(Gal_HashTable <I>hp</I>, void (*<I>fn</I>)(char *<I>str</I>, Gal_Object <I>val</I>, Gal_HashTable <I>hp</I>))
+
+<P>int <B><BIG><A HREF="frame.html#Gal_MatchFrame">Gal_MatchFrame</A></BIG></B>(Gal_Frame <I>sf</I>, Gal_Frame <I>sem</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_MatchKeyValue">Gal_MatchKeyValue</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key_name</I>, Gal_Object <I>match</I>)
+
+<P>void <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_MaybeEndTask">Gal_MaybeEndTask</A></BIG></B>(int <I>immediate</I>, int <I>deferred</I>)
+
+<P>Gal_ConditionStruct *<B><BIG><A HREF="libgalaxy.html#Gal_NewCondition">Gal_NewCondition</A></BIG></B>(ProgramObject *<I>values</I>, Gal_ProgramParser *<I>pp</I>, int *<I>error_ptr</I>)
+
+<P>Gal_TestClause *<B><BIG><A HREF="libgalaxy.html#Gal_NewTest">Gal_NewTest</A></BIG></B>(ProgramObject *<I>values</I>, int *<I>error_ptr</I>, int <I>in_group</I>, Gal_ProgramParser *<I>pp</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_NextToken">Gal_NextToken</A></BIG></B>(const char *<I>sent</I>, char *<I>tok</I>, int <I>toksize</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_NumNonNullProperties">Gal_NumNonNullProperties</A></BIG></B>(Gal_Frame <I>fr</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_NumPreds">Gal_NumPreds</A></BIG></B>(Gal_Frame <I>fr</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_NumProperties">Gal_NumProperties</A></BIG></B>(Gal_Frame <I>fr</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_ObjectByteCount">Gal_ObjectByteCount</A></BIG></B>(Gal_Object <I>obj</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_ObjectCaseEqual">Gal_ObjectCaseEqual</A></BIG></B>(Gal_Object <I>to</I>, Gal_Object <I>sem</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_ObjectEqual">Gal_ObjectEqual</A></BIG></B>(Gal_Object <I>to</I>, Gal_Object <I>sem</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_ObjectString">Gal_ObjectString</A></BIG></B>(Gal_Object <I>to</I>, Gal_StringBuffer **<I>buf</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_ObjectStringToBuffer">Gal_ObjectStringToBuffer</A></BIG></B>(Gal_Object <I>to</I>, Gal_StringBuffer *<I>buf</I>)
+
+<P>char *<B><BIG><A HREF="frame.html#Gal_ObjectToString">Gal_ObjectToString</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>char *<B><BIG><A HREF="frame.html#Gal_ObjectTypeString">Gal_ObjectTypeString</A></BIG></B>(Gal_ObjectType <I>object_type</I>)
+
+<P>Gal_FileStruct *<B><BIG><A HREF="libgalaxy.html#Gal_OpenControlFile">Gal_OpenControlFile</A></BIG></B>(const char *<I>filename</I>, char *<I>directory</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_OutlineFrame">Gal_OutlineFrame</A></BIG></B>(Gal_Frame <I>fr</I>, int <I>gal_verbose_level</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_OutlineObject">Gal_OutlineObject</A></BIG></B>(Gal_Object <I>to</I>, int <I>gal_verbose_level</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_PPFrame">Gal_PPFrame</A></BIG></B>(Gal_Frame <I>fr</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_PPFrameToFile">Gal_PPFrameToFile</A></BIG></B>(Gal_Frame <I>fr</I>, FILE *<I>fp</I>)
+
+<P>char *<B><BIG><A HREF="frame.html#Gal_PPFrameToString">Gal_PPFrameToString</A></BIG></B>(Gal_Frame <I>fr</I>, char *<I>irpbuf</I>, int *<I>bufsizeptr</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_PPObject">Gal_PPObject</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_PPObjectToFile">Gal_PPObjectToFile</A></BIG></B>(Gal_Object <I>to</I>, FILE *<I>fp</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_PointerBufferAdd">Gal_PointerBufferAdd</A></BIG></B>(Gal_PointerBuffer *<I>b</I>, void *<I>s</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_PointerBufferAddMultiple">Gal_PointerBufferAddMultiple</A></BIG></B>(Gal_PointerBuffer *<I>b</I>, void **<I>s</I>, int <I>size</I>)
+
+<P>Gal_PointerBuffer *<B><BIG><A HREF="libgalaxy.html#Gal_PointerBufferCopy">Gal_PointerBufferCopy</A></BIG></B>(Gal_PointerBuffer *<I>b</I>, void *(*<I>copy_fn</I>)(void *<I></I>), void (*<I>free_fn</I>)(void *<I></I>))
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_PointerBufferDynamic">Gal_PointerBufferDynamic</A></BIG></B>(Gal_PointerBuffer *<I>b</I>)
+
+<P>void *<B><BIG><A HREF="libgalaxy.html#Gal_PointerBufferNthElement">Gal_PointerBufferNthElement</A></BIG></B>(Gal_PointerBuffer *<I>b</I>, int <I>i</I>)
+
+<P>void **<B><BIG><A HREF="libgalaxy.html#Gal_PointerBufferPointers">Gal_PointerBufferPointers</A></BIG></B>(Gal_PointerBuffer *<I>buf</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_PointerBufferRemove">Gal_PointerBufferRemove</A></BIG></B>(Gal_PointerBuffer *<I>b</I>, void *<I>s</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_PointerBufferSetNthElement">Gal_PointerBufferSetNthElement</A></BIG></B>(Gal_PointerBuffer *<I>b</I>, int <I>i</I>, void *<I>elt</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_PointerBufferSize">Gal_PointerBufferSize</A></BIG></B>(Gal_PointerBuffer *<I>buf</I>)
+
+<P>Gal_Object <B><BIG><A HREF="libgalaxy.html#Gal_PointerObject">Gal_PointerObject</A></BIG></B>(void *<I>val</I>)
+
+<P>void *<B><BIG><A HREF="libgalaxy.html#Gal_PointerValue">Gal_PointerValue</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_Pointerp">Gal_Pointerp</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>Gal_FileStruct *<B><BIG><A HREF="libgalaxy.html#Gal_PopProgramFile">Gal_PopProgramFile</A></BIG></B>(Gal_FileStruct *<I>current_files</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_PrFrame">Gal_PrFrame</A></BIG></B>(Gal_Frame <I>fr</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_PrFrameToFile">Gal_PrFrameToFile</A></BIG></B>(Gal_Frame <I>fr</I>, FILE *<I>fp</I>)
+
+<P>char *<B><BIG><A HREF="frame.html#Gal_PrFrameToString">Gal_PrFrameToString</A></BIG></B>(Gal_Frame <I>fr</I>, char *<I>irpbuf</I>, int *<I>bufsizeptr</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_PrObject">Gal_PrObject</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_PrObjectToFile">Gal_PrObjectToFile</A></BIG></B>(Gal_Object <I>to</I>, FILE *<I>fp</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_PredFramep">Gal_PredFramep</A></BIG></B>(Gal_Frame <I>fr</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_PredValue">Gal_PredValue</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Predp">Gal_Predp</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_PrintCondition">Gal_PrintCondition</A></BIG></B>(FILE *<I>fp</I>, Gal_ConditionStruct *<I>condition</I>, char *<I>tag</I>, int <I>pedantic</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_PrintEntity">Gal_PrintEntity</A></BIG></B>(Gal_ProgramEntity *<I>e</I>, int <I>pedantic</I>)
+
+<P>void <B><BIG><A HREF="frame.html#Gal_PrintFrameToFile">Gal_PrintFrameToFile</A></BIG></B>(Gal_Frame <I>fr</I>, FILE *<I>fp</I>, int <I>how</I>)
+
+<P>char *<B><BIG><A HREF="frame.html#Gal_PrintFrameToString">Gal_PrintFrameToString</A></BIG></B>(Gal_Frame <I>fr</I>, char *<I>irpbuf</I>, int *<I>bufsizeptr</I>, int <I>how</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_PrintProgramError">Gal_PrintProgramError</A></BIG></B>(Gal_FileStruct *<I>fs</I>, int <I>error</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_PrintProgramObject">Gal_PrintProgramObject</A></BIG></B>(ProgramObject *<I>obj</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_PrintProgramWarning">Gal_PrintProgramWarning</A></BIG></B>(Gal_FileStruct *<I>fs</I>, int <I>error</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_PrintTests">Gal_PrintTests</A></BIG></B>(FILE *<I>fp</I>, Gal_TestClause *<I>tests</I>, int <I>pedantic</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_ProgramEntitiesEqual">Gal_ProgramEntitiesEqual</A></BIG></B>(Gal_ProgramEntity *<I>e1</I>, Gal_ProgramEntity *<I>e2</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_ProgramStringValue">Gal_ProgramStringValue</A></BIG></B>(Gal_Object <I>obj</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_ProgramStringp">Gal_ProgramStringp</A></BIG></B>(Gal_Object <I>o</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_ProgramTagString">Gal_ProgramTagString</A></BIG></B>(int <I>tag</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_ProxyObject">Gal_ProxyObject</A></BIG></B>(GalSS_BrokerProxy *<I>p</I>)
+
+<P>GalIO_BrokerStruct *<B><BIG><A HREF="frame.html#Gal_ProxyObjectBroker">Gal_ProxyObjectBroker</A></BIG></B>(Gal_Object <I>obj</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_ProxyObjectObject">Gal_ProxyObjectObject</A></BIG></B>(Gal_Object <I>obj</I>)
+
+<P>Gal_ObjectType <B><BIG><A HREF="frame.html#Gal_ProxyObjectType">Gal_ProxyObjectType</A></BIG></B>(Gal_Object <I>obj</I>)
+
+<P>GalSS_BrokerProxy *<B><BIG><A HREF="frame.html#Gal_ProxyValue">Gal_ProxyValue</A></BIG></B>(Gal_Object <I>o</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Proxyp">Gal_Proxyp</A></BIG></B>(Gal_Object <I>obj</I>)
+
+<P>Gal_FileStruct *<B><BIG><A HREF="libgalaxy.html#Gal_PushProgramFile">Gal_PushProgramFile</A></BIG></B>(const char *<I>filename</I>, FILE *<I>fp</I>, Gal_FileStruct *<I>current_files</I>)
+
+<P>void <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_ReAddTask">Gal_ReAddTask</A></BIG></B>(Gal_TaskPkg *<I>p</I>, void *<I>caller_data</I>, long <I>num_millisecs</I>, int <I>read_blocking_available</I>, void (*<I>cleanup_fn</I>)(void *<I></I>))
+
+<P>void <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_ReAddTaskExtended">Gal_ReAddTaskExtended</A></BIG></B>(Gal_TaskPkg *<I>p</I>, void *<I>caller_data</I>, long <I>num_millisecs</I>, int <I>read_blocking_available</I>, GAL_SOCKET *<I>read_socket</I>, GAL_SOCKET *<I>write_socket</I>, GAL_SOCKET *<I>err_socket</I>, FILE *<I>read_file</I>, FILE *<I>write_file</I>, FILE *<I>err_file</I>, Gal_TaskConditionFn <I>condition</I>, void (*<I>cleanup_fn</I>)(void *<I></I>))
+
+<P>void <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_ReAddTaskWithFileIO">Gal_ReAddTaskWithFileIO</A></BIG></B>(Gal_TaskPkg *<I>p</I>, void *<I>caller_data</I>, long <I>num_millisecs</I>, int <I>read_blocking_available</I>, FILE *<I>read_file</I>, FILE *<I>write_file</I>, void (*<I>cleanup_fn</I>)(void *<I></I>))
+
+<P>void <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_ReAddTaskWithSocketIO">Gal_ReAddTaskWithSocketIO</A></BIG></B>(Gal_TaskPkg *<I>p</I>, void *<I>caller_data</I>, long <I>num_millisecs</I>, int <I>read_blocking_available</I>, GAL_SOCKET *<I>read_socket</I>, GAL_SOCKET *<I>write_socket</I>, void (*<I>cleanup_fn</I>)(void *<I></I>))
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_ReadFrameFromFile">Gal_ReadFrameFromFile</A></BIG></B>(FILE *<I>fp</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_ReadFrameFromString">Gal_ReadFrameFromString</A></BIG></B>(const char *<I>buf</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="libgalaxy.html#Gal_ReadNextFrameFromFile">Gal_ReadNextFrameFromFile</A></BIG></B>(FILE *<I>fp</I>, int <I>bol</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_ReadObjectFromFile">Gal_ReadObjectFromFile</A></BIG></B>(FILE *<I>fp</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_ReadObjectFromString">Gal_ReadObjectFromString</A></BIG></B>(const char *<I>buf</I>)
+
+<P>ProgramObject *<B><BIG><A HREF="libgalaxy.html#Gal_ReadProgramLine">Gal_ReadProgramLine</A></BIG></B>(Gal_ProgramParser *<I>pp</I>, int *<I>count_ptr</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_ReadToken">Gal_ReadToken</A></BIG></B>(Gal_InputStream <I>gs</I>, char *<I>tok</I>, int <I>toksize</I>, const char *<I>stop_chars</I>, int <I>do_rewind</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_ReadVarFrameFromString">Gal_ReadVarFrameFromString</A></BIG></B>(const char *<I>buf</I>, Gal_VarMapping *<I>map</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_ReadVarObjectFromString">Gal_ReadVarObjectFromString</A></BIG></B>(const char *<I>buf</I>, Gal_VarMapping *<I>map</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_RemPred">Gal_RemPred</A></BIG></B>(Gal_Frame <I>fr</I>, int <I>i</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_RemPredByName">Gal_RemPredByName</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>name</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_RemProp">Gal_RemProp</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>)
+
+<P>void <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_RemoveIdleFunction">Gal_RemoveIdleFunction</A></BIG></B>(Gal_IdleFunction <I>func</I>)
+
+<P>void <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_RemoveTask">Gal_RemoveTask</A></BIG></B>(Gal_TaskPkg *<I>task_id</I>)
+
+<P>int <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_RemoveTimedTask">Gal_RemoveTimedTask</A></BIG></B>(void *<I>task</I>, void *<I>caller_data</I>)
+
+<P>void <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_RunIdleFunctions">Gal_RunIdleFunctions</A></BIG></B>(<I></I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_SetFrameName">Gal_SetFrameName</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>name</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_SetFrameType">Gal_SetFrameType</A></BIG></B>(Gal_Frame <I>fr</I>, Gal_FrameType <I>type</I>)
+
+<P>Gal_Object <B><BIG><A HREF="libgalaxy.html#Gal_SetHash">Gal_SetHash</A></BIG></B>(const char *<I>str</I>, Gal_Object <I>val</I>, Gal_HashTable <I>hp</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_SetListObject">Gal_SetListObject</A></BIG></B>(Gal_Object <I>obj</I>, int <I>n</I>, Gal_Object <I>elt</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_SetProgramEntityLocation">Gal_SetProgramEntityLocation</A></BIG></B>(Gal_ProgramEntity *<I>e</I>, Gal_Object <I>o</I>, Gal_Frame *<I>namespace_array</I>, int <I>newly_created</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_SetProp">Gal_SetProp</A></BIG></B>(Gal_Frame <I>fr</I>, const char *<I>key</I>, Gal_Object <I>val</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_SetTagObject">Gal_SetTagObject</A></BIG></B>(const char *<I>key</I>, Gal_Object <I>value</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_SetTagObjectHash">Gal_SetTagObjectHash</A></BIG></B>(Gal_HashTable <I>ht</I>)
+
+<P>int <B><BIG><A HREF="../advanced/signal.html#Gal_SignalsInitialized">Gal_SignalsInitialized</A></BIG></B>(<I></I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_SplitLocation">Gal_SplitLocation</A></BIG></B>(const char *<I>location_string</I>, int *<I>port</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_SplitOperationName">Gal_SplitOperationName</A></BIG></B>(const char *<I>op_name</I>, char **<I>server_name</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_SplitServiceTypeName">Gal_SplitServiceTypeName</A></BIG></B>(const char *<I>type_name</I>, int *<I>provider_int</I>, char **<I>provider_name</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_StringBufferString">Gal_StringBufferString</A></BIG></B>(Gal_StringBuffer *<I>buf</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_StringBufferWrite">Gal_StringBufferWrite</A></BIG></B>(Gal_StringBuffer *<I>b</I>, int <I>increment</I>, const char *<I>s</I>, ... <I></I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_StringBufferWriteString">Gal_StringBufferWriteString</A></BIG></B>(Gal_StringBuffer *<I>b</I>, const char *<I>s</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_StringCaseEq">Gal_StringCaseEq</A></BIG></B>(const char *<I>str1</I>, const char *<I>str2</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_StringEq">Gal_StringEq</A></BIG></B>(const char *<I>str1</I>, const char *<I>str2</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_StringInputStreamString">Gal_StringInputStreamString</A></BIG></B>(Gal_InputStream <I>gs</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_StringLeftTrim">Gal_StringLeftTrim</A></BIG></B>(char *<I>str</I>, const char *<I>trim</I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_StringObject">Gal_StringObject</A></BIG></B>(const char *<I>val</I>)
+
+<P>char *<B><BIG><A HREF="libgalaxy.html#Gal_StringOutputStreamString">Gal_StringOutputStreamString</A></BIG></B>(Gal_OutputStream <I>gs</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_StringRightTrim">Gal_StringRightTrim</A></BIG></B>(char *<I>str</I>, const char *<I>trim</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_StringStreamWriteString">Gal_StringStreamWriteString</A></BIG></B>(Gal_OutputStream <I>gs</I>, int <I>increment</I>, const char *<I>s</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_StringTrim">Gal_StringTrim</A></BIG></B>(char *<I>str</I>, const char *<I>trim</I>)
+
+<P>char *<B><BIG><A HREF="frame.html#Gal_StringValue">Gal_StringValue</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Stringp">Gal_Stringp</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>Gal_Object <B><BIG><A HREF="libgalaxy.html#Gal_SymbolObject">Gal_SymbolObject</A></BIG></B>(const char *<I>value</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_Symbolp">Gal_Symbolp</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>Gal_Object <B><BIG><A HREF="libgalaxy.html#Gal_TagObject">Gal_TagObject</A></BIG></B>(const char *<I>value</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_Tagp">Gal_Tagp</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_TaskPkgBlocking">Gal_TaskPkgBlocking</A></BIG></B>(Gal_TaskPkg *<I>pkg</I>)
+
+<P>void *<B><BIG><A HREF="../advanced/timed_tasks.html#Gal_TaskPkgData">Gal_TaskPkgData</A></BIG></B>(Gal_TaskPkg *<I>pkg</I>)
+
+<P>int <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_TaskPkgRunReasons">Gal_TaskPkgRunReasons</A></BIG></B>(Gal_TaskPkg *<I>pkg</I>)
+
+<P>Gal_Boolean <B><BIG><A HREF="libgalaxy.html#Gal_TestCondition">Gal_TestCondition</A></BIG></B>(Gal_Frame <I>frame</I>, Gal_TestClause *<I>tests</I>)
+
+<P>Gal_Boolean <B><BIG><A HREF="libgalaxy.html#Gal_TestConditionInNamespaces">Gal_TestConditionInNamespaces</A></BIG></B>(Gal_TestClause *<I>tests</I>, Gal_Frame *<I>frame_array</I>, int <I>default_namespace</I>)
+
+<P>void <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_TimedTaskLoopThreadWaiter">Gal_TimedTaskLoopThreadWaiter</A></BIG></B>(void <I></I>)
+
+<P>int <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_TimedTaskThreadsEnabled">Gal_TimedTaskThreadsEnabled</A></BIG></B>(<I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_TimedTasksLoop">Gal_TimedTasksLoop</A></BIG></B>(void <I></I>)
+
+<P>void <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_TimedTasksLoopExit">Gal_TimedTasksLoopExit</A></BIG></B>(void <I></I>)
+
+<P>int <B><BIG><A HREF="../advanced/timed_tasks.html#Gal_TimedTasksLoopHandler">Gal_TimedTasksLoopHandler</A></BIG></B>(struct timeval *<I>tv</I>)
+
+<P>Gal_Object <B><BIG><A HREF="libgalaxy.html#Gal_TokenObject">Gal_TokenObject</A></BIG></B>(const char *<I>val</I>)
+
+<P>int <B><BIG><A HREF="libgalaxy.html#Gal_Tokenp">Gal_Tokenp</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_TopicFramep">Gal_TopicFramep</A></BIG></B>(Gal_Frame <I>fr</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_TopicValue">Gal_TopicValue</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>int <B><BIG><A HREF="frame.html#Gal_Topicp">Gal_Topicp</A></BIG></B>(Gal_Object <I>to</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_UpdateFrameProperties">Gal_UpdateFrameProperties</A></BIG></B>(Gal_Frame <I>target_frame</I>, Gal_Frame <I>source_properties</I>, char **<I>delete_properties</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="frame.html#Gal_VAReadVarFrameFromString">Gal_VAReadVarFrameFromString</A></BIG></B>(const char *<I>buf</I>, int <I>num_pairs</I>, ... <I></I>)
+
+<P>Gal_Object <B><BIG><A HREF="frame.html#Gal_VAReadVarObjectFromString">Gal_VAReadVarObjectFromString</A></BIG></B>(const char *<I>buf</I>, int <I>num_pairs</I>, ... <I></I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_ValidateDispatchFnInput">Gal_ValidateDispatchFnInput</A></BIG></B>(const char *<I>op_name</I>, Gal_Frame <I>frame</I>, Gal_DispatchFnSignature *<I>sig</I>, char **<I>exclusions</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#Gal_ValidateDispatchFnOutput">Gal_ValidateDispatchFnOutput</A></BIG></B>(const char *<I>op_name</I>, Gal_Frame <I>frame</I>, Gal_DispatchFnSignature *<I>sig</I>, char **<I>exclusions</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#_GalIO_SetCommDispatchFnAccess">_GalIO_SetCommDispatchFnAccess</A></BIG></B>(GalIO_CommStruct *<I>gcomm</I>, Gal_DispatchFunctionSelector <I>s</I>, Gal_DispatchFnSignatureLister <I>l</I>, Gal_DispatchFunctionInvoker <I>i</I>, void *<I>invocation_client_data</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy_io.html#_GalIO_SetServerDispatchFnAccess">_GalIO_SetServerDispatchFnAccess</A></BIG></B>(GalIO_ServerStruct *<I>server</I>, Gal_DispatchFunctionSelector <I>s</I>, Gal_DispatchFnSignatureLister <I>l</I>, Gal_DispatchFunctionInvoker <I>i</I>, void *<I>invocation_client_data</I>)
+
+<P>void *<B><BIG><A HREF="adding.html#_GalSS_init_server">_GalSS_init_server</A></BIG></B>(GalIO_ServerStruct *<I>server</I>, int <I>argc</I>, char **<I>argv</I>)
+
+<P>void <B><BIG><A HREF="adding.html#_GalSS_print_usage">_GalSS_print_usage</A></BIG></B>(int <I>argc</I>, char **<I>argv</I>)
+
+<P>void <B><BIG><A HREF="libutil.html#_GalUtil_FreeOASDescription">_GalUtil_FreeOASDescription</A></BIG></B>(GalUtil_OASDescription *<I>descr</I>)
+
+<P>Gal_DispatchFnSignatureKeyEntry *<B><BIG><A HREF="libgalaxy.html#_Gal_CreateEmptyDispatchFnKeyArray">_Gal_CreateEmptyDispatchFnKeyArray</A></BIG></B>(int <I>i</I>)
+
+<P>Gal_DispatchFnPkg *<B><BIG><A HREF="libgalaxy.html#_Gal_DispatchFnPkgSetAccess">_Gal_DispatchFnPkgSetAccess</A></BIG></B>(Gal_DispatchFnPkg *<I>pkg</I>, Gal_DispatchFunctionSelector <I>s</I>, Gal_DispatchFnSignatureLister <I>l</I>, Gal_DispatchFunctionInvoker <I>i</I>, void *<I>invocation_client_data</I>)
+
+<P>Gal_Frame <B><BIG><A HREF="libgalaxy.html#_Gal_InvokeDispatchFn">_Gal_InvokeDispatchFn</A></BIG></B>(Gal_DispatchFnInvocation *<I>i</I>)
+
+<P>Gal_DispatchFnSignature *<B><BIG><A HREF="libgalaxy.html#_Gal_ListDispatchFnSignatures">_Gal_ListDispatchFnSignatures</A></BIG></B>(Gal_DispatchFnPkg *<I>pkg</I>)
+
+<P>void <B><BIG><A HREF="libgalaxy.html#_Gal_PopulateDispatchFnKeyArrayCell">_Gal_PopulateDispatchFnKeyArrayCell</A></BIG></B>(Gal_DispatchFnSignatureKeyEntry *<I>array</I>, int <I>index</I>, const char *<I>key</I>, Gal_ObjectType <I>t</I>, int <I>obligatory</I>)
+
+<P>Gal_Object <B><BIG><A HREF="libgalaxy.html#_Gal_ReadObjectWithTags">_Gal_ReadObjectWithTags</A></BIG></B>(Gal_InputStream <I>gs</I>, Gal_SpecialTokenizer <I>special_tokenizer</I>)
+
+<P>void *<B><BIG><A HREF="libgalaxy.html#_gal_copy_object">_gal_copy_object</A></BIG></B>(void *<I>obj</I>)
+
+<P>void <B><BIG><A HREF="frame.html#_gal_free_object">_gal_free_object</A></BIG></B>(void *<I>obj</I>)
+
+<br>
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "reserved_keys.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "libgalaxy.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated July 5, 2002</center>
+<br>
+</body>
+</html>

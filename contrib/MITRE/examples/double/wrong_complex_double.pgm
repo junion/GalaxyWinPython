@@ -1,0 +1,40 @@
+;; This file (c) Copyright 1998 - 2002 The MITRE Corporation
+;; 
+;; This file is part of the Galaxy Communicator system. It is licensed
+;; under the conditions described in the file LICENSE in the root 
+;; directory of the Galaxy Communicator system.
+
+;; This file is designed intentionally to break. It 
+;; should be run with the -validate argument for the Hub.
+;; Among the errors that should be caught are:
+
+;; (1) unrecognized keyword :foo for complex_twice
+;; (2) not return value from complex twice when there should be
+;; (3) missing :int input keyword for multiply
+
+;; because multiply has no input, it will raise an 
+;; error, which will be reported back to the double server,
+;; and execution will halt. Execution would have halted
+;; anyway because complex_twice does not return a frame.
+
+SERVER: double-server
+PORT: 2800
+HOST: localhost
+OPERATIONS: complex_twice reinitialize
+
+SERVER: multiply-server
+PORT: 2900
+HOST: localhost
+OPERATIONS: multiply reinitialize
+INIT: :factor 4
+
+PROGRAM: main
+
+RULE: :int --> complex_twice
+IN: :int (:foo "bar")
+OUT: 
+
+PROGRAM: multiply
+RULE: :int --> multiply
+IN: 
+OUT: :int

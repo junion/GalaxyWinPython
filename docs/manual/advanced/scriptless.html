@@ -1,0 +1,155 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>Galaxy Communicator Documentation: Using the Hub in Scriptless Mode</title>
+<!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+<body style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#0000FF">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:<br>
+<br>
+Using the Hub in Scriptless Mode</h1></center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "timestamps.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "hub_listener.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+
+<hr WIDTH="100%">
+<p>As of version 2.0, the Hub does not require
+Hub programs to run. The Hub still requires a configuration file, because
+it still must know how to do its logging and how to contact servers. In
+this document, we discuss some of the options available to the developer
+for scriptless interaction.
+<p>
+<hr WIDTH="100%">
+<h2>
+Omitting Hub programs</h2>
+Currently, we have chosen to implement scriptless
+interaction by making Hub programs optional. That means that a <a href="../reference/pgm.html">Hub
+program file</a> need not contain any PROGRAM: or RULE: declarations in
+order for the Hub to function. The user may still choose to provide any
+of the <a href="../reference/pgm.html#Global_Declarations">global declarations</a>;
+<a href="../reference/pgm.html#Server_Declarations">server
+declarations</a> are still required, and the only way to enable logging
+is to use the <a href="../reference/pgm.html#Logfile_Instructions">logging
+parameters</a>.
+<p>When the Hub receives a message and there
+is no program to claim it, the Hub searches its list of servers for a server
+which has declared an operation which is identical to the message name.
+Let's say the Hub receives a message of this form:
+<blockquote><tt>{c parse</tt>
+<br><tt>&nbsp;&nbsp; :input_string "I want to fly to Denver" }</tt></blockquote>
+If there is a Hub program named <tt>parse</tt>,
+that program will claim the message and process it, regardless of whether
+there's an operation named <tt>parse</tt>.
+In the following program file, the message sent to the parser server will
+be <tt>parse_string</tt>, not <tt>parse</tt>:
+<blockquote><tt>SERVER: parser</tt>
+<br><tt>OPERATIONS: parse parse_string</tt>
+<p><tt>PROGRAM: parse</tt>
+<p><tt>RULE: :input_string --> parser.parse_string</tt>
+<br><tt>IN: :input_string</tt>
+<br><tt>OUT: :frame</tt></blockquote>
+However, if there were no program named <tt>parse</tt>,
+the Hub would pass the incoming message directly to one of the providers
+for the <tt>parse</tt> operation, and
+the <tt>parse</tt> operation would
+be invoked. The specific provider is chosen according to the <a href="provider_id.html#Selecting_a_provider">rules
+for provider selection</a>.
+<p>What this means is that the developer doesn't
+need to choose fully scripted or fully scriptless; it's possible to construct
+a "partially scripted" program file, where some new messages are claimed
+by programs and others are not.
+<p>
+<hr WIDTH="100%">
+<h2>
+Logging</h2>
+Previous to version 2.0, it was possible to
+log only the invocation of a program rule. This meant that logging in scriptless
+mode would have been impossible. In 2.0, it is possible to log incoming
+messages and their returns to the calling server. We give a brief summary
+here; see the <a href="../reference/logging.html#Parameters_within_the_Scope_of_a_Program_or_Message">logging
+documentation</a> for details.
+<p>First, the TIMESTAMP: declaration now applies
+indiscriminately to operations and programs:
+<blockquote><tt>SERVER: parser</tt>
+<br><tt>OPERATIONS: parse parse_string</tt>
+<p><tt>TIMESTAMP: parse parse_string</tt>
+<p><tt>PROGRAM: parse</tt>
+<p><tt>RULE: :input_string --> parser.parse_string</tt>
+<br><tt>IN: :input_string</tt>
+<br><tt>OUT: :frame</tt></blockquote>
+In our example here, the log will contain
+a timestamp for when the <tt>parse</tt>
+request arrived on the Hub, as well as when the <tt>parse_string</tt>
+operation was sent to the parser server. Because timestamps are indiscriminate,
+the program doesn't have to be present in order for a timestamp to happen;
+so if the <tt>parse</tt> program is
+removed, the incoming timestamp will still happen.
+<p>Second, it is now possible to add LOG_IN:
+and LOG_OUT: declarations outside the scope of a rule, and the new MESSAGE:
+declaration supports in and out logging for scriptless rules. So either
+of the following program files will result in a time being recorded for
+the incoming <tt>parse</tt> message:
+<blockquote><tt>SERVER: parser</tt>
+<br><tt>OPERATIONS: parse parse_string</tt>
+<p><tt>TIMESTAMP: parse parse_string</tt>
+<p><tt>PROGRAM: parse</tt>
+<br><tt>LOG_IN: :input_string</tt>
+<p><tt>RULE: :input_string --> parser.parse_string</tt>
+<br><tt>IN: :input_string</tt>
+<br><tt>OUT: :frame</tt>
+<p><tt>--------------------------------------------------</tt>
+<p><tt>SERVER: parser</tt>
+<br><tt>OPERATIONS: parse parse_string</tt>
+<p><tt>TIMESTAMP: parse parse_string</tt>
+<p><tt>MESSAGE: parse</tt>
+<br><tt>LOG_IN: :input_string</tt></blockquote>
+In this way, all the possibilities for logging
+are still available for scriptless interaction.
+<p>
+<hr WIDTH="100%">
+<h2>
+Writing your own scripting module</h2>
+In principle, it is possible to write your
+own scripting module, by altering the SCRIPTING variables in config.make
+and providing your own library which implements the scripting API. However,
+we have not tested this functionality. We do know that because we use MIT
+scripting to provide server and logging declarations, your scripting module
+would currently have to supply equivalent declaration facilities.
+<p>
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "timestamps.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "hub_listener.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated May 23, 2002</center>
+
+</body>
+</html>

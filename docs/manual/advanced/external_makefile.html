@@ -1,0 +1,135 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.78 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Using non-MIT Makefiles</title>
+     <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+  
+<center> 
+<h1> Galaxy Communicator Documentation:<br>
+ <br>
+ Using non-MIT Makefiles</h1>
+</center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="special_mainloop.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="signal.html"><img src="../../arrow_right.gif" alt="" width="30"
+ height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+   
+<hr width="100%"> 
+<p>As of Galaxy Communicator 2.0, no stubber is required to <a
+ href="../reference/adding.html#Declare_server_information">generate headers</a>.
+This means that it's easy to use non-MIT makefiles to compile Communicator-compliant
+servers. We provide an <a
+ href="../../../contrib/MITRE/examples/local_makefile/main.html">example</a> 
+of this. </p>
+<p> </p>
+<hr width="100%"> 
+<p>You need to declare a number of things in order to compile the server: 
+</p>
+<ul>
+ <li> You need the value of the Communicator root directory.</li>
+  <li> You need the value of ARCHOS, to choose the correct library.</li>
+  <li> You need to determine the value of LIBEXT, to make sure you specify
+the proper library dependency.</li>
+  <li> You need the current source directory in your includes.</li>
+  <li> You need the Communicator header directory in your includes.</li>
+  <li> You need the Communicator library in your libraries. The library must
+    <b>follow</b> your source or object files in your link command, because
+the Communicator library contains default implementations of functions which
+are defined in your server headers.</li>
+  <li> If you use any of the <a href="../reference/libutil.html#Threads">undocumented 
+cross-platform thread API</a>, you must add the C preprocessor flags <tt>-DGAL_THREADS 
+-D_REENTRANT</tt>.</li>
+ 
+</ul>
+ Here's an example: 
+<blockquote><tt># This example doesn't use either the MIT or the MITRE</tt> 
+  <br>
+  <tt># Makefile templates, as an illustration.</tt> 
+  <p><tt>ROOTDIR = /packages/GalaxyCommunicator</tt> </p>
+  <p><tt>TEMPLATES = $(ROOTDIR)/templates</tt> </p>
+  <p><tt># I need to get the architecture to find the MIT libraries.</tt> 
+  <br>
+  <tt># But I need to load config.make to find out what the ARCH prefix</tt> 
+  <br>
+  <tt># is, and config.make to find out what ARCHOS_PREFIX is.</tt> </p>
+  <p><tt>include $(TEMPLATES)/archos.make</tt> </p>
+  <p><tt>CPPFLAGS = -I. -I$(ROOTDIR)/include</tt> </p>
+  <p><tt>LIBS = -L$(ROOTDIR)/lib/$(ARCHOS) -lGalaxy</tt> </p>
+  <p><tt>ifeq ($(OS),solaris)</tt> <br>
+  <tt>LIBS += -lsocket -lnsl -lrt</tt> <br>
+  <tt>endif</tt> </p>
+  <p><tt>include $(TEMPLATES)/shared_libs.make</tt> </p>
+  <p><tt># If we're using shared libraries, add the run-time dependency on</tt> 
+  <br>
+  <tt># the library to the LIBS line.</tt> </p>
+  <p><tt>ifdef SHARED_LIBS</tt> <br>
+  <tt>&nbsp; ifdef XLINKER_RTFLAG</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; LIBS += -Xlinker $(XLINKER_RTFLAG) -Xlinker $(ROOTDIR)/lib/$(ARCHOS)</tt> 
+  <br>
+  <tt>&nbsp; endif</tt> <br>
+  <tt>endif</tt> </p>
+  <p><tt>LIBDEPS = $(ROOTDIR)/lib/$(ARCHOS)/libGalaxy$(LIBEXT)</tt> </p>
+  <p><tt>all: double</tt> </p>
+  <p><tt>double: double.c $(LIBDEPS)</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; gcc -g $(CPPFLAGS) -o double.$(ARCHOS).bin
+double.c $(LIBS)</tt></p>
+</blockquote>
+ Note that the libraries rely on the real-time and network libraries on Solaris. 
+<br>
+ 
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="special_mainloop.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="signal.html"><img src="../../arrow_right.gif" alt="" width="30"
+ height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated February 26, 2002</center>
+  <br>
+</body>
+</html>

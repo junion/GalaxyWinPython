@@ -1,0 +1,1047 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Special Main Loops</title>
+                 <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+        
+<center>    
+<h1> Galaxy Communicator Documentation:<br>
+    <br>
+    Using a Different Main Loop</h1>
+   </center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="hub_properties.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="external_makefile.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+         
+<hr width="100%">    
+<p>We can use the elements of the <a
+ href="../reference/server_structure.html">toplevel server loop</a> to provide 
+ Communicator server functionality to other systems which have their own main
+ loops, such as scripting language interpreters (Tcl and Python, for instance),
+ window systems (Tk and X, for instance), and distributed object systems
+(e.g.,  Xerox PARC's ILU). In this document, we show how to do this. </p>
+     
+<p> </p>
+     
+<hr width="100%">    
+<h2> <a name="External_loop_records"></a>External loop records</h2>
+    In our anatomy of the main loop, we showed how the default server is
+set  up, and how the dispatch functions access the connection to the Hub.
+However,  we didn't describe how the functions actually get called, except
+to make reference to the <a href="timed_tasks.html">timed task loop</a>.
+But if you can't use the timed task loop, because you're using a single-threaded
+application which is using a GUI or CORBA event loop, you need to set up
+your server in another way. In version 3.1, we've encapsulated this process
+in a new set of utilities based an an object called an <b>external loop record</b> 
+(ELR). We have tested this mechanism with our own external main loop example, 
+as well as with the Tk, GTK and Motif window systems.    
+<p>Recall the Communicator main loop in the timed task case: </p>
+     
+<blockquote>   <tt>/* The main() here is essentially the same main() as in
+   <br>
+   &nbsp;&nbsp; the Communicator library. */ <br>
+   int main(int argc, char **argv) <br>
+   { <br>
+   &nbsp; GalIO_ServerStruct *server; <br>
+   &nbsp; server = GalSS_CmdlineSetupServer(argc, argv); <br>
+   &nbsp; if (!server) { <br>
+   &nbsp;&nbsp;&nbsp; GalUtil_Fatal("Failed to set up server!\n"); <br>
+   &nbsp; } <br>
+   &nbsp; GalSS_StartAndRunServer(server); <br>
+   &nbsp; exit(0); <br>
+   }</tt> </blockquote>
+    Here's the main function from simple_mainloop_elr.c, in the <a
+ href="../../../contrib/MITRE/examples/simple_mainloop/">main loop</a> example 
+ which demonstrates the use of ELRs:    
+<blockquote><tt>int main(int argc, char **argv) <br>
+   { <br>
+   &nbsp; Looper *l = SM_NewLooper(); <br>
+   &nbsp; GalSS_ELR *elr = GalSS_ELRSetupServer((GalSS_ServerArgs *) NULL,
+   <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  argc, argv, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  _simple_mainloop_set_timer, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  _simple_mainloop_unset_timer, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  _simple_mainloop_set_fd, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  _simple_mainloop_unset_fd, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  _simple_mainloop_behavior_fn, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (void *) l, NULL, 1); <br>
+   &nbsp; if (!elr) { <br>
+   &nbsp;&nbsp;&nbsp; exit(1); <br>
+   &nbsp; } <br>
+   &nbsp; SM_Mainloop(l); <br>
+   &nbsp; exit(0); <br>
+   }</tt></blockquote>
+    The basic steps in this latter case are    
+<ul>
+    <li> performing initializations for the main loop you're using;</li>
+     <li> creating the ELR;</li>
+     <li> starting your main loop.</li>
+       
+</ul>
+    The ELR object encapsulates several types of information.    
+<p>First, in order to configure an external main loop to handle Communicator 
+ events appropriately, the external main loop must support both timer-triggered 
+ events and file-descriptor-triggered events. The callbacks for a Communicator-compliant 
+ server cannot rely exclusively on file descriptors, because sometimes there's 
+ material in the incoming or outgoing internal queues which a file descriptor 
+ poll would not catch. In principle, timer-triggered events would probably 
+ suffice, but the ELR registration is not configured to guarantee that possibility 
+ yet. So the ELR object must record functions to set up and cancel both types 
+ of events, using the chosen main loop. Here are the appropriate functions 
+ for our simple main loop example. Let's start with timers: </p>
+     
+<blockquote><tt>static void _simple_mainloop_timer_callback(void *client_data)
+    <br>
+   { <br>
+   &nbsp; GalSS_ELRDoCallback((GalSS_ELR *) client_data, GALSS_ELR_TIMER);
+   <br>
+   } <br>
+   void *_simple_mainloop_set_timer(GalSS_ELR *elr, int ms) <br>
+   { <br>
+   &nbsp; return (void *) SM_AddTimerCallback((Looper *) GalSS_ELRGetLoopData(elr),
+    <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  ms, _simple_mainloop_timer_callback, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (void *) elr); <br>
+   } <br>
+   void _simple_mainloop_unset_timer(GalSS_ELR *elr, void *tag) <br>
+   { <br>
+   &nbsp; SM_RemoveTimerCallback((TimerCallback *) tag); <br>
+   }</tt></blockquote>
+    The setting function takes an ELR object and a timer duration in milliseconds, 
+ and returns a tag that can be used to cancel the timer. The unsetting function 
+ takes the ELR object and the tag. In order to complete the implementation, 
+ the setter needs to refer to a callback function which has a function signature 
+ appropriate for the external main loop you're using. This function should 
+ call <a href="#GalSS_ELRDoCallback">GalSS_ELRDoCallback</a>. Now we do the 
+ same thing for file descriptors:    
+<blockquote><tt>&nbsp; <br>
+   static void _simple_mainloop_fd_callback(void *client_data) <br>
+   { <br>
+   &nbsp; GalSS_ELRDoCallback((GalSS_ELR *) client_data, GALSS_ELR_FD); <br>
+   } <br>
+   void *_simple_mainloop_set_fd(GalSS_ELR *elr, GAL_SOCKET fd) <br>
+   { <br>
+   &nbsp; SM_AddFDCallback((Looper *) GalSS_ELRGetLoopData(elr), <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  fd, _simple_mainloop_fd_callback, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (void *) elr); <br>
+   &nbsp; return (void *) fd; <br>
+   } <br>
+   void _simple_mainloop_unset_fd(GalSS_ELR *elr, void *tag) <br>
+   { <br>
+   &nbsp; SM_RemoveFDCallback((Looper *) GalSS_ELRGetLoopData(elr), <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (GAL_SOCKET) tag); <br>
+   }</tt></blockquote>
+    In addition, the ELR object records whether the timer in the main loop
+ is <i>persistent</i> or not. In some cases, a timer resets itself automatically 
+ after it's fired, and continues firing until it's explicitly cancelled (that 
+ is, it's persistent). In other cases, the timer must be explicitly reset 
+(that is, it's not persistent). For instance, tasks in the Communicator <a
+ href="timed_tasks.html">timed task loop</a> are not persistent.    
+<p>Second, the ELR object records behavior associated with <a
+ href="../reference/server_structure.html#Event-driven_programming">Communicator
+  events</a>. For example, you may require special things to happen when
+a  connection starts up or shuts down (you may need to store it somewhere
+that  the GUI can get to it, perhaps), or when a server starts up or shuts
+down.  This is the behavior function in the simple main loop example: </p>
+     
+<blockquote><tt>void _simple_mainloop_behavior_fn(GalSS_ELR *elr, int event)
+    <br>
+   { <br>
+   &nbsp; switch (event) { <br>
+   &nbsp; case GAL_SERVER_LISTENER_SHUTDOWN_EVENT: <br>
+   &nbsp;&nbsp;&nbsp; GalUtil_Warn("The server has failed.\n"); <br>
+   &nbsp;&nbsp;&nbsp; SM_RemoveAllFDCallbacks((Looper *) GalSS_ELRGetLoopData(elr));
+    <br>
+   &nbsp;&nbsp;&nbsp; SM_RemoveAllTimerCallbacks((Looper *) GalSS_ELRGetLoopData(elr));
+    <br>
+   &nbsp;&nbsp;&nbsp; break; <br>
+   &nbsp; case GAL_SERVER_DESTRUCTION_EVENT: <br>
+   &nbsp;&nbsp;&nbsp; GalUtil_Warn("The server has been destroyed.\n"); <br>
+   &nbsp;&nbsp;&nbsp; SM_LooperExit((Looper *) GalSS_ELRGetLoopData(elr));
+   <br>
+   &nbsp;&nbsp;&nbsp; break; <br>
+   &nbsp; } <br>
+   }</tt></blockquote>
+    In this particular case, the main loop is shut down when the server exits.
+    
+<p>Finally, the ELR object records arbitrary external data which the ELR object
+may need to do its job. In this case, we see in the behavior function that
+the ELR object requires a reference to the external main loop. </p>
+     
+<p>enum {GALSS_ELR_TIMER, GALSS_ELR_FD}; <br>
+   typedef void *(*<b><big>GalSS_ELTimerSetFn</big></b>)(GalSS_ELR *, int 
+ms);  <br>
+   typedef void *(*<b><big>GalSS_ELFDSetFn</big></b>)(GalSS_ELR *, GAL_SOCKET 
+ fd); <br>
+   typedef void (*<b><big>GalSS_ELUnsetFn</big></b>)(GalSS_ELR *, void *tag);
+  <br>
+   typedef void (*<b><big>GalSS_ELBehaviorFn</big></b>)(GalSS_ELR *, int
+condition);   </p>
+     
+<p>GalSS_ELR *<a name="GalSS_ELRSetupServer"></a><b><big>GalSS_ELRSetupServer</big></b>(GalSS_ServerArgs
+  *<i>external_arg_pkg</i>, int <i>argc</i>, char **<i>argv</i>, GalSS_ELTimerSetFn
+  <i>timer_set_fn</i>, GalSS_ELUnsetFn <i>timer_unset_fn</i>, GalSS_ELFDSetFn
+  <i>fd_set_fn</i>, GalSS_ELUnsetFn <i>fd_unset_fn</i>, GalSS_ELBehaviorFn
+ <i>behavior_fn</i>,  void *<i>loop_data</i>, void (*<i>loop_data_free_fn</i>)(void
+ *), int <i>timer_is_persistent</i>)  <br>
+   This function performs a number of tasks. First, it analyzes the command 
+ line arguments using the <a
+ href="../reference/server_structure.html#Argument_packages">argument package 
+ tools</a>, treating argc, argv, and external_arg_pkg as in <a
+ href="../reference/server_structure.html#GalSS_ExtractCmdlineServerArgs">GalSS_ExtractCmdlineServerArgs</a>.
+  It fixes the loop type to be external using <a
+ href="../reference/server_structure.html#GalSS_SAFixLoopType">GalSS_SAFixLoopType</a>.
+  It then calls <a
+ href="../reference/server_structure.html#GalSS_SetupServer">GalSS_SetupServer</a>,
+  builds the ELR structure using <a href="#GalSS_ELRCreate">GalSS_ELRCreate</a>
+  (the five function arguments and <i>timer_is_persistent</i>), sets the
+loop  data (if present) using <a href="#GalSS_ELRSetLoopData">GalSS_ELRSetLoopData</a>
+  (the <i>loop_data</i> and <i>loop_data_free_fn</i> arguments), and calls
+ <a href="../reference/libgalaxy_io.html#GalIO_ServerStart">GalIO_ServerStart</a>.
+  At this point, the server is configured and running, and the appropriate
+ callbacks should be enabled in the external main loop. </p>
+     
+<p>void&nbsp;<a name="GalSS_ELRDoCallback"></a><b><big>GalSS_ELRDoCallback</big></b>(GalSS_ELR
+  *<i>elr</i>, int <i>timer_or_fd</i>) <br>
+   This function should be invoked by all external loop timer and file descriptor 
+ callbacks. The <i>timer_or_fd</i> argument should be <tt>GALSS_ELR_TIMER</tt>
+  or <tt>GALSS_ELR_FD</tt> as appropriate. </p>
+     
+<p>void&nbsp;<a name="GalSS_ELRSetLoopData"></a><b><big>GalSS_ELRSetLoopData</big></b>(GalSS_ELR
+  *<i>elr</i>, void *<i>loop_data</i>, void (*<i>loop_data_free_fn</i>)(void
+  *)) <br>
+   This function sets the arbitrary ELR data. If <i>loop_data</i> is not
+NULL  and <i>loop_data_free_fn</i> is not NULL, <i>loop_data_free_fn</i>
+will be  called on <i>loop_data</i> when <i>elr</i> is freed. </p>
+     
+<p>void *<a name="GalSS_ELRGetLoopData"></a><b><big>GalSS_ELRGetLoopData</big></b>(GalSS_ELR
+  *<i>elr</i>) <br>
+   Retrieves the arbitrary ELR data. </p>
+     
+<p> </p>
+     
+<hr width="100%">    
+<h2> ELR support functions</h2>
+    Under normal circumstances, you won't need to know anything more about
+ ELR objects. However, there are a number of customizations you may want
+to  add.    
+<p>GalSS_ELR *<a name="GalSS_ELRCreate"></a><b><big>GalSS_ELRCreate</big></b>(GalIO_ServerStruct
+  *<i>scomm</i>, GalSS_ELTimerSetFn <i>timer_set_fn</i>, GalSS_ELUnsetFn
+<i>timer_unset_fn</i>,   GalSS_ELFDSetFn <i>fd_set_fn</i>, GalSS_ELUnsetFn
+<i>fd_unset_fn</i>, GalSS_ELBehaviorFn   <i>behavior_fn</i>, int <i>timer_is_persistent</i>)
+<br>
+   This function creates the basic ELR object. The <i>scomm</i> is a server 
+ object created using <a
+ href="../reference/server_structure.html#GalSS_SetupServer">GalSS_SetupServer</a>
+  or some similar function. The <i>timer_set_fn</i>, <i>timer_unset_fn</i>,
+   <i>fd_set_fn</i>, and <i>fd_unset_fn</i> are the timer and file descriptor
+  setting and unsetting functions illustrated <a
+ href="#External_loop_records">here</a>. The <i>behavior_fn</i> is the  function 
+which is called when various Communicator events are fired; for any given 
+situation, it is called after the corresponding timer and file descriptor
+ setting and unsetting functions are called (so, for instance, when a new
+connection object is created, the timer and file descriptors are registered
+for that object, and then the <i>behavior_fn</i> is called). The <i>timer_is_persistent</i>
+ argument should be 1 if the timers in the external main loop reset themselves
+ automatically when they're fired, 0 otherwise.  </p>
+     
+<p>When you create an ELR object, you're actually registering global information 
+ for many ELR objects, each of which is associated with a specific server, 
+ connection or broker object. When a connection is created, for instance, 
+a local ELR object is create for it which shares the global information with 
+ all the other local ELR objects; when the connection is destroyed, the local 
+ ELR object is freed. The functions <a href="#GalSS_ELRSetLoopData">GalSS_ELRSetLoopData</a>
+  and <a href="#GalSS_ELRGetLoopData">GalSS_ELRGetLoopData</a> access the
+shared global information, so you don't need to know about this local/global
+distinction in the normal case. However, under some circumstances you may
+want to know what sort of local ELR object you're currently holding in a
+callback. You can do this by using the following three functions. </p>
+     
+<p>GalIO_ServerStruct *<a name="GalSS_ELRSComm"></a><b><big>GalSS_ELRSComm</big></b>(GalSS_ELR
+  *<i>elr</i>) <br>
+   Returns the server object associated with this ELR object. </p>
+     
+<p>GalIO_CommStruct *<a name="GalSS_ELRGComm"></a><b><big>GalSS_ELRGComm</big></b>(GalSS_ELR
+  *<i>elr</i>) <br>
+   Returns the connection object associated with this ELR object, or NULL 
+if  this ELR object is associated with a server. </p>
+     
+<p>GalIO_BrokerStruct *<a name="GalSS_ELRBroker"></a><b><big>GalSS_ELRBroker</big></b>(GalSS_ELR
+  *<i>elr</i>) <br>
+   Returns the broker object associated with this ELR object, or NULL if
+this  ELR object is associated with a server or connection. </p>
+     
+<p>There is currently no support for distinguishing between inbound and outbound 
+ brokers. </p>
+     
+<p>void&nbsp;<a name="GalSS_ELRUpdatePollIntervals"></a><b><big>GalSS_ELRUpdatePollIntervals</big></b>(GalSS_ELR
+  *<i>elr</i>, int <i>server_client_poll_ms</i>, int <i>conn_ms</i>, int
+<i>broker_ms</i>)   <br>
+   There are currently three circumstances where timers are used in the ELR 
+ infrastructure: when polling server clients trying to <a
+ href="../reference/server_structure.html#Listener-in-Hub_support">contact
+  a Hub</a>, when polling connections, and when polling brokers. The default
+  timer intervals for these polls are 1000 ms, 50 ms, and 50 ms, respectively.
+  If you want to change the polling interval, you can do so using this function.
+  An argument of -1 for any of the three polling arguments here will leave
+ the existing poll untouched. </p>
+     
+<p>In rare cases, the programmer will want to change the callback behavior 
+ for a specific object type. While this is not without risks, it can be done, 
+ with one of the following five functions. The callback function must return 
+ 1 if the object is still pollable, 0 otherwise. It is <b>strongly</b> recommended 
+ that you begin from the existing implementations of these callback functions 
+ and modify them as little as possible. </p>
+     
+<p>typedef int (*<b><big>GalSS_ELCallbackFn</big></b>)(GalSS_ELR *elr, int 
+ timer_or_fd); </p>
+     
+<p>void&nbsp;<a name="GalSS_ELRSetConnectionCallback"></a><b><big>GalSS_ELRSetConnectionCallback</big></b>(GalSS_ELR
+  *<i>elr</i>, GalSS_ELCallbackFn <i>fn</i>) <br>
+   Sets the behavior of <a href="#GalSS_ELRDoCallback">GalSS_ELRDoCallback</a>
+  when the object associated with the ELR is a connection object. The current
+  definition is as follows: </p>
+     
+<blockquote><tt>static int __GalSS_ELRDoConnectionCallback(GalSS_ELR *elr,
+  int timer_or_fd) <br>
+   { <br>
+   &nbsp; if ((timer_or_fd == GALSS_ELR_FD) || <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_CommReadReady(elr-&gt;local_info-&gt;gcomm)
+  || <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_CommWriteReady(elr-&gt;local_info-&gt;gcomm))
+  { <br>
+   &nbsp;&nbsp;&nbsp; return GalIO_ConnectionCallbackHandler(elr-&gt;local_info-&gt;gcomm,
+  0); <br>
+   &nbsp; } else { <br>
+   &nbsp;&nbsp;&nbsp; return 0; <br>
+   &nbsp; } <br>
+   }</tt></blockquote>
+        
+<p><br>
+   void&nbsp;<a name="GalSS_ELRSetBrokerOutCallback"></a><b><big>GalSS_ELRSetBrokerOutCallback</big></b>(GalSS_ELR
+  *<i>elr</i>, GalSS_ELCallbackFn <i>fn</i>) <br>
+   Sets the behavior of <a href="#GalSS_ELRDoCallback">GalSS_ELRDoCallback</a>
+  when the object associated with the ELR is an outbound broker object. The
+  current definition is as follows: </p>
+     
+<blockquote><tt>static int __GalSS_ELRDoBrokerOutCallback(GalSS_ELR *elr,
+  int timer_or_fd) <br>
+   { <br>
+   &nbsp; if (GalIO_BrokerWriteReady(elr-&gt;local_info-&gt;broker)) { <br>
+   &nbsp;&nbsp;&nbsp; return GalIO_BrokerDataOutCallbackHandler(elr-&gt;local_info-&gt;broker);
+    <br>
+   &nbsp; } else { <br>
+   &nbsp;&nbsp;&nbsp; return 0; <br>
+   &nbsp; } <br>
+   }</tt></blockquote>
+        
+<p><br>
+   void&nbsp;<a name="GalSS_ELRSetBrokerInCallback"></a><b><big>GalSS_ELRSetBrokerInCallback</big></b>(GalSS_ELR
+  *<i>elr</i>, GalSS_ELCallbackFn <i>fn</i>) <br>
+   Sets the behavior of <a href="#GalSS_ELRDoCallback">GalSS_ELRDoCallback</a>
+  when the object associated with the ELR is an inbound broker object. The
+ current definition is as follows: </p>
+     
+<blockquote><tt>static int __GalSS_ELRDoBrokerInCallback(GalSS_ELR *elr,
+int timer_or_fd) <br>
+   { <br>
+   &nbsp; if ((timer_or_fd == GALSS_ELR_FD) || <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GalIO_BrokerReadReady(elr-&gt;local_info-&gt;broker))
+  { <br>
+   &nbsp;&nbsp;&nbsp; return GalIO_BrokerDataInCallbackHandler(elr-&gt;local_info-&gt;broker,
+  0); <br>
+   &nbsp; } else { <br>
+   &nbsp;&nbsp;&nbsp; return 0; <br>
+   &nbsp; } <br>
+   }</tt></blockquote>
+        
+<p><br>
+   void&nbsp;<a name="GalSS_ELRSetServerListenerCallback"></a><b><big>GalSS_ELRSetServerListenerCallback</big></b>(GalSS_ELR
+  *<i>elr</i>, GalSS_ELCallbackFn <i>fn</i>) <br>
+   Sets the behavior of <a href="#GalSS_ELRDoCallback">GalSS_ELRDoCallback</a>
+  when the object associated with the ELR is a server object and the current
+  ELR was set up to monitor connections from the Hub. The current definition
+  is as follows: </p>
+     
+<blockquote><tt>static int __GalSS_ELRDoServerListenerCallback(GalSS_ELR
+*elr,    <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  int timer_or_fd) <br>
+   { <br>
+   &nbsp; int res = GalIO_ServerCallbackHandler(elr-&gt;local_info-&gt;scomm,
+  0, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (GalIO_CommStruct **) NULL); <br>
+   &nbsp; /* 1 means it got a connection and everything's OK. */ <br>
+   &nbsp; if (res == 1) <br>
+   &nbsp;&nbsp;&nbsp; res = 0; <br>
+   &nbsp; return res; <br>
+   }</tt></blockquote>
+        
+<p><br>
+   void&nbsp;<a name="GalSS_ELRSetServerClientCallback"></a><b><big>GalSS_ELRSetServerClientCallback</big></b>(GalSS_ELR
+  *<i>elr</i>, GalSS_ELCallbackFn <i>fn</i>) <br>
+   Sets the behavior of <a href="#GalSS_ELRDoCallback">GalSS_ELRDoCallback</a>
+  when the object associated with the ELR is a server object and the current
+  ELR was set up to monitor <a
+ href="../reference/server_structure.html#Listener-in-Hub_support">connections
+  to the Hub</a>. The current definition is as follows: </p>
+     
+<blockquote><tt>static int __GalSS_ELRDoServerClientCallback(GalSS_ELR *elr,
+    <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  int timer_or_fd) <br>
+   { <br>
+   &nbsp; GalIO_ServerCheckHubContacts(elr-&gt;local_info-&gt;scomm); <br>
+   &nbsp; return 0; <br>
+   }</tt></blockquote>
+    In all cases, the functions that are called are the toplevel functions
+ that an external main loop would call to monitor the relevant object.  
+ 
+<p>GalSS_ELR *<a name="GalSS_ELRCopy"></a><b><big>GalSS_ELRCopy</big></b>(GalSS_ELR
+  *<i>source</i>) <br>
+   Copies an ELR object. Programmers should not need this function. </p>
+     
+<p>void&nbsp;<a name="GalSS_ELRShutdown"></a><b><big>GalSS_ELRShutdown</big></b>(GalSS_ELR
+  *<i>elr</i>) <br>
+   Shuts down all callbacks associated with this ELR. Programmers should
+not  need this function. </p>
+     
+<p>void&nbsp;<a name="GalSS_ELRDestroy"></a><b><big>GalSS_ELRDestroy</big></b>(GalSS_ELR
+  *<i>elr</i>) <br>
+   Frees the ELR. If the ELR is the "root" ELR, the global information is 
+freed  as well. </p>
+     
+<h3> <a name="A_note_about_broker_proxies"></a>A note about broker proxies</h3>
+    There are no ELR&nbsp;functions which deal specifically with <a
+ href="../reference/brokering.html#The_types_of_broker_proxies">broker proxies</a>, 
+because they're not needed. Polling for brokers associated with broker proxies. 
+when needed, is handled transparently through the creation callbacks associated 
+ with the brokers themselves.    
+<p> </p>
+     
+<hr width="100%">    
+<h2> The ugly details</h2>
+    The ELR infrastructure was abstracted from a number of instances of embedding 
+ the Communicator infrastructure in external main loops. While the <a
+ href="../reference/server_structure.html#Event-driven_programming">event-driven
+  programming model</a>, new in 3.0, made this process more explicit and
+complete,  it also made it more complicated. In this section, we illustrate
+the 3.0 version of our simple main loop example, which illustrates in gory
+detail the details underlying the ELR infrastructure.    
+<h3> The main loop</h3>
+    Let's begin with the main() function.    
+<blockquote><tt>int main(int argc, char **argv) <br>
+   { <br>
+   &nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) NULL; <br>
+   &nbsp; int new_argc; <br>
+   &nbsp; char **new_argv; <br>
+   &nbsp; GalSS_ServerArgs *arg_pkg; <br>
+   &nbsp; gcr = (GalaxyCallbackRecord *) malloc(sizeof(GalaxyCallbackRecord));
+    <br>
+   &nbsp; gcr-&gt;timer_cb = (TimerCallback *) NULL; <br>
+   &nbsp; gcr-&gt;l = SM_NewLooper(); <br>
+   &nbsp; /* If you want to use the built-in server arguments, you <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; can use GalSS_ExtractCmdlineServerArgs. Otherwise, 
+ you can just <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; call GalSS_InitializeServerToplevel(). */ <br>
+   &nbsp; arg_pkg = GalSS_DefaultServerArgs(); <br>
+   &nbsp; /* Make sure it knows that we're using our own main loop. We set
+ this    <br>
+   &nbsp;&nbsp; before we ever parse the server arguments, because we don't 
+ even want <br>
+   &nbsp;&nbsp; the arguments pertaining to the loop type enabled for the 
+user.  */ <br>
+   &nbsp; GalSS_SAFixLoopType(arg_pkg, GAL_LOOP_EXTERNAL); <br>
+   &nbsp; arg_pkg = GalSS_ExtractCmdlineServerArgs(arg_pkg, argc, argv, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  &amp;new_argc, &amp;new_argv); <br>
+   &nbsp; if (!arg_pkg) { <br>
+   &nbsp;&nbsp;&nbsp; /* Something bad happened, or -help was passed. */
+  <br>
+   &nbsp;&nbsp;&nbsp; exit(1); <br>
+   &nbsp; } <br>
+   &nbsp; /* Now, we call GalSS_InitializeServerFromServerArgs, and we don't 
+ have <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; to worry about the signature of GalSS_InitializeServerToplevel.
+  */ <br>
+   &nbsp; gcr-&gt;scomm = GalSS_SetupServer(arg_pkg, new_argc, new_argv); 
+  <br>
+   &nbsp; GalSS_FreeArgPkg(arg_pkg); <br>
+   &nbsp; if (!gcr-&gt;scomm) { <br>
+   &nbsp;&nbsp;&nbsp; fprintf(stderr, "Couldn't create a server\n"); <br>
+   &nbsp;&nbsp;&nbsp; fflush(stderr); <br>
+   &nbsp;&nbsp;&nbsp; exit(1); <br>
+   &nbsp; } <br>
+   &nbsp; /* Set the connect callback for the server. This gets called <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; whenever a new connection is established. */
+  <br>
+   &nbsp; GalIO_AddServerConnectCallback(gcr-&gt;scomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GCRAddConnectionCallback, (void *) gcr); <br>
+   &nbsp; /* The server can be a listener when it starts out, or <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; it can become a listener when an outgoing broker 
+ starts up. So <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; we set a callback to handle whenever this happens. 
+ */ <br>
+   &nbsp; GalIO_AddServerCallback(gcr-&gt;scomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GAL_SERVER_LISTENER_STARTUP_EVENT, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GCRSetupServerListener, (void *) gcr); <br>
+   &nbsp; /* Similarly, if someone calls GalIO_ContactHub, it may lead to 
+  <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; a new poller starting up. So we should deal with 
+ that <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; as a callback too. */ <br>
+   &nbsp; GalIO_AddServerCallback(gcr-&gt;scomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GAL_SERVER_CLIENT_POLL_STARTUP_EVENT, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GCRSetupServerClient, (void *) gcr); <br>
+   &nbsp; /* And now, something that will shut down the loop when <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; the server is destroyed. */ <br>
+   &nbsp; GalIO_AddServerCallback(gcr-&gt;scomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GAL_SERVER_DESTRUCTION_EVENT, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GCRDestroyServer, (void *) gcr); <br>
+   &nbsp; /* Now, start the server, and then the main loop. */ <br>
+   &nbsp; if (!GalIO_ServerStart(gcr-&gt;scomm)) { <br>
+   &nbsp;&nbsp;&nbsp; fprintf(stderr, "Couldn't start the server\n"); <br>
+   &nbsp;&nbsp;&nbsp; fflush(stderr); <br>
+   &nbsp;&nbsp;&nbsp; exit(1); <br>
+   &nbsp; } <br>
+   &nbsp; SM_Mainloop(gcr-&gt;l); <br>
+   &nbsp; exit(0); <br>
+   }</tt></blockquote>
+    This example contrasts with the <a
+ href="../reference/server_structure.html#Simulating_a_main_loop">default
+  main loop</a> in that we're using a different main loop; the way the server
+  object is created is essentially the same. There are three sections to
+this  main() function.    
+<p>In the first section, we allocate the structures we need for this type 
+ of mainloop. In the second section, we parse the command line arguments, 
+using the Galaxy Communicator library utilities. Notice that before we parse 
+the arguments, we fix the loop type, so that the arguments to control the 
+loop type will not be used. Then, we populate the package of arguments, and 
+then set up a server based on those arguments. In the final section, we set 
+up the callbacks which will handle the server. We do this by setting up four 
+ callbacks: one for when the listener starts up, one for when the client poll
+ starts up, one for when a connection is established, and one for when the
+ server is destroyed. </p>
+     
+<h3> The server callbacks</h3>
+    There are three callbacks here (we'll discuss the connection establishment 
+ callback below). First, we consider the listener startup callback.    
+<blockquote><tt>static void GCRServerListenerHandler(void *client_data) <br>
+   { <br>
+   &nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) client_data;
+   <br>
+   &nbsp; GalIO_ServerCallbackHandler(gcr-&gt;scomm, 0, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (GalIO_CommStruct **) NULL); <br>
+   } <br>
+   static void GCRShutdownServerListener(GalIO_ServerStruct *scomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  void *callback_data) <br>
+   { <br>
+   &nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) callback_data;
+    <br>
+   &nbsp; GalUtil_Warn("The server has failed.\n"); <br>
+   &nbsp; SM_RemoveAllFDCallbacks(gcr-&gt;l); <br>
+   &nbsp; SM_RemoveAllTimerCallbacks(gcr-&gt;l); <br>
+   } <br>
+   static void GCRSetupServerListener(GalIO_ServerStruct *scomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  void *callback_data) <br>
+   { <br>
+   &nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) callback_data;
+    <br>
+   &nbsp; /* You only need a file descriptor callback here, since <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; there will be no connection requests in any internal 
+ queue. */ <br>
+   &nbsp; SM_AddFDCallback(gcr-&gt;l, GalIO_GetServerListenSocket(scomm), 
+  <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GCRServerListenerHandler, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (void *) gcr); <br>
+   &nbsp; GalIO_AddServerCallback(scomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GAL_SERVER_LISTENER_SHUTDOWN_EVENT, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GCRShutdownServerListener, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (void *) gcr); <br>
+   }</tt></blockquote>
+    The function <tt>GCRSetupListenerServer</tt> is called when the listener 
+ starts up. It adds a shutdown callback to the server, and adds a file descriptor 
+ callback for the local main loop which calls GalIO_ServerCallbackHandler.
+    
+<p>int&nbsp;<a name="GalIO_ServerCallbackHandler"></a><b><big>GalIO_ServerCallbackHandler</big></b>(GalIO_ServerStruct
+  *<i>scomm</i>, int <i>read_blocking</i>, GalIO_CommStruct **<i>new_conn_ptr</i>)
+  <br>
+   Polls the server <i>scomm</i> and sets <i>*new_conn_pointer</i> to the 
+new  connection, if one is established. If <i>new_conn_ptr</i> is NULL, the 
+new  connection will not be returned. The <i>read_blocking</i> flag should 
+be 1 if the handler should do a blocking read, 0 otherwise. Returns 1 if there's
+ a new connection, 0 if there isn't, -1 if an error was encountered and the
+ listener was shut down, -2 if an error was encountered and the server was
+ destroyed. </p>
+     
+<p>Next, let's look at the client startup callbacks: </p>
+     
+<blockquote><tt>/* This function is used when the server is subscribing to
+    <br>
+   &nbsp;&nbsp; Hub listeners. */ <br>
+   static void GCRServerClientHandler(void *client_data) <br>
+   { <br>
+   &nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) client_data;
+   <br>
+   &nbsp; GalIO_ServerCheckHubContacts(gcr-&gt;scomm); <br>
+   } <br>
+   static void GCRShutdownServerClient(GalIO_ServerStruct *scomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  void *callback_data) <br>
+   { <br>
+   &nbsp; TimerCallback *cb = (TimerCallback *) callback_data; <br>
+   &nbsp; SM_RemoveTimerCallback(cb); <br>
+   } <br>
+   static void GCRSetupServerClient(GalIO_ServerStruct *scomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  void *callback_data) <br>
+   { <br>
+   &nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) callback_data;
+    <br>
+   &nbsp; TimerCallback *cb; <br>
+   &nbsp; /* Set up a periodic task to check the hub contacts. */ <br>
+   &nbsp; cb = SM_AddTimerCallback(gcr-&gt;l, 10, GCRServerClientHandler, 
+(void  *) gcr); <br>
+   &nbsp; /* Add a shutdown callback now. */ <br>
+   &nbsp; GalIO_AddServerCallback(scomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GAL_SERVER_DESTRUCTION_EVENT, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GCRShutdownServerClient, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (void *) cb); <br>
+   }</tt></blockquote>
+    This is exactly parallel to the listener case, except the client shutdown 
+ callback is associated with server destruction. The local main loop callback 
+ calls GalIO_ServerCheckHubContacts.    
+<p>void&nbsp;<a name="GalIO_ServerCheckHubContacts"></a><b><big>GalIO_ServerCheckHubContacts</big></b>(GalIO_ServerStruct
+  *<i>scomm</i>) <br>
+   Polls the server <i>scomm</i> to make sure that all client connections 
+to  Hub listeners are appropriately established. </p>
+     
+<p>Next, we have the server destruction callback, which simply exits the local
+loop. </p>
+     
+<blockquote><tt>static void GCRDestroyServer(GalIO_ServerStruct *scomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  void *callback_data) <br>
+   { <br>
+   &nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) callback_data;
+    <br>
+   &nbsp; GalUtil_Warn("The server has been destroyed.\n"); <br>
+   &nbsp; SM_LooperExit(gcr-&gt;l); <br>
+   }</tt></blockquote>
+        
+<h3> The connection callbacks</h3>
+    The server connect callback AddConnectionCallback sets up both a timer
+ and a file descriptor callback for the connection in the local main loop,
+ and stores away a disconnect handler for the connection which will shut
+down  both callbacks, as well as broker startup callbacks. The reason for
+two local  main loop callbacks is that the file descriptor callback is more
+efficient  (processing happens immediately when data is available), but it
+misses some  of the cases, because if extra data is read in and is available
+in the internal  queue for the connection, a file descriptor callback won't
+see it.    
+<blockquote><tt>typedef struct __connection_container { <br>
+   &nbsp; GalIO_CommStruct *gcomm; <br>
+   &nbsp; GalaxyCallbackRecord *gcr; <br>
+   &nbsp; TimerCallback *t; <br>
+   &nbsp; GAL_SOCKET fd; <br>
+   } ConnectionContainer; <br>
+   typedef struct __connection_container { <br>
+   &nbsp; GalIO_CommStruct *gcomm; <br>
+   &nbsp; GalaxyCallbackRecord *gcr; <br>
+   &nbsp; TimerCallback *t; <br>
+   &nbsp; GAL_SOCKET fd; <br>
+   } ConnectionContainer; <br>
+   /* GalIO_ConnectionCallbackHandler(): <br>
+   &nbsp;&nbsp; -1 means an error was encountered and the connection has
+been  destroyed. <br>
+   &nbsp;&nbsp; 0 means we're in the midst of things. <br>
+   &nbsp;&nbsp; 1 means we're done and the connection has been destroyed. 
+*/    <br>
+   static void GCRConnectionDisconnect(GalIO_CommStruct *gcomm, void *caller_data)
+    <br>
+   { <br>
+   &nbsp; ConnectionContainer *c = (ConnectionContainer *) caller_data; <br>
+   &nbsp; GalaxyCallbackRecord *gcr = c-&gt;gcr; <br>
+   &nbsp; SM_RemoveFDCallback(gcr-&gt;l, c-&gt;fd); <br>
+   &nbsp; SM_RemoveTimerCallback(c-&gt;t); <br>
+   &nbsp; free(c); <br>
+   } <br>
+   /* The loop cleanup is handled in the disconnect callback. */ <br>
+   static void GCRConnectionHandler(void *client_data) <br>
+   { <br>
+   &nbsp; ConnectionContainer *c = (ConnectionContainer *) client_data; <br>
+   &nbsp; GalIO_CommStruct *gcomm = c-&gt;gcomm; <br>
+   &nbsp; GalIO_ConnectionCallbackHandler(gcomm, 0); <br>
+   } <br>
+   static void GCRConnectionTimerHandler(void *client_data) <br>
+   { <br>
+   &nbsp; /* This is called from the timer. We could go ahead and <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; just call the normal connection handler, which
+ would    <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; try to read from the file descriptor, but since 
+ there's <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; already a file descriptor callback which triggers 
+ that <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; handler, we'll only do something if there's stuff
+    <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; in the internal queues. */ <br>
+   &nbsp; ConnectionContainer *c = (ConnectionContainer *) client_data; <br>
+   &nbsp; GalIO_CommStruct *gcomm = c-&gt;gcomm; <br>
+   &nbsp; if (GalIO_CommReadReady(gcomm) || GalIO_CommWriteReady(gcomm))
+{    <br>
+   &nbsp;&nbsp;&nbsp; GCRConnectionHandler(client_data); <br>
+   &nbsp; } <br>
+   } <br>
+   static void GCRAddConnectionCallback(GalIO_ServerStruct *scomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GalIO_CommStruct *gcomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  void *callback_data) <br>
+   { <br>
+   &nbsp; GalaxyCallbackRecord *gcr = (GalaxyCallbackRecord *) callback_data;
+    <br>
+   &nbsp; ConnectionContainer *c = (ConnectionContainer *) calloc(1, sizeof(ConnectionContainer));
+    <br>
+   &nbsp; c-&gt;gcr = gcr; <br>
+   &nbsp; c-&gt;gcomm = gcomm; <br>
+   &nbsp; c-&gt;fd = GalIO_GetCommSocket(gcomm); <br>
+   &nbsp; /* We'll use the file descriptor callback to check the file <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; descriptor, and the timer callback to check the 
+ internal queue. */ <br>
+   &nbsp; SM_AddFDCallback(gcr-&gt;l, c-&gt;fd, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GCRConnectionHandler, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (void *) c); <br>
+   &nbsp; c-&gt;t = SM_AddTimerCallback(gcr-&gt;l, 5, GCRConnectionTimerHandler,
+    <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (void *) c); <br>
+   &nbsp; /* Finally, to support brokers, and to deal with <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; disconnections, we need to use the <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; data slot for the connection. */ <br>
+   &nbsp; /* Make sure you stop polling when the connection dies. */ <br>
+   &nbsp; GalIO_AddConnectionCallback(gcomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GAL_CONNECTION_SHUTDOWN_EVENT, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GCRConnectionDisconnect, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (void *) c); <br>
+   &nbsp; /* And now, add the callbacks for the broker setups. */ <br>
+   &nbsp; GalIO_AddConnectionBrokerCallback(gcomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GAL_CONNECTION_BROKER_OUT_STARTUP_EVENT, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GCRSetupBrokerOut, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (void *) gcr); <br>
+   &nbsp; GalIO_AddConnectionBrokerCallback(gcomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GAL_CONNECTION_BROKER_IN_STARTUP_EVENT, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GCRSetupBrokerIn, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (void *) gcr); <br>
+   }</tt></blockquote>
+        
+<p><br>
+   int&nbsp;<a name="GalIO_ConnectionCallbackHandler"></a><b><big>GalIO_ConnectionCallbackHandler</big></b>(GalIO_CommStruct
+  *<i>gcomm</i>, int <i>read_blocking</i>) <br>
+   Polls the connection <i>gcomm</i> for dispatch function requests to process. 
+ Does a blocking read if <i>read_blocking</i> is nonzero. Returns -1 if an 
+ error was encountered and the connection has been destroyed, 1 if the connection 
+ is done and it's been destroyed, 0 otherwise. </p>
+     
+<p>int&nbsp;<a name="GalIO_CommWriteReady"></a><b><big>GalIO_CommWriteReady</big></b>(GalIO_CommStruct
+  *<i>gcomm</i>) <br>
+   Returns 1 if the connection <i>gcomm</i> has data in its internal outbound 
+ queue waiting to be written, 0 otherwise. </p>
+     
+<p>int<a name="GalIO_CommReadReady"></a><b><big>GalIO_CommReadReady</big></b>(GalIO_CommStruct
+  *<i>gcomm</i>) <br>
+   Returns 1 if the connection gcomm has data in its internal inbound queue 
+ waiting to be processed, 0 otherwise. </p>
+     
+<h3> The outgoing broker callback</h3>
+    The broker callbacks are completely parallel to these last cases. Let's 
+ start with the outgoing broker.    
+<blockquote><tt>typedef struct __broker_container { <br>
+   &nbsp; GalaxyCallbackRecord *gcr; <br>
+   &nbsp; GalIO_BrokerStruct *b; <br>
+   &nbsp; TimerCallback *t; <br>
+   &nbsp; GAL_SOCKET fd; <br>
+   } BrokerContainer; <br>
+   /* GalIO_BrokerDataOutCallbackHandler() <br>
+   &nbsp;&nbsp; returns 1 if the broker is done and has been destroyed, <br>
+   &nbsp;&nbsp; 0 if not done */ <br>
+   /* The timer disconnect is handled in the loop data finalizer. */ <br>
+   static void GCROutBrokerHandler(void *client_data) <br>
+   { <br>
+   &nbsp; BrokerContainer *c = (BrokerContainer *) client_data; <br>
+   &nbsp; if (GalIO_BrokerWriteReady(c-&gt;b)) { <br>
+   &nbsp;&nbsp;&nbsp; GalIO_BrokerDataOutCallbackHandler(c-&gt;b); <br>
+   &nbsp; } <br>
+   } <br>
+   void GCRBrokerShutdown(GalIO_BrokerStruct *b, void *loop_data) <br>
+   { <br>
+   &nbsp; BrokerContainer *c = (BrokerContainer *) loop_data; <br>
+   &nbsp; if (c-&gt;fd != GAL_INVALID_SOCKET) <br>
+   &nbsp;&nbsp;&nbsp; SM_RemoveFDCallback(c-&gt;gcr-&gt;l, c-&gt;fd); <br>
+   &nbsp; SM_RemoveTimerCallback(c-&gt;t); <br>
+   &nbsp; free(c); <br>
+   } <br>
+   void GCRSetupBrokerOut(GalIO_CommStruct *gcomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GalIO_BrokerStruct *b, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  void *caller_data) <br>
+   { <br>
+   &nbsp; BrokerContainer *c = (BrokerContainer *) calloc(1, sizeof(BrokerContainer));
+    <br>
+   &nbsp; c-&gt;b = b; <br>
+   &nbsp; c-&gt;gcr = (GalaxyCallbackRecord *) caller_data; <br>
+   &nbsp; c-&gt;fd = GAL_INVALID_SOCKET; <br>
+   &nbsp; /* There's no point in an fd callback for the outgoing <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; broker, since it piggybacks off of the server 
+listener.  */ <br>
+   &nbsp; c-&gt;t = SM_AddTimerCallback(c-&gt;gcr-&gt;l, 1, GCROutBrokerHandler,
+    <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (void *) c); <br>
+   &nbsp; /* Use the caller data to set up the loop finalizer. */ <br>
+   &nbsp; GalIO_AddBrokerCallback(b, GAL_BROKER_DESTRUCTION_EVENT, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GCRBrokerShutdown, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (void *) c); <br>
+   } <br>
+   &nbsp;</tt></blockquote>
+    The outgoing broker sets up a timer callback for the local main loop
+(the  server is already monitoring the connection requests, so all the outgoing 
+ broker needs to do is flush data). In addition, the broker adds a shutdown 
+ callback for itself.    
+<p>int&nbsp;<a name="GalIO_BrokerDataOutCallbackHandler"></a><b><big>GalIO_BrokerDataOutCallbackHandler</big></b>(GalIO_BrokerStruct
+  *<i>b</i>) <br>
+   This function invokes the broker <i>b</i> and destroys the broker in the 
+ appropriate circumstances. This function returns 1 if the broker is done 
+and has been destroyed, 0 if not done.</p>
+     
+<p>int&nbsp;<a name="GalIO_BrokerWriteReady"></a><b><big>GalIO_BrokerWriteReady</big></b>(GalIO_BrokerStruct
+  *<i>b</i>) <br>
+   This function returns 1 when the broker has data to write in its outbound 
+ queue, 0 otherwise. </p>
+     
+<p>int&nbsp;<a name="GalSS_BrokerProxyOutCallbackHandler"></a><b><big>GalSS_BrokerProxyOutCallbackHandler</big></b>(GalSS_BrokerProxy
+   *<i>bp</i>)<br>
+     This function calls <a href="#GalIO_BrokerDataOutCallbackHandler">GalIO_BrokerDataOutCallbackHandler</a> 
+  on the broker object associated with the outbound broker proxy <i>bp</i>. 
+  As we <a href="#A_note_about_broker_proxies">mentioned</a>, this  function 
+is needed only for programming language embeddings, and should  never be needed
+by the programmer; all C embeddings for broker proxies are  handled transparently
+by the broker callbacks.</p>
+     
+<p>int&nbsp;<a name="GalSS_BrokerProxyWriteReady"></a><b><big>GalSS_BrokerProxyWriteReady</big></b>(GalSS_BrokerProxy
+   *<i>bp</i>)<br>
+     Returns 1 if the outbound broker proxy <i>bp</i> has data available
+to  be  written in its outbound queue, 0 otherwise.&nbsp;As we <a
+ href="#A_note_about_broker_proxies">mentioned</a>,  this function is needed 
+only for programming language embeddings, and should   never be needed by 
+the programmer; all C embeddings for broker proxies are   handled transparently 
+by the broker callbacks.  </p>
+     
+<h3> The incoming broker callback</h3>
+    The incoming brokers are completely parallel, as long as you've use <a
+ href="../reference/brokering.html#GalIO_CommBrokerDataInInit">GalIO_CommBrokerDataInInit</a>
+  instead of the older <a
+ href="../reference/brokering.html#GalIO_BrokerDataInInit">GalIO_BrokerDataInInit</a>.
+    
+<blockquote><tt>/* Next, the incoming broker. This is much more like the
+  <br>
+   &nbsp;&nbsp; connection. */ <br>
+   /* GalIO_BrokerInCallbackHandler() <br>
+   &nbsp;&nbsp; returns 1 if the broker is done and has been destroyed, <br>
+   &nbsp;&nbsp; 0 if not done, -1 if error was encountered and the broker 
+  <br>
+   &nbsp;&nbsp; has been destroyed. */ <br>
+   static void GCRInBrokerHandler(void *client_data) <br>
+   { <br>
+   &nbsp; /* The timer disconnect must be handled in the finalizer. <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; Make sure that's set up correctly in the examples. 
+ */ <br>
+   &nbsp; BrokerContainer *c = (BrokerContainer *) client_data; <br>
+   &nbsp; GalIO_BrokerStruct *b = c-&gt;b; <br>
+   &nbsp; GalIO_BrokerDataInCallbackHandler(b, 0); <br>
+   } <br>
+   static void GCRInBrokerTimerHandler(void *client_data) <br>
+   { <br>
+   &nbsp; /* This is called from the timer. We could go ahead and <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; just call the normal in broker handler, which 
+would    <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; try to read from the file descriptor, but since 
+ there's <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; already a file descriptor callback which triggers 
+ that <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; handler, we'll only do something if there's stuff
+    <br>
+   &nbsp;&nbsp;&nbsp;&nbsp; in the internal queues. */ <br>
+   &nbsp; BrokerContainer *c = (BrokerContainer *) client_data; <br>
+   &nbsp; GalIO_BrokerStruct *b = c-&gt;b; <br>
+   &nbsp; if (GalIO_BrokerReadReady(b)) { <br>
+   &nbsp;&nbsp;&nbsp; GCRInBrokerHandler(client_data); <br>
+   &nbsp; } <br>
+   } <br>
+   void GCRSetupBrokerIn(GalIO_CommStruct *gcomm, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GalIO_BrokerStruct *b, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  void *caller_data) <br>
+   { <br>
+   &nbsp; BrokerContainer *c = (BrokerContainer *) calloc(1, sizeof(BrokerContainer));
+    <br>
+   &nbsp; c-&gt;b = b; <br>
+   &nbsp; c-&gt;gcr = (GalaxyCallbackRecord *) caller_data; <br>
+   &nbsp; c-&gt;fd = GalIO_GetBrokerSocket(b); <br>
+   &nbsp; SM_AddFDCallback(c-&gt;gcr-&gt;l, c-&gt;fd, GCRInBrokerHandler, 
+(void  *) c); <br>
+   &nbsp; c-&gt;t = SM_AddTimerCallback(c-&gt;gcr-&gt;l, 1, GCRInBrokerTimerHandler,
+    <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (void *) c); <br>
+   &nbsp; /* Use the caller data to set up the loop finalizer. */ <br>
+   &nbsp; GalIO_AddBrokerCallback(b, GAL_BROKER_DESTRUCTION_EVENT, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  GCRBrokerShutdown, <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  (void *) c);</tt></blockquote>
+    The callback sets up a local file descriptor and timer callback, and
+sets  up a shutdown callback to destroy the local callbacks.   
+<p>int&nbsp;<a name="GalIO_BrokerDataInCallbackHandler"></a><b><big>GalIO_BrokerDataInCallbackHandler</big></b>(GalIO_BrokerStruct
+  *<i>b</i>, int <i>read_blocking</i>) <br>
+   This function polls the broker <i>b</i> and destroys the broker in the 
+appropriate  circumstances. This function returns 1 if the broker is done 
+and has been  destroyed, 0 if not done, -1 if error was encountered and the 
+broker has been destroyed.</p>
+     
+<p>int&nbsp;<a name="GalIO_BrokerReadReady"></a><b><big>GalIO_BrokerReadReady</big></b>(GalIO_BrokerStruct
+  *<i>b</i>) <br>
+   This function returns 1 when the broker has data to read in its inbound
+ queue, 0 otherwise.</p>
+     
+<p>int&nbsp;<a name="GalSS_BrokerProxyInCallbackHandler"></a><b><big>GalSS_BrokerProxyInCallbackHandler</big></b>(GalSS_BrokerProxy
+   *<i>bp</i>)<br>
+      This function calls <a href="#GalIO_BrokerDataInCallbackHandler">GalIO_BrokerDataOutCallbackHandler</a> 
+  on the broker object associated with the inbound broker proxy <i>bp</i>. 
+  As we <a href="#A_note_about_broker_proxies">mentioned</a>, this  function 
+is needed only for programming language embeddings, and should  never be needed
+by the programmer; all C embeddings for broker proxies are  handled transparently
+by the broker callbacks.  <br>
+    </p>
+     
+<p>int&nbsp;<a name="GalSS_BrokerProxyReadReady"></a><b><big>GalSS_BrokerProxyReadReady</big></b>(GalSS_BrokerProxy
+  *<i>bp</i>) <br>
+   As we <a href="#A_note_about_broker_proxies">already  mentioned</a>, there's 
+no requirement to handle broker proxies specially in these cases, because 
+the registration will happen through the normal creation  callbacks associated 
+with the brokers embedded in the proxies themselves.  However, occasionally 
+it will be more convenient to poll a broker directly  (the Python bindings 
+make use of this functionality, for instance). This function returns 1 when 
+the broker proxy has a broker and the broker has data to read in its inbound 
+queue, 0 otherwise.</p>
+     
+<p> </p>
+     
+<blockquote>
+  <p><tt></tt></p>
+   </blockquote>
+     
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="hub_properties.html"><img src="../../arrow_left.gif" alt=""
+ width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="external_makefile.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated August 8, 2002</center>
+     <br>
+    <br>
+ <br>
+</body>
+</html>

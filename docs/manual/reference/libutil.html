@@ -1,0 +1,252 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+        
+  <meta name="GENERATOR"
+ content="Mozilla/4.7 [en] (X11; I; Linux 2.2.14pre9 ppc) [Netscape]">
+  <title>Galaxy Communicator Documentation: Utilities Library</title>
+         <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+    
+<center>  
+<h1> Galaxy Communicator Documentation:<br>
+  <br>
+  Utilities Library</h1>
+ </center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "libserverstub.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "glossary.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+    
+<hr width="100%"> <br>
+ &nbsp;  
+<p>This documentation briefly describes functions in the directory src/libGalaxy/util 
+and elsewhere which are present but probably will not be used by the developer. 
+The signatures of these functions may change from release to release. </p>
+ 
+<ul>
+  <li> <a href="#Sockets">Sockets</a></li>
+   <li> <a href="#Command_line_argument_parsing">Command line argument parsing</a></li>
+   <li> <a href="#Command_line_argument_parsing">Threads</a></li>
+   <li> <a href="#Miscellaneous">Miscellaneous</a></li>
+   
+</ul>
+    
+<p><br>
+  </p>
+ 
+<hr width="100%">  
+<h2> <a name="Sockets"></a>Sockets</h2>
+  int&nbsp;<a name="GalUtil_IPFromHostname"></a><b><big>GalUtil_IPFromHostname</big></b>(char
+ *<i>hostname</i>) <br>
+ Produces an IPv4 address from <i>hostname</i>.  
+<p>int&nbsp;<a name="GalUtil_IP4Address"></a><b><big>GalUtil_IP4Address</big></b>(unsigned
+ long *<i>inaddr</i>) <br>
+ Tries to find a non-loopback IP address (not on Win32). </p>
+ 
+<p>GAL_SOCKET&nbsp;<a name="GalUtil_SockCreateServer"></a><b><big>GalUtil_SockCreateServer</big></b>(unsigned
+ short <i>port</i>, int <i>n_listen</i>) <br>
+ Creates a server on <i>port</i> with a queue of length <i>n_listen</i>.
+</p>
+ 
+<p>GAL_SOCKET&nbsp;<a name="GalUtil_SockCreateClient"></a><b><big>GalUtil_SockCreateClient</big></b>(char
+ *<i>host</i>, unsigned short <i>port</i>) <br>
+ Creates a client connection to <i>host</i> at <i>port</i>. </p>
+ 
+<p>GAL_SOCKET&nbsp;<a name="GalUtil_SockServerAcceptConnection"></a><b><big>GalUtil_SockServerAcceptConnection</big></b>(GAL_SOCKET
+ <i>sock</i>, char *<i>host</i>) <br>
+ &nbsp; </p>
+ 
+<p>int&nbsp;<a name="GalUtil_SockServerCheckForConnection"></a><b><big>GalUtil_SockServerCheckForConnection</big></b>(GAL_SOCKET
+ <i>sock</i>, char *<i>host</i>, int *<i>client_sock</i>) </p>
+ 
+<p>int&nbsp;<a name="GalUtil_SockServerBlockingCheckForConnection"></a><b><big>GalUtil_SockServerBlockingCheckForConnection</big></b>(GAL_SOCKET
+ <i>sock</i>, char *<i>host</i>, int *<i>client_sock</i>) </p>
+ 
+<p>void&nbsp;<a name="GalUtil_SockServerInaddrToString"></a><b><big>GalUtil_SockServerInaddrToString</big></b>(unsigned
+ long <i>inaddr</i>, char *<i>s</i>) </p>
+ 
+<p>int&nbsp;<a name="GalUtil_SockServerHostnameToInaddr"></a><b><big>GalUtil_SockServerHostnameToInaddr</big></b>(char
+ *<i>hostname</i>, unsigned long *<i>inaddr</i>) </p>
+ 
+<p>int&nbsp;<a name="GalUtil_SockClose"></a><b><big>GalUtil_SockClose</big></b>(GAL_SOCKET
+ <i>sock</i>) </p>
+ 
+<p>int&nbsp;<a name="GalUtil_SockBlockOn"></a><b><big>GalUtil_SockBlockOn</big></b>(GAL_SOCKET
+ <i>sock</i>) </p>
+ 
+<p>int&nbsp;<a name="GalUtil_SockBlockOff"></a><b><big>GalUtil_SockBlockOff</big></b>(GAL_SOCKET
+ <i>sock</i>) </p>
+ 
+<p>int&nbsp;<a name="GalUtil_SockCanWrite"></a><b><big>GalUtil_SockCanWrite</big></b>(GAL_SOCKET
+ <i>sock</i>) </p>
+ 
+<p>int&nbsp;<a name="GalUtil_SockCanRead"></a><b><big>GalUtil_SockCanRead</big></b>(GAL_SOCKET
+ <i>sock</i>) </p>
+ 
+<p>long&nbsp;<a name="GalUtil_SockBytesWaiting"></a><b><big>GalUtil_SockBytesWaiting</big></b>(GAL_SOCKET
+ <i>sock</i>) </p>
+ 
+<p>int&nbsp;<a name="GalUtil_SockSelect"></a><b><big>GalUtil_SockSelect</big></b>(int
+ <i>maxfd</i>, fd_set *<i>read_fdset</i>, fd_set *<i>write_fdset</i>, fd_set 
+*<i>err_fdset</i>, struct timeval *<i>tp</i>, int *<i>interrupted</i>) <br>
+ Cross-platform select() call. If select() returned because the system call 
+was interrupted by a signal, the integer <i>interrupted</i> points to is set
+to 1 (if <i>interrupted</i> is not NULL). </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Command_line_argument_parsing"></a>Command line argument parsing</h2>
+  void&nbsp;<a name="GalUtil_OAPrintOptions"></a><b><big>GalUtil_OAPrintOptions</big></b>(int
+ <i>argc</i>, char **<i>argv</i>, char **<i>oas</i>, char *<i>tag</i>)  
+<p>int&nbsp;<a name="GalUtil_OASplitArgs"></a><b><big>GalUtil_OASplitArgs</big></b>(int
+ <i>argc</i>, char **<i>argv</i>, char **<i>oas</i>, int *<i>first_real_arg</i>, 
+int *<i>in_argc</i>, char ***<i>in_argv</i>, int *<i>ex_argc</i>, char ***<i>ex_argv</i>)
+ </p>
+ 
+<p>int&nbsp;<a name="GalUtil_OAUiCheckUsage"></a><b><big>GalUtil_OAUiCheckUsage</big></b>(const 
+char *<i>progname</i>, int <i>argc</i>, char **<i>argv</i>, char **<i>oas</i>,
+ int *<i>first_real_arg</i>) </p>
+ 
+<p>void&nbsp;<a name="GalUtil_OAUiPrintUsage"></a><b><big>GalUtil_OAUiPrintUsage</big></b>(const 
+char *<i>progname</i>, int <i>argc</i>, char **<i>argv</i>, char **<i>oas</i>)
+ </p>
+ 
+<p>int&nbsp;<a name="GalUtil_OAUiExtract"></a><b><big>GalUtil_OAUiExtract</big></b>(int
+ <i>argc</i>, char **<i>argv</i>, char **<i>oas</i>, const char *<i>key</i>, 
+... ) </p>
+ 
+<p>void&nbsp;<a name="GalUtil_OAUiExtractAsserting"></a><b><big>GalUtil_OAUiExtractAsserting</big></b>(int
+ <i>argc</i>, char **<i>argv</i>, char **<i>oas</i>, const char *<i>key</i>, 
+... ) </p>
+ 
+<p>int<a name="GalUtil_SAExtract"></a><b><big>GalUtil_SAExtract</big></b>(int
+ <i>argc</i>, char **<i>argv</i>, const char *<i>key</i>, int <i>num</i>, 
+... ) </p>
+ 
+<p>void&nbsp;<a name="_GalUtil_FreeOASDescription"></a><b><big>_GalUtil_FreeOASDescription</big></b>(GalUtil_OASDescription
+ *<i>descr</i>) </p>
+ 
+<p>GalUtil_OASDescription *<a name="GalUtil_OADigest"></a><b><big>GalUtil_OADigest</big></b>(char
+ **<i>oas</i>) </p>
+ 
+<p>int&nbsp;<a name="GalUtil_RemoveOASArg"></a><b><big>GalUtil_RemoveOASArg</big></b>(GalUtil_OASDescription
+ *<i>descr</i>, const char *<i>key</i>) </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Threads"></a>Threads</h2>
+  These functions and macros are intended to provide a common interface to 
+Posix and Win32 threads. See the <a href="../admin/threads.html">thread notes</a>.
+ 
+<p>GalUtil_LocalMutex*<a name="GalUtil_CreateLocalMutex"></a><b><big>GalUtil_CreateLocalMutex</big></b>(void
+ ) </p>
+ 
+<p>void&nbsp;<a name="GalUtil_DestroyLocalMutex"></a><b><big>GalUtil_DestroyLocalMutex</big></b>(GalUtil_LocalMutex
+ *<i>mutex</i>) </p>
+ 
+<p>void&nbsp;<a name="GalUtil_InitLocalMutex"></a><b><big>GalUtil_InitLocalMutex</big></b>(GalUtil_LocalMutex
+ *<i>mutex</i>) </p>
+ 
+<p>void&nbsp;<a name="GalUtil_LockLocalMutex"></a><b><big>GalUtil_LockLocalMutex</big></b>(GalUtil_LocalMutex
+ *<i>mutex</i>) </p>
+ 
+<p>void&nbsp;<a name="GalUtil_UnlockLocalMutex"></a><b><big>GalUtil_UnlockLocalMutex</big></b>(GalUtil_LocalMutex
+ *<i>mutex</i>) </p>
+ 
+<p>GalUtil_ThreadID&nbsp;<a name="GalUtil_CurrentThreadID"></a><b><big>GalUtil_CurrentThreadID</big></b>()
+ </p>
+ 
+<p>int&nbsp;<a name="GalUtil_EqualThreadID"></a><b><big>GalUtil_EqualThreadID</big></b>(GalUtil_ThreadID
+ <i>x</i>, GalUtil_ThreadID <i>y</i>) </p>
+ 
+<p>void&nbsp;<a name="GalUtil_ThreadPushCleanup"></a><b><big>GalUtil_ThreadPushCleanup</big></b>(void
+ (*<i>handler</i>)(void*), void *<i>arg</i>) </p>
+ 
+<p>int&nbsp;<a name="GalUtil_ThreadPopCleanup"></a><b><big>GalUtil_ThreadPopCleanup</big></b>(int
+ <i>execute</i>) </p>
+ 
+<p>int<a name="GalUtil_ThreadCancel"></a><b><big>GalUtil_ThreadCancel</big></b>(GalUtil_ThreadID
+ <i>tid</i>) </p>
+ 
+<p>void&nbsp;<a name="GalUtil_ThreadTestCancel"></a><b><big>GalUtil_ThreadTestCancel</big></b>()
+ </p>
+ 
+<p>void&nbsp;<a name="GalUtil_ThreadCreate"></a><b><big>GalUtil_ThreadCreate</big></b>(GalUtil_ThreadID
+ *<i>tid</i>, void*(*<i>func</i>)(void*), void *<i>arg</i>) </p>
+ 
+<p>void&nbsp;<a name="GalUtil_InitConditionVar"></a><b><big>GalUtil_InitConditionVar</big></b>(GalUtil_ConditionVar
+ *<i>condVar</i>) </p>
+ 
+<p>void&nbsp;<a name="GalUtil_DestroyConditionVar"></a><b><big>GalUtil_DestroyConditionVar</big></b>(GalUtil_ConditionVar
+ *<i>condVar</i>) </p>
+ 
+<p>void&nbsp;<a name="GalUtil_ConditionWait"></a><b><big>GalUtil_ConditionWait</big></b>(GalUtil_ConditionVar
+ *<i>condVar</i>, GalUtil_LocalMutex *<i>mutex</i>) </p>
+ 
+<p>void&nbsp;<a name="GalUtil_ConditionBroadcast"></a><b><big>GalUtil_ConditionBroadcast</big></b>(GalUtil_ConditionVar
+ *<i>condVar</i>) </p>
+ 
+<p>void&nbsp;<a name="GalUtil_ThreadExit"></a><b><big>GalUtil_ThreadExit</big></b>()
+ </p>
+ 
+<p>void&nbsp;<a name="GalUtil_InitMainWin32Thread"></a><b><big>GalUtil_InitMainWin32Thread</big></b>()
+ </p>
+ 
+<p>int&nbsp;<a name="GalUtil_TryLockLocalMutex"></a><b><big>GalUtil_TryLockLocalMutex</big></b>(GalUtil_LocalMutex
+ *<i>mutex</i>) </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Miscellaneous"></a>Miscellaneous</h2>
+  int&nbsp;<a name="GalUtil_Mkdirp"></a><b><big>GalUtil_Mkdirp</big></b>(const 
+char *<i>pathname</i>, mode_t <i>mode</i>) <br>
+ Cross-platform recursive directory creation function. Used in logging in 
+the Hub.  
+<p>void&nbsp;<a name="GalUtil_MilliSleep"></a><b><big>GalUtil_MilliSleep</big></b>(int
+ <i>msecs</i>) </p>
+ 
+<p>int&nbsp;<a name="GalUtil_InitVerbose"></a><b><big>GalUtil_InitVerbose</big></b>()
+ <br>
+ Called to initialize values for verbosity levels. </p>
+ 
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "libserverstub.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "glossary.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated June 21, 2002</center>
+   <br>
+ <br>
+</body>
+</html>

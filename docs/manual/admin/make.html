@@ -1,0 +1,109 @@
+<!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; U; SunOS 5.5.1 sun4u) [Netscape]">
+   <title>Galaxy Communicator Documentation: Guide to the Makefiles</title>
+</head>
+<body style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#0000FF">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:
+<br><br>Guide to the Makefiles</h1></center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "org.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "ntport.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+
+<hr WIDTH="100%">
+<h2>
+Introduction</h2>
+The Make organization is designed to support
+multiple versions of object files in parallel. It does this by separating
+.o files, libraries, and executables into separate directories based upon
+the machine architecture (processor) and operating system. It also separates
+the .o files into separate directories according to compile type (e.g.
+optimized, debug, profile, etc.), and separates libraries and executables
+by appending an appropriate identifier. For example, a library <i>libfoo.a</i>
+would have a debug form of <i>libfoo_debug.a</i>, and the debug version
+of the executable <i>a.out</i> would be <i>a.out_debug</i>. The Makefiles
+are designed to link automatically against the correct versions of object
+files and libraries.
+<p>In addition to being separated by directories
+according to machine architecture and OS (ARCH-OS), each executable has
+a symbolic link in the top level bin directory which points to the file
+<i>fat_binary</i>.
+<i>fat_binary</i>
+is a csh script which figures out the ARCH-OS of the machine its running
+on, looks at the name by which it was invoked, and executes the appropriate
+ARCH-OS-specific executable.
+<p>We currently support compiling optimized,
+debug, and profiled versions of everything, and may support purify'd versions
+in the future. As for ARCH-OS, MIT typically builds on Sparc and x86 Solaris,
+and MITRE typically builds on Sparc Solaris and Linux; these systems can
+be considered "supported."&nbsp; See the section on <a href="install.html#supported">supported
+architectures</a>.
+<p>The next section will describe how to build
+the system "out of the box."&nbsp; You should read the section on <a href="install.html">installing</a>
+first.
+<h2>
+Structure and Organization</h2>
+(Note: the following discussion is augmented
+by the section on <a href="org.html">directory organization</a>. The Makefile
+structure of the core library is inherited directly from MIT.)
+<p>All source code resides under <i><a href="../../../src/">src/</a></i>,
+and is typically separated so that each directory corresponds to either
+one library, one server, or one or more executables. There is a <a href="../../../src/Makefile">top
+level Makefile</a> in <i>src/</i>, which provides a simple way to 'make'
+various targets in one or more directories. (e.g. libs, hub, etc.). This
+Makefile basically invokes the appropriate targets in the subdirectory
+Makefile(s).
+<p>Each subdirectory Makefile is essentially
+a slightly modified version of <i><a href="../../../templates/Makefile.stub">templates/Makefile.stub</a></i>
+with the appropriate variables defined. <i>Makefile.stub</i> is designed
+to be as simple as possible. This is accomplished by hiding almost all
+of the Makefile complexity in files in the <i><a href="../../../templates/">templates/</a></i>
+directory. <i>Makefile.stub </i>'includes' the file <i><a href="../../../templates/rules.make">rules.make</a></i>,
+which in turn includes <i><a href="install.html#config">config.make</a></i>.
+The former file defines a variety of symbolic variables, as well as all
+the rules and targets. The latter provides all the details of your configuration
+as described in the installation documentation.
+<p>All Makefiles (except for the top-level
+Makefile) support the same set of global targets, which are defined in
+<i><a href="../../../templates/rules.make">templates/rules.make</a></i>&nbsp;
+For a description of these and toplevel targets, see the <a href="install.html#compilation">installation
+documentation</a>.
+<p>
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "org.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "ntport.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated September 23, 1999</center>
+
+</body>
+</html>

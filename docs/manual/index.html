@@ -1,0 +1,473 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                                        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                                        
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+                                        
+  <meta name="Author" content="The MITRE Corporation">
+  <title>Galaxy Communicator Documentation: Toplevel Index</title>
+                                         <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+                    
+<center>          
+<h1> Galaxy Communicator Documentation:<br>
+          <br>
+          Toplevel Index</h1>
+         </center>
+             
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+          <tbody>
+            <tr>
+              <td valign="middle" align="left" width="10%"><br>
+            </td>
+              <td valign="middle" align="center">          <a
+ href="../../LICENSE">License</a> / <a href="./index.html">Documentation
+home</a> / <a href="./index.html#Getting_help">Help and feedback</a>    
+   </td>
+              <td valign="middle" align="right" width="10%"><a
+ href="overview.html"><img src="../arrow_right.gif" alt="" width="30"
+ height="30">
+            </a></td>
+            </tr>
+                              
+  </tbody>        
+</table>
+                     
+<hr width="100%">          
+<center><img src="../images/HubSpoke.jpg" nosave="" height="479"
+ width="599">
+         </center>
+          The Galaxy Communicator software infrastructure is a distributed, 
+ message-based,    hub-and-spoke infrastructure optimized for constructing 
+ spoken dialogue  systems.  The Galaxy Communicator infrastructure is an extension
+ and evolution  of the  distributed infrastructure for the <a
+ href="http://www.sls.lcs.mit.edu/sls/whatwedo/architecture.html">MIT Galaxy 
+    system</a>, and is being developed and maintained by <a
+ href="http://fofoca.mitre.org">the MITRE Corporation</a> under the aegis 
+    of the <a href="http://www.darpa.mil/ito/research/com/index.html">DARPA 
+  Communicator  program</a>. The Galaxy Communicator infrastructure is available 
+  under a liberal open source license from the <a
+ href="http://communicator.sourceforge.net">Galaxy Communicator Sourceforge 
+    site</a>. This is version 4.0 of the Galaxy Communicator distribution.<br>
+<br>
+The HTML version of this documentation is best viewed with a recent standards-compliant
+browser such as Mozilla 1.0.<br>
+           
+<p>This documentation is divided into four parts: </p>
+                 
+<ul>
+          <li> a <a href="#Tutorial">tutorial</a>, which will introduce you 
+ to  the  fundamentals of the Galaxy Communicator infrastructure and teach 
+ you  enough  to get started;</li>
+           <li> a set of <a href="#Advanced_topics">advanced topics</a>,
+which    describe  the more complex capabilities of the infrastructure;</li>
+           <li> a <a href="#Reference">reference</a> section, which provides
+  additional   details about the basic and advanced topics; and</li>
+           <li> an <a href="#Administration">administrative</a> section,
+which    deals  with installing and upgrading the infrastructure.</li>
+                   
+</ul>
+          Before you begin, please read the <a href="overview.html">introduction
+    and overview</a>, which will help you decide whether the Galaxy Communicator
+    infrastructure can help you.          
+<p> </p>
+                 
+<hr width="100%">          
+<h2><a name="Getting_help"></a> Help and feedback</h2>
+           
+<h3><a name="General_instructions"></a>General instructions</h3>
+      There are two resources available to you: the <a
+ href="mailto:bugs-darpacomm@linus.mitre.org">bugs-darpacomm@linus.mitre.org</a>
+   bug queue and the <a
+ href="http://communicator.sourceforge.net/lists.shtml">public  mailing lists</a>.
+   <b>Please do not send messages directly to the individual developers</b>.
+   It's easier for us to track problems and respond promptly if you use the 
+  mailing lists or the bug queue. If you receive mail from an individual developer
+  in response to a submission to the bug queue, feel free to reply, but <b>please</b>
+   do not delete any "CC:" entries in the mail you receive.<br>
+           
+<p>We recommend that everyone who uses the Galaxy Communicator infrastructure
+   subscribe to the main public mailing list, for release announcements and
+  other information you may find useful.<br>
+      </p>
+           
+<h3>Getting help</h3>
+      If you need help with the Galaxy Communicator infrastructure, please
+ start   with the following steps.<br>
+           
+<ol>
+        <li><b>Finish the <a href="#Tutorial">tutorial</a>.</b> We've tried 
+ to  design the tutorial to answer the most basic questions and provide a 
+common  vocabulary. If you don't know the information in the tutorial, you 
+probably  don't know enough about the infrastructure to ask your question.</li>
+        <li><b>Skim the <a href="#Advanced_topics">advanced topics</a></b>. 
+ The  first paragraph of each topic describes the basic purpose of the document.
+   The answer to your question may very well be there.</li>
+        <li><b>Read the <a href="reference/faq.html">frequently asked questions</a></b>.
+   They really <b>are</b> the most frequently asked questions.<br>
+        </li>
+           
+</ol>
+      We do realize that people don't like to read documentation, and we
+also   realize that there's a great deal of it (pushing 800 pages in the
+latest  PDF version), but it's really a tremendous source of information
+about the  Galaxy Communicator infrastructure. Most likely, the first question
+one of  us will ask you is whether you've followed these three steps.<br>
+      <br>
+      If your question still isn't answered, then by all means send a query 
+ to  one of the addresses <a href="#General_instructions">above</a>.<br>
+           
+<h3>Reporting a bug</h3>
+      It's best to send a message to the <a
+ href="mailto:bugs-darpacomm@linus.mitre.org">bugs-darpacomm@linus.mitre.org</a>
+   bug queue as described <a
+ href="file:///afs/rcf/project/communicator/users/sam/GalaxyCommunicator2/docs/manual/index.html#General_instructions">above</a>.<br>
+           
+<h3>Feature requests<br>
+      </h3>
+      Either the public mailing list or the bug queue is fine.<br>
+                
+<p> </p>
+                 
+<hr width="100%">          
+<h2> <a name="Tutorial"></a>Tutorial</h2>
+          If you intend to run the examples in the tutorial rather than simply
+   read  it, make sure that the Galaxy Communicator distribution has been
+<a href="admin/install.html">installed</a> so that the&nbsp;tutorial can
+be run on <a href="admin/install.html#Setting_up_the_tutorial_Unix">Unix</a>
+ or (as of version 4.0)&nbsp; <a
+ href="admin/install.html#Setting_up_the_tutorial_Windows">Windows</a>.  
+       
+<p> </p>
+                 
+<ul>
+          <li> <a href="tutorial/getting_started.html">Getting started: setting 
+   up  your environment</a></li>
+           <li> <a href="tutorial/how_it_works.html">The basics: how the
+Hub   and   server communicate, and what they say</a></li>
+           <li> <a
+ href="../../contrib/MITRE/tools/docs/process_monitor_tut.html">Our  first
+    tool: the process monitor</a></li>
+           <li> <a
+ href="../../contrib/MITRE/demos/docs/toy-travel-tut.html">A  sample  end-to-end 
+ system: MITRE's toy travel demo</a></li>
+           <li> <a href="tutorial/frame_intro.html">Introducing frames and
+ objects</a></li>
+           <li> <a href="tutorial/basic_server.html">Server basics</a></li>
+           <li> <a
+ href="../../contrib/MITRE/tools/docs/unit_tester_tut.html">Our   second
+tool: the unit tester</a></li>
+           <li> <a href="tutorial/pgm_intro.html">Writing a basic Hub program 
+  file</a></li>
+           <li> <a href="tutorial/errors.html">Error handling</a></li>
+           <li> <a href="tutorial/new_messages.html">Sending new messages 
+to  the   Hub</a></li>
+           <li> <a href="tutorial/broker_tutorial.html">Setting up a brokered 
+  audio   connection</a></li>
+           <li> <a href="tutorial/ui.html">Creating a UI server</a></li>
+           <li> <a href="tutorial/logging_tutorial.html">Setting up the Hub 
+ to  log  your interactions</a></li>
+           <li> <a href="tutorial/session_tutorial.html">Sessions</a></li>
+           <li> <a href="tutorial/end_to_end.html">Assembling an end-to-end 
+ system</a></li>
+                   
+</ul>
+                    
+<hr width="100%">          
+<h2> <a name="Advanced_topics"></a>Advanced topics</h2>
+          These topics are also presented in tutorial style, where possible.
+           
+<ul>
+          <li><a href="advanced/environment.html">Saving away an environment
+  object for later use</a> (new advanced topic in 4.0)<br>
+      </li>
+       <li><a href="advanced/server_locations.html">Coordinating locations
+ of   Hub and server listeners</a> (improved for 4.0)</li>
+           <li> <a href="advanced/synch_vs_asynch.html">Synchronous and asynchronous 
+    interaction and continuations</a> (documentation updated in 4.0)</li>
+           <li> <a href="advanced/provider_id.html">Provider names and provider 
+   selection</a>  (new documentation and functionality in 4.0)</li>
+           <li> <a href="advanced/timestamps.html">How to use timestamps</a>
+  (new   in 4.0)</li>
+           <li> <a href="advanced/scriptless.html">How to use the Hub in
+scriptless     mode</a></li>
+           <li> <a href="advanced/hub_listener.html">How to set up listeners
+  in  the  Hub for servers to contact</a></li>
+           <li> <a href="advanced/timed_tasks.html">How to use the timed
+task   library</a></li>
+           <li> <a href="advanced/session.html">How to manage session information</a></li>
+           <li> <a href="advanced/hub_properties.html">How to control Hub 
+server    and session properties from the server</a></li>
+           <li> <a href="advanced/special_mainloop.html">How to use a different 
+   main  loop</a></li>
+           <li> <a href="advanced/external_makefile.html">How to use non-MIT
+  makefiles</a></li>
+           <li> <a href="advanced/signal.html">How to do signal handling</a></li>
+           <li> <a href="advanced/binary_data.html">How to work with binary 
+ data</a></li>
+           <li> <a href="advanced/util.html">How to use the command line
+argument     parsing and printing facilities</a></li>
+           <li> <a href="advanced/exec.html">How to use the Communicator
+library     in arbitrary executables</a></li>
+                   
+</ul>
+                    
+<hr width="100%">          
+<h2> <a name="Reference"></a>Reference</h2>
+                    
+<ul>
+          <li> <a href="reference/faq.html">Frequently asked questions</a></li>
+           <li> <a href="reference/hub.html">The Hub and server executables</a></li>
+           <li> <a href="reference/frame.html">Frame and object reference</a></li>
+           <li> <a href="reference/adding.html">Building a Communicator-compliant 
+    server</a></li>
+           <li> <a href="reference/pgm.html">Program file reference</a></li>
+           <li> <a href="reference/logging.html">Logging reference</a></li>
+           <li> <a href="reference/brokering.html">Broker reference</a> (vastly 
+   improved  for 4.0)</li>
+           <li> <a href="reference/server_structure.html">The structure of
+ a  server</a>   (expanded in 4.0)</li>
+           <li> <a href="reference/reserved_keys.html">Reserved frame keys
+ in  Galaxy   Communicator</a></li>
+           <li> API indexes</li>
+                                      
+  <ul>
+          <li> <a href="reference/api_index.html">Alphabetical index of API 
+ calls</a></li>
+           <li> <a href="reference/libgalaxy.html">Other calls in the core
+ library    API</a></li>
+           <li> <a href="reference/libgalaxy_io.html">Other calls in the
+I/O   library   API</a></li>
+           <li> <a href="reference/libserverstub.html">Other calls in the 
+ServerStub     library API</a></li>
+           <li> <a href="reference/libutil.html">Other calls in the utilities 
+  library   API</a></li>
+                                     
+  </ul>
+           <li> <a href="reference/glossary.html">Glossary</a></li>
+           <li> Examples</li>
+                                      
+  <ul>
+          <li> <a href="../../contrib/MITRE/examples/double/main.html">Basic
+  server   example: double</a></li>
+           <br>
+         Exemplifies the basics of creating a server, declaring servers and 
+ message    signatures, sending new messages to the Hub, raising and handling 
+ errors,    and defining server and connection initialization functions, in
+ C, Python,    Java and Allegro Common Lisp. Also exemplifies using command 
+ line argument    parsing, scriptless interaction, run-time script error checking,
+ logging,    listener-in-Hub functionality, and how to use continuations. 
+    <li> <a href="../../contrib/MITRE/examples/audio/main.html">Audio and 
+brokering</a></li>
+           <br>
+         Exemplifies creating and managing broker connections in C, Python, 
+ Java   and Allegro Common Lisp. Also exemplifies interacting with the MITRE 
+ broker   packaging utilities. <li> <a
+ href="../../contrib/MITRE/examples/simple_mainloop/main.html">Alternative
+     main loops</a></li>
+           <br>
+         Exemplifies how to write Communicator-compliant servers using a
+non-Communicator     main loop. <li> <a
+ href="../../contrib/MITRE/examples/binary_data/main.html">Binary objects 
+    for audio and data</a></li>
+           <br>
+         Exemplifies how to use binary (8-bit) data for audio in frames (instead
+    of brokering) and for opaque encoding of arbitrary objects (including
+MITRE    support). <li> <a
+ href="../../contrib/MITRE/examples/local_makefile/main.html">Using non-MIT 
+    makefiles</a></li>
+           <br>
+         Exemplifies how to compile Communicator-compliant servers without
+ using    the MIT makefile templates. <li> <a
+ href="../../contrib/MITRE/examples/many_conns/main.html">Running a multiple-connection 
+    server</a></li>
+           <br>
+         Illustrates how to run multiple Hubs against the same server.  
+                       
+  </ul>
+           <li> MIT executables and facilities</li>
+                                      
+  <ul>
+          <li> <a href="../servers/turn_management.html">Using turn management
+   for  dialogue control</a></li>
+           <li> <a href="../servers/libGalaxyEnhancements.html">The dialogue
+  control   library</a></li>
+           <li> <a href="../servers/verify_program.html">verify_program</a></li>
+           <li> <a href="../servers/builtin.html">builtin</a></li>
+                                     
+  </ul>
+           <li> <a href="../../contrib/MITRE/utilities/docs/index.html">MITRE 
+  utilities</a></li>
+                                      
+  <ul>
+          <li> <a href="../../contrib/MITRE/utilities/docs/install.html">Installing
+     and using the utilities</a></li>
+           <li> <a
+ href="../../contrib/MITRE/utilities/docs/api_index.html">Alphabetical  
+  index of MITRE utilities API calls</a></li>
+           <li> <a href="../../contrib/MITRE/utilities/docs/frame.html">Convenient
+     tools for specifying frames</a></li>
+           <li> <a
+ href="../../contrib/MITRE/utilities/docs/binary_data.html">Tools    for
+exploiting MIT's binary data type</a></li>
+           <li> <a
+ href="../../contrib/MITRE/utilities/docs/brokering.html">Tools    for brokering</a></li>
+           <li> <a
+ href="../../contrib/MITRE/utilities/docs/stdin_poll.html">Tools    for adding 
+ a poll on stdin to the server loop</a></li>
+                                     
+  </ul>
+           <li> MITRE tools</li>
+                                      
+  <ul>
+          <li> <a
+ href="../../contrib/MITRE/tools/docs/index.html#Server_scripts">MITRE server 
+    scripts</a></li>
+           <li> <a
+ href="../../contrib/MITRE/tools/docs/process_monitor_ref.html">MITRE  process
+    monitor</a></li>
+           <li> <a
+ href="../../contrib/MITRE/tools/docs/unit_tester_ref.html">MITRE    unit
+  tester</a></li>
+           <li> <a href="../../contrib/MITRE/tools/docs/log_tools.html">MITRE 
+  log   tools</a></li>
+           <li> <a href="../servers/hub_gui.html">Sample Hub GUI</a>&nbsp;(new
+   for  4.0)</li>
+                                     
+  </ul>
+           <li> <a
+ href="../../contrib/MITRE/demos/docs/toy-travel-ref.html">MITRE    toy travel 
+ demo reference</a></li>
+           <li> Programming language bindings</li>
+                                      
+  <ul>
+          <li> <a href="../../contrib/MITRE/bindings/java/index.html">Java</a></li>
+           <li> <a
+ href="../../contrib/MITRE/bindings/python/docs/index.html">Python</a></li>
+           <li> <a
+ href="../../contrib/MITRE/bindings/clisp/docs/index.html">Allegro    Common 
+ Lisp</a></li>
+                                     
+  </ul>
+                   
+</ul>
+                    
+<hr width="100%">          
+<h2> <a name="Administration"></a>Administration</h2>
+          All bug reports and requests for help should be sent to <a
+ href="mailto:bugs-darpacomm@linus.mitre.org">bugs-darpacomm@linus.mitre.org</a>.
+     Please do not contact members of the Communicator team directly.   
+      
+<ul>
+          <li> <a href="admin/install.html">Installing the distribution</a>
+ (enhanced for 4.0 with Windows instructions)</li>
+           <li> Version 4 (current version)</li>
+                                      
+  <ul>
+          <li> <a href="admin/new_features.html">New features</a></li>
+           <li> <a href="admin/4point0upgrade.html">Upgrading from 3.3 to 
+4.0</a></li>
+           <li> <a href="admin/release_notes.html">Release notes</a></li>
+                                     
+  </ul>
+           <li> Version 3</li>
+                                      
+  <ul>
+          <li> <a href="admin/new_features_v3.html">New features for version
+  3.x</a></li>
+                                     
+  </ul>
+                                      
+  <ul>
+          <li> <a href="admin/3point3upgrade.html">Upgrading from 3.2 to
+3.3</a></li>
+           <li> <a href="admin/3point2upgrade.html">Upgrading from 3.1 to 
+3.2</a></li>
+           <li> <a href="admin/3point1upgrade.html">Upgrading from 3.0 to 
+3.1</a></li>
+           <li> <a href="admin/3point0upgrade.html">Upgrading from 2.1 to 
+3.0</a></li>
+           <li> <a href="admin/release_notes_v3.html">Release notes for version 
+   3.x</a></li>
+                                     
+  </ul>
+           <li> Versions 1 and 2</li>
+                                      
+  <ul>
+          <li> <a href="admin/2point1upgrade.html">Upgrading from 2.0 to
+2.1</a></li>
+           <li> <a href="admin/upgrade.html">Upgrading from 1.2 or 1.3 to 
+2.0</a></li>
+                                     
+  </ul>
+                                      
+  <ul>
+          <li> <a href="admin/release_notes_v2.html">Release notes for version
+   2.x</a></li>
+           <li> <a href="admin/release_notes_v1.html">Release notes for version 
+   1.x</a></li>
+                                     
+  </ul>
+           <li> Details</li>
+                                      
+  <ul>
+          <li> <a href="admin/org.html">Directory organization</a></li>
+           <li> <a href="admin/make.html">Guide to the Makefiles</a></li>
+           <li> <a href="admin/ntport.html">Using Communicator on Windows</a></li>
+           <li> <a href="admin/threads.html">Thread notes</a></li>
+                                     
+  </ul>
+                   
+</ul>
+                    
+<p><br>
+          </p>
+                 
+<hr>      
+<center>       
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+          <tbody>
+            <tr>
+              <td valign="middle" align="left" width="10%"><br>
+            </td>
+              <td valign="middle" align="center">          <a
+ href="../../LICENSE">License</a> / <a href="./index.html">Documentation
+home</a> / <a href="./index.html#Getting_help">Help and feedback</a>    
+   </td>
+              <td valign="middle" align="right" width="10%"><a
+ href="overview.html"><img src="../arrow_right.gif" alt="" width="30"
+ height="30">
+            </a></td>
+            </tr>
+                              
+  </tbody>        
+</table>
+        Last updated August 6, 2002</center>
+                    
+<p><br>
+          <br>
+          </p>
+         <br>
+         <br>
+        <br>
+       <br>
+      <br>
+     <br>
+    <br>
+   <br>
+  <br>
+ <br>
+</body>
+</html>

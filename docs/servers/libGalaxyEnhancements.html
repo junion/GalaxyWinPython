@@ -1,0 +1,247 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+--> 
+          
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+            
+  <meta name="GENERATOR"
+ content="Mozilla/4.61 [en] (X11; U; SunOS 5.5.1 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Dialogue Control</title>
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+      
+<center>   
+<h1> Galaxy Communicator Documentation: <br>
+  <br>
+  MIT Galaxy Library: libGalaxyEnhancements</h1>
+  </center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "turn_management.html"><img src="../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../LICENSE">License</a> / <a href = "../manual/index.html">Documentation home</a> / <a href="../manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "verify_program.html"><img src="../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+      
+<hr width="100%"> <br>
+  &nbsp;   
+<p>This documentation briefly describes functions in the MIT dialogue control
+ library. </p>
+   
+<p> </p>
+   
+<hr width="100%"> <br>
+  &nbsp;   
+<ul>
+   <li> <a href="#Dialogue_Functions">Dialogue Functions</a></li>
+    <li> <a href="#Domain_Functions">Domain Functions</a></li>
+     
+</ul>
+      
+<hr width="100%">   
+<h2> <a name="Dialogue_Functions"></a>Dialogue Functions</h2>
+   void&nbsp;<a name="Gal_InitializeDialogueDefaults"></a><b><big>Gal_InitializeDialogueDefaults</big></b>(GAL_DIALOGUE_FUNCTION_MAP 
+ *<i>function_map</i>); <br>
+  Initializes the default dialogue function map to <i>function_map</i>. 
+ 
+<p>Gal_IntFnPtr&nbsp;<a name="Gal_GetDialogueFunction"></a><b><big>Gal_GetDialogueFunction</big></b>(char 
+ *<i>fn_name</i>) <br>
+  Retrieves the dialogue function f<i>n_name</i> from the dialogue function
+ map. </p>
+   
+<p>GAL_DIALOG_CONTROL *<a name="Gal_InstantiateSystem"></a><b><big>Gal_InstantiateSystem</big></b>(char 
+ *<i>dialogscriptfilename</i>); <br>
+  Instantiates the dialogue control and calls <a
+ href="#Gal_LoadDialogueControl">Gal_LoadDialogueControl</a>.&nbsp; If <i>dialog_script_filename</i>
+ is not specified, it is assumed that the dialogue control script is ../System/<i>server_name</i>.dctl.&nbsp;
+ If unsuccessful, NULL is returned.<br>
+</p>
+<p>void <a name="Gal_FreeSystem"></a><b><big>Gal_FreeSystem</big></b>(GAL_DIALOG_CONTROL
+*<i>dc</i>) <br>
+Frees <i>dc</i>.<br>
+</p>
+      
+<p>Gal_Frame&nbsp;<a name="Gal_FillDialogueState"></a><b><big>Gal_FillDialogueState</big></b>(GAL_DIALOG_CONTROL 
+ *<i>dc</i>, int <i>clear</i>); <br>
+  This function is called by <a
+ href="turn_management.html#turn_management">turn_management</a>. </p>
+   
+<p>int&nbsp;<a name="Gal_DialogueLoop"></a><b><big>Gal_DialogueLoop</big></b>(GAL_DIALOG_CONTROL 
+ *<i>dc</i>, Gal_Data <i>data</i>); <br>
+  Executes the loaded dialogue control commands.&nbsp; This function is called
+ by <a href="turn_management.html#turn_management">turn_management</a>. </p>
+   
+<p>void&nbsp;<a name="Gal_VarSetValue"></a><b><big>Gal_VarSetValue</big></b>(Gal_Frame 
+ <i>dialogue_state</i>, char *<i>key</i>, char *<i>value</i>, int <i>int_value</i>); 
+ <br>
+  If <i>value</i> is not NULL, this function sets the value of <i>key</i> 
+to <i>value</i>, otherwise it sets it to <i>int_value</i>. </p>
+   
+<p>int&nbsp;<a name="Gal_VarUnsetValue"></a><b><big>Gal_VarUnsetValue</big></b>(Gal_Frame 
+ <i>dialogue_state</i>, char *<i>key</i>); <br>
+  Removes the object specified by <i>key</i>. </p>
+   
+<p>int<a name="Gal_VarIsSet"></a><b><big>Gal_VarIsSet</big></b>(Gal_Frame 
+ <i>dialogue_state</i>, char *<i>key</i>); <br>
+  Returns 1 if <i>key</i> exists in the <i>dialogue_state</i>, 0 otherwise. 
+ </p>
+   
+<p>char *<a name="Gal_VarGetValue"></a><b><big>Gal_VarGetValue</big></b>(Gal_Frame 
+ <i>dialogue_state</i>, char *<i>key</i>); <br>
+  Returns the value of the object specified by <i>key</i>. </p>
+   
+<p>int&nbsp;<a name="Gal_VarMatchValue"></a><b><big>Gal_VarMatchValue</big></b>(Gal_Frame 
+ <i>dialogue_state</i>, char *<i>key</i>, char *<i>match_value</i>); <br>
+  Returns 1 if the value of the object, specified by <i>key</i>, matches
+<i>match_value</i>.&nbsp;  Otherwise, returns 0. </p>
+   
+<p>void&nbsp;<a name="Gal_VarAugmentValue"></a><b><big>Gal_VarAugmentValue</big></b>(Gal_Frame 
+ <i>dialogue_state</i>, char *<i>key</i>, char *<i>value</i>); <br>
+  Appends <i>value</i> to the value of the object specified by <i>key</i>.&nbsp;
+ This applies only to string objects. </p>
+   
+<p>void&nbsp;<a name="Gal_Para2Fact"></a><b><big>Gal_Para2Fact</big></b>(Gal_Frame 
+ <i>dc</i>, char *<i>paraphrase</i>); <br>
+  This converts the key value paraphrase, <i>paraphrase</i>, into an eform
+ frame structure. </p>
+   
+<p>Gal_Frame&nbsp;<a name="GalSS_DispatchQueryToIServer"></a><b><big>GalSS_DispatchQueryToIServer</big></b>(GalSS_Environment 
+*<i>server_data</i>, char  *<i>par_lang</i>, Gal_Frame <i>query_frame</i>, 
+Gal_Frame <i>intermediate_reply</i>)  </p>
+   
+<p>Gal_Frame&nbsp;<a name="GalSS_RefillDialogueState"></a><b><big>GalSS_RefillDialogueState</big></b>(GAL_DOMAIN_SVR 
+ *<i>dc</i>, Gal_Frame <i>request_frame</i>, char *<i>para_lang</i>, int <i>clear</i>)
+ </p>
+   
+<p>Gal_Object <a name="Gal_CreateConditionObject"></a><b><big>Gal_CreateConditionObject</big></b>(Gal_TestClause
+*<i>tests</i>)  </p>
+<p>Gal_Object <a name="Gal_LookupConditionsKey"></a><b><big>Gal_LookupConditionsKey</big></b>(Gal_Frame
+<i>conditions</i>, char *<i>key_name</i>)</p>
+<hr width="100%">   
+<h2> <a name="Domain_Functions"></a>Domain Functions</h2>
+   Gal_Frame&nbsp;<a name="Gal_DeclareFilterList"></a><b><big>Gal_DeclareFilterList</big></b>(char 
+ *<i>Ftype</i>, char *<i>Fcategory</i>, char *<i>Fkey</i>, Gal_Object *<i>tarray</i>, 
+ int <i>n</i>); <br>
+  Converts the values of <i>tarray</i> into an filter list, where <i>n</i>
+ is the number of objects in the list.&nbsp; The clause frame that is returned
+ contains the filter list, the filter type, <i>Ftype</i>, and the filter
+key,<i>  Fkey</i>.&nbsp; If <i>Fcategory</i> is "ignore", this function does
+nothing  and returns NULL.   
+<p>Gal_Frame&nbsp;<a name="Gal_FetchFilterList"></a><b><big>Gal_FetchFilterList</big></b>(Gal_Frame 
+ <i>prev_state</i>); <br>
+  This function returns any prior filter list for n-best selection filtering
+ on categories. </p>
+   
+<p>Gal_Frame&nbsp;<a name="Gal_FillParaphraseKeys"></a><b><big>Gal_FillParaphraseKeys</big></b>(char 
+ *<i>clause_name</i>, Gal_Frame <i>frame</i>, char *<i>domain</i>, char *<i>language</i>); 
+ <br>
+  This function fills the paraphrase keys of the frame, <i>fr</i>, with values
+ specified by <i>clause</i>, <i>domain</i>, and <i>language.</i> </p>
+   
+<p>Gal_Frame&nbsp;<a name="Gal_GrovelForPredLike"></a><b><big>Gal_GrovelForPredLike</big></b>(Gal_Frame 
+ <i>ref_frame</i>, char *<i>match_string</i>, char *<i>reject_string</i>,
+ int <i>exact</i>); <br>
+  Looks in <i>ref_frame</i> and finds a match to <i>match_string</i>, rejecting
+ if it contains <i>reject_string</i>, and requiring an exact match if <i>exact</i>
+ is set.&nbsp; Returns the matching predicate or NULL if no match is found. 
+ </p>
+   
+<p>Gal_Frame&nbsp;<a name="Gal_GrovelForPred"></a><b><big>Gal_GrovelForPred</big></b>(Gal_Frame 
+ <i>ref_frame</i>, char *<i>pred_name</i>); <br>
+  Looks in <i>ref_frame</i> and finds an exact match to <i>pred_name</i>.&nbsp;
+ Returns the matching predicate or NULL if no match is found. </p>
+   
+<p>Gal_Frame&nbsp;<a name="Gal_GrovelForTopic"></a><b><big>Gal_GrovelForTopic</big></b>(Gal_Frame 
+ <i>ref_frame</i>, char *<i>topic_name</i>); <br>
+  Looks in <i>ref_frame</i> and finds an exact match to <i>topic_name</i>.&nbsp;
+ Returns the frame containing the matching topic or NULL if no match is found. 
+ </p>
+   
+<p>Gal_Frame&nbsp;<a name="Gal_IsNew"></a><b><big>Gal_IsNew</big></b>(Gal_Frame 
+ <i>frame</i>, Gal_Frame <i>thin_frame</i>); <br>
+  Looks in <i>thin_frame</i> for an existing topic or predicate whose name
+ matches that of <i>frame</i>.&nbsp; If a match is found, that topic or predicate
+ frame is returned.&nbsp; Otherwise, NULL is returned. </p>
+   
+<p>void&nbsp;<a name="Gal_AddComment"></a><b><big>Gal_AddComment</big></b>(GAL_DOMAIN_SVR 
+ *<i>dc</i>, Gal_Frame <i>clause</i>); <br>
+  Adds parenthetical user comments in the frame, <i>clause</i>, to the domain
+ server. </p>
+   
+<p>void&nbsp;<a name="Gal_AddSystemInitiative"></a><b><big>Gal_AddSystemInitiative</big></b>(GAL_DOMAIN_SVR 
+ *<i>dc</i>, char *<i>pred_name</i>, Gal_Frame <i>frame</i>); <br>
+  If <i>frame</i> is provided, this function copies <i>frame</i> to the system
+ initiative under the name, <i>pred_name</i>.&nbsp; If no <i>frame</i> exists,
+ a predicate frame is created and added under the name, <i>pred_name</i>. 
+</p>
+   
+<p>void&nbsp;<a name="Gal_FillResponse"></a><b><big>Gal_FillResponse</big></b>(GAL_DOMAIN_SVR 
+ *<i>dc</i>, Gal_Frame <i>res</i>); <br>
+  Fills the domain server with values in the result frame, <i>res</i>. </p>
+   
+<p>void&nbsp;<a name="Gal_InitDService"></a><b><big>Gal_InitDService</big></b>(Gal_Frame 
+ <i>big_frame</i>, GAL_DOMAIN_SVR *<i>domain_svr</i>); <br>
+  Initializes the domain server with values in the <i>big_frame</i>: domain
+ information, the operation name, the key_value paraphrasing, the parse_frame,
+ and the request_frame. </p>
+   
+<p>void&nbsp;<a name="Gal_InitializeContents"></a><b><big>Gal_InitializeContents</big></b>(Gal_Object 
+ *<i>array</i>, int <i>nmax</i>); <br>
+  Initializes the contents of the object, <i>array</i>, where <i>nmax</i> 
+is the size of the array. </p>
+   
+<p>Gal_Frame&nbsp;<a name="Gal_RepeatResponse"></a><b><big>Gal_RepeatResponse</big></b>(Gal_Frame 
+ <i>prev_state</i>) <br>
+  Repeats the previous response, if the <i>prev_state</i> has one. </p>
+   
+<p> </p>
+   
+<hr width="100%"> <br>
+  &nbsp;   
+<h2> <a name="Control_file_tools"></a>Control file tools</h2>
+<p>   Gal_ConditionStruct **<a name="Gal_LoadDialogueControl"></a><b><big>Gal_LoadDialogueControl</big></b>(char 
+ *<i>filename</i>, int *<i>num_conditions_ptr</i>)<br>
+  Loads dialogue control and validates the requested functions.&nbsp; This
+ function is called by <a
+ href="file:///afs/rcf/project/communicator/users/sam/GalaxyCommunicator2/docs/servers/libGalaxyEnhancements.html#Gal_InstantiateSystem">Gal_InstantiateSystem</a>. 
+ </p>
+   
+<p>void&nbsp;<a name="Gal_PrintDialogueControl"></a><b><big>Gal_PrintDialogueControl</big></b>(FILE 
+ *<i>fp</i>, Gal_ConditionStruct **<i>conditions</i>, int <i>num_conditions</i>) 
+ <br>
+  &nbsp; <br>
+  &nbsp; </p>
+   
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "turn_management.html"><img src="../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../LICENSE">License</a> / <a href = "../manual/index.html">Documentation home</a> / <a href="../manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "verify_program.html"><img src="../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated July 5, 2002</center>
+    <br>
+  <br>
+ <br>
+</body>
+</html>

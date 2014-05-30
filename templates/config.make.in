@@ -1,0 +1,292 @@
+# This file (c) Copyright 1998 - 2000 The MITRE Corporation
+# 
+# This file is part of the Galaxy Communicator system. It is licensed
+# under the conditions described in the file LICENSE in the root 
+# directory of the Galaxy Communicator system.
+
+ifndef __CONFIG_MAKE__
+__CONFIG_MAKE__ = 1
+
+#########################################################
+#                                                       #
+# GalaxyCommunicator configuration file                 #
+#                                                       #
+#########################################################
+
+# This file contains all the required configuration 
+# information for the GalaxyCommunicator distribution, 
+# including configuration information for contrib/MIT
+# and contrib/MITRE. 
+
+# NOTE! This file is also used to read settings for the
+# Communicator test suite. In that mode, all if... are 
+# ignored, and the settings are evaluated anyway. Don't
+# put anything in here which would break the test suite!
+
+#
+# Step 1: Understand your ARCHOS declarations. 
+#
+
+# The variables for ARCH and OS are determined by the scripts
+# templates/set_arch.cmd and templates/set_os.cmd. The 
+# values of these scripts will be the Makefile variables
+# $(ARCH) and $(OS), respectively, and $(ARCHOS) = $(ARCH)-$(OS).
+# Your C files will also be compiled with the preprocessor flags
+# -D__$(ARCH)__ -D__$(OS)__ if you use the MIT Makefile 
+# templates; if you don't, you may still find these settings
+# useful (if you don't use GNU configure and you're trying to 
+# do cross-platform development, for instance). Here are the
+# settings:
+
+# Solaris 2/Solaris 7 (SunOS 5):
+#   on Sparc: sparc-solaris
+#   on x86/Pentium: x86-solaris
+# Solaris 1 (SunOS 4):
+#   on Sparc: sparc-sunos
+#   on x86/Pentium: x86-sunos
+# Linux:
+#   on x86/Pentium: x86-linux
+# SGI Irix:
+#   32-bit: mips-irix
+#   64-bit: mips64-irix
+# MacOS X/Darwin:
+#   powerpc-Darwin
+
+# In almost all other cases, ARCH = `uname -m` and
+# OS = `uname -s`. Windows doesn't use the Makefile structure,
+# and its preprocessor flag is WIN32, as usual. You can run 
+# the two scripts by hand to verify that the ARCH, OS, and ARCHOS
+# variables will be set correctly.
+
+# For more details, see docs/manual/admin/install.html.
+
+#
+# Step 2: Configure your csh environment.
+#
+
+# The Communicator system mirrors the compiler variables in 
+# some of the csh shell scripts it uses. In some cases, the 
+# variable names clash with the environment on the installed 
+# machine. By default, we enable a prefix for these variables 
+# using the ARCHOS_PREFIX variable, which is GALAXY_ by default; 
+# this setting makes the csh variables GALAXY_ARCH, GALAXY_OS, 
+# and GALAXY_ARCHOS. Change this prefix if you prefer.
+
+ARCHOS_PREFIX = GALAXY_
+
+#
+# Step 3: Configure your utilities.
+#
+
+# Here, you have the opportunity to change the values of CC, 
+# AR, MKDIR, CHMOD, etc. based on your platform. These settings
+# should be right in almost all cases.
+
+#
+# Compiler. LINKCC is used for linking executables. WARNINGS
+# are the compiler warning flags.
+#
+
+CC        = @CC@
+CXX       = @CXX@
+ifndef LINKCC
+LINKCC    = $(CC)
+endif
+WARNINGS  = -Wall -Wno-implicit-int
+@HAVE_FPERMISSIVE@HAVE_FPERMISSIVE = 1
+# Flag to pass to linker to record run-time dynamic library
+# locations. This is usually -rpath, if gcc is configured to 
+# use GNU ld. Otherwise, on Solaris, it's -R if it's
+# using native ld. Otherwise, I have no idea, and shared libs
+# won't work.
+XLINKER_RTFLAG=@XLINKER_RTFLAG@
+@HAVE_XDR_SIZEOF@HAVE_XDR_SIZEOF = 1
+@HAVE_STRTOK_R@HAVE_STRTOK_R = 1
+DEPENDFLAGS = @DEPENDFLAGS@
+# Some platforms don't have complete pthread libs, like MacOS X.
+@THREADS_SUPPORTED@THREADS_SUPPORTED = 1
+
+#
+# Utilities used by the Makefiles.
+#
+
+# These are all compile-time utilities, so we don't
+# need to worry about cross-compilation.
+
+# If your system doesn't support -p for mkdir, or 
+# the appropriate rm flags, you're toast at the moment.
+
+AR        = @AR@
+MKDIR     = /bin/mkdir -p
+CHMOD     = /bin/chmod
+CP        = /bin/cp
+RANLIB    = @RANLIB@
+RM        = /bin/rm -rf
+TOUCH	  = @TOUCH@
+STRIP     = $(TOUCH)
+
+#
+# Step 4: Configure your compiler options.
+#
+
+# Here, you have the opportunity to modify your CPPFLAGS, 
+# CFLAGS, etc. for your platform. Most of these settings 
+# should be correct. You may wish to change the optimization 
+# flags for CFLAGS_O (normal compilation), CFLAGS_D (debug 
+# compilation) and CFLAGS_P (profile compilation).
+
+SYSLIBS += @LIBS@
+CPPFLAGS += @CPPFLAGS@
+CFLAGS += @CFLAGS@
+CFLAGS_O += -O4
+CFLAGS_D += -g
+CFLAGS_P += -pg -O2
+
+THREAD_CFLAGS += @TCFLAGS@
+
+#
+# Step 5: Configure shared libraries.
+#
+
+# If you want to compile the Communicator
+# libraries as shared libraries, use the --enable-shared
+# argument to configure or uncomment this line. This 
+# will significantly reduce the size of your executables; 
+# however, the executables will then depend on the presence 
+# of the shared libraries to run. The location of the shared 
+# libraries is automatically compiled in to the executables 
+# by the Makefile templates.
+
+@ENABLE_SHARED@SHARED_LIBS = 1
+
+#
+# Step 6: Configure Purify and Insure.
+#
+
+# MIT's Makefile template has built-in support for 
+# "make purify" and "make insure", which will create
+# instrumented executables for Rational's Purify tool and
+# Parasoft's Insure tool. These settings are disabled
+# by default. If you have either of these tools and want
+# to make use of the MIT Makefile support, use 
+# the --with-insure or --with-purify arguments to configure 
+# or uncomment (and perhaps modify) the appropriate lines.
+
+#
+# INSURE++ support
+#
+
+@ENABLEENSUREPP@INSURE         = @INSUREPP@
+@ENABLEENSUREPP@INSURE_FLAGS   = -Zsl -D__INSURE__ -D__USE_MALLOC
+@ENABLEENSUREPP@INSURE_CC      = $(INSURE) -Zoi "compiler $(CC)" $(INSURE_FLAGS)
+@ENABLEENSUREPP@INSURE_CXX     = $(INSURE) -Zoi "compiler $(CXX)" $(INSURE_FLAGS)
+@ENABLEENSUREPP@INSURE_LINKCC  = $(INSURE) -Zoi "compiler $(LINKCC)" $(INSURE_FLAGS)
+
+#
+# PURIFY support
+#
+
+@ENABLEPURIFY@PURIFY           = @PURIFY@ -leaks-at-exit=no -best-effort -g++=yes -collector=$(PURIFY_COLLECTOR)
+@ENABLEPURIFY@PURIFY_COLLECTOR = $(shell $(CC) -print-file-name=)/ld
+
+# 
+# Step 7: Choose your Hub scripting module.
+#
+
+# By default, the distribution is configured to use the MIT 
+# Hub scripting module. Currently, the Hub will not 
+# compile without at least some scripting module provided. 
+# You can probably write your own, but we haven't 
+# documented that process yet. If you comment out 
+# COMPILE_MIT in the next step, the scripting module 
+# will still be compiled.
+
+SCRIPTING_SRCDIR = $(GC_HOME)/contrib/MIT/galaxy/src/libGalaxyHubControl
+SCRIPTING_LIBDIR = $(GC_HOME)/contrib/MIT/galaxy/lib/$(ARCHOS)
+SCRIPTING_LIBRARY = GalaxyHubControl
+
+#
+# Step 8: Enable contributions.
+#
+
+# MIT has contributed useful libraries, and MITRE
+# has contributed examples, tools, etc. Both are compiled
+# by default, if present in the distribution. You may
+# disable either or both by using the appropriate arguments
+# to configure (e.g., --enable-MIT-extensions=no or 
+# --disable-MIT-extensions) or commenting out the appropriate
+# line.
+
+@ENABLE_MIT@COMPILE_MIT = 1
+@ENABLE_MITRE@COMPILE_MITRE = 1
+
+#########################################################
+#                                                       #
+# Configuring contrib/MITRE                             #
+#                                                       #
+#########################################################
+
+# These settings are for compiling the MITRE contrib
+# directory. If you have left either COMPILE_MITRE enabled, pay
+# attention to these settings.
+
+#
+# Step 1: Locate your xterm program.
+#
+
+# MITRE uses xterm for process monitoring under some circumstances.
+
+XTERM = @XTERM@
+
+#
+# Step 2: Locate your Java installation.
+#
+
+# MITRE uses Java for the Communicator Java bindings
+# and Java examples. The MITRE Java bindings require at
+# least JDK 1.2
+
+JDK_HOME = @JDK_HOME@
+
+ifdef JDK_HOME
+  CLASSPATH = .
+  JAVAC     = $(JDK_HOME)/bin/javac
+endif
+
+#
+# Step 3: Enable Python bindings and examples.
+#
+
+# If you want to enable the MITRE Python bindings, 
+# servers and demos, use with --with-python argument 
+# to configure or uncomment PYTHONBIN and set it to 
+# the appropriate path. Communicator requires Python 
+# 1.5 or later. Your Python installation must be built with 
+# Tkinter (Python's bindings for Tcl/Tk).
+
+# Note: As of 3.0, the Python bindings use C wrappers 
+# around the core Galaxy Communicator library. In order 
+# to compile Python, you must have PYINCLUDE or the 
+# --with-pycppflags argument to configure set to 
+# the include flags which provide the location of the 
+# Python header files (typically, something like 
+# -I/usr/include/python1.5). On Linux, you may 
+# have to install the python-devel RPM.
+
+PYTHONBIN = @PYTHONBIN@
+PYINCLUDE = @PYINCLUDE@
+
+#
+# Step 4: Enable Allegro CL bindings and examples.
+#
+
+# If you want to enable the MITRE Allegro Common Lisp bindings,
+# servers and demos, use the --with-allegro argument to 
+# configure or uncomment ALLEGROBIN and set it
+# to the appropriate path. Communicator requires Allegro 5.0
+# or later.
+
+ALLEGROBIN = @ALLEGROBIN@
+
+endif
+# __CONFIG_MAKE__

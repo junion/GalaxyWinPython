@@ -1,0 +1,49 @@
+;; This file (c) Copyright 1998 - 2002 The MITRE Corporation
+;; 
+;; This file is part of the Galaxy Communicator system. It is licensed
+;; under the conditions described in the file LICENSE in the root 
+;; directory of the Galaxy Communicator system.
+
+;; This program file exemplifies a number of the features of
+;; logging. It also exemplifies partial scripting (there's a main
+;; program to handle complex_twice, but multiply is routed
+;; directly to its server).
+
+;; (1) The invocation of the "main" program will be timestamped.
+;; (2) In keys for the rule firing complex_twice will be logged.
+;; (3) In and out keys for the multiply message will be logged 
+;; (when the new message arrives and its response leaves).
+;; (4) The multiply message will be timestamped because its
+;; keys are logged.
+;; (5) The final error returned by multiply will be logged.
+;; (6) The log version will be passed through to the log file.
+
+;; See the directory sls/ for your logs.
+
+LOG_VERSION: "complex double, version 1"
+
+LOG_DIR: .
+
+TIMESTAMP: main
+
+SERVER: double-server
+PORT: 2800
+HOST: localhost
+OPERATIONS: complex_twice reinitialize
+
+SERVER: multiply-server
+PORT: 2900
+HOST: localhost
+OPERATIONS: multiply reinitialize
+INIT: :factor 4
+
+PROGRAM: main
+
+RULE: :int --> complex_twice
+IN: :int
+LOG_IN: :int (:location "twice")
+OUT: none!
+
+MESSAGE: multiply
+LOG_IN: :int
+LOG_OUT: :int

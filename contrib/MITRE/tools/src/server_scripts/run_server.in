@@ -1,0 +1,31 @@
+#!/bin/csh -f
+
+if ( $#argv < 1) then
+    echo "Usage: run_server [ -verbosity <int> ]<server_and_args>..."
+    exit
+endif
+
+# Don't let this change the path...
+
+source MF_MITRE_ROOTDIR/templates/env.csh
+
+set out_args = ( )
+
+while ($#argv)
+    set cur_arg = $argv[1]:q
+    shift
+    if ("$cur_arg" == '-verbosity') then
+	if ($#argv == 0) then
+	    echo $usage_str:q
+	    exit 1
+	else
+	    setenv GAL_VERBOSE $argv[1]
+	    setenv SLS_VERBOSE $argv[1]
+	    shift
+	endif
+    else
+	set out_args = ( $out_args:q $cur_arg )
+    endif
+end
+
+exec $out_args:q

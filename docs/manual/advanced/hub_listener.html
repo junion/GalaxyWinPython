@@ -1,0 +1,154 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Hub Listeners</title>
+     <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+  
+<center> 
+<h1> Galaxy Communicator Documentation:<br>
+ <br>
+ Setting Up Listeners in the Hub</h1>
+</center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "scriptless.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "timed_tasks.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+  
+<hr width="100%"> 
+<p>By default, each Communicator server sets up a socket-based listener for
+the Hub to contact. As of version 2.1, it is&nbsp; possible to reverse the
+direction of this connectivity, by setting up listeners in the Hub instead.
+This has a number of clear advantages: </p>
+<ul>
+ <li> If you have more Hubs than servers, it reduces the number of open TCP
+listeners;</li>
+  <li> It becomes trivial to implement UI elements which connect to a running
+Hub, either from the command line or as part of a process which monitors
+multiple potential system connections (such as phone lines)</li>
+ 
+</ul>
+ This functionality supersedes dispatch servers, which have been <a
+ href="../admin/release_notes_v3.html#3.0_Core_distribution">removed in version
+3.0</a>. 
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="Setting_up_the_Hub"></a>Setting up the Hub</h2>
+ The Hub needs to know that it's supposed to set up a listener. To do this,
+use the <a href="../reference/pgm.html#CLIENT_PORT:">CLIENT_PORT:</a> declaration
+in your <a href="../reference/pgm.html#SERVICE_TYPE:">SERVICE_TYPE:</a> declaration: 
+<blockquote><tt>SERVICE_TYPE: parser</tt> <br>
+  <tt>OPERATIONS: parse</tt> <br>
+  <tt>CLIENT_PORT: 15000</tt></blockquote>
+ When the Hub starts up, it will start a listener on port 15000 (or the next
+available port) and wait for connections. You can have as many or as few
+listeners as you want, and as many servers as you want can share a listener: 
+<blockquote><tt>SERVICE_TYPE: parser</tt> <br>
+  <tt>OPERATIONS: parse</tt> <br>
+  <tt>CLIENT_PORT: 15000</tt> 
+  <p><tt>SERVICE_TYPE: recognizer</tt> <br>
+  <tt>OPERATIONS: recognize</tt> <br>
+  <tt>CLIENT_PORT: 15000</tt> </p>
+  <p><tt>SERVICE_TYPE: database</tt> <br>
+  <tt>OPERATIONS: retrieve</tt> <br>
+  <tt>CLIENT_PORT: 14000</tt> </p>
+  <p><tt>SERVER: generator</tt> <br>
+  <tt>OPERATIONS: generate</tt> <br>
+  <tt>HOST: localhost</tt> <br>
+  <tt>PORT: 18000</tt></p>
+</blockquote>
+ In this example, the Hub will start up two listeners, one on port 15000
+(shared by the parser and recognizer) and one on port 14000 (used exclusively
+by the database), and attempt to contact the generator on its own listener
+on port 18000. Listeners are shared based on the requested client port; so
+if port 15000 is taken, the Hub will start up a shared listener for the parser
+and recognizer on the next available port. 
+<p><b>Important</b>: The Hub relies on the connecting server to identify
+itself by name in order to determine which of the server types to identify
+the new connection with. Therefore, unlike in normal server entries, the
+value of <a href="../reference/pgm.html#SERVER:">SERVER:</a> or <a
+ href="../reference/pgm.html#SERVICE_TYPE:">SERVICE_TYPE:</a> must match
+the name the contacting server <a href="../reference/adding.html#Basics">knows 
+itself as</a>. </p>
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="Setting_up_the_server"></a>Setting up the server</h2>
+ Setting up the server is also simple. It involves the <a
+ href="../reference/adding.html#Initialization">server command line arguments</a><tt>
+-contact_hub</tt> and <tt>-session_id</tt>. The <tt>-contact_hub</tt> argument
+provides a space-delimited sequence of <tt>host:port</tt> entries to contact
+Hubs at; the <tt>-session_id </tt>argument locks the server connection to
+the named user session (and creates the session if it does not already exist).
+So the parser or database might contact the Hub configured above as follows: 
+<blockquote><tt>% parser -contact_hub "localhost:15000"</tt></blockquote>
+ If the server in question is a UI element (say, an audio connection), you
+might want to associate it with a specific session: 
+<blockquote><tt>% audio -contact_hub "localhost:2400" -session_id 20000711session1</tt></blockquote>
+ If you use the <tt>-session_id</tt> command line argument, it's equivalent
+to setting all the <a href="hub_properties.html#GalSS_EnvSetSession">session 
+lock flags</a> for this server. 
+<p>You can contact several Hubs at once: </p>
+<blockquote><tt>% database -contact_hub "localhost:15000 remotehost:25000"</tt></blockquote>
+ The server will poll the connection location until it establishes a connection,
+and will start polling again when the Hub disconnects; it's possible to <a
+ href="../reference/server_structure.html#GalIO_ServerListenStatus">customize 
+this behavior</a> if <a
+ href="../reference/server_structure.html#Listener-in-Hub_support">you write
+your own main function</a>. 
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="The_handshake_protocol"></a>The handshake protocol</h2>
+ The initial handshake between the Hub and servers is slightly different
+in the listener-in-Hub case. In particular, since the Hub needs to know immediately
+what the server's name is, the handshake begins with the server sending a
+message to the Hub, which allows the Hub to set up the connection appropriately
+or reject it. Once this stage of the handshake is complete, the normal initialization
+procedure continues, with the Hub sending the <a
+ href="../reference/adding.html#reinitialize">reinitialize</a> message to
+the server. 
+<p> </p>
+<hr width="100%"> 
+<h2> API support</h2>
+ For API support for this functionality, see the <a
+ href="../reference/server_structure.html#Listener-in-Hub_support">server 
+structure documentation</a>. 
+<p> </p>
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "scriptless.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "timed_tasks.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated July 5, 2002</center>
+  <br>
+</body>
+</html>

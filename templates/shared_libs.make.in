@@ -1,0 +1,24 @@
+# This file (c) Copyright 2000 The MITRE Corporation
+# 
+# This file is part of the Galaxy Communicator system. It is licensed
+# under the conditions described in the file LICENSE in the root 
+# directory of the Galaxy Communicator system.
+
+ifndef __SHARED_LIBS_MAKE__
+__SHARED_LIBS_MAKE__ = 1
+
+# If you request shared libraries, but your platform doesn't
+# support GNU ld, and we can't substitute anything for it, 
+# we won't pass anything to the shared library creation.
+
+SHARED_LIBS = MF_SHARED_LIBS
+
+XLINKER_RTFLAG = MF_XLINKER_RTFLAG
+
+ifdef SHARED_LIBS
+  LIBEXT = .so
+else
+  LIBEXT = .a
+endif
+
+endif

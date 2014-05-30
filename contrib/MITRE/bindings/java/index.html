@@ -1,0 +1,889 @@
+<!--
+  This file (c) Copyright 1998 - 2002 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+            
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+            
+  <meta name="GENERATOR"
+ content="Mozilla/4.78 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>MITRE Java Bindings</title>
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+      
+<center>   
+<h1> Galaxy Communicator Documentation:<br>
+   <br>
+   MITRE Java Bindings</h1>
+  </center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="../../demos/docs/toy-travel-ref.html"><img
+ src="../../../../docs/arrow_left.gif" alt="" width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../../LICENSE">License</a> / <a
+ href="../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a> 
+       </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="../python/docs/index.html"><img
+ src="../../../../docs/arrow_right.gif" alt="" width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+       
+<hr width="100%">   
+<p>The Java bindings which MITRE is providing are a modification of Java
+bindings produced by Intel Corp. for a previous version of the Communicator
+implementation. We have updated and enhanced these bindings. </p>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Enabling_Java_Bindings"></a>Enabling Java Bindings</h2>
+      See the <a
+ href="../../../../docs/manual/admin/install.html#config">installation  
+ documentation</a> for how to enable the Java bindings. JDK 1.2 or later
+is required.<br>
+<br>
+On Windows, you can invoke a Communicator-compliant server as follows:<br>
+<blockquote><tt>C:\&gt; set GC_GAR=</tt><tt>%GC_HOME%\contrib\MITRE\bindings\java\lib\galaxy.jar</tt><tt><br>
+C:\&gt; java -classpath .;&lt;your_class_paths&gt;;%GC_JAR% &lt;class_name&gt;</tt><br>
+</blockquote>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Documentation_Summary"></a>Documentation Summary</h2>
+   These bindings implement a subset of the what the C libraries support, 
+including brokering. Support for dialog control is not available in this distribution.
+  
+<p>For documentation of the API, see: </p>
+   
+<ul>
+   <li> &nbsp;<a href="docs/index.html">Java bindings API documentation</a></li>
+     
+</ul>
+      
+<p><br>
+  The following demos contain Java server examples. All examples can be found
+ in the <b>java/</b> subdirectory of these demos: </p>
+   
+<ul>
+   <li> <a href="../../examples/double/main.html">Basic server example: double,
+ multiply</a></li>
+    <li> <a href="../../examples/audio/main.html">Audio and brokering</a></li>
+    <li> <a href="../../examples/binary_data/main.html">Binary objects for
+ audio and data</a></li>
+     
+</ul>
+   Among the major differences from the C bindings are:   
+<ul>
+   <li> The examples that play sound files will only work on Sparc-Solaris
+ machines (or other systems that use <tt>/dev/audio</tt> as their sound device).
+ The API itself should be platform independent.</li>
+    <li> Servers accept multiple connections by default in a multi-threaded
+ environment.</li>
+         
+</ul>
+   At the moment, the source code and examples will serve as the primary
+documentation,  though the <a
+ href="../../../../docs/manual/admin/release_notes.html">release  notes</a>
+and <a href="../../../../docs/manual/admin/4point0upgrade.html">upgrade notes</a>
+ also contain useful information on the bindings.   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Creating_a_Server"></a>Creating a Server</h2>
+   There are two main classes of interest when building a Java Galaxy Communicator
+ server. The first is <tt><a href="docs/galaxy/server/MainServer.html">galaxy.server.MainServer</a></tt>. 
+ This class is responsible for creating and managing connections to Hubs. 
+The connections are embodied by the second class, <tt><a
+ href="docs/galaxy/server/Server.html">galaxy.server.Server</a>.</tt> Subclasses
+ of this class implement the dispatch functions that are invoked by the Hub
+ directly (e.g., based on a program file) and indirectly (e.g., on the behalf
+ of another Galaxy Communicator server). Currently, an instance of <tt><a
+ href="docs/galaxy/server/MainServer.html">MainServer</a></tt> can only start
+ up <tt><a href="docs/galaxy/server/Server.html">Server</a></tt>s of one
+type.  The <tt><a href="docs/galaxy/server/Server.html">Server</a></tt> type
+is set programmatically using <tt><a
+ href="docs/galaxy/server/MainServer.html#setServerClassName(java.lang.String)">MainServer.setServerClassName</a></tt> 
+ (see the example below).   
+<p>An instance of <tt><a href="docs/galaxy/server/MainServer.html">MainServer</a></tt> 
+ can be configured to run in one of three modes. In the first (default) mode
+ (using the <tt>-port</tt> command line argument described below or relying
+ on the default port), the server listens on a port for connection requests
+ from Hubs and instantiates a new <tt><a
+ href="docs/galaxy/server/Server.html">Server</a></tt> for each new connection.
+ In the second mode, <tt><a href="docs/galaxy/server/MainServer.html">MainServer</a></tt> 
+ can be configured to connect to one or more Hubs (using the <tt>-contact_hub 
+ </tt>command line argument). For each connection, it instantiates a <tt><a
+ href="docs/galaxy/server/Server.html">Server</a></tt>&nbsp; to handle the
+ connection. In the third mode (using both <tt>-port</tt> and <tt>-contact_hub)</tt>,
+ <tt><a href="docs/galaxy/server/MainServer.html">MainServer</a></tt> acts
+ as a Hub listener and client concurrently. </p>
+   
+<p>As mentioned above, the <tt><a href="docs/galaxy/server/Server.html">Server</a></tt> 
+ class encapsulates a connection to a Hub. When you extend this class, all 
+ operations defined by <tt>serverOp<b>OperationName </b></tt>will be interpreted
+ as operations that a Hub or another Galaxy Communicator server can call.
+<tt>serverOp<b>OperationName </b></tt>is equivalent to "<tt>operation_name</tt>"
+ in Hub program file syntax. When a Java server receives an operation name
+ in a frame, it follows these steps to convert the operation into the name
+ of a Java method. First, it removes all underscore (_) characters and converts
+ the letter after the underscore to uppercase (e.g., "<tt>operation_name"</tt>
+ becomes <tt>"operationName"</tt>). Second, it converts the first letter
+of the operation name to uppercase ("<tt>operationName" </tt>becomes "<tt>OperationName"</tt>).
+ Finally, it prepends "serverOp" to the operation name ("<tt>OperationName"
+ </tt>becomes <tt>"serverOpOperationName"</tt>). Keep these rules in mind
+when specifying operation names in program files and Java code. </p>
+   
+<p>Below is an example of a Java main method that starts a Galaxy Communicator
+ server. The instance of <tt><a
+ href="docs/galaxy/server/MainServer.html">MainServer</a></tt>  is initialized
+with the command line arguments (see descriptions below), and the <tt><a
+ href="docs/galaxy/server/Server.html">Server</a></tt> type for the server
+is set by the call to <tt><a
+ href="docs/galaxy/server/MainServer.html#setServerClassName(java.lang.String)">MainServer.setServerClassName</a></tt>. 
+ Calling <tt><a href="docs/galaxy/server/MainServer.html#start()">MainServer.start</a></tt> 
+ starts the server. </p>
+   
+<p><tt>&nbsp;public static void main(String[] args)</tt> <br>
+  <tt>&nbsp;{</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; MainServer mainServer = new MainServer(<i>server 
+ name</i>, args);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; mainServer.setServerClassName(<i>name of a 
+subclass of galaxy.server.Server</i>);</tt> </p>
+   
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp; try {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mainServer.start();</tt> 
+ <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; } catch(Exception e) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; System.out.println(e.toString());</tt> 
+ <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; }</tt> <br>
+  <tt>&nbsp;}</tt> </p>
+   
+<p>A third class, <tt><a href="docs/galaxy/server/ui/ServerUI.html">galaxy.server.ui.ServerUI</a>,</tt> 
+ is useful for embedding a server in a simple user interface. This class instantiates
+a&nbsp; <tt><a href="docs/galaxy/server/MainServer.html">MainServer</a></tt> 
+ and provides a user interface with logging capability and the ability to 
+start and stop the server.&nbsp;&nbsp; Below is an example of a Java main 
+method that creates an instance of <tt><a
+ href="docs/galaxy/server/ui/ServerUI.html">ServerUI</a></tt>. </p>
+   
+<p><tt>public static void main(String[] args)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; ServerUI ui = new ServerUI(args) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; protected void
+ init() {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ serverClassName = <i>name of a subclass of galaxy.server.Server</i>;</tt> 
+ <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ port = <i>optional default port number</i>;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ serverName = <i>server name</i>;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; };</tt> <br>
+  <tt>}</tt> <br>
+  &nbsp; </p>
+   
+<h2> <a name="Command_Line_Arguments"></a>Command Line Arguments</h2>
+   The following are of the built-in command line arguments for Java Galaxy
+ Communicator servers: <br>
+  &nbsp;   
+<table border="1" cols="2" width="100%">
+   <tbody>
+      <tr>
+   <td><tt>-port &lt;port number&gt;</tt></td>
+    <td>Specifies the port on which this server will listen for connections.</td>
+   </tr>
+    <tr>
+   <td><tt>-assert</tt></td>
+    <td>Prevent the server from searching for a free port if the specified
+ port is not available. The specified port is one of <br>
+  a) port specified in a server location file (see <tt>-server_locations_file
+       </tt>below), b) the port specified by the <tt>-port</tt> argument,
+c) a port passed into a <tt><a href="docs/galaxy/server/MainServer.html">MainServer</a></tt>&nbsp; 
+ constructor, or d) the default port (1201). Note that the port specification 
+ in the server location file takes precedence over the <tt>-port</tt> argument,
+ which takes precedence over programmatically-specified ports, which take
+precedence over the default port.</td>
+   </tr>
+    <tr>
+   <td><tt>-maxconns &lt;max number of connections&gt;</tt></td>
+    <td>Maximum number of client connections supported by this server's listener
+ (if not &gt; 0, no limit is set). If this argument is used, but no value
+is specified, a default of 1 is used.</td>
+   </tr>
+    <tr>
+   <td><tt>-validate</tt></td>
+    <td>Validate <tt><a href="docs/galaxy/server/Server.html">Server</a></tt> 
+ method signatures.</td>
+   </tr>
+    <tr>
+   <td><tt>-contact_hub &lt;host:port ...&gt;</tt></td>
+    <td>Hosts and ports of Hubs to contact on startup. Note that multiple 
+host/port pairs are separated by whitespace and must be enclosed in double 
+quotes: <br>
+  e.g., <tt>-contact_hub "localhost:123 localhost:456"</tt>.</td>
+   </tr>
+    <tr>
+   <td><tt>-session_id &lt;id&gt;</tt></td>
+    <td>If -contact_hub is used, lock this client to the specified Hub session.</td>
+   </tr>
+    <tr>
+   <td><tt>-server_locations_file &lt;file&gt;[:&lt;tag&gt;]</tt></td>
+    <td>A <a
+ href="../../../../docs/manual/advanced/server_locations.html">file</a> 
+of lines of the form: &lt;server name&gt; &lt;host:port&gt; [hub|server].
+This file defines the locations of the listeners to use (be they in servers
+ or Hubs).</td>
+   </tr>
+    <tr>
+   </tr>
+    <tr>
+   <td><tt>-slf_name &lt;tag&gt;</tt></td>
+    <td>This is used to force the server to use the server location information
+(in the file specified with the -server_locations_file argument) that corresponds
+to the server name specified by &lt;tag&gt;.</td>
+   </tr>
+    <tr>
+   <td>-<tt>verbosity &lt;verbosity level&gt;</tt></td>
+    <td>The logging verbosity level. Valid values are the integers 0 (no
+logging)  through 6 (very verbose logging on). The default level is 3.</td>
+   </tr>
+    <tr>
+   <td><tt>-ui</tt></td>
+    <td>Starts the server's user interface. If this argument is not used, 
+the user interface is not displayed, and all output is sent to standard out 
+and standard error (typically the display screen). This argument is only processed
+by <tt>ServerUI</tt>-based servers.</td>
+   </tr>
+    <tr>
+   <td><tt>-no_output</tt></td>
+    <td>Starts the server and doesn't print any output anywhere. This argument
+ is only processed by <tt>ServerUI</tt>-based servers.</td>
+   </tr>
+    <tr>
+   <td><tt>-start</tt></td>
+    <td>Automatically starts the server (you don't need to click the <i>Start</i>
+ button in the user interface). This argument is only processed by <tt>ServerUI</tt>-based 
+ servers.</td>
+   </tr>
+    <tr>
+   <td><tt>-log &lt;log file name&gt;</tt></td>
+    <td>Sets the name of the log file. This argument is only processed by 
+      <tt>ServerUI</tt>-based  servers.</td>
+   </tr>
+    <tr>
+   <td><tt>-append_log</tt></td>
+    <td>If the log file already exists, append to it. This argument is only
+ processed by <tt>ServerUI</tt>-based servers.</td>
+   </tr>
+    <tr>
+   <td><tt>-main_server_class &lt;server class name&gt;</tt></td>
+    <td>The name of the <tt>MainServer</tt> class to start. This argument 
+is only processed by <tt>ServerUI</tt>-based servers.</td>
+   </tr>
+    <tr>
+   <td><tt>-help</tt></td>
+    <td>Displays descriptions of the above command line arguments.</td>
+   </tr>
+         
+  </tbody>  
+</table>
+      
+<p>Subclasses of <tt><a href="docs/galaxy/server/MainServer.html">MainServer</a></tt> 
+ and <tt><a href="docs/galaxy/server/ui/ServerUI.html">ServerUI</a></tt> can
+access their parent class's instance of <tt><a
+ href="docs/galaxy/server/ServerArgParser.html">galaxy.server.ServerArgParser</a></tt> 
+ (for subclasses of <tt><a href="docs/galaxy/server/MainServer.html">MainServer</a></tt>, 
+ this parser object is only useful if the <a
+ href="docs/galaxy/server/MainServer.html#MainServer(java.lang.String, java.lang.String[])">constructor 
+ that takes the argument list</a> was used). The methods on the interface 
+of <tt><a href="docs/galaxy/server/ServerArgParser.html">ServerArgParser</a></tt> 
+ (the useful methods are actually implemented by its parent class, <tt><a
+ href="docs/galaxy/util/ArgParser.html">galaxy.util.ArgParser</a></tt>) can
+ be used to examine the argument list (e.g., to extract the values of custom-defined
+ arguments). The <a
+ href="docs/galaxy/server/ServerArgParser.html#ServerArgParser(java.lang.String[], java.lang.String)"><tt>ServerArgParser</tt> 
+ constructor</a> that takes a second string argument allows developers to
+ add information on custom command line arguments to the usage message that
+ is displayed by the -help command line argument. </p>
+   
+<h2> <a name="Continuations"></a>Continuations</h2>
+   When you wish to call a dispatch function from a server and allow the
+Hub  to send the sending server other messages BEFORE the reply to the dispatch
+ function is sent back to the server, you must call the <tt><a
+ href="docs/galaxy/server/Environment.html#dispatchFrameWithContinuation(galaxy.lang.GFrame, galaxy.server.Continuation, java.lang.Object)">dispatchFrameWithConinuation</a></tt> 
+ method on the server's current call environment (of type <tt><a
+ href="docs/galaxy/server/Environment.html">galaxy.server.Environment</a></tt>). 
+ The current environment can be obtained from a <tt><a
+ href="docs/galaxy/server/Server.html">galaxy.server.Server</a></tt> via
+the server's <tt><a
+ href="docs/galaxy/server/Server.html#getCurrentEnvironment()">getCurrentEnvironment</a></tt> 
+ method:   
+<p><tt>public boolean dispatchFrameWithContinuation(GFrame frame, Continuation 
+ continuation,</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ Object continuationState)</tt> </p>
+   
+<p>This method's arguments include the frame that is to be dispatched to
+the Hub, a continuation object (discussed below), and state data used by
+the continuation. A continuation object implements the <tt><a
+ href="docs/galaxy/server/Continuation.html">galaxy.server.Continuation</a></tt> 
+ interface: </p>
+   
+<p><tt>public interface Continuation</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; public GFrame run(GFrame frame, int msgType, Object
+ continuationState, Environment env);</tt> <br>
+  <tt>}</tt> </p>
+   
+<p>When the server receives the reply to a dispatch function that was called
+ with <tt><a
+ href="docs/galaxy/server/Environment.html#dispatchFrameWithContinuation(galaxy.lang.GFrame, galaxy.server.Continuation, java.lang.Object)">dispatchFrameWithConinuation</a></tt>, 
+ it looks up the appropriate continuation object and invokes its <tt><a
+ href="docs/galaxy/server/Continuation.html#run(galaxy.lang.GFrame, int, java.lang.Object, galaxy.server.Environment)">run</a></tt> 
+ method, passing in the Hub's reply frame, the message type of the message 
+ that contained the reply frame, the state data that was passed into the original
+call to <tt><a
+ href="docs/galaxy/server/Environment.html#dispatchFrameWithContinuation(galaxy.lang.GFrame, galaxy.server.Continuation, java.lang.Object)">dispatchFrameWithConinuation</a></tt>, 
+ and the call environment from when the server originally dispatched the frame
+(i.e., not necessarily the server's current call environment). The <tt><a
+ href="docs/galaxy/server/Continuation.html#run(galaxy.lang.GFrame, int, java.lang.Object, galaxy.server.Environment)">run</a></tt> 
+ method is responsible for processing the reply just as if it had been returned 
+ immediately after the server called the dispatch function. The code segment 
+ below (from <a href="../../examples/double/java/DoubleServer.java">DoubleServer.java</a>) 
+ illustrates this new functionality. </p>
+   
+<p>&nbsp;&nbsp;&nbsp; <b>Example</b> </p>
+   
+<p>&nbsp;&nbsp;&nbsp; <tt>public class DoubleServer extends galaxy.server.Server
+ {</tt> </p>
+   
+<p><tt>&nbsp;&nbsp;&nbsp; ...</tt> </p>
+   
+<p><tt>&nbsp;&nbsp;&nbsp; public GFrame serverOpContinuationComplexTwice(GFrame 
+ frame)</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; GFrame newFrame = new Clause("multiply");</tt> 
+ <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; int i = ((Integer)frame.getProperty(":int")).intValue();</tt> 
+ <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; newFrame.setProperty(":int", i);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; ContinueComplexTwice continueComplexTwice
+=  new ContinueComplexTwice();</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; getCurrentEnvironment().dispatchFrameWithContinuation(newFrame, 
+ continueComplexTwice, frame);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; return (GFrame) null;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; }</tt> </p>
+   
+<p><tt>&nbsp;&nbsp;&nbsp; class ContinueComplexTwice implements Continuation</tt> 
+ <br>
+  <tt>&nbsp;&nbsp;&nbsp; {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; public GFrame run(GFrame
+ frame, int msgType, Object continuationState, Environment env)</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ GFrame origFrame = (GFrame) continuationState;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ GFrame returnFrame;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ GFrame twiceFrame;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ String progName;</tt> </p>
+   
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ if (frame == null) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ logWarning("Didn't hear back from multiply");</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ return (GFrame) null;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ }</tt> </p>
+   
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ switch (msgType) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ case GalaxyMessage.GAL_REPLY_MSG_TYPE:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ progName = origFrame.getString(":program");</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ if (progName == null)</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ progName = "main";</tt> </p>
+   
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ twiceFrame = new Clause("twice");</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ twiceFrame.setProperty(":program", progName);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ int i = ((Integer)frame.getProperty(":int")).intValue();</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ twiceFrame.setProperty(":int", i);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ returnFrame = serverOpTwice(twiceFrame);</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ return returnFrame;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ case GalaxyMessage.GAL_ERROR_MSG_TYPE:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ return (GFrame) null;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ default:</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ return (GFrame) null;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ }</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; }</tt> <br>
+  &nbsp; </p>
+   
+<h2> <a name="Calling_Dispatch_Functions_From_Incoming_Brokers"></a>Calling 
+ Dispatch Functions From Incoming Brokers</h2>
+   <a href="docs/galaxy/server/DataInBroker.html">Incoming brokers</a> can
+ now call dispatch functions on servers by using the Hub connection of the
+ <tt><a href="docs/galaxy/server/Server.html">galaxy.server.Server</a></tt> 
+ that created the broker. This is done by calling the <tt><a
+ href="docs/galaxy/server/Environment.html#dispatchFrame(galaxy.lang.GFrame)">dispatchFrame</a></tt> 
+ method on the interface of the broker's <tt><a
+ href="docs/galaxy/server/Environment.html">galaxy.server.Environment</a></tt> 
+ object (NOTE: use the broker's local environment object; do NOT use the current
+environment of the <tt><a href="docs/galaxy/server/Server.html">galaxy.server.Server</a></tt> 
+ that created the broker). In addition, the broker can register with the <tt><a
+ href="docs/galaxy/server/Server.html">galaxy.server.Server</a></tt> object
+that created it by calling <tt><a
+ href="docs/galaxy/server/DataInBroker.html#registerWithServer()">galaxy.server.DataInBroker.registerWithServer</a></tt>. 
+ This registration will force the server to destroy the broker if the server 
+ loses its connection to the Hub. This prevents the broker from trying to 
+send messages to the Hub on a connection that no longer exists. Use <tt><a
+ href="docs/galaxy/server/DataInBroker.html#unregisterFromServer()">galaxy.server.DataInBroker.unregisterFromServer</a></tt> 
+ to unregister from the server.   
+<h2> <a name="Sending_Messages_to_the_Hub"></a>Sending Messages to the Hub</h2>
+   The new, preferred way to send new messages and replies to the Hub from
+ an instance of <tt><a href="docs/galaxy/server/Server.html">galaxy.server.Server</a></tt>&nbsp; 
+ is to use <tt><a
+ href="docs/galaxy/server/Server.html#getCurrentEnvironment()">galaxy.server.Server.getCurrentEnvironment</a></tt> 
+ to get a reference to the current call environment and use the methods on
+ its interface (<tt><a
+ href="docs/galaxy/server/Environment.html#writeFrame(galaxy.lang.GFrame)">writeFrame</a></tt>, 
+ <tt><a
+ href="docs/galaxy/server/Environment.html#reply(galaxy.lang.GFrame)">reply</a></tt>, 
+ <tt><a
+ href="docs/galaxy/server/Environment.html#error(java.lang.String)">error</a></tt>, 
+ <tt><a
+ href="docs/galaxy/server/Environment.html#error(java.lang.String, int)">error</a></tt> 
+ (second version), <tt><a
+ href="docs/galaxy/server/Environment.html#destroyToken()">destroyToken</a></tt>, 
+ <tt><a
+ href="docs/galaxy/server/Environment.html#dispatchFrame(galaxy.lang.GFrame)">dispatchFrame</a></tt>) 
+ to send messages to the Hub. This replaces the use of <tt>writeMessage</tt>, 
+ <tt>writeErrorMessage</tt>,  <tt>writeFrame</tt>,  <tt>writeDestroyMessage</tt> 
+ and <tt>dispatchFrame</tt>  on the interface of <tt><a
+ href="docs/galaxy/server/Server.html">galaxy.server.Server</a></tt>  (these
+methods have been deprecated as of 3.0).   
+<h2> <a name="Contacting_a_Hub_at_Runtime"></a>Contacting a Hub at Runtime</h2>
+   It is now possible to establish a client connection to a Hub at runtime
+ using the <tt><a
+ href="docs/galaxy/server/MainServer.html#contactHub(java.lang.String, int, java.lang.String, int)">contactHub</a></tt> 
+ method on the interface of <tt><a
+ href="docs/galaxy/server/MainServer.html">galaxy.server.MainServer</a></tt>. 
+ This would typically be done from a class that extends <tt><a
+ href="docs/galaxy/server/Server.html">galaxy.server.Server</a>,</tt> but
+ it can be done from any class that has a reference to a <tt><a
+ href="docs/galaxy/server/MainServer.html">MainServer</a></tt> . If a connection
+ is established, a new <tt><a href="docs/galaxy/server/Server.html">Server</a></tt> 
+ object of the type supported by the <tt><a
+ href="docs/galaxy/server/MainServer.html">MainServer</a></tt> instance&nbsp;
+ is created. However, the reference to this new connection is not returned
+ to the caller due to the variability in the connection policies supported
+ by <tt><a
+ href="docs/galaxy/server/MainServer.html#contactHub(java.lang.String, int, java.lang.String, int)">contactHub</a></tt> 
+ (discussed below).   
+<p>&nbsp;&nbsp;&nbsp; <b>Example</b> </p>
+   
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <tt>MainServer 
+ mainServer;</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; ...</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; mainServer.contactHub("localhost", 12345, "foo",</tt> 
+ <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; MainServer.GAL_HUB_CLIENT_CONNECT_FAILURE_NOOP 
+ |</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; MainServer.GAL_HUB_CLIENT_DISCONNECT_SHUTDOWN);</tt> 
+ </p>
+   
+<p>The first two arguments to <tt><a
+ href="docs/galaxy/server/MainServer.html#contactHub(java.lang.String, int, java.lang.String, int)">contactHub</a></tt> 
+ are the host name and port of the Hub to contact. The third argument is the
+initial session id of the connection that is to be created. The fourth argument
+is a flag that specifies the connection policy to use (if this is -1, the
+connection policy of the invoked <tt><a
+ href="docs/galaxy/server/MainServer.html">MainServer</a></tt>&nbsp; is used).
+ This last argument is either set to <a
+ href="docs/galaxy/server/MainServer.html#DEFAULT_HUB_CONTACT_POLICY">MainServer.DEFAULT_HUB_CONTACT_POLICY</a> 
+ or an or'ed (using the Java bitwsie <i>or</i>, |, operator) combination of
+one of </p>
+   
+<p><tt><a
+ href="docs/galaxy/server/MainServer.html#GAL_HUB_CLIENT_CONNECT_FAILURE_RETRY">MainServer.GAL_HUB_CLIENT_CONNECT_FAILURE_RETRY</a>: 
+ </tt>Indicates server should keep trying to contact Hub until initial connection
+ is established. <br>
+  <tt><a
+ href="docs/galaxy/server/MainServer.html#GAL_HUB_CLIENT_CONNECT_FAILURE_SHUTDOWN">MainServer.GAL_HUB_CLIENT_CONNECT_FAILURE_SHUTDOWN</a>: 
+ </tt>Indicates server should shutdown if initial connection to Hub can not
+ be established. <br>
+  <tt><a
+ href="docs/galaxy/server/MainServer.html#GAL_HUB_CLIENT_CONNECT_FAILURE_NOOP">MainServer.GAL_HUB_CLIENT_CONNECT_FAILURE_NOOP</a>: 
+ </tt>Indicates server should do nothing if initial connection to Hub can
+ not be established. </p>
+   
+<p>and one of </p>
+   
+<p><tt><a
+ href="docs/galaxy/server/MainServer.html#GAL_HUB_CLIENT_DISCONNECT_RETRY">MainServer.GAL_HUB_CLIENT_DISCONNECT_RETRY</a>: 
+ </tt>Indicates server should keep trying to re-establish contact to Hub if
+the connection is lost. <br>
+  <tt><a
+ href="docs/galaxy/server/MainServer.html#GAL_HUB_CLIENT_DISCONNECT_SHUTDOWN">MainServer.GAL_HUB_CLIENT_DISCONNECT_SHUTDOWN</a>: 
+ </tt>Indicates server should shutdown if connection to Hub is lost. <br>
+  <tt><a
+ href="docs/galaxy/server/MainServer.html#GAL_HUB_CLIENT_DISCONNECT_NOOP">MainServer.GAL_HUB_CLIENT_DISCONNECT_NOOP</a>: 
+ </tt>Indicates server should do nothing if connection to Hub is lost. </p>
+   
+<p>The default policy (<a
+ href="docs/galaxy/server/MainServer.html#DEFAULT_HUB_CONTACT_POLICY">MainServer.DEFAULT_HUB_CONTACT_POLICY</a> 
+ )&nbsp; is to keep trying to establish the initial connection to the Hub 
+until successful. If the connection to the Hub is later lost, keep trying 
+to reconnect. The default policy of a <tt><a
+ href="docs/galaxy/server/MainServer.html">MainServer</a></tt>&nbsp;  can 
+be set and get with the methods <tt><a
+ href="docs/galaxy/server/MainServer.html#setHubContactPolicy(int)">setHubContactPolicy</a></tt> 
+ and <tt><a
+ href="docs/galaxy/server/MainServer.html#getHubContactPolicy()">getHubContactPolicy</a></tt> 
+ and you can set and get the policy of a given&nbsp; <tt><a
+ href="docs/galaxy/server/Server.html">Server</a></tt> object with its own&nbsp;
+ <tt><a
+ href="docs/galaxy/server/Server.html#setHubContactPolicy(int)">setHubContactPolicy</a></tt> 
+ and <tt><a
+ href="docs/galaxy/server/Server.html#getHubContactPolicy()">getHubContactPolicy</a></tt> 
+ methods. </p>
+   
+<h2> <a name="Server_and_Session_Properties"></a>Server and Session Properties</h2>
+   The Hub keeps track of properties for servers and sessions. There are
+various  methods on the interfaces of <tt><a
+ href="docs/galaxy/server/Server.html">galaxy.server.Server</a></tt> and
+<tt><a href="docs/galaxy/server/Environment.html">galaxy.server.Environment</a></tt> 
+ for accessing and manipulating these values. See the discussion of <a
+ href="../../../../docs/manual/advanced/hub_properties.html">properties</a> 
+ in the C binding documentation for more details on the use of properties. 
+  
+<p>Methods on the interface of <tt><a
+ href="docs/galaxy/server/Server.html">galaxy.server.Server</a></tt>: </p>
+   
+<ul>
+   <li> <a
+ href="docs/galaxy/server/Server.html#getServerProperties()">getServerProperties</a>: 
+ Returns the frame constituting the server properties as the server currently 
+ knows them locally.</li>
+    <li> <a
+ href="docs/galaxy/server/Server.html#setServerProperties(galaxy.lang.GFrame)">setServerProperties</a>: 
+ Sets the properties in the server's local property repository.</li>
+    <li> <a
+ href="docs/galaxy/server/Server.html#deleteServerProperties(java.lang.String[])">deleteServerProperties</a>: 
+ Deletes the specified properties from the server's local property repository.</li>
+    <li> <a
+ href="docs/galaxy/server/Server.html#addServiceType(java.lang.String)">addServiceType</a>: 
+ Adds a new service type to a server's local service type repository.</li>
+    <li> <a href="docs/galaxy/server/Server.html#getServiceTypes()">getServiceTypes</a>: 
+ Returns the list constituting the server service types as the server currently 
+ knows them locally.</li>
+     
+</ul>
+   Methods on the interface of <tt><a
+ href="docs/galaxy/server/Environment.html">galaxy.server.Environment</a></tt> 
+ (note that these methods act on the server and session associated with the
+ invoked environment object):   
+<ul>
+   <li> <a
+ href="docs/galaxy/server/Environment.html#getServerProperties(java.lang.String[])">getServerProperties</a>: 
+ Returns the frame constituting the server properties as the Hub currently 
+ knows them.</li>
+    <li> <a
+ href="docs/galaxy/server/Environment.html#setServerProperties(galaxy.lang.GFrame)">setServerProperties</a>: 
+ Sets the server properties in the Hub. This also sets the properties in the
+server's local property repository.</li>
+    <li> <a
+ href="docs/galaxy/server/Environment.html#deleteServerProperties(java.lang.String[])">deleteServerProperties</a>: 
+ Deletes the specified server properties in the Hub. This also deletes the 
+ properties from the server's local property repository.</li>
+    <li> <a
+ href="docs/galaxy/server/Environment.html#modifyServerProperties(galaxy.lang.GFrame, java.lang.String[])">modifyServerProperties</a>: 
+ Allows a set of server properties to be modified (added and removed) in the
+Hub. This also updates the server's local property repository.</li>
+    <li> <a
+ href="docs/galaxy/server/Environment.html#getSessionProperties(java.lang.String[])">getSessionProperties</a>: 
+ Returns the frame constituting the session properties as the Hub currently 
+ knows them.</li>
+    <li> <a
+ href="docs/galaxy/server/Environment.html#setSessionProperties(galaxy.lang.GFrame)">setSessionProperties</a>: 
+ Sets the session properties in the Hub.</li>
+    <li> <a
+ href="docs/galaxy/server/Environment.html#deleteSessionProperties(java.lang.String[])">deleteSessionProperties</a>: 
+ Deletes the specified session properties in the Hub.</li>
+    <li> <a
+ href="docs/galaxy/server/Environment.html#modifySessionProperties(galaxy.lang.GFrame, java.lang.String[])">modifySessionProperties</a>: 
+ Allows a set of session properties to be modified (added and removed) in 
+the Hub.</li>
+     
+</ul>
+      
+<h2> <a name="Setting_Session_Id"></a>Setting Session Id</h2>
+   There are now methods on the interface of <tt><a
+ href="docs/galaxy/server/Environment.html">galaxy.server.Environment</a></tt> 
+ that allow the environment's session id to be changed:   
+<ul>
+   <li> <a
+ href="docs/galaxy/server/Environment.html#setSessionId(java.lang.String, int)">setSessionId</a>: 
+ Updates the environment's local session id and informs the Hub of the change.</li>
+    <li> <a
+ href="docs/galaxy/server/Environment.html#updateSessionId(java.lang.String)">updateSessionId</a>: 
+ Updates the environment's local session id. The Hub is not informed of the
+ change.</li>
+     
+</ul>
+      
+<h2> <a name="Postponing_a_Reply"></a>Postponing a Reply</h2>
+   When a <tt><a href="docs/galaxy/server/Server.html">galaxy.server.Server</a></tt> 
+ dispatch function is invoked by the Hub, the server can call <tt><a
+ href="docs/galaxy/server/Environment.html#postponeReply()">galaxy.server.Environment.postoneReply</a></tt>&nbsp; 
+ on the current environment to inform the Hub that the response to its message 
+ will be delayed, but that in the meantime it's available for other incoming 
+ messages.   
+<h2> <a name="Using_Broker_Proxies"></a>Using Broker Proxies</h2>
+   <tt><a href="docs/galaxy/server/DataOutBrokerProxy.html">galaxy.server.DataOutBrokerProxy</a></tt>&nbsp; 
+ and <tt><a href="docs/galaxy/server/DataInBrokerProxy.html">galaxy.server.DataInBrokerProxy</a></tt>&nbsp; 
+ have been introduced to simplify the use of data brokers. These objects can
+be used in place of <tt><a href="docs/galaxy/server/DataOutBroker.html">galaxy.server
+ DataOutBroker</a></tt> and <tt><a
+ href="docs/galaxy/server/DataInBroker.html">galaxy.server.DataInBroker</a></tt> 
+ respectively. Also, the <tt><a href="docs/galaxy/lang/BrokerProxy.html">galaxy.lang.BrokerProxy</a></tt> 
+ object has been introduced to encapsulate the information that an inbound 
+ broker needs in order to connect to an outbound broker. <tt><a
+ href="docs/galaxy/lang/BrokerProxy.html">galaxy.lang.BrokerProxy</a></tt>&nbsp; 
+ objects can be encoded in Galaxy Communicator messages and broker data streams,
+ allowing this connection information to be passed between servers in a standard
+ way.   
+<p>Two types of <tt><a href="docs/galaxy/server/DataOutBrokerProxy.html">galaxy.server.DataOutBrokerProxy</a></tt>&nbsp; 
+ objects can be created. The <a
+ href="docs/galaxy/server/DataOutBrokerProxy.html#DataOutBrokerProxy(int, galaxy.server.Server, int, int)">first 
+ type</a> is configured to broker an object of a particular type (e.g., an
+ array of 32-bit integers). If the type is set to -1, the broker can handle
+ any type of data, including heterogeneous objects (e.g., both 32-bit integer
+ arrays and 64-bit floating point arrays). The <tt><a
+ href="docs/galaxy/server/DataOutBrokerProxy.html#write(java.lang.Object)">write</a></tt> 
+ method is normally used to write the data to this first type of outbound 
+broker. If the broker is brokering an <tt><a
+ href="docs/galaxy/lang/ArrayObject.html">ArrayObject</a></tt> or a <tt><a
+ href="docs/galaxy/lang/GVector.html">GVector</a></tt> (i.e., expandable
+data objects), the <tt><a
+ href="docs/galaxy/server/DataOutBrokerProxy.html#addArrayToArray(galaxy.lang.ArrayObject)">addArrayToArray</a></tt> 
+ and <tt><a
+ href="docs/galaxy/server/DataOutBrokerProxy.html#addObjectToList(java.lang.Object)">addObjectToList</a></tt> 
+ methods can be used to write array or list data respectively. Also, if the
+ broker is brokering arrays or lists or it has been configured to broker
+any  type of data (i.e., type set to -1), then it is crucial that you invoke
+<tt><a href="docs/galaxy/server/DataOutBrokerProxy.html#close()">close</a></tt> 
+when you are done writing data to the broker. This happens automatically in
+all other cases. </p>
+   
+<p>The <a
+ href="docs/galaxy/server/DataOutBrokerProxy.html#DataOutBrokerProxy(java.lang.Object, galaxy.server.Server, int, int)">second 
+ type</a> is configured to broker one specified object. As in the case of 
+the first type of broker proxy, you may use the <tt><a
+ href="docs/galaxy/server/DataOutBrokerProxy.html#addArrayToArray(galaxy.lang.ArrayObject)">addArrayToArray</a></tt> 
+ and <tt><a
+ href="docs/galaxy/server/DataOutBrokerProxy.html#addObjectToList(java.lang.Object)">addObjectToList</a></tt> 
+ methods to write data to brokers that are brokering&nbsp; <tt><a
+ href="docs/galaxy/lang/ArrayObject.html">ArrayObject</a></tt> or&nbsp; <tt><a
+ href="docs/galaxy/lang/GVector.html">GVector</a></tt>&nbsp; objects respectively.
+ Also, if you are brokering an array or list, you must invoke <tt><a
+ href="docs/galaxy/server/DataOutBrokerProxy.html#close()">close</a></tt> 
+when you are done writing data to the broker. Note that if the object being 
+brokered is a <tt><a href="docs/galaxy/lang/GVector.html">GVector</a></tt>, 
+then the list elements are brokered as individual objects (i.e., the list 
+is not brokered as one monolithic object). </p>
+   
+<p><tt><a href="docs/galaxy/server/DataInBrokerProxy.html">galaxy.server.DataInBrokerProxy</a></tt> 
+ has two methods for accessing the brokered data. <tt><a
+ href="docs/galaxy/server/DataInBrokerProxy.html#getObject(boolean)">getObject</a></tt>&nbsp; 
+ returns the complete brokered object (or null if it is not available yet). 
+ <tt><a
+ href="docs/galaxy/server/DataInBrokerProxy.html#receivedObject(java.lang.Object)">receivedObject</a></tt>&nbsp; 
+ is called each time the associated in broker receives data (this method should
+be overriden by the developer to handle the data as desired). If the target
+outbound broker is configured to broker any type of data (i.e., was configured
+with object type -1), the inbound broker should use <tt><a
+ href="docs/galaxy/server/DataInBrokerProxy.html#receivedObject(java.lang.Object)">receivedObject</a></tt>&nbsp; 
+ to access the incoming data, since, in this case, there is no way to know 
+ when all the data has been received until the broker proxy's <tt><a
+ href="docs/galaxy/server/DataInBrokerProxy.html#disconnectReceived()">disconnectReceived</a></tt> 
+ method is invoked (signifies that the associated outbound broker has sent 
+ all its data). </p>
+   
+<h2> <a name="Timestamps"></a>Timestamps</h2>
+   The timestamp of the token associated with a particular environment can
+ be accessed by invoking <tt><a
+ href="docs/galaxy/server/Environment.html#getTokenTimestamp()">galaxy.server.Environment.getTokenTimestamp</a></tt>&nbsp; 
+ on the environment. You can also "inherit" the timestamp of the current token
+such that it is associated with all new messages sent from a particular environment.
+To do this, invoke <tt><a
+ href="docs/galaxy/server/Environment.html#inheritTokenTimestamp()">galaxy.server.Environment.inheritTokenTimestamp</a></tt>&nbsp; 
+ on the environment.   
+<h2> <a name="Service_Provider_Id"></a>Service Provider Id</h2>
+   The provider id of the server that sent a message can be obtained by invoking
+ <tt><a
+ href="docs/galaxy/server/Environment.html#getOriginatingProvider()">galaxy.server.Environment.getOriginatingProvider</a></tt> 
+ on the environment that is associated with the message. In addition, a server
+ can send messages to a particular server based on provider id by using one
+ of <tt><a
+ href="docs/galaxy/server/Environment.html#writeFrameToProvider(galaxy.lang.GFrame, java.lang.String)">galaxy.server.Environment.writeFrameToProvider</a>,<a
+ href="docs/galaxy/server/Environment.html#dispatchFrameToProvider(galaxy.lang.GFrame, java.lang.String)">galaxy.server.Environment.dispatchFrameToProvider</a></tt>&nbsp; 
+ or <tt><a
+ href="docs/galaxy/server/Environment.html#dispatchFrameToProviderWithContinuation(galaxy.lang.GFrame, galaxy.server.Continuation, java.lang.Object, java.lang.String)">galaxy.server.Environment.dispatchFrameToProviderWithContinuation</a></tt>. 
+  
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Change_Log"></a>Change Log</h2>
+      
+<h4> May 2002</h4>
+      
+<ul>
+   <li> Updated support for diagnostic message verbosity levels.</li>
+    <li> Added support for broker proxies.</li>
+    <li> Added support for timestamps.</li>
+    <li> Added support for accessing/using service provider ids.</li>
+     
+</ul>
+      
+<h4> January 2002</h4>
+      
+<ul>
+   <li> Updated Hub/client connection policy flags.</li>
+     
+</ul>
+      
+<h4> June 2001</h4>
+      
+<ul>
+   <li> Added initial support for -verbosity command line argument.</li>
+    <li> Changes to management of Hub/client connection policies.</li>
+     
+</ul>
+      
+<h4> December 2000</h4>
+      
+<ul>
+   <li> Extensive changes to brokering support.</li>
+    <li> Extensive changes to thread management.</li>
+    <li> Extensive changes to interface for writing frames to the Hub.</li>
+    <li> Added support for continuations.</li>
+    <li> Added support for configurable connection policies for Hub clients.</li>
+    <li> Added support for server and session properties.</li>
+    <li> Added support for new command line arguments.</li>
+     
+</ul>
+      
+<h4> August 2000</h4>
+      
+<ul>
+   <li> The Java bindings have been modified to work with the new listener-in-Hub
+ capability. In particular, support for the -contact_hub and -session_id
+command  line arguments has been added.</li>
+    <li> Various changes to Java bindings implementation to improve thread
+ synchronization.</li>
+     
+</ul>
+      
+<h4> February 2000</h4>
+      
+<ul>
+   <li> Removed references to Thread.stop() from Server.java and MainServer.java</li>
+    <li> Added serverClassName field to ServerUI.java to allow more efficient
+ implementation of java servers. (For an example see the <a
+ href="../../examples/double/main.html">double</a> server)</li>
+     
+</ul>
+      
+<h4> January 1999</h4>
+      
+<ul>
+   <li> <tt>Server.java</tt> has changed. Operations now should be defined
+ as <tt>GFrame serverOpOperationName(GFrame) </tt>as opposed to <tt>void
+serverOpOperationName(GFrame).</tt>  1/99</li>
+    <li> All demos have been modified accordingly. 1/99</li>
+    <li> <tt>Server.java</tt> accepts null as a return value from an operation.
+ In this case the Server will not return anything to the hub. 1/99</li>
+    <li> <tt>reinitialize</tt> is now called <tt>serverOpReinitialize</tt> 
+and does not return anything. The server bindings will return a message to 
+the HUB when reinitialize is called. If you wish to send further information 
+please use <tt>galaxy.server.Server.writeMessage(GalaxyMessage msg)</tt> or
+    <tt>galaxy.server.Server.writeFrame(GFrame)</tt>.  10/28</li>
+    <li> All Classes in galaxy.lang are now children of galaxy.lang.GalaxyObject.
+ 10/28</li>
+    <li> DataInBroker and DataOutBroker: notice that the i/o streams in galaxy.server.Server
+ have been made private. Brokers must use the <tt>writeMessage, writeFrame
+     </tt>and<tt> writeDestroyMessage()</tt> from brokers now. 10/28</li>
+    <li> For other changes please view the change log for this <a
+ href="../../../../docs/manual/admin/release_notes.html">distribution</a>.</li>
+     
+</ul>
+      
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="../../demos/docs/toy-travel-ref.html"><img
+ src="../../../../docs/arrow_left.gif" alt="" width="30" height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../../LICENSE">License</a> / <a
+ href="../../../../docs/manual/index.html">Documentation home</a> / <a
+ href="../../../../docs/manual/index.html#Getting_help">Help and feedback</a> 
+       </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="../python/docs/index.html"><img
+ src="../../../../docs/arrow_right.gif" alt="" width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last modified August 8, 2002</center>
+      
+<p><br>
+   </p>
+  <br>
+  <br>
+ <br>
+</body>
+</html>

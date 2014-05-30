@@ -1,0 +1,139 @@
+<!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.6 [en] (X11; I; Linux 2.2.10 ppc) [Netscape]">
+   <title>Galaxy Communicator Documentation: Binary Data</title>
+</head>
+<body style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#3333FF" vlink="#993399" alink="#FF0000">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:
+<br><br>
+Binary Data</h1></center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "signal.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "util.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+
+<hr WIDTH="100%">
+<p>In addition to <a href="../reference/brokering.html">brokering</a>,
+MIT provides a way of moving binary data among servers, using the <a href="../reference/frame.html#Gal_BinaryObject">binary
+frame object</a>. We can use this object either to send around audio data,
+or to encode arbitrary structures which remain opaque to the Communicator
+Hub. (Be aware that unlike <a href="../reference/brokering.html">brokering connections</a>,
+big_endian/little_endian issues are not addressed in the binary data tools,
+since only 8 bit binary data can be encoded.)
+<p>We provide an example of <a href="../../../contrib/MITRE/examples/binary_data/">using
+binary objects for audio</a> to compare with our example of <a href="../../../contrib/MITRE/examples/audio/">using
+brokering for audio</a>. In this section, we show how one might use binary
+objects to encode arbitrary structures.
+<br>&nbsp;
+<p>
+<hr WIDTH="100%">
+<h2>
+Passing arbitrary data</h2>
+The key aspect of using binary objects to
+encode arbitrary data is to write encoding and decoding functions for the
+data. In the <a href="../../../contrib/MITRE/examples/binary_data/">example</a>
+we provide, we encode and decode a simple structure, whose slots are initialized
+in the reinitialize() message:
+<ul><tt>typedef struct __MTestStruct {</tt>
+<br><tt>&nbsp; int first;</tt>
+<br><tt>&nbsp; int last;</tt>
+<br><tt>&nbsp; char *msg;</tt>
+<br><tt>} MTestStruct;</tt>
+<p><tt>static void *encode_test_struct(MTestStruct *s, int *len)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; char *encode_buf;</tt>
+<p><tt>&nbsp; encode_buf = (char *) malloc(sizeof(char) * (strlen(s->msg)
++ 64));</tt>
+<br><tt>&nbsp; sprintf(encode_buf, "%d %d %s", s->first, s->last, s->msg);</tt>
+<br><tt>&nbsp; *len = strlen(encode_buf);</tt>
+<br><tt>&nbsp; return (void *) encode_buf;</tt>
+<br><tt>}</tt>
+<p><tt>static MTestStruct *decode_test_struct(void *data, int len)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; MTestStruct *s = (MTestStruct *) malloc(sizeof(MTestStruct));</tt>
+<br><tt>&nbsp; int where;</tt>
+<p><tt>&nbsp; sscanf(data, "%d %d %n", &amp;(s->first), &amp;(s->last),
+&amp;where);</tt>
+<br><tt>&nbsp; s->msg = (char *) malloc(sizeof(char) * (1 + (len - where)));</tt>
+<br><tt>&nbsp; strncpy(s->msg, data + where, len - where);</tt>
+<br><tt>&nbsp; return s;</tt>
+<br><tt>}</tt></ul>
+The important step here is for the server
+or servers which need access to this arbitrary data to agree on a binary
+(or string) encoding of the data. The data will be passed untouched. In
+our example, the reinitialize() message creates a structure, encodes it,
+and passes it to the Hub, and the receive_binary() message decodes the
+data, recreates the structure, and prints out the contents of the structure:
+<ul><tt>Gal_Frame receive_binary(Gal_Frame f, void *server_data)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; int size = 0;</tt>
+<br><tt>&nbsp; void *buf = Gal_GetBinary(f, ":binary_data", &amp;size);</tt>
+<br><tt>&nbsp; MTestStruct *s = decode_test_struct(buf, size);</tt>
+<p><tt>&nbsp; sls_pinfo1("Decoded buf is `%s'\n", buf);</tt>
+<br><tt>&nbsp; sls_pinfo1("First is %d, last is %d, msg is `%s'\n",</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s->first, s->last, s->msg);</tt>
+<br><tt>&nbsp; return (Gal_Frame) NULL;</tt>
+<br><tt>}</tt>
+<p><tt>Gal_Frame reinitialize(Gal_Frame f, void *server_data)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; Gal_Frame fr;</tt>
+<br><tt>&nbsp; int len;</tt>
+<br><tt>&nbsp; void *data;</tt>
+<br><tt>&nbsp; MTestStruct *s = (MTestStruct *) malloc(sizeof(MTestStruct));</tt>
+<p><tt>&nbsp; s->first = Gal_GetInt(f, ":test_first");</tt>
+<br><tt>&nbsp; s->last = Gal_GetInt(f, ":test_last");</tt>
+<br><tt>&nbsp; s->msg = Gal_GetString(f, ":test_msg");</tt>
+<p><tt>&nbsp; /* Create a new message. */</tt>
+<br><tt>&nbsp; fr = Gal_MakeFrame("main", GAL_CLAUSE);</tt>
+<br><tt>&nbsp; data = encode_test_struct(s, &amp;len);</tt>
+<br><tt>&nbsp; Gal_SetProp(fr, ":binary_data", Gal_BinaryObject(data, len));</tt>
+<br><tt>&nbsp; GalSS_EnvWriteFrame((GalSS_Environment *) server_data, fr,
+0);</tt>
+<br><tt>&nbsp; Gal_FreeFrame(fr);</tt>
+<br><tt>&nbsp; return (Gal_Frame) NULL;</tt>
+<br><tt>}</tt></ul>
+Note how the data and size established by
+the encoder are used to create a binary object, and then how the data and
+size in the binary object are passed to the decoder to recreate the structure.
+In this way, data structures which the Hub knows nothing about can be passed
+between servers without needing to recursively duplicate the structure
+of the data in frames.
+<br>&nbsp;
+<br>&nbsp;
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "signal.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "util.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated October 10, 1999</center>
+
+</body>
+</html>

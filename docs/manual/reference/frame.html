@@ -1,0 +1,1697 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+                          
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+                          
+  <meta name="GENERATOR"
+ content="Mozilla/4.79 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Frames, Property Lists, and Typed
+Objects</title>
+                             <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+            
+<center>     
+<h1> Galaxy Communicator Documentation:<br>
+       <br>
+       Frames, Property Lists, and Typed Objects</h1>
+      </center>
+     
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="hub.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>  
+     </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="adding.html"><img src="../../arrow_right.gif" alt="" width="30"
+ height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+             
+<hr width="100%">     
+<ul>
+       <li> <a href="#Frames_and_objects">Frames and Objects</a></li>
+                        
+  <ul>
+       <li> <a href="#Frame_Subtypes">Frame Subtypes</a></li>
+        <li> <a href="#Frame_Syntax">Frame Syntax</a></li>
+        <li> <a href="#Object_Types">Object Types</a></li>
+        <li> <a href="#Object_syntax">Object Syntax</a></li>
+                       
+  </ul>
+        <li> <a href="#Frame_Functions">Frame Functions</a></li>
+                        
+  <ul>
+       <li> <a href="#Frame_Create,_Free,_and_Copy_Functions">Frame  Create, 
+ Free, and Copy Functions</a></li>
+        <li> <a href="#Frame_Comparison_Predicates">Frame Comparison Predicates</a></li>
+        <li> <a href="#Frame_Name_and_Type_Operations">Frame Name and  Type 
+ Operations</a></li>
+                       
+  </ul>
+        <li> <a href="#Property_Lists">Property Lists</a></li>
+                        
+  <ul>
+       <li> <a href="#Property_List_Operations">Property List Operations</a></li>
+        <li> <a href="#Miscellaneous_Functions">Miscellaneous</a></li>
+                       
+  </ul>
+        <li> <a href="#Typed_Object_Functions">Typed Object Functions</a></li>
+                        
+  <ul>
+       <li> <a href="#Object_Creation_Functions">Object Creation Functions</a></li>
+        <li> <a href="#Object_Free_and_Copy_Functions">Object Free and  Copy 
+ Functions</a></li>
+        <li> <a href="#Type_Checking_Predicates">Type Checking Predicates</a></li>
+        <li> <a href="#Object_Comparison_Predicates">Object Comparison Predicates</a></li>
+        <li> <a href="#Object_Value_Extraction">Object Value Extraction</a></li>
+        <li> <a href="#Accesing_GAL_LIST_Object_Elements">List Object Operations</a></li>
+        <li> <a href="#Binary_Object_Operations">Binary Object Operations</a></li>
+        <li> <a href="#Broker_Proxy_Operations">Broker Proxy Operations</a></li>
+                       
+  </ul>
+        <li> <a href="#Frame_Utilities">Frame Utilities</a></li>
+                        
+  <ul>
+       <li> <a href="#Frame_to_String_Conversion">Frame to String Conversion</a></li>
+        <li> <a href="#Frame_Printing_Functions">Frame Printing Functions</a></li>
+        <li> <a href="#Frame_Reading_Functions">Frame Reading Functions</a></li>
+                       
+  </ul>
+        <li> <a href="#MIT_Linguistic_Frame_Tools">MIT Linguistic Frame 
+Tools</a></li>
+                        
+  <ul>
+       <li> <a href="#General_Utilities">General Utilities</a></li>
+        <li> <a href="#Frame_Searching_Functions">Frame Searching Functions</a></li>
+        <li> <a href="#Predicate_List_Operations">Predicate List Operations</a></li>
+                       
+  </ul>
+        <li> <a href="#Deprecated_functions">Deprecated functions</a></li>
+           
+</ul>
+            
+<hr width="100%">     
+<h2> <a name="Frames_and_objects"></a>Frames and Objects</h2>
+       Frames are the general data structure which the Galaxy Communicator
+ servers   and Hub use to communicate. A frame has the following characteristics:
+       
+<ul>
+       <li> a type</li>
+        <li> a name</li>
+        <li> a property list of key-value pairs</li>
+        <li> a list of predicate frames</li>
+           
+</ul>
+            
+<h3> <a name="Frame_Subtypes"></a>Frame Subtypes</h3>
+       There are three frame subtypes: <br>
+      &nbsp;     
+<table border="1" nosave="">
+       <tbody>
+          <tr>
+       <td><b>frame</b></td>
+        <td><b><a name="Gal_FrameType"></a>Gal_FrameType</b></td>
+       </tr>
+        <tr>
+       <td>clause</td>
+        <td><small><a name="GAL_CLAUSE"></a></small>GAL_CLAUSE</td>
+       </tr>
+        <tr>
+       <td>topic</td>
+        <td><small><a name="GAL_TOPIC"></a></small>GAL_TOPIC</td>
+       </tr>
+        <tr nosave="">
+       <td>predicate</td>
+        <td nosave=""><small><a name="GAL_PRED"></a></small>GAL_PRED</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+            
+<p>Developers of Communicator-compliant systems will use the GAL_CLAUSE type
+   exclusively, and will not use the list of predicate frames at all. The
+remaining   frame types and predicate list are used internally by MIT in
+their parsing   and semantic interpretation. We provide a <a
+ href="#MIT_Linguistic_Frame_Tools">brief summary of their use of these  types</a>
+as a point of interest; these distinctions are ignored entirely   in the
+Galaxy Communicator infrastructure. </p>
+          
+<h3> <a name="Frame_Syntax"></a>Frame Syntax</h3>
+       The printed representation of a frame is used both for presentation
+ by  functions like <a href="#Gal_PrFrame">Gal_PrFrame</a> and for digestion 
+ by  functions like <a href="#Gal_ReadFrameFromString">Gal_ReadFrameFromString</a>. 
+        
+<blockquote>        <tt>"{"&lt;type&gt; &lt;name&gt; &lt;key&gt; &lt;value&gt;
+&lt;key&gt; &lt;value&gt; ... "}"<br>
+  </tt></blockquote>
+In other words, a frame begins with a left curly bracket ("{"), followed
+immediately by a type, followed by a whitespace-delimited name, and then
+a sequence of alternating whitespace-delimited keys and values, followed
+by a right curly bracket ("}").<br>
+ 
+<ul>
+  <li>Legal types are c (GAL_CLAUSE), q (GAL_TOPIC),        p (GAL_PRED)
+        </li>
+  <li> The whitespace between the final value and the closing bracket  is
+optional</li>
+        <li> There can be no space between the opening bracket and the type</li>
+        <li> The name is obligatory; the type is optional (default is GAL_CLAUSE)</li>
+        <li> Where whitespace is permitted, any amount of whitespace is permitted
+   (except in GAL_BINARY)</li>
+           
+</ul>
+       The convention for keys is that they should be alphanumeric and begin
+  with  a colon (":"). Nothing in the system enforces these conventions,
+though.         
+<p>Note that the keys <tt>:pred</tt> and <tt>:PRED</tt> are <a
+ href="#Pred_warning">special to Gal_ReadFrameFromString</a> and its relatives. 
+   </p>
+          
+<h4> Examples</h4>
+            
+<blockquote><tt>{c foo }</tt>                 
+  <p><tt>{p mod }</tt> </p>
+                      
+  <p><tt>{&nbsp;&nbsp;&nbsp; object&nbsp;&nbsp;&nbsp; }</tt></p>
+      </blockquote>
+            
+<h3> <a name="Object_Types"></a>Object Types</h3>
+       Each value of a frame key in a key-value pair is a structure called
+ a  Gal_Object,  which is a typed data structure. The following table lists
+ the  available types. All types not only used internally are available for
+ both  brokering and frames. <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td><b>data type</b></td>
+        <td><a name="Gal_ObjectType"></a><b>Gal_ObjectType</b></td>
+        <td><b>C type</b></td>
+       </tr>
+        <tr>
+       <td>frame</td>
+        <td>GAL_FRAME</td>
+        <td>Gal_Frame</td>
+       </tr>
+        <tr>
+       <td>string</td>
+        <td>GAL_STRING</td>
+        <td>(char *)</td>
+       </tr>
+        <tr>
+       <td>integer</td>
+        <td>GAL_INT</td>
+        <td>32 bit integer</td>
+       </tr>
+        <tr>
+       <td>float</td>
+        <td>GAL_FLOAT</td>
+        <td>32 bit float</td>
+       </tr>
+        <tr>
+       <td>list</td>
+        <td>GAL_LIST</td>
+        <td>a Gal_Object list</td>
+       </tr>
+        <tr>
+       <td>symbol</td>
+        <td>GAL_SYMBOL</td>
+        <td>(only used internally)</td>
+       </tr>
+        <tr>
+       <td>pointer</td>
+        <td>GAL_PTR</td>
+        <td>(only used internally)</td>
+       </tr>
+        <tr>
+       <td>topic frame</td>
+        <td>GAL_TOPIC_FRAME</td>
+        <td>Gal_Frame</td>
+       </tr>
+        <tr>
+       <td>clause frame</td>
+        <td>GAL_CLAUSE_FRAME</td>
+        <td>Gal_Frame</td>
+       </tr>
+        <tr>
+       <td>predicate frame</td>
+        <td>GAL_PREDICATE_FRAME</td>
+        <td>Gal_Frame</td>
+       </tr>
+        <tr>
+       <td>binary data</td>
+        <td>GAL_BINARY</td>
+        <td>array of 8 bit integers</td>
+       </tr>
+        <tr>
+       <td>16 bit integer</td>
+        <td>GAL_INT_16</td>
+        <td>array of 16 bit integers</td>
+       </tr>
+        <tr>
+       <td>32 bit integer</td>
+        <td>GAL_INT_32</td>
+        <td>array of 32 bit integers</td>
+       </tr>
+        <tr>
+       <td>64 bit integer</td>
+        <td>GAL_INT_64</td>
+        <td>array of 64 bit integers</td>
+       </tr>
+        <tr>
+       <td>32 bit float</td>
+        <td>GAL_FLOAT_32</td>
+        <td>array of 32 bit floats</td>
+       </tr>
+        <tr>
+       <td>64 bit float</td>
+        <td>GAL_FLOAT_64</td>
+        <td>array of 64 bit floats</td>
+       </tr>
+        <tr>
+       <td><a href="brokering.html#The_types_of_broker_proxies">broker proxy</a></td>
+        <td>GAL_PROXY</td>
+        <td>GalSS_BrokerProxy *</td>
+       </tr>
+        <tr>
+       <td>keyword</td>
+        <td>GAL_KEYWORD</td>
+        <td>(only used internally)</td>
+       </tr>
+        <tr>
+       <td>tag</td>
+        <td>GAL_TAG</td>
+        <td>(only used internally)</td>
+       </tr>
+        <tr>
+       <td>token</td>
+        <td>GAL_TOKEN</td>
+        <td>(only used internally)</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+            
+<h3> <a name="Object_syntax"></a>Object syntax</h3>
+       The printed representation of an object is used both for presentation
+  by  functions like <a href="#Gal_PrObject">Gal_PrObject</a> and for digestion
+   by functions like <a href="#Gal_ReadObjectFromString">Gal_ReadObjectFromString</a>. 
+   <br>
+      &nbsp;     
+<table border="1" cols="3" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td><b>Gal_ObjectType</b></td>
+        <td><b>format example</b></td>
+        <td><b>comments</b></td>
+       </tr>
+        <tr>
+       <td>GAL_STRING</td>
+        <td><tt>"foo"</tt></td>
+        <td>Strings are delimited by double quotes ("), and internal whitespace 
+ is  preserved</td>
+       </tr>
+        <tr>
+       <td>GAL_FRAME</td>
+        <td><tt>{c foo :value 1 }</tt></td>
+        <td>Frame values have the same form as frames, and thus support arbitrary
+   recursion</td>
+       </tr>
+        <tr>
+       <td>GAL_INT</td>
+        <td><tt>5</tt></td>
+        <td>Positive and negative values handled</td>
+       </tr>
+        <tr>
+       <td>GAL_FLOAT</td>
+        <td><tt>5.6</tt></td>
+        <td>Positive and negative values handled</td>
+       </tr>
+        <tr>
+       <td>GAL_LIST</td>
+        <td><tt>( 5 "foo" {c bar } )</tt></td>
+        <td>lists are delimited by left and right parentheses ("(", ")").
+Elements of the list can be any object type (so different object   types
+ can be mixed in the same list). Whitespace after opening parenthesis   and
+before closing parenthesis is no longer obligatory, although whitespace  
+between list elements still is</td>
+       </tr>
+        <tr>
+       <td>GAL_BINARY</td>
+        <td><tt>%% &lt;decoded_length&gt; &lt;encoded_length&gt; &lt;data&gt;</tt></td>
+        <td>Whitespace separating the four elements must be exactly one space;
+   the data is encoded using a variant of uuencode (see source code for algorithm)</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+            
+<p>Other types (GAL_INT_16, etc.) do not have any printed representations
+   which can be recognized by Gal_ReadObjectFromString. </p>
+          
+<h4> Examples</h4>
+            
+<blockquote><tt>{c main :initialize 1 }</tt>                 
+  <p><tt>{c rec :status "typed" :confidence_measures ( 0.5 4.6 2.756 ) }</tt> 
+    </p>
+                      
+  <p><tt>{c error :error_description {c system_unavailable :timeout 40 } }</tt></p>
+      </blockquote>
+       The types GAL_TOKEN, GAL_SYMBOL and GAL_KEYWORD are not intended to
+ be  used for values in frames, as we understand it. However, if the string
+ representation   of your frame contains a value consisting of a single token
+ without delimiting   quotes, it may be recognized as one of these elements.
+       
+<p> </p>
+          
+<hr width="100%">     
+<h2> <a name="Frame_Functions"></a>Frame Functions</h2>
+            
+<h3> <a name="Frame_Create,_Free,_and_Copy_Functions"></a>Frame Create, Free,
+   and Copy Functions</h3>
+       Gal_Frame&nbsp;<a name="Gal_MakeFrame"></a><b><big>Gal_MakeFrame</big></b>(const 
+ char *<i>name</i>, Gal_FrameType <i>type</i>); <br>
+      Creates a frame of the specified type, <i>type</i>.&nbsp; The name
+should    begin with an alphabetic character and contain no spaces.     
+ 
+<blockquote>                 
+  <h4> Memory management</h4>
+       The frame is allocated from an internal supply of frames. The <i>name</i>
+  is copied using strdup.</blockquote>
+            
+<p><br>
+      void&nbsp;<a name="Gal_FreeFrame"></a><b><big>Gal_FreeFrame</big></b>(Gal_Frame 
+   <i>fr</i>); <br>
+      "Frees" the frame, <i>fr.</i> </p>
+          
+<blockquote>                 
+  <h4> Memory management</h4>
+       All the values of the keys in the frame are freed using <a
+ href="#Gal_FreeObject">Gal_FreeObject</a>, as are all the elements in the
+   predicate list. The frame is returned to the internal supply of frames
+for   reuse.</blockquote>
+            
+<p><br>
+      Gal_Frame&nbsp;<a name="Gal_CopyFrame"></a><b><big>Gal_CopyFrame</big></b>(Gal_Frame 
+   <i>fr</i>); <br>
+      Copies the frame, <i>fr</i>,&nbsp; and all its contents. </p>
+          
+<blockquote>                 
+  <h4> Memory management</h4>
+       All the values of the frame keys are copied using <a
+ href="#Gal_CopyObject">Gal_CopyObject</a>, as are all the elements of the
+   predicate list.</blockquote>
+       Gal_Frame&nbsp;<a name="Gal_MakeClauseFrame"></a><b><big>Gal_MakeClauseFrame</big></b>(const 
+ char *<i>name</i>)       
+<p>Creates a frame of&nbsp; type GAL_CLAUSE. See <a
+ href="#Gal_MakeFrame">Gal_MakeFrame</a>. <br>
+      &nbsp; </p>
+          
+<h3> <a name="Frame_Comparison_Predicates"></a>Frame Comparison Predicates</h3>
+       int&nbsp;<a name="Gal_FrameEqual"></a><b><big>Gal_FrameEqual</big></b>(Gal_Frame 
+   <i>sf1</i>, Gal_Frame <i>sf2</i>); <br>
+      Returns 1 if the frames have the same name and type and have matching 
+ property  and predicate lists.&nbsp; Having matching property lists currently 
+ means   that <i>sf1</i> has all the keys in <i>sf2</i> and the corresponding 
+ values   are judged equal using <a href="#Gal_ObjectEqual">Gal_ObjectEqual</a>.&nbsp; 
+  Having matching predicate lists currently means that <i>sf2</i> has predicates
+   that match all the predicates of <i>sf1</i>.       
+<p>int&nbsp;<a name="Gal_MatchFrame"></a><b><big>Gal_MatchFrame</big></b>(Gal_Frame 
+   <i>sf1</i>, Gal_Frame <i>sf2</i>); <br>
+      Returns 1 if the frames have the same name and type and have matching 
+ property  lists.&nbsp; Having matching property lists currently means that 
+ <i>sf1</i>  has all the keys in <i>sf2</i> and the corresponding values are
+ judged equal,  where equality for GAL_FRAME is judged recursively by Gal_MatchFrame,
+ equality  for GAL_LIST is such that each element in the key value for <i>sf2</i>
+ has  a match in the corresponding value for <i>sf1</i> (where the match
+is  judged  recursively on the same terms as the toplevel), and equality
+for all other  types is judged by <a href="#Gal_ObjectCaseEqual">Gal_ObjectCaseEqual</a>.
+   The name of either frame can be *, indicating a wildcard match. Predicates
+   associated with frames are not considered in this comparison. </p>
+          
+<h3> <a name="Frame_Name_and_Type_Operations"></a>Frame Name and Type Operations</h3>
+       Gal_Frame&nbsp;<a name="Gal_SetFrameName"></a><b><big>Gal_SetFrameName</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>name</i>); <br>
+      Sets the name of the frame, <i>fr</i>, to <i>name</i>.       
+<blockquote>                 
+  <h4> Memory management</h4>
+       The <i>name</i> is copied using strdup.</blockquote>
+            
+<p><br>
+      char *<a name="Gal_FrameName"></a><b><big>Gal_FrameName</big></b>(Gal_Frame 
+   <i>fr</i>); <br>
+      Returns the name of the frame, <i>fr</i>. </p>
+          
+<blockquote>                 
+  <h4> Memory management</h4>
+       The string which is returned is the string in the frame, not a copy.</blockquote>
+            
+<p><br>
+      int&nbsp;<a name="Gal_FrameNameEq"></a><b><big>Gal_FrameNameEq</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>name</i>); <br>
+      Returns 1 if the frame has name <i>name</i>. </p>
+          
+<p>int&nbsp;<a name="Gal_FrameNamesEq"></a><b><big>Gal_FrameNamesEq</big></b>(Gal_Frame 
+   <i>fr1</i>, Gal_Frame <i>fr2</i>) <br>
+      Returns 1 if the two frames have the same name. </p>
+          
+<p>Gal_Frame&nbsp;<a name="Gal_SetFrameType"></a><b><big>Gal_SetFrameType</big></b>(Gal_Frame 
+   <i>fr</i>, Gal_FrameType <i>type</i>); <br>
+      Sets the type of the frame, <i>fr</i>, to <i>type</i>. </p>
+          
+<p>Gal_FrameType&nbsp;<a name="Gal_GetFrameType"></a><b><big>Gal_GetFrameType</big></b>(Gal_Frame 
+   <i>fr</i>); <br>
+      Returns the type of the frame, <i>fr</i>. </p>
+          
+<p>int&nbsp;<a name="Gal_FrameIsType"></a><b><big>Gal_FrameIsType</big></b>(Gal_Frame 
+   <i>fr</i>, Gal_FrameType <i>type</i>); <br>
+      Returns 1 if the frame, <i>fr</i>, is of the specified type, <i>type</i>. 
+   </p>
+          
+<p> </p>
+          
+<hr width="100%">     
+<h2> <a name="Property_Lists"></a>Property Lists</h2>
+       Frames contain property lists, or lists of key-value pairs which describe
+   some knowledge about the domain.&nbsp; A key-value pair is a relation
+which    maps domain elements to elements of a range.&nbsp; All keys are
+optional.    Keys used in frames should not have global impact.&nbsp; Keys
+should begin    with a colon and contain no spaces.&nbsp; Values of keys
+are <a href="#Typed_Object_Functions">typed objects</a> as described below.
+       
+<h3> <a name="Property_List_Operations"></a>Property List Operations</h3>
+       int&nbsp;<a name="Gal_NumProperties"></a><b><big>Gal_NumProperties</big></b>(Gal_Frame 
+   <i>fr</i>); <br>
+      Returns the number of properties in the property list. This function
+ counts   properties with NULL values.       
+<p>int&nbsp;<a name="Gal_NumNonNullProperties"></a><b><big>Gal_NumNonNullProperties</big></b>(Gal_Frame 
+   <i>fr</i>); <br>
+      Returns the number of properties in the property list. This function
+ skips   properties with NULL values. </p>
+          
+<p>Gal_Object&nbsp;<a name="Gal_SetProp"></a><b><big>Gal_SetProp</big></b>(Gal_Frame 
+   <i>fr</i>, const char *key, Gal_Object <i>obj</i>); <br>
+      Adds the object, <i>obj</i>, to the property list.&nbsp; The key, <i>key</i>,
+   should begin with a colon (:) and contain no spaces.&nbsp; If the key
+is   found in the property list, the associated object will be freed using
+<a href="#Gal_FreeObject">Gal_FreeObject</a> and replaced with the new object. 
+   </p>
+          
+<blockquote>                 
+  <h4> Memory management</h4>
+       The <i>obj</i> is not copied when stored in the frame, in spite of 
+the   fact that objects it replaces are freed. The <i>key</i> is copied using 
+strdup,  if the key is not yet present.</blockquote>
+            
+<p><br>
+      Gal_Object<a name="Gal_GetObject"></a><b><big>Gal_GetObject</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key</i>); <br>
+      Returns the object associated with the key specified by <i>key.</i> 
+</p>
+          
+<blockquote>                 
+  <h4> Memory management</h4>
+       The Gal_Object which is returned is not copied from the frame.</blockquote>
+            
+<p><br>
+      Gal_Object<a name="Gal_RemProp"></a><b><big>Gal_RemProp</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key</i>); <br>
+      Removes the property, specified by <i>key</i>, from the property list 
+ and  returns the object.&nbsp; The caller is responsible for freeing the 
+object.   </p>
+          
+<blockquote>                 
+  <h4> Memory management</h4>
+       The Gal_Object is returned, not freed.</blockquote>
+       int&nbsp;<a name="Gal_DelProp"></a><b><big>Gal_DelProp</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key</i>) <br>
+      Removes the property, specified by <i>key</i>, from the property list 
+ and  calls <a href="#Gal_FreeObject">Gal_FreeObject </a>on it. Returns 1 
+if an  element was found to free, 0 otherwise.       
+<p>char **<a name="Gal_GetProperties"></a><b><big>Gal_GetProperties</big></b>(Gal_Frame 
+   <i>fr</i>, int *<i>nkeys</i>); <br>
+      Returns a list of all the keys in the property list.&nbsp; If successful, 
+   <i>nkeys</i> will be set to the number of properties. </p>
+          
+<blockquote>                 
+  <h4> Memory management</h4>
+       The array of char * pointers is allocated using calloc, but each element
+   in the array is a pointer to the actual name of the key, not a copy.</blockquote>
+       void&nbsp;<a name="Gal_DoProperties"></a><b><big>Gal_DoProperties</big></b>(Gal_Frame 
+   <i>fr</i>, int (*<i>prop_fn</i>)(const char *, Gal_Object , void *), void 
+ *<i>caller_data</i>)   <br>
+      Applies the function <i>prop_fn</i> to every key-value pair in the
+property    list of the frame <i>fr</i> whose value is not NULL. The first
+argument  of  <i>prop_fn</i> is the key, the second is the Gal_Object value
+which would    be returned by <a href="#Gal_GetObject">Gal_GetObject</a>,
+and the third   argument is the <i>caller_data</i>. The <i>prop_fn</i> should
+return 1 to   continue, 0 to halt.       
+<h3> <a name="Miscellaneous_Functions"></a>Miscellaneous Functions</h3>
+       The following functions are provided for convenience and compile time
+  type  checking.       
+<blockquote>                 
+  <h4> Memory management</h4>
+       These functions have the same memory management properties as the
+  <a href="#Object_Value_Extraction">object value extraction</a> functions.</blockquote>
+            
+<p><br>
+      Gal_Frame&nbsp;<a name="Gal_GetFrame"></a><b><big>Gal_GetFrame</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key</i>); <br>
+      Returns the frame value specified by the key, <i>key,</i> or NULL if
+ the   key is not present or its value is not a frame. </p>
+          
+<p>Gal_Frame&nbsp;<a name="Gal_GetTopicFrame"></a><b><big>Gal_GetTopicFrame</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key</i>) <br>
+      Returns the topic frame value specified by the key, <i>key</i>., or 
+NULL   if the key is not present or its value is not a topic frame. </p>
+          
+<p>char *<a name="Gal_GetString"></a><b><big>Gal_GetString</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key</i>); <br>
+      Returns the string value specified by the key, <i>key</i>, or NULL
+if  the  key is not present or its value is not a string. </p>
+          
+<p>int&nbsp;<a name="Gal_GetInt"></a><b><big>Gal_GetInt</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key</i>); <br>
+      Returns the integer value specified by the key, <i>key</i>, or NULL 
+if  the  key is not present or its value is not an integer. </p>
+          
+<p>float&nbsp;<a name="Gal_GetFloat"></a><b><big>Gal_GetFloat</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key</i>); <br>
+      Returns the float value specified by the key, <i>key</i>, or NULL if
+ the   key is not present or its value is not a float. </p>
+          
+<p>Gal_Object *<a name="Gal_GetList"></a><b><big>Gal_GetList</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key</i>, int *<i>length</i>); <br>
+      Returns the list value specified by the key, <i>key</i>.&nbsp; <i>length</i>
+  is set to the length of the list object. If the key is not present, or
+the    object is not a list, NULL is returned and <i>length</i> is not set.
+</p>
+          
+<p>void *<a name="Gal_GetBinary"></a><b><big>Gal_GetBinary</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key</i>, int *<i>size</i>); <br>
+      Returns the binary object value specified by the key, <i>key</i>.&nbsp; 
+  <i>size</i> is set to the length of the binary object. If the key is not 
+ present, or the object is not a binary object, NULL is returned and <i>size</i> 
+ is not set. </p>
+          
+<p>void *<a name="Gal_GetInt16"></a><b><big>Gal_GetInt16</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key</i>, int *<i>size</i>) <br>
+      Returns the GAL_INT_16 object value specified by the key, <i>key</i>.&nbsp;
+  <i>size</i> is set to the number of elements in the object. If the key
+is    not present, or the object is not a GAL_INT_16 object, NULL is returned
+ and  <i>size</i> is not set. </p>
+          
+<p>void *<a name="Gal_GetInt32"></a><b><big>Gal_GetInt32</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key</i>, int *<i>size</i>) <br>
+      Returns the GAL_INT_32 object value specified by the key, <i>key</i>.&nbsp;
+  <i>size</i> is set to the number of elements in the object. If the key
+is    not present, or the object is not a GAL_INT_32 object, NULL is returned
+ and  <i>size</i> is not set. </p>
+          
+<p>void *<a name="Gal_GetInt64"></a><b><big>Gal_GetInt64</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key</i>, int *<i>size</i>) <br>
+      Returns the GAL_INT_64 object value specified by the key, <i>key</i>.&nbsp;
+  <i>size</i> is set to the number of elements in the object. If the key
+is    not present, or the object is not a GAL_INT_64 object, NULL is returned
+ and  <i>size</i> is not set. </p>
+          
+<p>void *<a name="Gal_GetFloat32"></a><b><big>Gal_GetFloat32</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key</i>, int *<i>size</i>) <br>
+      Returns the GAL_FLOAT_32 object value specified by the key, <i>key</i>.&nbsp;
+  <i>size</i> is set to the number of elements in the object. If the key
+is    not present, or the object is not a GAL_FLOAT_32 object, NULL is returned
+   and <i>size</i> is not set. </p>
+          
+<p>void *<a name="Gal_GetFloat64"></a><b><big>Gal_GetFloat64</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key</i>, int *<i>size</i>) <br>
+      Returns the GAL_FLOAT_64 object value specified by the key, <i>key</i>.&nbsp;
+  <i>size</i> is set to the number of elements in the object. If the key
+is    not present, or the object is not a GAL_FLOAT_64 object, NULL is returned
+   and <i>size</i> is not set. </p>
+          
+<p>GalSS_BrokerProxy *<a name="Gal_GetProxy"></a><b><big>Gal_GetProxy</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key</i>) <br>
+      Returns the <a href="brokering.html#The_types_of_broker_proxies">GAL_PROXY 
+ object value</a> specified by the key, <i>key</i>. If the key is not present, 
+ or the object  is not a GAL_PROXY object, NULL is returned. </p>
+          
+<p> </p>
+          
+<hr width="100%">     
+<h2> <a name="Typed_Object_Functions"></a>Typed Object Functions</h2>
+       For type checking, GAL_CLAUSE_FRAME, GAL_TOPIC_FRAME, GAL_PRED_FRAME,
+  and  GAL_FREE (for NULL frame) are valid.       
+<p>The types GAL_TOKEN, GAL_SYMBOL and GAL_KEYWORD are not intended to be
+   used for values in frames, as we understand it. However, if the string
+representation   of your frame contains a value consisting of a single token
+without delimiting   quotes, it may be recognized as one of these elements.
+<br>
+      &nbsp; </p>
+          
+<p>Gal_ObjectType&nbsp;<a name="Gal_GetObjectType"></a><b><big>Gal_GetObjectType</big></b>(Gal_Object 
+   to); <br>
+      Returns the object type of the typed object, <i>to</i>. </p>
+          
+<p>Gal_ObjectType&nbsp;<a name="Gal_GetDetailedType"></a><b><big>Gal_GetDetailedType</big></b>(Gal_Object 
+   to); <br>
+      Returns the object type of the typed object, <i>to</i>.&nbsp; If the
+ object   is of type GAL_FRAME, the detailed frame type is returned: one
+of  GAL_CLAUSE_FRAME,   GAL_TOPIC_FRAME, GAL_PRED_FRAME, or GAL_FREE. </p>
+          
+<p>char *<a name="Gal_ObjectTypeString"></a><b><big>Gal_ObjectTypeString</big></b>(Gal_ObjectType 
+   <i>object_type</i>); <br>
+      Returns a character string representing the name of the object type,
+ <i>object_type</i>.&nbsp;  This can be a <a href="#Gal_ObjectType">Gal_Object</a>
+ type, a <a href="#Gal_FrameType">Gal_Frame</a> type, or a binary data type.
+ </p>
+          
+<blockquote>                 
+  <h4> Memory management</h4>
+       The string which is returned is a constant which should not be freed.</blockquote>
+       char *<a name="Gal_GetObjectTypeString"></a><b><big>Gal_GetObjectTypeString</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      Returns a character string representing the name of the type of the 
+object   <i>to</i>.       
+<blockquote>                 
+  <h4> Memory management</h4>
+       The string which is returned is a constant which should not be freed.</blockquote>
+            
+<h3> <a name="Object_Creation_Functions"></a>Object Creation Functions</h3>
+       The following functions are for converting values into objects.&nbsp;
+  They  are most frequently used with <a href="#Gal_SetProp">Gal_SetProp</a>,
+  as in the following example:       
+<blockquote>void set_clause_topic(Gal_Frame clause, Gal_Frame topic) <br>
+      { <br>
+      &nbsp; <a href="#Gal_SetProp">Gal_SetProp</a>(clause, ":topic", <a
+ href="#Gal_FrameObject">Gal_FrameObject</a>(topic)); <br>
+      }</blockquote>
+       Gal_Object&nbsp;<a name="Gal_FrameObject"></a><b><big>Gal_FrameObject</big></b>(Gal_Frame 
+   <i>val</i>); <br>
+      Converts the value, <i>val</i>, into a GAL_FRAME object.       
+<blockquote>                 
+  <h4> <b>Memory management</b></h4>
+       </blockquote>
+            
+<ul>
+                       
+  <ul>
+       <li> Creation: the frame argument is not copied; the Gal_Object which
+  is  returned contains a pointer to the frame passed in. The Gal_Object
+is   allocated  from an internal store of Gal_Objects.</li>
+        <li> Freeing: the frame which the Gal_Object points to is freed via 
+ Gal_FreeFrame,  even though it was not copied when the object was created. 
+ The Gal_Object  is returned to the internal store of Gal_Objects.</li>
+        <li> Copying: the frame is copied using Gal_CopyFrame. A new object 
+ is  created using Gal_FrameObject.</li>
+                       
+  </ul>
+           
+</ul>
+       Gal_Object&nbsp;<a name="Gal_CreateFrameObject"></a><b><big>Gal_CreateFrameObject</big></b>(Gal_Frame 
+   <i>value</i>, int <i>manage_memory</i>) <br>
+      Converts the value, <i>value</i>, into a GAL_FRAME object. If <i>manage_memory</i>
+  is nonzero, the value will be freed when the object is freed, otherwise
+not.        
+<p>Gal_Object&nbsp;<a name="Gal_StringObject"></a><b><big>Gal_StringObject</big></b>(const 
+ char *<i>val</i>); <br>
+      Converts the value, <i>val</i>, into a GAL_STRING object. </p>
+          
+<blockquote>                 
+  <h4> <b>Memory management</b></h4>
+       </blockquote>
+            
+<ul>
+                       
+  <ul>
+       <li> Creation: the string is copied using strdup(). The Gal_Object 
+is  allocated  from an internal store of Gal_Objects.</li>
+        <li> Freeing: the string is freed. The Gal_Object is returned to
+the   internal  store of Gal_Objects.</li>
+        <li> Copying: a new object is created using Gal_StringObject.</li>
+        <li> See Gal_CreateStringObject for memory management options.</li>
+                       
+  </ul>
+           
+</ul>
+       Gal_Object&nbsp;<a name="Gal_CreateStringObject"></a><b><big>Gal_CreateStringObject</big></b>(char 
+   *<i>cp</i>, int <i>manage_memory</i>) <br>
+      Converts the value, <i>cp</i>, into a GAL_STRING object. If <i>manage_memory</i>
+  is nonzero, the value will be freed when the object is freed, otherwise
+not.        
+<p>Gal_Object&nbsp;<a name="Gal_IntObject"></a><b><big>Gal_IntObject</big></b>(int 
+   <i>val</i>); <br>
+      Converts the value, <i>val</i>, into a GAL_INT object. </p>
+          
+<blockquote>                 
+  <h4> <b>Memory management</b></h4>
+       </blockquote>
+            
+<ul>
+                       
+  <ul>
+       <li> Creation: the Gal_Object is allocated from an internal store
+of  Gal_Objects.</li>
+        <li> Freeing: the Gal_Object is returned to the internal store of 
+Gal_Objects.</li>
+        <li> Copying: a new object is created using Gal_IntObject.</li>
+                       
+  </ul>
+           
+</ul>
+            
+<p><br>
+      Gal_Object&nbsp;<a name="Gal_FloatObject"></a><b><big>Gal_FloatObject</big></b>(float 
+   <i>val</i>); <br>
+      Converts the value, <i>val</i>, into a GAL_FLOAT object. </p>
+          
+<blockquote>                 
+  <h4> <b>Memory management</b></h4>
+       </blockquote>
+            
+<ul>
+                       
+  <ul>
+       <li> Creation: a placeholder for a float is allocated using calloc(),
+  and  the value passed in is stored in that location. The Gal_Object is
+allocated    from an internal store of Gal_Objects.</li>
+        <li> Freeing: the float placeholder is freed. The Gal_Object is returned
+   to the internal store of Gal_Objects.</li>
+        <li> Copying: a new object is created from the contents of the float
+  placeholder  using Gal_FloatObject.</li>
+        <li> See Gal_CreateFloatObject for memory management options.</li>
+                       
+  </ul>
+           
+</ul>
+       Gal_Object&nbsp;<a name="Gal_CreateFloatObject"></a><b><big>Gal_CreateFloatObject</big></b>(float 
+   *<i>value</i>, int <i>manage_memory</i>) <br>
+      Converts the value, <i>value</i>, into a GAL_FLOAT object. The value
+ must   point to allocated memory. If <i>manage_memory</i> is nonzero, the
+ allocated   memory will be freed with the object is freed, otherwise not.
+       
+<p>Gal_Object&nbsp;<a name="Gal_ListObject"></a><b><big>Gal_ListObject</big></b>(Gal_Object 
+   *<i>values</i>, int<i> n</i>); <br>
+      Converts the values, <i>values</i>, into a GAL_LIST object, where <i>n</i>
+  is the number of objects in the list. The resulting object is not expandable
+  using Gal_ListObjectAdd. </p>
+          
+<blockquote>                 
+  <h4> <b>Memory management</b></h4>
+       </blockquote>
+            
+<ul>
+                       
+  <ul>
+       <li> Creation: an array of Gal_Objects (which are actually pointers
+ to  structs, not structs themselves) is allocated using calloc(), and the
+ elements  in that array are made to point to the elements in <i>values</i>;
+ so the array is copied, but not its members. If <i>n</i> is 0 or <i>values</i>
+ is NULL, no memory is allocated. The Gal_Object is allocated from an internal 
+ store of Gal_Objects.</li>
+        <li> Freeing: each object in the array is freed using Gal_FreeObject, 
+  even though the objects were not copied when the list was created. The array
+  itself is freed. The Gal_Object is returned to the internal store of Gal_Objects.</li>
+        <li> Copying: an array of Gal_Objects is allocated using calloc(),
+ and   the elements of the internal array in the source object are copied
+using  Gal_CopyObject. A new Gal_Object is allocated from an internal store
+of Gal_Objects;  the Gal_ListObject function is not used directly.</li>
+        <li> See Gal_CreateListObject for explicit memory management options.</li>
+                       
+  </ul>
+           
+</ul>
+       Gal_Object&nbsp;<a name="Gal_ListObjectFromElements"></a><b><big>Gal_ListObjectFromElements</big></b>(int 
+   <i>n</i>, ... ) <br>
+      Converts <i>n</i> values into a GAL_LIST object. Unlike Gal_ListObject, 
+  does not require the user to create an array of Gal_Objects first. The variable
+  number of values must all be Gal_Objects. The same memory management comments
+  apply.       
+<p>Gal_Object&nbsp;<a name="Gal_CreateListObject"></a><b><big>Gal_CreateListObject</big></b>(Gal_Object 
+   *<i>values</i>, int <i>n</i>, void (*<i>free_fn</i>)(void *), int <i>manage_memory</i>) 
+   <br>
+      Converts the values, <i>values</i>, into a GAL_LIST object, where <i>n</i>
+  is the number of objects in the list. The resulting list is expandable
+using    the function Gal_ListObjectAdd. The <i>free_fn</i> is a function
+which can   be used to free the elements of the list. There is no default
+freeing function,   so unlike <a href="#Gal_ListObject">Gal_ListObject</a>,
+the elements aren't   automatically freed when the list object is freed.
+If the <i>manage_memory</i>   argument is nonzero, the list of objects itself
+will be freed when the enclosing    object is freed, otherwise not. </p>
+          
+<p>int&nbsp;<a name="Gal_ListObjectAdd"></a><b><big>Gal_ListObjectAdd</big></b>(Gal_Object 
+   <i>obj</i>, Gal_Object <i>elt</i>) <br>
+      Add object <i>elt</i> to the dynamic list object <i>obj</i>. </p>
+          
+<p>Gal_Object&nbsp;<a name="Gal_BinaryObject"></a><b><big>Gal_BinaryObject</big></b>(void 
+   *<i>data</i>, int <i>size</i>); <br>
+      Converts the data, <i>data</i>, into a GAL_BINARY object, where <i>size</i>
+  is the size of the data in bytes. While frames allow binary data to be
+transported,    <a href="brokering.html">brokering</a> is a more flexible
+tool for transmitting    audio data; binary data can be used for <a
+ href="../advanced/binary_data.html">encoding arbitrary objects</a>. The
+resulting object is not expandable using Gal_ArrayObjectAdd. </p>
+          
+<blockquote>                 
+  <h4> <b>Memory management</b></h4>
+       </blockquote>
+            
+<ul>
+                       
+  <ul>
+       <li> Creation: an array the same size as <i>data</i> is allocated
+using    malloc(), and the contents of <i>data</i> are copied using memcpy().</li>
+        <li> Freeing: the data memory is freed. The Gal_Object is returned
+ to  the internal store of Gal_Objects.</li>
+        <li> Copying: a new object is created from the data array using Gal_BinaryObject.</li>
+        <li> See Gal_CreateBinaryObject for explicit memory management options.</li>
+                       
+  </ul>
+           
+</ul>
+       Gal_Object&nbsp;<a name="Gal_CreateBinaryObject"></a><b><big>Gal_CreateBinaryObject</big></b>(void 
+   *<i>data</i>, int <i>size</i>, int <i>manage_memory</i>) <br>
+      Gal_Object&nbsp;<a name="Gal_CreateInt16Object"></a><b><big>Gal_CreateInt16Object</big></b>(void 
+   *<i>data</i>, int <i>num_int_16</i>, int <i>manage_memory</i>) <br>
+      Gal_Object&nbsp;<a name="Gal_CreateInt32Object"></a><b><big>Gal_CreateInt32Object</big></b>(void 
+   *<i>data</i>, int <i>num_int_32</i>, int <i>manage_memory</i>) <br>
+      Gal_Object&nbsp;<a name="Gal_CreateInt64Object"></a><b><big>Gal_CreateInt64Object</big></b>(void 
+   *<i>data</i>, int <i>num_int_64</i>, int <i>manage_memory</i>) <br>
+      Gal_Object&nbsp;<a name="Gal_CreateFloat32Object"></a><b><big>Gal_CreateFloat32Object</big></b>(void 
+   *<i>data</i>, int <i>num_float_32</i>, int <i>manage_memory</i>) <br>
+      Gal_Object&nbsp;<a name="Gal_CreateFloat64Object"></a><b><big>Gal_CreateFloat64Object</big></b>(void 
+   *<i>data</i>, int <i>num_float_64</i>, int <i>manage_memory</i>) <br>
+      Converts the data, <i>data</i>, into an array object of the appropriate 
+  type (GAL_BINARY, GAL_INT_16, GAL_INT_32, GAL_INT_64, GAL_FLOAT_32, GAL_FLOAT_64),
+   where <i>size</i> is the size of the data in elements. The <i>data</i>
+must   be of the appropriate type (array of bytes, array of 16-bit integers,
+etc.),   coerced to a void *. The resulting object is expandable using Gal_ArrayObjectAdd.
+   If <i>manage_memory</i> is nonzero, <i>data</i> will be freed when the
+object   is freed, otherwise not.       
+<p>int&nbsp;<a name="Gal_ArrayObjectAdd"></a><b><big>Gal_ArrayObjectAdd</big></b>(Gal_Object 
+   <i>obj</i>, void *<i>data</i>, int <i>size</i>) <br>
+      Adds the <i>data</i> to the array object <i>obj</i>, where <i>size</i>
+  is  the number of elements of data. The <i>obj</i> can be of type GAL_BINARY,
+   GAL_INT_16, GAL_INT_32, GAL_INT_64, GAL_FLOAT_32, or GAL_FLOAT_64. </p>
+          
+<p>Gal_Object&nbsp;<a name="Gal_CreateProxyObject"></a><b><big>Gal_CreateProxyObject</big></b>(GalSS_BrokerProxy 
+   *<i>p</i>, int <i>manage_memory</i>) <br>
+      Converts the <a href="brokering.html#The_types_of_broker_proxies">broker 
+ proxy</a>  <i>p</i> into a GAL_PROXY&nbsp;object. If <i>manage_memory</i> 
+ is nonzero,  <i>p</i> will be freed using the function <a
+ href="brokering.html#GalSS_FreeBrokerProxy">GalSS_FreeBrokerProxy</a>. </p>
+          
+<p>Gal_Object&nbsp;<a name="Gal_ProxyObject"></a><b><big>Gal_ProxyObject</big></b>(GalSS_BrokerProxy 
+   *<i>p</i>) <br>
+      Converts the <a href="brokering.html#The_types_of_broker_proxies">broker 
+ proxy</a>  <i>p</i> into a GAL_PROXY&nbsp;object.<br>
+    </p>
+       
+<blockquote>                 
+  <h4> <b>Memory management</b></h4>
+       </blockquote>
+            
+<ul>
+               
+  <ul>
+        <li>Freeing: <i>p</i> will be freed using the function <a
+ href="brokering.html#GalSS_FreeBrokerProxy">GalSS_FreeBrokerProxy</a>. The 
+ Gal_Object is returned to the internal store of Gal_Objects.</li>
+        <li> Copying: a new proxy object is created using object is created 
+ from the data array <a href="brokering.html#GalSS_CopyBrokerProxy">GalSS_CopyBrokerProxy</a>.using
+  Gal_BinaryObject.</li>
+               
+  </ul>
+       
+</ul>
+          
+<h3> <a name="Object_Free_and_Copy_Functions"></a>Object Free and Copy Functions</h3>
+       void&nbsp;<a name="Gal_FreeObject"></a><b><big>Gal_FreeObject</big></b>(Gal_Object 
+   <i>obj</i>); <br>
+      Frees the object, <i>obj</i>, and its value.       
+<blockquote>                 
+  <h4> <b>Memory management</b></h4>
+       See the <a href="#Object_Creation_Functions">object creation functions</a>
+  for the behavior of objects when they're freed.</blockquote>
+       void&nbsp;<a name="_gal_free_object"></a><b><big>_gal_free_object</big></b>(void 
+   *<i>obj</i>) <br>
+      Wrapper for <a href="#Gal_FreeObject">Gal_FreeObject</a> for use with 
+ functions  where memory management is required, such as <a
+ href="#Gal_CreateListObject">Gal_CreateListObject</a>.       
+<p>Gal_Object&nbsp;<a name="Gal_CopyObject"></a><b><big>Gal_CopyObject</big></b>(Gal_Object 
+   <i>obj</i>); <br>
+      Copies the object, <i>obj</i>, and its value. </p>
+          
+<blockquote>                 
+  <h4> <b>Memory management</b></h4>
+       See the <a href="#Object_Creation_Functions">object creation functions</a>&nbsp;
+  for the behavior of objects when they're copied. If one of the Gal_Create...
+   functions has been used to create <i>obj</i>, then a "deep copy" is performed,
+   and the new object contains a copy of the underlying data.</blockquote>
+            
+<h3> <a name="Type_Checking_Predicates"></a>Type Checking Predicates</h3>
+       int&nbsp;<a name="Gal_Framep"></a><b><big>Gal_Framep</big></b>(Gal_Object 
+   <i>obj</i>); <br>
+      Returns 1 if the object, <i>obj</i>, is a frame, of type GAL_FRAME. 
+      
+<p>int&nbsp;<a name="Gal_Clausep"></a><b><big>Gal_Clausep</big></b>(Gal_Object 
+   <i>obj</i>); <br>
+      Returns 1 if the object, <i>obj</i>, is a clause frame, of type GAL_CLAUSE_FRAME. 
+   </p>
+          
+<p>int&nbsp;<a name="Gal_ClauseFramep"></a><b><big>Gal_ClauseFramep</big></b>(Gal_Frame 
+   <i>fr</i>) <br>
+      Returns 1 if the frame is of type GAL_CLAUSE. </p>
+          
+<p>int&nbsp;<a name="Gal_Stringp"></a><b><big>Gal_Stringp</big></b>(Gal_Object 
+   <i>obj</i>); <br>
+      Returns 1 if the object, <i>obj</i>, is a string, of type GAL_STRING. 
+ </p>
+          
+<p>int&nbsp;<a name="Gal_Intp"></a><b><big>Gal_Intp</big></b>(Gal_Object <i>obj</i>);
+ <br>
+      Returns 1 if the object, <i>obj</i>, is an integer, of type GAL_INT.
+ </p>
+          
+<p>int<a name="Gal_Floatp"></a><b><big> Gal_Floatp</big></b>(Gal_Object <i>obj</i>); 
+   <br>
+      Returns 1 if the object, <i>obj</i>, is a float, of type GAL_FLOAT. 
+</p>
+          
+<p>int&nbsp;<a name="Gal_Listp"></a><b><big>Gal_Listp</big></b>(Gal_Object 
+   <i>obj</i>); <br>
+      Returns 1 if the object, <i>obj</i>, is a list, of type GAL_LIST. </p>
+          
+<p>int&nbsp;<a name="Gal_Binaryp"></a><b><big>Gal_Binaryp</big></b>(Gal_Object 
+   <i>obj</i>); <br>
+      Returns 1 if the object, <i>obj</i>, is binary data, of type GAL_BINARY. 
+  </p>
+          
+<p>int&nbsp;<a name="Gal_Int16p"></a><b><big>Gal_Int16p</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      Returns 1 if the object, <i>to</i>, is binary data, of type GAL_INT_16. 
+  </p>
+          
+<p>int&nbsp;<a name="Gal_Int32p"></a><b><big>Gal_Int32p</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      Returns 1 if the object, <i>to</i>, is binary data, of type GAL_INT_32. 
+  </p>
+          
+<p>int&nbsp;<a name="Gal_Int64p"></a><b><big>Gal_Int64p</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      Returns 1 if the object, <i>to</i>, is binary data, of type GAL_INT_64. 
+  </p>
+          
+<p>int&nbsp;<a name="Gal_Float32p"></a><b><big>Gal_Float32p</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      Returns 1 if the object, <i>to</i>, is binary data, of type GAL_FLOAT_32. 
+   </p>
+          
+<p>int&nbsp;<a name="Gal_Float64p"></a><b><big>Gal_Float64p</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      Returns 1 if the object, <i>to</i>, is binary data, of type GAL_FLOAT_64. 
+   </p>
+          
+<p>int&nbsp;<a name="Gal_Proxyp"></a><b><big>Gal_Proxyp</big></b>(Gal_Object 
+   <i>obj</i>) <br>
+      Returns 1 if the object, <i>obj</i>, is a <a
+ href="brokering.html#The_types_of_broker_proxies">broker proxy</a> object, 
+ of type GAL_PROXY.  </p>
+          
+<h3> <a name="Object_Comparison_Predicates"></a>Object Comparison Predicates</h3>
+       int&nbsp;<a name="Gal_ObjectEqual"></a><b><big>Gal_ObjectEqual</big></b>(Gal_Object 
+   <i>obj1</i>, Gal_Object <i>obj2</i>); <br>
+      Returns 1 if the objects, <i>obj1</i> and <i>obj2</i>, are equivalent.&nbsp;
+  The table below lists the functions used for equivalence testing of each
+ object type: <br>
+      &nbsp;     
+<table border="1" width="100%" nosave="">
+       <tbody>
+          <tr>
+       <td><b>object type</b></td>
+        <td><b>equivalence function</b></td>
+       </tr>
+        <tr>
+       <td>GAL_FRAME</td>
+        <td><a href="#Gal_FrameEqual">Gal_FrameEqual</a></td>
+       </tr>
+        <tr>
+       <td>GAL_STRING</td>
+        <td>strcmp</td>
+       </tr>
+        <tr>
+       <td>GAL_INT, GAL_FLOAT</td>
+        <td>==</td>
+       </tr>
+        <tr>
+       <td>GAL_LIST</td>
+        <td>recursive comparison using Gal_ObjectEqual; must match one-to-one 
+  (not in order)</td>
+       </tr>
+        <tr>
+       <td>GAL_BINARY, etc.</td>
+        <td>memcmp</td>
+       </tr>
+                       
+  </tbody>     
+</table>
+            
+<p>int&nbsp;<a name="Gal_ObjectCaseEqual"></a><b><big>Gal_ObjectCaseEqual</big></b>(Gal_Object 
+   <i>obj1</i>, Gal_Object <i>obj2</i>); <br>
+      The same as <a href="#Gal_ObjectEqual">Gal_ObjectEqual</a> except that
+  strings  are compared with strcasecmp. </p>
+          
+<h3> <a name="Object_Value_Extraction"></a>Object Value Extraction</h3>
+       Each of the supported types has an extraction function.&nbsp; If the 
+ object  is not of the expected type, a warning is printed and NULL or zero 
+ is returned,   as appropriate.       
+<blockquote>                 
+  <h4> Memory management</h4>
+       None of these functions copy or free the contents of the Gal_Object; 
+ they  just return the pointer which the Gal_Object contains. This is also 
+ true of Gal_UnwrapValue, which returns the Gal_Object structure to its internal
+  store, but does not free the contents.</blockquote>
+            
+<p><br>
+      Gal_Frame&nbsp;<a name="Gal_FrameValue"></a><b><big>Gal_FrameValue</big></b>(Gal_Object 
+   <i>to</i>); <br>
+      Extracts a frame from the object <i>to</i>.&nbsp; If the object is
+not   of  type GAL_FRAME, a warning is printed and NULL is returned. </p>
+          
+<p>Gal_Frame&nbsp;<a name="Gal_ClauseValue"></a><b><big>Gal_ClauseValue</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      Extracts a frame of type GAL_CLAUSE from the object <i>to</i>.&nbsp;
+ If  the object is not of the appropriate type, a warning is printed and
+NULL  is returned.  </p>
+          
+<p>char *<a name="Gal_StringValue"></a><b><big>Gal_StringValue</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      Extracts a string from the object <i>to</i>.&nbsp; If the object is 
+not   of type GAL_STRING, a warning is printed and NULL is returned. Also 
+works   for objects of type GAL_TOKEN, as a special case. </p>
+          
+<p>int&nbsp;<a name="Gal_IntValue"></a><b><big>Gal_IntValue</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      Extracts an integer from the object <i>to</i>.&nbsp; If the object
+is  not  of type GAL_INT, a warning is printed and 0 is returned. </p>
+          
+<p>float&nbsp;<a name="Gal_FloatValue"></a><b><big>Gal_FloatValue</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      Extracts a float from the object <i>to</i>.&nbsp; If the object is
+not   of  type GAL_FLOAT, a warning is printed and 0 is returned. </p>
+          
+<p>Gal_Object *<a name="Gal_ListValue"></a><b><big>Gal_ListValue</big></b>(Gal_Object 
+   <i>obj</i>, int *<i>n</i>) <br>
+      Extracts an array of Gal_Objects (that is, a list) from the object
+<i>to</i>,    and stores the length in <i>n</i>. If the object is not of
+type GAL_LIST,    a warning is printed and 0 is returned. </p>
+          
+<p>void *<a name="Gal_BinaryValue"></a><b><big>Gal_BinaryValue</big></b>(Gal_Object 
+   <i>obj</i>, int *<i>size</i>) <br>
+      void *<a name="Gal_Int16Value"></a><b><big>Gal_Int16Value</big></b>(Gal_Object 
+   <i>obj</i>, int *<i>size</i>) <br>
+      void *<a name="Gal_Int32Value"></a><b><big>Gal_Int32Value</big></b>(Gal_Object 
+   <i>obj</i>, int *<i>size</i>) <br>
+      void *<a name="Gal_Int64Value"></a><b><big>Gal_Int64Value</big></b>(Gal_Object 
+   <i>obj</i>, int *<i>size</i>) <br>
+      void *<a name="Gal_Float32Value"></a><b><big>Gal_Float32Value</big></b>(Gal_Object 
+   <i>obj</i>, int *<i>size</i>) <br>
+      void *<a name="Gal_Float64Value"></a><b><big>Gal_Float64Value</big></b>(Gal_Object 
+   <i>obj</i>, int *<i>size</i>) <br>
+      Returns the array data and sets <i>size</i> to the size of the data 
+in  elements,  if the object is of the appropriate type. </p>
+          
+<p>GalSS_BrokerProxy *<a name="Gal_ProxyValue"></a><b><big>Gal_ProxyValue</big></b>(Gal_Object 
+   <i>o</i>) <br>
+      Extracts a <a href="brokering.html#The_types_of_broker_proxies">broker 
+ proxy</a> from  the object <i>o</i>. If the object is not of type GAL_PROXY, 
+ a warning is  printed and NULL&nbsp;is returned. </p>
+          
+<p>void&nbsp;<a name="Gal_FreeWrapper"></a><b><big>Gal_FreeWrapper</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      This function returns the Gal_Object wrapper to its internal store
+and   detaches  it from its internal value. It only frees the contents if
+the contents  are  a float pointer. It does not return the value. </p>
+          
+<h3> <a name="Accesing_GAL_LIST_Object_Elements"></a>List Object Operations</h3>
+       The following additional functions are provided for accessing GAL_LIST 
+  object elements:       
+<p>int&nbsp;<a name="Gal_ListLength"></a><b><big>Gal_ListLength</big></b>(Gal_Object 
+   <i>obj</i>) <br>
+      Returns the length of the list. </p>
+          
+<p>Gal_Object&nbsp;<a name="Gal_GetListObject"></a><b><big>Gal_GetListObject</big></b>(Gal_Object 
+   <i>obj</i>, int <i>n</i>) <br>
+      Returns the <i>n</i>th object in the list (counting from 0).&nbsp;
+Returns    NULL if <i>n</i> is out of range. Returns <i>obj</i> if it is
+not a list.    </p>
+          
+<blockquote>                 
+  <h4> Memory management</h4>
+       A pointer to the object in the list is returned, not a pointer to
+a  copy   of the object.<br>
+     </blockquote>
+         
+<p>int <a name="Gal_SetListObject"></a><b><big>Gal_SetListObject</big></b>(Gal_Object 
+  <i>obj</i>, int <i>n</i>, Gal_Object <i>elt</i>)  </p>
+     If <i>obj</i> is a list at least <i>n </i>elements long, sets the <i>n</i>th 
+  location in <i>obj</i> to <i>elt</i>. Returns 1 if successful, 0 if not.<br>
+         
+<blockquote>               
+  <h4>Memory management</h4>
+     The element currently in position <i>n</i> is dispensed with according 
+ to  the memory management policies of the list <i>obj</i>. <br>
+     </blockquote>
+     <br>
+       int&nbsp;<a name="Gal_ListObjectExpandable"></a><b><big>Gal_ListObjectExpandable</big></b>(Gal_Object 
+   <i>obj</i>) <br>
+      Returns 1 if <i>obj</i> is a list and is expandable, 0 otherwise. 
+     
+<h3> <a name="Binary_Object_Operations"></a>Binary Object Operations</h3>
+       The following additional functions are provided for manipulating binary
+   data.       
+<p>int&nbsp;<a name="Gal_BinarySize"></a><b><big>Gal_BinarySize</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      int&nbsp;<a name="Gal_Int16Size"></a><b><big>Gal_Int16Size</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      int&nbsp;<a name="Gal_Int32Size"></a><b><big>Gal_Int32Size</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      int&nbsp;<a name="Gal_Int64Size"></a><b><big>Gal_Int64Size</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      int&nbsp;<a name="Gal_Float32Size"></a><b><big>Gal_Float32Size</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      int&nbsp;<a name="Gal_Float64Size"></a><b><big>Gal_Float64Size</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      Returns the number of elements of the array object, <i>to</i>, assuming 
+  it is of the appropriate type. </p>
+          
+<p>int&nbsp;<a name="Gal_ObjectByteCount"></a><b><big>Gal_ObjectByteCount</big></b>(Gal_Object 
+   <i>obj</i>) <br>
+      Returns the actual byte count for the object, <i>obj</i>, which can 
+be  GAL_STRING,  GAL_BINARY, GAL_INT_16, GAL_INT_32, GAL_INT_64, GAL_FLOAT_32,
+  GAL_FLOAT_64.  </p>
+          
+<p>int&nbsp;<a name="Gal_ArrayObjectExpandable"></a><b><big>Gal_ArrayObjectExpandable</big></b>(Gal_Object 
+   <i>obj</i>) <br>
+      Returns 1 if <i>obj</i> is an array object of type GAL_BINARY, GAL_INT_16,
+   GAL_INT_32, GAL_INT_64, GAL_FLOAT_32, or GAL_FLOAT_64 and it is expandable,
+   0 otherwise. </p>
+          
+<h3> <a name="Broker_Proxy_Operations"></a>Broker Proxy Operations</h3>
+       GalIO_BrokerStruct *<a name="Gal_ProxyObjectBroker"></a><b><big>Gal_ProxyObjectBroker</big></b>(Gal_Object 
+   <i>obj</i>) <br>
+      If <i>obj</i> is of type GAL_PROXY, returns the underlying broker object
+   associated with the <a
+ href="brokering.html#The_types_of_broker_proxies">broker proxy</a>.  Otherwise, 
+ returns NULL.       
+<p>Gal_ObjectType&nbsp;<a name="Gal_ProxyObjectType"></a><b><big>Gal_ProxyObjectType</big></b>(Gal_Object 
+   <i>obj</i>) <br>
+      If <i>obj</i> is of type GAL_PROXY, returns the underlying object type
+  associated  with the <a
+ href="brokering.html#The_types_of_broker_proxies">broker proxy</a>. The type
+may be -1, which means that no type requirements have been imposed on this
+broker proxy. If <i>obj</i> is not of type GAL_PROXY, this function returns
+ the type of <i>obj</i>. </p>
+          
+<p>Gal_Object&nbsp;<a name="Gal_ProxyObjectObject"></a><b><big>Gal_ProxyObjectObject</big></b>(Gal_Object 
+   <i>obj</i>) <br>
+      If <i>obj</i> is of type GAL_PROXY, returns the underlying object being 
+  brokered by the <a href="brokering.html#The_types_of_broker_proxies">broker 
+ proxy</a>.  This value may be NULL, if the broker proxy is being treated 
+as a stream.  If <i>obj</i> is not of type GAL_PROXY, returns NULL. </p>
+          
+<p> </p>
+          
+<hr width="100%">     
+<h2> <a name="Frame_Utilities"></a>Frame Utilities</h2>
+            
+<h3> <a name="Frame_to_String_Conversion"></a>Frame to String Conversion</h3>
+       These functions are for converting frames and objects to strings for 
+ printing  and for HUB-server communications. There are three forms:     
+ 
+<ul>
+       <li> <a name="Pr"></a>Pr (print) functions generate space-separated
+ tokens.</li>
+        <br>
+        <tt>{c a_clause :topic {q the_topic :name "topic_name" :number 3
+}  }</tt>    <li> <a name="PP"></a>PP (pretty-print) functions generate a
+human-readable    format with line breaks and indentation.</li>
+        <br>
+        <tt>{c a_clause</tt> <br>
+        <tt>&nbsp;&nbsp; topic {q the_topic</tt> <br>
+        <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  :name "topic_name"</tt> <br>
+        <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  :number 3 } }</tt> <li> The&nbsp;<a name="outline"></a><a
+ href="#Gal_OutlineFrame">outline function</a> truncates the frame:</li>
+        <br>
+        <tt>{c a_clause</tt> <br>
+        <tt>&nbsp;&nbsp; :topic {q the_topic ... } }</tt>     
+</ul>
+            
+<p><br>
+      Both the Pr and PP formats can be converted back to the original frames 
+  with <a href="#Gal_ReadFrameFromString">Gal_ReadFrameFromString</a>. <br>
+      char *<a name="Gal_PrFrameToString"></a><b><big>Gal_PrFrameToString</big></b>(Gal_Frame 
+   <i>fr</i>, char *<i>buf</i>, int *<i>bufsizeptr</i>); <br>
+      Converts a frame to <a href="#Pr">Pr format</a>. </p>
+          
+<blockquote>                 
+  <h4> Memory management</h4>
+       This function expands the buffer as necessary or will create a buffer
+  if    <i>buf</i> is NULL.&nbsp; If the buffer isreallocated, the new buffer 
+  is returned.&nbsp; Otherwise, the original buffer is returned.</blockquote>
+            
+<p><br>
+      char *<a name="Gal_PPFrameToString"></a><b><big>Gal_PPFrameToString</big></b>(Gal_Frame 
+   <i>fr</i>, char *<i>buf</i>, int *<i>bufsizeptr</i>); <br>
+      Converts a frame to <a href="#PP">PP format</a>. </p>
+          
+<blockquote>                 
+  <h4> Memory management</h4>
+       This function expands the buffer as necessary or will create a buffer
+  if    <i>buf</i> is NULL.&nbsp; If the buffer is reallocated, the new buffer
+   is returned.&nbsp; Otherwise the original buffer is returned.</blockquote>
+       char *<a name="Gal_ObjectToString"></a><b><big>Gal_ObjectToString</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      Converts an object to <a href="#Pr">Pr format</a>.       
+<blockquote><b>Memory management</b>                 
+  <p>A new string is returned.</p>
+      </blockquote>
+       enum {<b>GAL_PP_PRINT</b>, <b>GAL_PR_PRINT</b>};       
+<p>char *<a name="Gal_PrintFrameToString"></a><b><big>Gal_PrintFrameToString</big></b>(Gal_Frame 
+   <i>fr</i>, char *<i>irpbuf</i>, int *<i>bufsizeptr</i>, int <i>how</i>) 
+ <br>
+      Converts a frame to a string according to the format specified by <i>how</i>
+  (either GAL_PP_PRINT or GAL_PR_PRINT). Other arguments are as for <a
+ href="#Gal_PPFrameToString">Gal_PPFrameToString</a> or <a
+ href="#Gal_PrFrameToString">Gal_PrFrameToString</a>. </p>
+          
+<p>void&nbsp;<a name="Gal_PrintFrameToFile"></a><b><big>Gal_PrintFrameToFile</big></b>(Gal_Frame 
+   <i>fr</i>, FILE *<i>fp</i>, int <i>how</i>) <br>
+      Writes a frame to a file according to the format specified by <i>how</i>
+  (either GAL_PP_PRINT or GAL_PR_PRINT). </p>
+          
+<p>void&nbsp;<a name="GalUtil_PrintObject"></a><b><big>GalUtil_PrintObject</big></b>(int 
+   <i>gal_verbose_level</i>, Gal_Object <i>to</i>, int <i>how</i>) <br>
+      Prints a printable representation of the object on standard output
+according    to the format specified by <i>how</i> (either GAL_PP_PRINT or
+GAL_PR_PRINT),    if <a href="../advanced/util.html#Printing">GAL_VERBOSE</a>
+exceeds <i>gal_verbose_level</i>.    </p>
+          
+<h3> <a name="Frame_Printing_Functions"></a>Frame Printing Functions</h3>
+       The following functions use <a href="#Gal_PrFrameToString">Gal_PrFrameToString</a> 
+  and <a href="#Gal_PPFrameToString">Gal_PPFrameToString</a> to convert the 
+   frame, then print to the specified output device, and analogously for objects.
+        
+<p>void&nbsp;<a name="Gal_PrFrame"></a><b><big>Gal_PrFrame</big></b>(Gal_Frame 
+   <i>fr</i>); <br>
+      Prints the contents of the frame, <i>fr</i>, to standard output. </p>
+          
+<p>void&nbsp;<a name="Gal_PrObject"></a><b><big>Gal_PrObject</big></b>(Gal_Object 
+   <i>obj</i>); <br>
+      Prints the object, <i>obj</i>, to standard out. </p>
+          
+<p>void&nbsp;<a name="Gal_PPFrame"></a><b><big>Gal_PPFrame</big></b>(Gal_Frame 
+   <i>fr</i>); <br>
+      <a href="frame.html#PP">Pretty prints</a> the contents of the frame,
+ <i>fr</i>,   to standard output. </p>
+          
+<p>void&nbsp;<a name="Gal_PPObject"></a><b><big>Gal_PPObject</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      <a href="frame.html#PP">Pretty prints</a> the contents of the object, 
+ <i>to</i>,  to standard output. </p>
+          
+<p>void<a name="Gal_PrObjectToFile"></a><b><big>Gal_PrObjectToFile</big></b>(Gal_Object 
+   <i>obj</i>, FILE *<i>fp</i>); <br>
+      Prints the object, <i>obj, </i>to a file. </p>
+          
+<p>void&nbsp;<a name="Gal_PPObjectToFile"></a><b><big>Gal_PPObjectToFile</big></b>(Gal_Object 
+   <i>to</i>, FILE *<i>fp</i>) <br>
+      <a href="frame.html#PP">Pretty prints</a> the contents of the object, 
+ <i>to</i>,  to the file <i>fp</i>. </p>
+          
+<p>void&nbsp;<a name="GalUtil_PrObject"></a><b><big>GalUtil_PrObject</big></b>(int 
+   <i>sls_verbose_level</i>, Gal_Object <i>to</i>) <br>
+      Prints the object, <i>to</i>, using <i>sls_verbose_level</i>. </p>
+          
+<p>void&nbsp;<a name="GalUtil_PPFrame"></a><b><big>GalUtil_PPFrame</big></b>(int 
+   <i>sls_verbose_level</i>, Gal_Frame <i>fr</i>) <br>
+      <a href="frame.html#PP">Pretty prints</a> the frame, <i>fr</i>, using 
+ <i>sls_verbose_level</i>.   </p>
+          
+<p>void&nbsp;<a name="GalUtil_PPObject"></a><b><big>GalUtil_PPObject</big></b>(int 
+   <i>sls_verbose_level</i>, Gal_Object <i>to</i>) <br>
+      <a href="frame.html#PP">Pretty prints</a> the object, <i>to</i>, using
+  <i>sls_verbose_level</i>.  </p>
+          
+<p>void&nbsp;<a name="GalUtil_CPPFrame"></a><b><big>GalUtil_CPPFrame</big></b>(int 
+   <i>sls_verbose_level</i>, int <i>fore</i>, int <i>back</i>, Gal_Frame <i>fr</i>)
+   <br>
+      <a href="frame.html#PP">Pretty prints</a> the frame, <i>fr</i>, using 
+ <i>sls_verbose_level</i>,  using embedded color Xterm directives. </p>
+          
+<p>void&nbsp;<a name="GalUtil_CPPObject"></a><b><big>GalUtil_CPPObject</big></b>(int 
+   <i>sls_verbose_level</i>, int <i>fore</i>, int <i>back</i>, Gal_Object 
+<i>to</i>)   <br>
+      <a href="frame.html#PP">Pretty prints</a> the object, <i>to</i>, using
+  <i>sls_verbose_level</i>,  using embedded color Xterm directives. </p>
+          
+<p>void&nbsp;<a name="Gal_PrFrameToFile"></a><b><big>Gal_PrFrameToFile</big></b>(Gal_Frame 
+   <i>fr</i>, FILE *<i>fp</i>); <br>
+      Prints the contents of the frame, <i>fr</i>, to a file or stream. </p>
+          
+<p>void&nbsp;<a name="Gal_PPFrameToFile"></a><b><big>Gal_PPFrameToFile</big></b>(Gal_Frame 
+   <i>fr</i>, FILE *<i>fp</i>); <br>
+      Pretty prints the contents of the frame, <i>fr</i>, to a file or stream. 
+  </p>
+          
+<p>void&nbsp;<a name="Gal_OutlineFrame"></a><b><big>Gal_OutlineFrame</big></b>(Gal_Frame 
+   <i>fr</i>, int <i>sls_verbose_level</i>); <br>
+      Prints a truncated frame to standard output. </p>
+          
+<p>void&nbsp;<a name="Gal_OutlineObject"></a><b><big>Gal_OutlineObject</big></b>(Gal_Object 
+   <i>to</i>, int <i>sls_verbose_level</i>) <br>
+      Prints a truncated object to standard output. </p>
+          
+<h3> <a name="Frame_Reading_Functions"></a>Frame Reading Functions</h3>
+       These functions read frames or objects from strings and files.   
+   
+<p><a name="Pred_warning"></a><b>Note</b>: the keys <tt>:pred</tt> and <tt>:PRED</tt> 
+  are special to these functions when converting strings to frames. For unavoidable 
+   historical reasons, their values are treated as elements of the list of 
+ predicate frames associated with each frame. This list of predicates is <a
+ href="#MIT_Linguistic_Frame_Tools">used extensively by MIT</a>, but  has 
+ no function in the general Galaxy Communicator infrastructure. These two 
+keys, therefore, should be avoided. </p>
+          
+<p>Gal_Frame&nbsp;<a name="Gal_ReadFrameFromString"></a><b><big>Gal_ReadFrameFromString</big></b>(const 
+ char *<i>buf</i>); <br>
+      This function creates a frame from <a href="#Pr">Pr</a> or <a
+ href="#PP">PP</a> format. </p>
+          
+<p>Gal_Object&nbsp;<a name="Gal_ReadObjectFromString"></a><b><big>Gal_ReadObjectFromString</big></b>(const 
+ char *<i>buf</i>) <br>
+      This function creates a Gal_Object from either format. </p>
+          
+<p>Gal_Frame&nbsp;<a name="Gal_ReadFrameFromFile"></a><b><big>Gal_ReadFrameFromFile</big></b>(FILE 
+   *<i>fp</i>) <br>
+      Reads a frame from the file pointed to by <i>fp</i>. </p>
+          
+<p>Gal_Object<a name="Gal_ReadObjectFromFile"></a><b><big>Gal_ReadObjectFromFile</big></b>(FILE 
+   *<i>fp</i>) <br>
+      Reads an object from a file. </p>
+          
+<p>Gal_Frame&nbsp;<a name="Gal_VAReadVarFrameFromString"></a><b><big>Gal_VAReadVarFrameFromString</big></b>(const 
+ char *<i>buf</i>, int <i>num_pairs</i>, ... ) <br>
+      This function reads a frame from a string. The frame may contain values 
+  of the form <tt>$...</tt>, which indicates a variable. These variables may
+  be values of keys, or elements of lists, and may appear arbitrarily deep.
+  The <i>num_pairs</i> are the number of variable mappings which appear as
+ variable arguments. The first element of each pair is a string whose first
+ character is <tt>$</tt>, and the second element is a Gal_Object. So for
+example,  the invocation </p>
+          
+<blockquote><tt>Gal_Object o1 = </tt><tt>Gal_StringObject("bar")</tt><tt>;<br>
+      Gal_Object o2 = </tt><tt>Gal_IntObject(5)</tt>;<br>
+        <br>
+        <tt>Gal_VAReadVarFrameFromString("{c foo :string $a :int ( $b ) }", 
+ 2,</tt>    <br>
+        <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  "$a", o1, "$b", o2);<br>
+      Gal_FreeObject(o1);<br>
+      Gal_FreeObject(o2);</tt><br>
+      </blockquote>
+       yields the frame       
+<blockquote><tt>{c foo :string "bar" :int ( 5 ) }</tt></blockquote>
+          
+<blockquote>                 
+  <h4>Memory management</h4>
+      When variables are matched in the frame, the object value is copied 
+and   substituted. So there will never be multiple references to the same 
+instance,   and no assumption is made about whether a particular variable 
+will match  or not. This means that it's the programmer's responsibility to
+manage the  memory for the elements passed in. As shown in the example, this
+can mean  ensuring that all objects which are created are freed.<br>
+      </blockquote>
+      Gal_VarMapping *&nbsp;<a name="Gal_CreateVarMapping"></a><b><big>Gal_CreateVarMapping</big></b>(int 
+   <i>num_pairs</i>, ... ) <br>
+      Gal_Frame&nbsp;<a name="Gal_ReadVarFrameFromString"></a><b><big>Gal_ReadVarFrameFromString</big></b>(const 
+ char *<i>buf</i>, Gal_VarMapping *<i>map</i>) <br>
+      An alternative means of incorporating variables. The <i>map</i> should
+  be  freed after being created and used, using <tt>free</tt>. The memory
+management   comments for Gal_VAReadVarFrameFromString still apply.<br>
+      <br>
+      Gal_Object <a name="Gal_VAReadVarObjectFromString"></a><b><big>Gal_VAReadVarObjectFromString</big></b>(const 
+ char *<i>buf</i>, int <i>num_pairs</i>, ... )<br>
+      Identical to Gal_VAReadVarFrameFromString, but reads a Gal_Object from
+  <i>buf</i> instead of a frame.<br>
+            
+<p>Gal_Object <a name="Gal_ReadVarObjectFromString"></a><b><big>Gal_ReadVarObjectFromString</big></b>(const 
+ char *<i>buf</i>, Gal_VarMapping *<i>map</i>)<br>
+      Identical to Gal_ReadVarFrameFromString, but reads a Gal_Object from
+ <i>buf</i>  instead of a frame.  </p>
+           
+<p> </p>
+          
+<hr width="100%">     
+<h2> <a name="MIT_Linguistic_Frame_Tools"></a>MIT Linguistic Frame Tools</h2>
+       In the MIT Galaxy system, frames are used as interpretations of natural
+   language utterances as well as general-purpose attribute-value structures.
+   As interpretations of natural language utterances, the different frame
+types   have the following form and purpose:       
+<ul>
+       <li> Clause frames correspond to sentences, and typically have a :topic
+   key-value pair (typically filled by a topic frame) and a :pred key-value
+  pair (filled by a predicate frame). The topic corresponds to the subject
+ of the sentence, and a single element in the predicate list which corresponds
+  to the verb phrase. Manipulating the predicate list is different than setting
+   the value of a key named :pred, but since the frame encoder/decoder treats
+   these as the same thing, it only makes a difference within a single program.</li>
+        <li> Topic frames correspond to noun phrases. They may have one or
+ more   predicates, which correspond to modifiers (adjective phrases, prepositional
+   phrases).</li>
+        <li> Predicate phrases correspond to predicates of all sorts: modifiers
+   (adjective phrases, prepositional phrases, adverbial phrases) and verb
+phrases.   These phrases may have predicates themselves, and may also have
+a :topic  key-value pair (typically filled by a topic frame) which corresponds
+to the  internal argument (the object of the verb or preposition, for instance).</li>
+           
+</ul>
+            
+<h3> <a name="General_Utilities"></a>General Utilities</h3>
+       Gal_Frame&nbsp;<a name="Gal_MakeTopicFrame"></a><b><big>Gal_MakeTopicFrame</big></b>(const 
+ char *<i>name</i>) <br>
+      Gal_Frame&nbsp;<a name="Gal_MakePredFrame"></a><b><big>Gal_MakePredFrame</big></b>(const 
+ char *<i>name</i>)       
+<p>Creates a frame of the specified type. See <a href="#Gal_MakeFrame">Gal_MakeFrame</a>. 
+   </p>
+          
+<p>int&nbsp;<a name="Gal_Topicp"></a><b><big>Gal_Topicp</big></b>(Gal_Object 
+   <i>obj</i>); <br>
+      Returns 1 if the object, <i>obj</i>, is a topic frame, of type GAL_TOPIC_FRAME. 
+   </p>
+          
+<p>int<a name="Gal_Predp"></a><b><big>Gal_Predp</big></b>(Gal_Object <i>obj</i>); 
+   <br>
+      Returns 1 if the object, <i>obj</i>, is a predicate frame, of type
+GAL_PRED_FRAME.    </p>
+          
+<p>int&nbsp;<a name="Gal_TopicFramep"></a><b><big>Gal_TopicFramep</big></b>(Gal_Frame<i>fr</i>) 
+   <br>
+      int&nbsp;<a name="Gal_PredFramep"></a><b><big>Gal_PredFramep</big></b>(Gal_Frame 
+   <i>fr</i>) <br>
+      Returns 1 if the frame is of the appropriate frame type. </p>
+          
+<p>Gal_Frame&nbsp;<a name="Gal_TopicValue"></a><b><big>Gal_TopicValue</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      Gal_Frame&nbsp;<a name="Gal_PredValue"></a><b><big>Gal_PredValue</big></b>(Gal_Object 
+   <i>to</i>) <br>
+      Extracts a frame of the appropriate type from the object <i>to</i>.&nbsp;
+  If the object is not of the appropriate type, a warning is printed and
+NULL    is returned. </p>
+          
+<h3> <a name="Frame_Searching_Functions"></a>Frame Searching Functions</h3>
+       Gal_Object&nbsp;<a name="Gal_FindKey"></a><b><big>Gal_FindKey</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key_name</i>); <br>
+      Recursively searches the frame and its contents for the key specified 
+ by  <i>key_name, </i>using the normal <a
+ href="#Property_List_Operations">property list</a> and <a
+ href="#Predicate_List_Operations">predicate list</a> operations. If found, 
+ the corresponding object is returned.       
+<p>Gal_Object&nbsp;<a name="Gal_MatchKeyValue"></a><b><big>Gal_MatchKeyValue</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>key_name</i>, Gal_Object <i>match</i>); <br>
+      Recursively searches the frame and its contents for the key specified 
+ by  <i>key_name</i>, using the normal <a
+ href="#Property_List_Operations">property list</a> and <a
+ href="#Predicate_List_Operations">predicate list</a> operations. If found, 
+ the object is compared with <i>match</i> using <a
+ href="#Gal_ObjectEqual">Gal_ObjectEqual</a>.&nbsp; If the objects match,
+   the corresponding object is returned. </p>
+          
+<p>Gal_Frame&nbsp;<a name="Gal_FindPred"></a><b><big>Gal_FindPred</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>pred_name</i>); <br>
+      Recursively searches the frame for a predicate with name <i>pred_name</i>,
+   using the normal <a href="#Property_List_Operations">property list</a>
+and <a href="#Predicate_List_Operations">predicate list</a> operations.&nbsp; 
+  If found, the predicate frame is returned. </p>
+          
+<p>Gal_Frame&nbsp;<a name="Gal_FindPredParent"></a><b><big>Gal_FindPredParent</big></b>(Gal_Frame 
+   <i>frame</i>, const char *<i>name</i>, Gal_Frame <i>parent</i>, int <i>findpar</i>,
+   int <i>nth</i>); <br>
+      Recursively searches for a predicate with the specified name, <i>name</i>,
+   using the normal <a href="#Property_List_Operations">property list</a>
+and <a href="#Predicate_List_Operations">predicate list</a> operations.&nbsp; 
+  The parent of the first predicate found is returned. </p>
+          
+<p>Gal_Frame&nbsp;<a name="Gal_FindTopic"></a><b><big>Gal_FindTopic</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>topic_name</i>); <br>
+      Recursively searches the frame for a topic with name <i>topic_name</i>, 
+  using the normal <a href="#Property_List_Operations">property list</a> 
+and <a href="#Predicate_List_Operations">predicate list</a> operations.&nbsp; 
+  If found, the topic frame is returned. </p>
+          
+<p>void&nbsp;<a name="Gal_DeletePreds"></a><b><big>Gal_DeletePreds</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>pred_name</i>); <br>
+      Recursively searches the frame for predicates with name <i>pred_name</i>
+  , removes the predicate from the frame using <a
+ href="#Gal_RemPredByName">Gal_RemPredByName</a>, and deletes the predicate
+   using <a href="#Gal_FreeObject">Gal_FreeObject</a>. </p>
+          
+<h3> <a name="Predicate_List_Operations"></a>Predicate List Operations</h3>
+       int&nbsp;<a name="Gal_NumPreds"></a><b><big>Gal_NumPreds</big></b>(Gal_Frame 
+   <i>fr</i>); <br>
+      Returns the number of predicates in the predicate list.       
+<p>Gal_Frame&nbsp;<a name="Gal_AddPred"></a><b><big>Gal_AddPred</big></b>(Gal_Frame 
+   <i>fr</i>, Gal_Frame <i>pred</i>); <br>
+      Creates a Gal_Object from <i>pred </i>using <a
+ href="#Gal_FrameObject">Gal_FrameObject</a>  and adds the object to the predicate
+list in the frame, <i>fr</i>.&nbsp; The frame must be of type GAL_PRED. </p>
+          
+<p>Gal_Frame&nbsp;<a name="Gal_GetPred"></a><b><big>Gal_GetPred</big></b>(Gal_Frame 
+   <i>fr</i>, int <i>i</i>); <br>
+      Retrieves a predicate frame from the predicate list of <i>fr</i> by 
+its   index, specified by <i>i</i>. </p>
+          
+<blockquote>                 
+  <h4> Memory management</h4>
+       The retrieved element is the element in <i>fr</i>, not a copy.</blockquote>
+            
+<p><br>
+      Gal_Frame&nbsp;<a name="Gal_GetPredByName"></a><b><big>Gal_GetPredByName</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>name</i>); <br>
+      Retrieves a predicate frame from the predicate list of <i>fr</i> by 
+its   name, specified by <i>name</i>. </p>
+          
+<blockquote>                 
+  <h4> Memory management</h4>
+       The retrieved element is the element in <i>fr</i>, not a copy.</blockquote>
+            
+<p><br>
+      Gal_Object<a name="Gal_RemPred"></a><b><big>Gal_RemPred</big></b>(Gal_Frame 
+   <i>fr</i>, int <i>i</i>); <br>
+      Removes a predicate from the predicate list of <i>fr</i> by its index,
+  <i>i</i>,  and returns it. </p>
+          
+<blockquote>                 
+  <h4> Memory management</h4>
+       The retrieved element is the element from <i>fr</i>, not a copy.</blockquote>
+            
+<p><br>
+      Gal_Object&nbsp;<a name="Gal_RemPredByName"></a><b><big>Gal_RemPredByName</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>name</i>); <br>
+      Removes a predicate from the predicate list by its name, <i>name</i>, 
+ and  returns it. </p>
+          
+<blockquote>                 
+  <h4> Memory management</h4>
+       The retrieved element is the element from <i>fr</i>, not a copy.</blockquote>
+            
+<p><br>
+      void&nbsp;<a name="Gal_DelPred"></a><b><big>Gal_DelPred</big></b>(Gal_Frame 
+   <i>fr</i>, int <i>i)</i>; <br>
+      Removes a predicate from the predicate list by its index, <i>i</i>, 
+and   frees it using <a href="#Gal_FreeObject">Gal_FreeObject</a>. </p>
+          
+<p>void&nbsp;<a name="Gal_DelPredByName"></a><b><big>Gal_DelPredByName</big></b>(Gal_Frame 
+   <i>fr</i>, const char *<i>name</i>); <br>
+      Removes a predicate from the predicate list by its name, <i>name,</i> 
+ and  frees it using <a href="#Gal_FreeObject">Gal_FreeObject</a>. </p>
+          
+<p>void&nbsp;<a name="Gal_ClearPreds"></a><b><big>Gal_ClearPreds</big></b>(Gal_Frame 
+   <i>fr</i>); <br>
+      Clears the predicate list of fr and frees all predicate objects using 
+ <a href="#Gal_FreeObject">Gal_FreeObject</a>. </p>
+          
+<p>void&nbsp;<a name="Gal_DoPreds"></a><b><big>Gal_DoPreds</big></b>(Gal_Frame 
+   <i>fr</i>, int (*<i>pred_fn</i>)(Gal_Object , void *), void *<i>caller_data</i>) 
+   <br>
+      Applies the function <i>pred_fn</i> to all the predicates in the frame
+  <i>fr</i>.  The first argument of <i>pred_fn</i> will be a Gal_Object containing
+  a frame  which is the predicate; <i>caller_data</i> is passed as the second
+  argument  of <i>pred_fn</i>. The <i>pred_fn</i> should return 1 to continue,
+  0 to halt.  </p>
+          
+<p> </p>
+          
+<hr width="100%">     
+<h2> <a name="Deprecated_functions"></a>Deprecated functions</h2>
+       These functions will be removed in the next major release.       
+<p>void *<a name="Gal_GetListValue"></a><b><big>Gal_GetListValue</big></b>(Gal_Object 
+   <i>to</i>, int <i>n</i>, Gal_ObjectType <i>type</i>) <br>
+      Calls Gal_GetListObject, ensures the result is of the type <i>type</i>, 
+  and returns the contents of the object as a void *. If the element is not 
+  of the appropriate type, NULL is returned. Use of this function is strongly
+   discouraged. </p>
+          
+<p> </p>
+          
+<hr>  
+<center>   
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="hub.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>  
+     </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="adding.html"><img src="../../arrow_right.gif" alt="" width="30"
+ height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+    Last updated August 23, 2002</center>
+        <br>
+      <br>
+     <br>
+    <br>
+   <br>
+  <br>
+ 
+</body>
+</html>

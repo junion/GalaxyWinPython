@@ -1,0 +1,255 @@
+;; This file (c) Copyright 1998 - 2002 The MITRE Corporation
+;; 
+;; This file is part of the Galaxy Communicator system. It is licensed
+;; under the conditions described in the file LICENSE in the root 
+;; directory of the Galaxy Communicator system.
+
+;; The value of LOG_VERSION: will be used in 
+;; the annotation rules.
+
+LOG_VERSION: "toy travel, version 1"
+
+;; Use extended syntax (new in version 3.0).
+
+PGM_SYNTAX: extended
+
+;; This means that the log directory hierarchy
+;; will start in the directory where the Hub is run.
+
+LOG_DIR: .
+
+;; Both audio and UI will be HUB clients, and
+;; they will share a port.
+
+SERVICE_TYPE: Audio
+CLIENT_PORT: 2800
+OPERATIONS: Play
+
+SERVICE_TYPE: UI
+CLIENT_PORT: 2800
+OPERATIONS: Print
+
+SERVER: Parser
+HOST: localhost
+PORT: 10000
+OPERATIONS: Parse
+
+SERVER: Dialogue
+HOST: localhost
+PORT: 18500
+OPERATIONS: DoDialogue DoGreeting
+
+SERVER: Generator
+HOST: localhost
+PORT: 16000
+OPERATIONS: Generate
+
+SERVER: Backend
+HOST: localhost
+PORT: 13000
+OPERATIONS: Retrieve
+
+SERVER: Recognizer
+HOST: localhost
+PORT: 11000
+OPERATIONS: Recognize
+
+SERVER: Synthesizer
+HOST: localhost
+PORT: 15500
+OPERATIONS: Synthesize
+
+SERVER: IOMonitor
+HOST: localhost
+PORT: 10050
+OPERATIONS: ReportIO
+
+;; We use four crucial functions in the Builtin server.
+
+SERVER: Builtin
+OPERATIONS: new_session end_session call_program nop hub_break
+
+;; For logging, I will timestamp everything. Since
+;; I'm also logging all the relevant keys, I really
+;; don't need to timestamp, since they'll be added
+;; automatically, but it's harmless and good practice.
+
+TIMESTAMP: Play Print Parse DoDialogue DoGreeting Generate Retrieve \
+Recognize Synthesize new_session end_session call_program \
+FromAudio OpenAudioSession OpenTextSession \
+FromRecognizer FromUI UserInput \
+FromDialogue DBQuery FromSynthesizer
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;            AUDIO INPUT
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; This first program handles input from the audio
+;; server. The :proxy is the encapsulated broker information.
+
+PROGRAM: FromAudio
+
+RULE: :proxy --> Recognizer.Recognize
+IN: :proxy :encoding_format :sample_rate
+LOG_IN: :proxy :encoding_format :sample_rate
+OUT: none!
+
+;; This program handles opening
+;; an audio session. It marks audio available for the session
+;; by using a key whose prefix is :hub_session_. 
+
+PROGRAM: OpenAudioSession
+
+;; Notice that we use the nop dispatch function to 
+;; "host" a call to OUT: to set a session variable.
+
+RULE: --> Builtin.nop
+OUT: ($in(:audio_available session) 1)
+
+;; Now we create a session. This is not technically 
+;; necessary, since the audio server creates a 
+;; session by virtue of how it connects using the
+;; listener-in-Hub functionality.
+
+RULE: --> Builtin.new_session
+
+;; Finally, I kick off the system greeting.
+
+RULE: --> Dialogue.DoGreeting
+
+;; This program dispatches recognizer results to
+;; the general program which handles user input.
+
+PROGRAM: FromRecognizer
+
+RULE: :input_string --> Builtin.call_program
+IN: (:program "UserInput") :input_string
+OUT: none!
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;            TEXT INPUT
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; This program handles opening
+;; a text in/text out session. It creates a session
+;; and kicks off the user greeting.
+
+PROGRAM: OpenTextSession
+
+RULE: --> Builtin.new_session
+
+RULE: --> Dialogue.DoGreeting
+
+;; This function relays the typed input to the
+;; main body of the input processing.
+
+PROGRAM: FromUI
+
+RULE: :input_string --> Builtin.call_program
+IN: (:program "UserInput") :input_string
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;            MAIN INPUT BODY
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; This program handles the main input text processing.
+;; It passes the result of the parsing to the dialogue
+;; manager, and if there's a response, it relays it
+;; to the output processing program.
+
+PROGRAM: UserInput
+
+RULE: :input_string --> IOMonitor.ReportIO
+IN: (:utterance :input_string) (:who "user")
+OUT: none!
+
+RULE: :input_string --> Parser.Parse
+IN: :input_string
+LOG_IN: :input_string
+OUT: :frame
+LOG_OUT: :frame
+
+;; We're not waiting for a reply, so the errors will be
+;; signalled by new messages.
+
+RULE: :frame --> Dialogue.DoDialogue
+IN: :frame
+LOG_IN: :frame
+OUT: none!
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;            MAIN OUTPUT BODY
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; This program handles the response from the dialogue
+;; manager which may take one of a number of 
+;; forms (database tuples to be described, or perhaps
+;; an already-formatted frame).
+
+PROGRAM: FromDialogue
+
+RULE: :output_frame --> Generator.Generate
+IN: :output_frame
+LOG_IN: :output_frame
+OUT: :output_string
+LOG_OUT: :output_string
+
+RULE: :output_string --> IOMonitor.ReportIO
+IN: (:utterance :output_string) (:who "system")
+OUT: none!
+
+;; At this point, we need to decide whether to respond
+;; using audio or not. We condition this on our Hub
+;; session variable.
+
+RULE: $in(:audio_available session) & :output_string --> Synthesizer.Synthesize
+IN: :output_string
+LOG_IN: :output_string
+OUT: none!
+
+RULE: ! $in(:audio_available session) & :output_string --> UI.Print
+IN: :output_string (:enable_input 1)
+LOG_IN: :output_string
+OUT: none!
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;            DB SUBQUERY
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; This program handles the server-to-server subdialogue
+;; through which the dialogue manager queries the database.
+
+PROGRAM: DBQuery
+
+RULE: :sql_query --> Backend.Retrieve
+IN: :sql_query
+LOG_IN: :sql_query
+OUT: :column_names :nfound :values
+LOG_OUT: :column_names :nfound :values
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;            AUDIO OUTPUT
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Finally, the synthesizer chooses to produce a new
+;; message. We could also accomplish the same
+;; result by returning a value from the synthesizer and 
+;; adding more rules to the FromDialogue program above.
+
+PROGRAM: FromSynthesizer
+
+RULE: :proxy --> Audio.Play
+IN: :proxy :encoding_format :sample_rate :num_samples (:enable_input 1)
+LOG_IN: :encoding_format :sample_rate :num_samples

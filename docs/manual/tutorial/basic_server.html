@@ -1,0 +1,360 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Tutorial: Server Basics</title>
+     <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+  
+<center> 
+<h1> Galaxy Communicator Tutorial:<br>
+ <br>
+ Server Basics</h1>
+</center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "frame_intro.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "../../../contrib/MITRE/tools/docs/unit_tester_tut.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+  
+<hr width="100%"> <br>
+In this lesson, we'll learn how to build the simplest of servers: one which
+receives a message from the Hub and returns a reply. In later lessons, we'll
+study successively more complex types of servers. All our examples will be
+drawn from the toy travel system we've <a
+ href="../../../contrib/MITRE/demos/docs/toy-travel-tut.html">already used</a>. 
+<ul>
+ <li> <a href="#How_complex_can_a_server_get">How complex can a server get?</a></li>
+  
+  <ul>
+ <li> <a href="#Parser,_generator,_backend">Parser, generator, backend</a></li>
+  <li> <a href="#Dialogue">Dialogue</a></li>
+  <li> <a href="#Recognizer,_synthesizer">Recognizer, synthesizer</a></li>
+  <li> <a href="#Audio">Audio</a></li>
+ 
+  </ul>
+  <li> <a href="#Six_steps_to_building_a_server">Six steps to building a
+server</a></li>
+  
+  <ul>
+ <li> <a href="#Step_1:_Set_up_your_headers">Step 1: Set up your headers</a></li>
+  <li> <a href="#Step_2:_Write_your_dispatch_functions">Step 2: Write your
+dispatch functions</a></li>
+  <li> <a href="#Step_3:_Write_your_server_initialization_function">Step 3:
+Write your server initialization function</a></li>
+  <li> <a href="#Step_4:_Write_and_incorporate_your_server_declarations">Step 
+4: Write and incorporate your server declarations</a></li>
+  <li> <a href="#Step_5:_Write_your_Makefile_and_compile">Step 5: Write your
+Makefile and compile</a></li>
+  <li> <a href="#Step_6:_Write_your_documentation">Step 6: Write your documentation</a></li>
+ 
+  </ul>
+  <li> <a href="#Summary">Summary</a></li>
+ 
+</ul>
+ You can consult the <a href="../reference/adding.html">complete server reference</a>
+when you need to. 
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="How_complex_can_a_server_get"></a>How complex can a server
+get?</h2>
+ We can divide the seven servers in the toy travel demo into four groups,
+in order of complexity. 
+<h3> <a name="Parser,_generator,_backend"></a>Parser, generator, backend</h3>
+ These three servers all exhibit the simplest functionality possible: they
+receive a message and send back a response. We will use the Parser server
+as our example in this exercise. 
+<h3> <a name="Dialogue"></a>Dialogue</h3>
+ The Dialogue server is slightly more complex. Instead of simply responding
+to messages, the Dialogue server sends new messages to the Hub, and at times
+waits for the response. We'll turn to this server after we learn a little
+about the Hub scripting language. 
+<h3> <a name="Recognizer,_synthesizer"></a>Recognizer, synthesizer</h3>
+ These servers, in addition to responding to messages, also communicate with
+the Audio server using the brokering backchannel. We'll learn about brokering
+in the context of these two servers. 
+<h3> <a name="Audio"></a>Audio</h3>
+ Finally, in addition to responding to messages and communicating with the
+Recognizer and Synthesizer servers using brokering, the Audio server serves
+as a UI element, which needs to monitor an I/O device in addition to its
+connections to the Hub. We'll study this server last. 
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="Six_steps_to_building_a_server"></a>Six steps to building a
+server</h2>
+ There are four basic steps to building a Communicator-compliant server. 
+<ul>
+ <li> Step 1: Set up your headers</li>
+  <li> Step 2: Write your dispatch functions</li>
+  <li> Step 3: Write your server initialization function</li>
+  <li> Step 4: Write and incorporate your server declarations</li>
+  <li> Step 5: Write your Makefile and compile</li>
+  <li> Step 6: Write your documentation</li>
+ 
+</ul>
+  
+<h3> <a name="Step_1:_Set_up_your_headers"></a>Step 1: Set up your headers</h3>
+ This step is simple. All the public Communicator header files can be loaded
+from <tt>$GC_HOME/include/galaxy/galaxy_all.h</tt>. For historical reasons
+having to do with the way the Galaxy Communicator Makefile template is written,
+we usually include the header file as follows, and we recommend you do the
+same: 
+<blockquote><tt>#include "galaxy/galaxy_all.h"</tt></blockquote>
+  
+<h3> <a name="Step_2:_Write_your_dispatch_functions"></a>Step 2: Write your
+dispatch functions</h3>
+ All dispatch functions have the same function signature. Let's use the <tt>Parse</tt> 
+dispatch function as an example. 
+<blockquote><tt>Gal_Frame Parse(Gal_Frame frame, void *server_data);</tt></blockquote>
+ The <tt>frame</tt> in the argument list is the incoming message frame. The
+<tt>server_data</tt> is actually a structure encapsulating the environment
+of the dispatch function invocation. We'll talk about this argument more
+when we talk about <a
+ href="errors.html#Environments_and_message_returns">error handling</a>;
+for now, you can ignore it. 
+<p>There are three basic regions in each dispatch function: </p>
+<ul>
+ <li> message decomposition and type checking</li>
+  <li> core processing</li>
+  <li> reply construction</li>
+ 
+</ul>
+ Dispatch functions have the additional complexities of message decomposition,
+type checking and reply construction because our messages are in the form
+of sets of key-value pairs rather than ordered sequences of typed elements
+(as in a C message signature). So the dispatch function code needs to do
+some of the work that a compiler might do in other circumstances. In this
+current discussion, we're going to cover message decomposition and reply
+construction; we'll ignore type checking for the moment, because it relates
+to the <tt>server_data</tt> argument. 
+<p>For example, the core processing in the Parser server is a call to the
+function <tt>ParseSentence</tt>: </p>
+<blockquote><tt>ParseTree *ParseSentence(char *input_string);</tt></blockquote>
+ This function takes a string and produces an element of type <tt>ParseTree
+*</tt>, which must be somehow translated into something which can be included
+in a reply frame. We choose to translate it into a Gal_Frame. Here's a simplified 
+illustration of the wrapped function: <br>
+<img src="../../images/ServerDispatchFunction.jpg" nosave=""
+ height="479" width="839">
+ 
+<p>Let's take a closer look at each of these regions. </p>
+<h4> Message decomposition</h4>
+ We need to pass a string to the <tt>ParseSentence</tt> function, and that
+string is stored in the incoming message in the <tt>:input_string</tt> key.
+We extract it using one of the tools from our last lesson: 
+<blockquote><tt>char *input_string = Gal_GetString(frame, ":input_string");</tt></blockquote>
+  
+<h4> Core processing</h4>
+ Now that we have the string, we can parse the sentence: 
+<blockquote><tt>p = ParseSentence(input_string);</tt></blockquote>
+  
+<h4> Reply construction</h4>
+ Now we need to create a reply message frame, convert the tree to a frame,
+wrap a Gal_Object around the frame, and insert it into the reply message
+frame. The name of the reply message doesn't matter, since the reply is returned
+with all the appropriate information about what it's a reply to. 
+<blockquote><tt>reply = Gal_MakeFrame("reply", GAL_CLAUSE);</tt> <br>
+  <tt>Gal_SetProp(reply, ":frame",</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Gal_FrameObject(ParseTreeToFrame(p)));</tt> 
+  <br>
+  <tt>return reply;</tt></blockquote>
+ The infrastructure takes care of freeing both the input and reply frames
+after the dispatch function is processed. It's perfectly legal for these
+frames to be the same; so our simplified function might have looked like
+this: 
+<blockquote><tt>Gal_Frame Parse(Gal_Frame frame, void *server_data)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; char *input_string = Gal_GetString(frame, ":input_string");</tt> 
+  <br>
+  <tt>&nbsp; ParseTree *p;</tt> 
+  <p><tt>&nbsp; p = ParseSentence(input_string);</tt> <br>
+  <tt>&nbsp; Gal_SetProp(frame, ":frame",</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+Gal_FrameObject(ParseTreeToFrame(p)));</tt> <br>
+  <tt>&nbsp; return frame;</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ In this circumstance, all you need to remember is that all the keys in the
+incoming message will also be in the reply (unless you overwrite them when
+you construct the reply). 
+<h4> The <tt>reinitialize</tt> dispatch function</h4>
+ One of the dispatch functions you can define is <tt>reinitialize</tt>. As
+we discussed in the lesson on <a href="how_it_works.html">how the infrastructure
+works</a>, this dispatch function is called whenever the the Hub and server
+establish a connection. It can also be called explicitly, like any other
+dispatch function. The only difference between the two calling contexts is
+that when the Hub and server establish a connection, the value returned from 
+<tt>reinitialize</tt> is ignored. 
+<p>The Parser server does not define the <tt>reinitialize</tt> dispatch function. 
+</p>
+<h3> <a name="Step_3:_Write_your_server_initialization_function"></a>Step 
+3: Write your server initialization function</h3>
+ The next step is to write your server initialization function. This step
+is optional; the infrastructure will skip this processing step if the developer
+doesn't specify it. The function is called <tt>_GalSS_init_server</tt>: 
+<blockquote><tt>void *_GalSS_init_server(GalIO_ServerStruct *server, int argc,
+char **argv);</tt></blockquote>
+ This function is called once, when the server starts up. You can use this
+function to load grammars or other models, or otherwise initialize the server
+state. In the toy travel demo, all the servers must load the message script,
+so we do that in the server initialization function. This function uses Galaxy
+Communicator library functions to <a
+ href="../advanced/util.html#Command_line_argument_parsing">parse the argument
+list</a> and <a href="../advanced/util.html#Printing">report the result</a>;
+we won't be discussing these functions in the tutorial. 
+<blockquote><tt>void *_GalSS_init_server(GalIO_ServerStruct *server, int argc,
+char **argv)</tt> <br>
+  <tt>{</tt> <br>
+  <tt>&nbsp; char *data_file = (char *) NULL;</tt> 
+  <p><tt>&nbsp; if (GalUtil_OACheckUsage(argc, argv, oas, NULL) == 0)</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; exit(1);</tt> </p>
+  <p><tt>&nbsp; if (GalUtil_OAExtract(argc, argv, oas, "-parser_data",</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+GAL_OA_STRING, &amp;data_file) == 0) {</tt> <br>
+  <tt>&nbsp;&nbsp;&nbsp; GalUtil_Warn("No -parser_data argument. Exiting.");</tt> 
+  <br>
+  <tt>&nbsp;&nbsp;&nbsp; exit(1);</tt> <br>
+  <tt>&nbsp; }</tt> <br>
+  <tt>&nbsp; InitializeParser(data_file);</tt> <br>
+  <tt>&nbsp; return (void *) NULL;</tt> <br>
+  <tt>}</tt></p>
+</blockquote>
+ Without going into the details, this function expects the Parser server
+to be called as follows: 
+<blockquote><tt>% Parser -parser_data &lt;file&gt;</tt></blockquote>
+ The initialization function will pass the string specified by <tt>&lt;file&gt;</tt> 
+to the function <tt>InitializeParser</tt>, which in the toy travel demo simply
+loads the message script. 
+<h3> <a name="Step_4:_Write_and_incorporate_your_server_declarations"></a>Step 
+4: Write and incorporate your server declarations</h3>
+ The next step is to create and incorporate a header file called a server
+declaration file. This file contains macros which specify, among other things, 
+<ul>
+ <li> a name for the server (which in most cases doesn't have to be the name
+that the Hub knows it as)</li>
+  <li> a default port for the listener the server sets up when it listens
+for connections</li>
+  <li> the available dispatch functions</li>
+ 
+</ul>
+ The complete list of specifications you can make in your server declaration
+file can be found in the <a
+ href="../reference/adding.html#Declare_server_information">full server reference</a>. 
+<p>We'll continue to use the Parser server as an example. First, we'll create
+the server declarations file and name it <tt>Parser_server.h</tt>. It looks 
+like this: </p>
+<blockquote><tt>GAL_SERVER_NAME(Parser)</tt> <br>
+  <tt>GAL_SERVER_PORT(10000)</tt> <br>
+  <tt>GAL_SERVER_OP(Parse)</tt></blockquote>
+ These declarations announce that the server knows its name to be <tt>Parser</tt> 
+(<tt>GAL_SERVER_NAME</tt>), that its default listener port is 10000 (<tt>GAL_SERVER_PORT</tt>), 
+and that if the server receives a message whose name is <tt>Parse</tt>, it
+should invoke the function with the same name. All dispatch functions must
+be registered in this way, including <tt>reinitialize</tt>; otherwise, the
+infrastructure has no way of knowing that the function is available. 
+<p>Second, we'll tell the server about the server declaration file. You can
+do this using the following idiom: </p>
+<blockquote><tt>#define SERVER_FUNCTIONS_INCLUDE "Parser_server.h"</tt> <br>
+  <tt>#include "galaxy/server_functions.h"</tt></blockquote>
+ The <tt>#define</tt> declares the name of the server declaration file, and
+the <tt>#include</tt> causes the server declaration file to be loaded and
+the macros expanded in the appropriate way. 
+<p>The following picture illustrates all the dependencies involved in the
+server declarations: <br>
+<img src="../../images/ServerHeaders.jpg" nosave="" height="479"
+ width="839">
+ </p>
+<h3> <a name="Step_5:_Write_your_Makefile_and_compile"></a>Step 5: Write
+your Makefile and compile</h3>
+ The next step is to construct a Makefile to compile your server. The Galaxy
+Communicator infrastructure provides a sophisticated Makefile template to
+use to compile Communicator-compliant servers. Here's a simplified version
+of the Parser server Makefile: 
+<blockquote><tt># Specify the name of the Makefile.</tt> 
+  <p><tt>MAKEFILE = Parser.make</tt> </p>
+  <p><tt># Specify the location of the Communicator distribution.</tt> </p>
+  <p><tt>ROOT_DIR = $(GC_HOME)</tt> <br>
+  <tt>MITRE_ROOTDIR = $(ROOT_DIR)/contrib/MITRE</tt> <br>
+  <tt>TEMPLATES = $(ROOT_DIR)/templates</tt> </p>
+  <p><tt># The file archos.make contains information about OS and platform.</tt> 
+  </p>
+  <p><tt>include $(TEMPLATES)/archos.make</tt> </p>
+  <p><tt># The name of the server executable that you want to compile.</tt> 
+  </p>
+  <p><tt>SERVER = Parser</tt> </p>
+  <p><tt># Put the executable in EXECDIR (if you don't specify it,</tt> <br>
+  <tt># the executable will go in the default Galaxy Communicator</tt> <br>
+  <tt># bin directory, inside the distribution)</tt> </p>
+  <p><tt>EXECDIR = bin/</tt> </p>
+  <p><tt># List all your source .c files.</tt> </p>
+  <p><tt>SOURCES = Parser.c component_engine.c</tt> </p>
+  <p><tt># Include the Galaxy Communicator template.</tt> </p>
+  <p><tt>include $(TEMPLATES)/rules.make</tt> </p>
+  <p><tt># Include automatically generated source dependency file.</tt> </p>
+  <p><tt>ifneq ($(findstring clean,$(MAKECMDGOALS)),clean)</tt> <br>
+  <tt>include $(MAKEFILE).depend</tt> <br>
+  <tt>endif</tt></p>
+</blockquote>
+ The full set of configuration possibilities for the templates can be found
+in the <a
+ href="../reference/adding.html#Modify_the_Makefile_Stub_Template">full server
+reference</a>. It's also fairly straightforward to <a
+ href="../advanced/external_makefile.html">use your own Makefiles</a>, but
+you'll lose some of the built-in transparency of managing multiple platforms
+that the Galaxy Communicator templates provide. 
+<h3> <a name="Step_6:_Write_your_documentation"></a>Step 6: Write your documentation</h3>
+ Finally, we encourage you to document the message set your server supports.
+We've developed a fairly simple HTML template, which we <a
+ href="../../../contrib/MITRE/demos/docs/Parser.html">exemplify</a> using
+the Parser server. 
+<p> </p>
+<hr width="100%"> 
+<h2> <a name="Summary"></a>Summary</h2>
+ In this lesson, we've described the levels of complexity that servers can
+reach, and we've exemplified a six-step process for constructing a server
+using the least complex type of server. In the next lesson, you'll learn
+about a tool called the <b>unit tester</b> which we'll use to understand
+better how all these types of servers work. 
+<p><b>Next</b>: <a
+ href="../../../contrib/MITRE/tools/docs/unit_tester_tut.html">Our second
+tool: the unit tester</a> </p>
+<p> </p>
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "frame_intro.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "../../../contrib/MITRE/tools/docs/unit_tester_tut.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated June 24, 2002</center>
+  <br>
+</body>
+</html>

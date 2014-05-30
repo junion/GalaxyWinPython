@@ -1,0 +1,444 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+        
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+        
+  <meta name="GENERATOR"
+ content="Mozilla/4.75 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: The Timed Task Loop</title>
+         <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#3333ff" vlink="#993399" alink="#ff0000">
+    
+<center>  
+<h1> Galaxy Communicator Documentation: <br>
+ <br>
+ The Timed Task Loop</h1>
+ </center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "hub_listener.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "session.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+    
+<hr width="100%">  
+<p>In order to control the execution of events, MIT provides a timing loop 
+which it uses in both the Hub and servers. We document this loop here. As 
+of 3.0, the functions <a href="#Gal_AddTimedTask">Gal_AddTimedTask</a>, etc. 
+are no longer recommended; use <a href="#Gal_AddTask">Gal_AddTask</a>, etc. 
+instead. </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> What the timed task loop does</h2>
+  In the MIT main loop, the timed task loop schedules and executes server 
+and Hub polling events. When the timed task loop fires a poll, it may be scheduled
+to fire again if appropriate conditions are met. The loop can be used to
+schedule other events at the programmer's discretion. The loop runs until
+<a href="#Gal_TimedTasksLoopExit">Gal_TimedTasksLoopExit</a> is called. We
+describe the structure of the MIT main loop <a
+ href="../reference/server_structure.html">here</a>. In some cases, the programmer 
+might choose to replace the MIT main loop, and schedule the polls and other 
+events by other means; the tools to accomplish this are described <a
+ href="special_mainloop.html">here</a>.  
+<p>It is now possible to use a version of the timed task API to produce <a
+ href="#Threads">threads</a> instead. </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> Setting up timed tasks</h2>
+ Note that by default, all these functions begin the tasks when they're created, 
+and this <a
+ href="../admin/threads.html#Threads_and_taskbrokerproxy_creation">may not 
+be what you want</a>. If it isn't, pass -1 as the value of <i>num_millisecs</i> 
+and use <a href="#Gal_StartTask">Gal_StartTask</a>.<br>
+ <br>
+  Gal_TaskPkg *<a name="Gal_AddTask"></a><b><big>Gal_AddTask</big></b>(void
+ (*<i>task</i>)(Gal_TaskPkg *), void *<i>refcon</i>, long <i>num_millisecs</i>,
+ int <i>read_blocking_available</i>, void (*<i>cleanup_fn</i>)(void *)) <br>
+ Use this function to add a timed task. When threads are enabled, this function 
+will create a thread and associate a task with it; when threads are not being 
+used, this function adds a task to the list of timed tasks to fire. The <i>task</i> 
+is a function which takes a Gal_TaskPkg * structure as an argument (in fact, 
+the one returned by Gal_AddTask), and returns void. The <i>num_millisecs</i> 
+is how long in milliseconds after the task is added (or, if the loop hasn't 
+been started, how long after the loop is started) the task should be executed. 
+The <i>read_blocking_available</i> argument should indicate whether the task 
+has the capacity to do a blocking read in the threaded case; if read blocking 
+is available, <i>num_millisecs</i> is ignored in the threaded case. <br>
+ 
+<p>In the normal case, this task will be started as soon as it's created. 
+In the threaded case, this is exceptionally important, because if you need 
+to store the task away anywhere, or do anything with it before it starts, 
+you must create the task and start it later. You can do this by passing -1 
+as the value of <i>num_millisecs</i> and using <a
+ href="file:///afs/rcf/project/communicator/users/sam/GalaxyCommunicator2/docs/manual/advanced/timed_tasks.html#Gal_StartTask">Gal_StartTask</a>.<br>
+ </p>
+   
+<p>The Gal_TaskPkg * structure argument to the task provides five things:
+ </p>
+ 
+<ul>
+  <li> A hook for removing the task (see <a href="#Gal_RemoveTask">Gal_RemoveTask</a>).</li>
+   <li> A hook for refiring the task (see <a href="#Gal_ReAddTask">Gal_ReAddTask</a>).</li>
+   <li> A way of accessing the <i>refcon</i>, which is available via the
+    <a href="#Gal_TaskPkgData">Gal_TaskPkgData</a> function.</li>
+   <li> A way of determining the read blocking properties that the task should 
+respect, via the <a href="#Gal_TaskPkgBlocking">Gal_TaskPkgBlocking</a> function. 
+The return value of this function indicates whether the task should read input
+in blocking or non-blocking mode. In the timed task case, the argument will
+always be 0; in the threaded case, it will be the same as <i>read_blocking_available</i>. 
+What these two features together do is insure that blocking reads are done 
+exactly when it is possible to do so (when threading is enabled and blocking 
+reads are possible). Each task is responsible itself for responding appropriately 
+to the value of this function (so for instance, they themselves must set the
+blocking mode on the file descriptors they read from); all Gal_AddTask() does
+is pass the flag around.</li>
+   <li> A way of determining why the task was fired (see <a
+ href="#Gal_TaskPkgRunReasons">Gal_TaskPkgRunReasons</a>).</li>
+   
+</ul>
+  Finally, the <i>cleanup_fn</i> is run on <i>refcon</i> if <i>refcon</i> 
+is present, whenever the task is not refired or when <i>refcon</i> or <i>cleanup_fn</i> 
+is replaced during refiring (if refiring passes the identical arguments, the
+function is not run). Immediately before the task is executed, it is removed
+from the list of timed tasks (or, in the threaded case, it is marked for
+destruction); so typically the last thing the <i>task</i> will do is call
+Gal_ReAddTask if it intends the task to be refired.  
+<p>Gal_TaskPkg *<a name="Gal_AddTaskWithSocketIO"></a><b><big>Gal_AddTaskWithSocketIO</big></b>(void
+ (*<i>task</i>)(Gal_TaskPkg *), void *<i>refcon</i>, long <i>num_millisecs</i>,
+ int <i>read_blocking_available</i>, GAL_SOCKET *<i>read_socket</i>, GAL_SOCKET
+ *<i>write_socket</i>, void (*<i>cleanup_fn</i>)(void *)) <br>
+ Gal_TaskPkg *<a name="Gal_AddTaskWithFileIO"></a><b><big>Gal_AddTaskWithFileIO</big></b>(void
+ (*<i>task</i>)(Gal_TaskPkg *), void *<i>refcon</i>, long <i>num_millisecs</i>,
+ int <i>read_blocking_available</i>, FILE *<i>read_file</i>, FILE *<i>write_file</i>,
+ void (*<i>cleanup_fn</i>)(void *)) <br>
+ Adds the task with sensitivity to I/O on sockets and file descriptors, respectively. 
+Otherwise, identical to Gal_AddTask(). Note that file I/O polling is not available
+on Win32.<br>
+ <br>
+ </p>
+ 
+<p>typedef int (*<b><big>Gal_TaskConditionFn</big></b>)(void *caller_data);
+ <br>
+ Gal_TaskPkg *<a name="Gal_AddTaskExtended"></a><b><big>Gal_AddTaskExtended</big></b>(void
+ (*<i>task</i>)(Gal_TaskPkg *), void *<i>caller_data</i>, long <i>num_millisecs</i>,
+ int <i>read_blocking_available</i>, GAL_SOCKET *<i>read_socket</i>, GAL_SOCKET
+ *<i>write_socket</i>, GAL_SOCKET *<i>err_socket</i>, FILE *<i>read_file</i>,
+ FILE *<i>write_file</i>, FILE*<i>err_file</i>, Gal_TaskConditionFn <i>condition</i>,
+ void (*<i>cleanup_fn</i>)(void *)) <br>
+ Adds the task with sensitivity to the entire range of elements, including 
+I/O on sockets and file descriptors, the additional possibility of error streams
+and task conditions. Task conditions are passed the <i>caller_data</i>, and
+if the task condition returns nonzero, the task will be executed in advance 
+of its normal time expiration. Otherwise, identical to Gal_AddTask(). Note 
+that file I/O polling is not available on Win32.</p>
+ 
+<p>int <a name="Gal_StartTask"></a><b><big>Gal_StartTask</big></b>(Gal_TaskPkg 
+*<i>pkg</i>, int <i>num_millisecs</i>)  <br>
+ Starts the task. If the polling interval in the task <i>pkg</i> is -1, and 
+<i>num_millisecs</i> is &gt; -1, take the appropriate action to start the
+task (i.e., insert it into the task array in non-threaded mode, or create
+and start a thread for it in threaded mode). This function can be used to
+start a task after it's been created.<br>
+ </p>
+ 
+<p>void&nbsp;<a name="Gal_ReAddTask"></a><b><big>Gal_ReAddTask</big></b>(Gal_TaskPkg
+ *<i>p</i>, void *<i>refcon</i>, long <i>num_millisecs</i>, int <i>read_blocking_available</i>,
+ void (*<i>cleanup_fn</i>)(void *)) <br>
+ This function is identical to Gal_AddTask(), except it is to be used when 
+tasks are supposed to be refired, as described in <a href="#Gal_AddTask">Gal_AddTask</a>(). 
+In the non-threaded case, it just adds the Gal_TaskPkg * structure back to 
+the list of timed tasks; in the threaded case, the thread is continued. This 
+function is intended to be called from inside the task which <i>p</i> was 
+passed to. If the task is not refired, the task package is freed; the programmer 
+is responsible for managing the memory associated with <i>refcon</i>. </p>
+ 
+<p>void&nbsp;<a name="Gal_ReAddTaskWithSocketIO"></a><b><big>Gal_ReAddTaskWithSocketIO</big></b>(Gal_TaskPkg
+ *<i>p</i>, void *<i>refcon</i>, long <i>num_millisecs</i>, int <i>read_blocking_available</i>,
+ GAL_SOCKET *<i>read_socket</i>, GAL_SOCKET *<i>write_socket</i>, void (*<i>cleanup_fn</i>)(void
+ *)) <br>
+ void&nbsp;<a name="Gal_ReAddTaskWithFileIO"></a><b><big>Gal_ReAddTaskWithFileIO</big></b>(Gal_TaskPkg
+ *<i>p</i>, void *<i>refcon</i>, long <i>num_millisecs</i>, int <i>read_blocking_available</i>,
+ FILE *<i>read_file</i>, FILE *<i>write_file</i>, void (*<i>cleanup_fn</i>)(void
+ *)) <br>
+ Re-adds the task with sensitivity to I/O on sockets and file descriptors, 
+respectively. Otherwise, identical to Gal_ReAddTask(). Note that file I/O 
+polling is not available on Win32. </p>
+ 
+<p>void&nbsp;<a name="Gal_ReAddTaskExtended"></a><b><big>Gal_ReAddTaskExtended</big></b>(Gal_TaskPkg
+ *<i>p</i>, void *<i>caller_data</i>, long <i>num_millisecs</i>, int <i>read_blocking_available</i>,
+ GAL_SOCKET *<i>read_socket</i>, GAL_SOCKET *<i>write_socket</i>, GAL_SOCKET
+ *<i>err_socket</i>, FILE *<i>read_file</i>, FILE *<i>write_file</i>, FILE
+ *<i>err_file</i>, Gal_TaskConditionFn <i>condition</i>, void (*<i>cleanup_fn</i>)(void
+ *)) <br>
+ Re-adds the task with sensitivity sensitivity to the entire range of elements, 
+including I/O on sockets and file descriptors, the additional possibility 
+of error streams and task conditions. Otherwise, identical to Gal_ReAddTask(). 
+Note that file I/O polling is not available on Win32. </p>
+ 
+<p>int&nbsp;<a name="Gal_TaskPkgRunReasons"></a><b><big>Gal_TaskPkgRunReasons</big></b>(Gal_TaskPkg
+ *<i>pkg</i>) <br>
+ Returns the logical OR of the reasons the package was run. Possible reasons 
+are: <br>
+ &nbsp;  
+<table border="1" cols="2" width="100%" nosave="">
+  <tbody>
+     <tr>
+  <td><b>value</b></td>
+   <td><b>description</b></td>
+  </tr>
+   <tr>
+  <td><tt>GAL_SOCKET_READABLE</tt></td>
+   <td>The task was fired because a read socket had data</td>
+  </tr>
+   <tr>
+  <td><tt>GAL_SOCKET_WRITABLE</tt></td>
+   <td>The task was fired because a write socket had data</td>
+  </tr>
+   <tr>
+  <td><tt>GAL_SOCKET_ERR_READABLE</tt></td>
+   <td>The task was fired because an error socket had data</td>
+  </tr>
+   <tr>
+  <td><tt>GAL_FILE_READABLE</tt></td>
+   <td>The task was fired because a read file pointer had data</td>
+  </tr>
+   <tr>
+  <td><tt>GAL_FILE_WRITABLE</tt></td>
+   <td>The task was fired because a write file pointer had data</td>
+  </tr>
+   <tr>
+  <td><tt>GAL_FILE_ERR_READABLE</tt></td>
+   <td>The task was fired because an error file pointer had data</td>
+  </tr>
+   <tr>
+  <td><tt>GAL_TIMER_EXPIRED</tt></td>
+   <td>The task was fired because it had slept for the required number of 
+milliseconds</td>
+  </tr>
+   <tr>
+  <td><tt>GAL_CONDITION_SATISFIED</tt></td>
+   <td>The task was fired because its task condition function returned nonzero</td>
+  </tr>
+   <tr>
+  <td><tt>GAL_THREAD_READABLE</tt></td>
+   <td>The task was fired because a blocking read had data in the threaded 
+case</td>
+  </tr>
+     
+  </tbody> 
+</table>
+   </p>
+ 
+<p>So you can check, for instance, to see if your task fired because of a 
+readable file as follows: </p>
+ 
+<blockquote><tt>if (Gal_TaskPkgRunReasons(pkg) &amp; GAL_FILE_READABLE) {</tt>
+   <br>
+   <tt>&nbsp; ...</tt> <br>
+   <tt>}</tt></blockquote>
+    
+<p><br>
+ void<a name="Gal_RemoveTask"></a><b><big>Gal_RemoveTask</big></b>(Gal_TaskPkg
+ *<i>task_id</i>) <br>
+ Removes the task <i>task_id</i>. </p>
+ 
+<p>int&nbsp;<a name="Gal_TaskPkgBlocking"></a><b><big>Gal_TaskPkgBlocking</big></b>(Gal_TaskPkg
+ *<i>pkg</i>) <br>
+ If 1, the task should set its read file descriptors to blocking mode; if 
+0, non-blocking. </p>
+ 
+<p>void *<a name="Gal_TaskPkgData"></a><b><big>Gal_TaskPkgData</big></b>(Gal_TaskPkg
+ *<i>pkg</i>) <br>
+ Returns the data associated with the package. This is the same as the value 
+of the <i>refcon</i> argument to <a href="#Gal_AddTask">Gal_AddTask</a> and 
+<a href="#Gal_ReAddTask">Gal_ReAddTask</a>. </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> Managing timed tasks</h2>
+  These functions manage the invocation and operation of the timed task loop.
+ 
+<p>void&nbsp;<a name="Gal_TimedTasksLoop"></a><b><big>Gal_TimedTasksLoop</big></b>(void)
+ <br>
+ This function initiates the timed task loop. It loops until Gal_TimedTasksLoopExit 
+is called. </p>
+ 
+<p>void&nbsp;<a name="Gal_TimedTasksLoopExit"></a><b><big>Gal_TimedTasksLoopExit</big></b>(void)
+ <br>
+ This function halts the timed tasks loop. All tasks in the queue are completed, 
+but no other tasks are queued. </p>
+ 
+<p>typedef void (*<b><big>Gal_IdleFunction</big></b>)(void *<i>client_data</i>);
+ <br>
+ int&nbsp;<a name="Gal_AddIdleFunction"></a><b><big>Gal_AddIdleFunction</big></b>(Gal_IdleFunction
+ <i>func</i>, void *<i>client_data</i>) <br>
+ Adds a function to the list of functions which the timed task loop will
+execute when there are no tasks to fire. The <i>client_data</i> argument
+is passed to <i>func</i> when it's called. Unlike tasks, which are removed
+after they're fired, idle functions remain installed until they're removed
+with Gal_RemoveIdleFunction().  </p>
+ 
+<p>void&nbsp;<a name="Gal_RemoveIdleFunction"></a><b><big>Gal_RemoveIdleFunction</big></b>(Gal_IdleFunction
+ <i>func</i>) <br>
+ Removes <i>func</i> from the list of functions which the timed task loop 
+executes when there are no tasks to fire. </p>
+ 
+<p>void&nbsp;<a name="Gal_RunIdleFunctions"></a><b><big>Gal_RunIdleFunctions</big></b>()
+ <br>
+ Runs the idle functions. Called by the timed task loop, but can also be
+called explicitly. </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> Internal functions</h2>
+  int&nbsp;<a name="Gal_TimedTasksLoopHandler"></a><b><big>Gal_TimedTasksLoopHandler</big></b>(struct
+ timeval *tv) <br>
+ This is the internal function which determines when to execute the timed 
+tasks.  
+<p> </p>
+ 
+<hr width="100%">  
+<h2> <a name="Threads"></a>Threads</h2>
+  The Galaxy Communicator library is thread-safe (we believe) on a number 
+of platforms (see the <a href="../admin/threads.html">thread notes</a>). One
+way we've tested this is by running multiple-connection servers in threaded 
+mode. We have made this experimental facility available to the community via
+the <tt>-thread</tt> argument described in the <a
+ href="../reference/adding.html#_GalSS_init_server">generic server arguments</a>. 
+This argument is available when <a href="../admin/threads.html">threads are 
+enabled</a>. The following functions can be used to exploit this functionality.
+ 
+<p>If you want to use the timed task loop in a threaded context, it should 
+work (we haven't tested it extensively). In particular, you can only run the
+timed task loop from one thread at a time, and you can only shut down the
+loop from that thread. However, be warned that if you use the <tt>-thread</tt>
+ argument, the timed task loop will not be started automatically; you will
+ have to start it yourself. </p>
+ 
+<p>void&nbsp;<a name="Gal_EnableTimedTaskThreads"></a><b><big>Gal_EnableTimedTaskThreads</big></b>()
+ <br>
+ This function controls whether tasks added via Gal_AddTask() and Gal_ReAddTask() 
+are handled via timed tasks or via threads. Once timed task threads are enabled, 
+they can only disabled by Gal_EndTasks(). Gal_EnableTimedTaskThreads() is 
+the function which is invoked when you provide the <tt>-thread</tt> argument 
+to servers when threads are enabled. If the user is writing his/her own <tt>main() 
+</tt>and wants to avoid the timed task loop for server, connection and broker 
+handling but would like threads to handle these facilities, the user can enable
+this facility with this function. </p>
+ 
+<p>int&nbsp;<a name="Gal_TimedTaskThreadsEnabled"></a><b><big>Gal_TimedTaskThreadsEnabled</big></b>()
+ <br>
+ Returns 1 if timed tasks threads have enabled via Gal_EnableTimedTaskThreads(), 
+0 otherwise. The user should never need to call this function. </p>
+ 
+<p>void&nbsp;<a name="Gal_TimedTaskLoopThreadWaiter"></a><b><big>Gal_TimedTaskLoopThreadWaiter</big></b>(void)
+ <br>
+ Waits until all the tasks are completed. This function is the threaded equivalent 
+of <a href="#Gal_TimedTasksLoop">Gal_TimedTasksLoop</a>. The main server loop
+uses it in the threaded case to delay the actions of the main thread so that
+<a href="../reference/server_structure.html#GalSS_RunServer">GalSS_RunServer
+ </a>only returns when the server is finished. </p>
+ 
+<p>void&nbsp;<a name="Gal_EndTasks"></a><b><big>Gal_EndTasks</big></b>(int
+ <i>immediate</i>) <br>
+ This is a more general version of <a href="#Gal_TimedTasksLoopExit">Gal_TimedTasksLoopExit</a>.
+ It causes one of two types of exits: immediate and deferred. An immediate
+ exit will cancel tasks at the most immediate possible exit point, while
+a deferred exit will cancel tasks which are already "scheduled" to happen.
+If <i>immediate</i> is non-zero,&nbsp; this call causes an immediate exit,
+otherwise a deferred exit. This function halts both threads (if running)
+and the timed task loop (if running). </p>
+ 
+<p>void&nbsp;<a name="Gal_MaybeEndTask"></a><b><big>Gal_MaybeEndTask</big></b>(int
+ <i>immediate</i>, int <i>deferred</i>) <br>
+ This function introduces an exit point into a long-running task. For instance, 
+if your (threaded) task is looping forever and doing blocking reads, you might
+choose to call Gal_MaybeEndTask() to check to see if another thread has scheduled
+an exit via Gal_EndTasks. If it finds an immediate scheduled exit and <i>immediate</i>
+is nonzero, or if it finds a deferred scheduled exit and <i>deferred</i>
+is nonzero, the thread will terminate. <br>
+ &nbsp; </p>
+ 
+<p> </p>
+ 
+<hr width="100%">  
+<h2> For backward compatibility</h2>
+  These functions represent an older, simpler way of invoking timed tasks. 
+They still work, but they do not allow you to take advantage of many of the 
+newer features. We have no plans to deprecate them, but we strongly discourage 
+their use.  
+<p>int&nbsp;<a name="Gal_AddTimedTask"></a><b><big>Gal_AddTimedTask</big></b>(void
+ *<i>task</i>, void *<i>refcon</i>, long <i>num_millisecs</i>) <br>
+ Use this function to add a timed task. The <i>task</i> is a function which 
+takes <i>refcon</i> as its argument and returns void. The <i>num_millisecs</i> 
+is how long in milliseconds after the task is added (or, if the loop hasn't 
+been started, how long after the loop is started) the task should be executed. 
+Once the task is executed, it is removed from the list of timed tasks; so 
+typically the last thing the <i>task</i> will do is call Gal_AddTimedTask 
+again. This function is implemented in terms of the internal function Gal_AddTask.
+ </p>
+ 
+<p>int&nbsp;<a name="Gal_AddTimedTaskWithFileIO"></a><b><big>Gal_AddTimedTaskWithFileIO</big></b>(void
+ *<i>task</i>, void *<i>refcon</i>, long <i>num_millisecs</i>, FILE *<i>read_file</i>,
+ FILE *<i>write_file</i>) <br>
+ Use this function to add a timed task which is sensitive to input and output 
+on file descriptors. If any of the elements in either of the file descriptor 
+sets is ready for reading and writing before <i>num_milliseconds</i> has elapsed,
+the task will nonetheless be executed. Note that file I/O polling is not
+available on Win32. </p>
+ 
+<p>int&nbsp;<a name="Gal_AddTimedTaskWithSocketIO"></a><b><big>Gal_AddTimedTaskWithSocketIO</big></b>(void
+ *<i>task</i>, void *<i>refcon</i>, long <i>num_millisecs</i>, GAL_SOCKET
+*<i>read_socket</i>, GAL_SOCKET *<i>write_socket</i>) <br>
+ Use this function to add a timed task which is sensitive to input and output 
+on sockets. If any of the elements in either of the file descriptor sets is
+ready for reading and writing before <i>num_milliseconds</i> has elapsed, 
+the task will nonetheless be executed. </p>
+ 
+<p>int&nbsp;<a name="Gal_RemoveTimedTask"></a><b><big>Gal_RemoveTimedTask</big></b>(void
+ *task, void *refcon) <br>
+ Removes the given timed task. Note that tasks are distinguished by <i>task</i> 
+and <i>refcon</i>, so it's not a good idea to define multiple timed tasks 
+with the same task and refcon. <br>
+ &nbsp; </p>
+ 
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "hub_listener.html"><img src="../../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../../LICENSE">License</a> / <a href = "../index.html">Documentation home</a> / <a href="../index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "session.html"><img src="../../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated July 9, 2002</center>
+   <br>
+ <br>
+</body>
+</html>

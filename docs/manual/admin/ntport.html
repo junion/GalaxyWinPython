@@ -1,0 +1,159 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+            
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+            
+  <meta name="GENERATOR"
+ content="Mozilla/4.73 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Galaxy Communicator Documentation: Windows port</title>
+             <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff" vlink="#551a8b" alink="#ff0000">
+      
+<center>   
+<h1> Galaxy Communicator Documentation: <br>
+  <br>
+  Windows Port</h1>
+  </center>
+     
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="make.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>  
+     </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="threads.html"><img src="../../arrow_right.gif" alt="" width="30"
+ height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+       
+<hr width="100%">   
+<ul>
+   <li> <a href="#Introduction">Introduction</a></li>
+      <li> <a href="#What_libraries_do_I_need_to_compile_the">What libraries
+ do I need to compile the HUB?</a></li>
+    <li> <a href="#How_do_I_write_a_server?">How do I write a server?</a></li>
+    <li> <a href="#Differences">Differences between Unix and Windows</a></li>
+    <li><a href="#Language_bindings">Language bindings</a><br>
+    </li>
+     
+</ul>
+      
+<hr width="100%">   
+<h2> <a name="Introduction"></a>Introduction</h2>
+  As of version 4.0, the entire Galaxy Communicator distribution runs on
+Windows.  This includes previously untested elements such as the <a
+ href="../../../contrib/MITRE/demos/docs/toy-travel-ref.html">toy travel
+demo</a>, as well as elements such as the <a
+ href="../../../contrib/MITRE/utilities/docs/stdin_poll.html">stdin polling
+ utility</a> which was previously known not to work.<br>
+  <br>
+  In the core distribution, we distribute a Microsoft Visual C workspace
+<tt>GC.dsw</tt>,  which you can use to compile all the C executables in the
+distribution. Alternatively,  you can <a
+ href="http://communicator.sourceforge.net/download/">download precompiled 
+binaries</a>. The C executables and libraries are placed in the appropriate 
+<tt>bin</tt> or <tt>lib</tt> directory, in the subdirectory <tt>x86-nt</tt>
+ (the <a href="install.html#ARCHOS_on_Windows">ARCHOS</a> value for Windows).
+A precompiled shared library for the Python bindings is also included; note
+that this library requires Python 2.2.<br>
+   
+<p>We'd like to thank AT&amp;T, MIT and CMU for their contributions to the
+ Windows port of the HUB and support libraries. </p>
+   
+<p> </p>
+      
+<hr width="100%">   
+<h2> <a name="What_libraries_do_I_need_to_compile_the"></a>What libraries
+ do I need to compile the HUB?</h2>
+   The HUB executable depends on the libGalaxy.lib library.   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="How_do_I_write_a_server?"></a>How do I write a server?</h2>
+   The following are the libraries that most servers require:   
+<ul>
+   <li> libGalaxy.lib</li>
+    <li> libMITRE_galaxy.lib (possibly)</li>
+     
+</ul>
+   There is no longer any difference between platforms in writing a server.
+ As documented in the section on <a href="../reference/adding.html">adding 
+ a server</a>, the <a
+ href="../reference/adding.html#Declare_server_information">new style</a>
+ of header generation relies only on the C preprocessor, so it is portable
+ across platforms. All MITRE examples have been upgraded to use this new
+style.  As a demonstration, the <a
+ href="../../../contrib/MITRE/examples/double/main.html">double example</a>
+ has been ported to NT.   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Differences"></a>Differences between Unix and Windows</h2>
+   The functionality differs slightly between Unix and Windows versions.
+Below  are some of the known limitations and differences.   
+<ul>
+   <li> Reading with time-out (in sock.c) was replaced with regular reads 
+under Windows since SIGALARMS are not supported.</li>
+    <li> Logging to syslog wasn't ported since the syslog facility does not
+ exist under Windows.</li>
+      <li> Logging using the Hub will not lock files before writing to them.</li>
+   <li>The Hub will take significantly longer on Windows to time out from 
+a connect() socket call. This is a Windows OS issue.<br>
+   </li>
+     
+</ul>
+   
+<hr width="100%" size="2">  
+<h2><a name="Language_bindings"></a>Language bindings</h2>
+     
+<p>Both <a href="../../../contrib/MITRE/bindings/python/docs/index.html">Python</a>
+ and <a href="../../../contrib/MITRE/bindings/java/index.html">Java</a> are
+ known to work on Windows.<br>
+  </p>
+      
+<hr>  
+<center>   
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="middle" align="left" width="10%"><a
+ href="make.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+        </a></td>
+          <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+ home</a> / <a href="../index.html#Getting_help">Help and feedback</a>  
+     </td>
+          <td valign="middle" align="right" width="10%"><a
+ href="threads.html"><img src="../../arrow_right.gif" alt="" width="30"
+ height="30">
+        </a></td>
+        </tr>
+              
+  </tbody>    
+</table>
+    Last modified August 16, 2002</center>
+    <br>
+  <br>
+ <br>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.75 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>The Program Verifier</title>
+<!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+<body style="font-family: Helvetica;" text="#000000" bgcolor="#FFFFFF" link="#0000FF">
+
+<center>
+<h1>
+Galaxy Communicator Documentation:
+<br><br>The Program Verifier</h1></center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "libGalaxyEnhancements.html"><img src="../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../LICENSE">License</a> / <a href = "../manual/index.html">Documentation home</a> / <a href="../manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "builtin.html"><img src="../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+
+<hr WIDTH="100%">
+<p>The executable <tt>verify_program</tt>
+will check the syntax of a Hub <a href="../manual/reference/pgm.html">program file</a> and
+report errors.
+<p>
+<hr WIDTH="100%">
+<h2>
+Usage</h2>
+
+<h4>
+Command line</h4>
+<tt>&lt;GALAXY_ROOT>/contrib/MIT/galaxy/bin/verify_program ...</tt>
+<h4>
+Command line arguments</h4>
+
+<blockquote><tt>static char *oas[] =</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; "-in filename", "program file to verify", NULL,</tt>
+<br><tt>&nbsp; "-out filename", "regenerate program to file (- is stdout)",
+NULL,</tt>
+<br><tt>&nbsp; "-debug", "verbose mode",</tt>
+<br><tt>&nbsp; "-color", "enable color output",</tt>
+<br><tt>&nbsp; NULL,</tt>
+<br><tt>};</tt></blockquote>
+The <tt>-in</tt>
+argument is the input program file. Errors will be reported for this file.
+If you wish a "canonical" program file to be written (for instance, for
+seeing how the Hub will interpret a program file), use the <tt>-out
+</tt>argument.
+<hr><center>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tbody>
+     <tr>
+       <td valign="middle" align="left" width="10%"><a href = "libGalaxyEnhancements.html"><img src="../arrow_left.gif" alt="" width="30" height="30"></a></td>
+       <td valign="middle" align="center">
+         <a href="../../LICENSE">License</a> / <a href = "../manual/index.html">Documentation home</a> / <a href="../manual/index.html#Getting_help">Help and feedback</a>
+       </td>
+       <td valign="middle" align="right" width="10%"><a href = "builtin.html"><img src="../arrow_right.gif" alt="" width="30" height="30"></a></td>
+     </tr>   
+  </tbody> 
+</table>
+
+Last updated November 2, 2000</center>
+
+</body>
+</html>

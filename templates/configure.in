@@ -1,0 +1,642 @@
+dnl Process this file with autoconf 2.0 or later to make a configure script.
+AC_REVISION($Revision: 1.14 $)
+AC_PREREQ(2.0)
+AC_INIT(config.make.in)
+AC_CONFIG_HEADER(GC_config.h:GC_config.h.in)
+
+# The resulting output script is ALWAYS run by sourcing 
+# configure.main from the configure script in this directory,
+# which creates the appropriate subdirectories and sets the
+# appropriate values for host and build. It will also
+# deal with the cross-compilation issues.
+
+AC_MSG_CHECKING(value of ARCH-OS)
+AC_MSG_RESULT($host_cpu-$host_os)
+
+if test -n "$GC_CROSS"; then
+  . "$GC_CROSS"
+fi
+
+AC_PROG_CC
+
+# 
+# Platform-specific things I can't figure out
+# how to test for yet.
+# 
+
+# powerpc-Darwin.
+
+# For some reason the tests
+# for the preprocessor add this to the calls to CPP, but
+# not to CPPFLAGS. 
+
+# Also, we can't get shared libraries to work, and we
+# can't figure out how to do the Python dynamic loading yet.
+
+if test "$host_cpu-$host_os" = "powerpc-Darwin"; then
+  CPPFLAGS="$CPPFLAGS -traditional-cpp"
+  ac_no_shared_libs=yes
+  ac_no_py_dynamic_loading=yes
+fi
+
+# SGI IRIX.
+
+# Can't figure out how to do the Python dynamic loading.
+
+if test "$host_os" = "irix"; then
+  ac_no_py_dynamic_loading=yes
+fi
+
+# Sparc.
+
+if test "$host_cpu" = "sparc"; then
+  TCFLAGS=-D_POSIX_PTHREAD_SEMANTICS
+  CFLAGS="$CFLAGS -msupersparc"
+fi
+
+# x86.
+
+if test "$host_cpu" = "x86"; then
+  CFLAGS="$CFLAGS -mpentium"
+fi
+
+# 
+# End platform-specific things.
+# 
+
+AC_SUBST(TCFLAGS)
+
+AC_PROG_CPP
+
+# Here's a problem: at MITRE, AC_PROG_CXX fails
+# on Solaris because /usr/local/lib has to be in the library
+# path because libstdc++ can't be found otherwise. And so
+# it thinks we're cross-compiling. But how do I check
+# for where libstdc++ is without having already checked
+# AC_PROG_CXX? Arrrgh.
+
+AC_PROG_CXX
+
+AC_LANG_C
+
+# Check to see if the compiler already has the arch or os flags
+# enabled.
+
+AC_MSG_CHECKING(if the compiler already has -D__`echo $host_cpu`__)
+AC_EGREP_CPP(yes, [
+#ifdef __`echo $host_cpu`__
+yes
+#endif], [
+  AC_MSG_RESULT(yes)
+], [
+  AC_MSG_RESULT(no)
+  CPPFLAGS="$CPPFLAGS -D__`echo $host_cpu`__"
+])
+
+AC_MSG_CHECKING(if the compiler already has -D__`echo $host_os`__)
+AC_EGREP_CPP(yes, [
+#ifdef __`echo $host_os`__
+yes
+#endif], [
+  AC_MSG_RESULT(yes)
+], [
+  AC_MSG_RESULT(no)
+  CPPFLAGS="$CPPFLAGS -D__`echo $host_os`__"
+])
+
+# This invaluable test was borrowed from the Python configure script.
+# But we also have to test for nsl in order for the look up to work right.
+
+AC_SEARCH_LIBS(bind, [socket])
+
+# AC_CHECK_LIB(nsl, gethostname, [LIBS="-lnsl $LIBS"])
+
+# Without nanosleep, we're toast.
+
+AC_SEARCH_LIBS(nanosleep, [posix4], [], [
+  echo "nanosleep is required but cannot be found. Can't compile."
+  exit 1
+  ])
+
+# See if libnsl is required for XDR.
+
+AC_CHECK_FUNC(xdr_int, [], [
+  AC_SEARCH_LIBS(xdr_int, [nsl])
+])
+
+# MacOS X 10.1 has long long = 8, but not xdr_longlong_t (or xdr_hyper).
+
+AC_CHECK_FUNC(xdr_longlong_t, [
+  AC_DEFINE(HAVE_XDR_LONGLONG_T)
+  ])
+
+# Now that we have the networking stuff in, we should
+# check to see if we can find xdr_sizeof.
+
+HAVE_XDR_SIZEOF=
+AC_CHECK_FUNC(xdr_sizeof, [
+  AC_DEFINE(HAVE_XDR_SIZEOF)
+], [
+  HAVE_XDR_SIZEOF="# "
+])
+AC_SUBST(HAVE_XDR_SIZEOF)
+
+AC_CHECK_FUNC(gethostbyname_r, [
+  AC_DEFINE(HAVE_GETHOSTBYNAME_R)
+  AC_MSG_CHECKING([gethostbyname_r with 6 args])
+  AC_TRY_COMPILE([
+#   include <netdb.h>
+  ], [
+    char *name;
+    struct hostent *he, *res;
+    char buffer[2048];
+    int buflen = 2048;
+    int h_errnop;
+
+    (void) gethostbyname_r(name, he, buffer, buflen, &res, &h_errnop)
+  ], [
+    AC_DEFINE(HAVE_GETHOSTBYNAME_R_6_ARG)
+    AC_MSG_RESULT(yes)
+  ], [
+    AC_MSG_RESULT(no)
+    AC_MSG_CHECKING([gethostbyname_r with 5 args])
+    AC_TRY_COMPILE([
+#     include <netdb.h>
+    ], [
+      char *name;
+      struct hostent *he;
+      char buffer[2048];
+      int buflen = 2048;
+      int h_errnop;
+
+      (void) gethostbyname_r(name, he, buffer, buflen, &h_errnop)
+    ], [
+      AC_DEFINE(HAVE_GETHOSTBYNAME_R_5_ARG)
+      AC_MSG_RESULT(yes)
+    ], [
+      AC_MSG_RESULT(no)
+      AC_MSG_CHECKING([gethostbyname_r with 3 args])
+      AC_TRY_COMPILE([
+#       include <netdb.h>
+      ], [
+        char *name;
+        struct hostent *he;
+        struct hostent_data data;
+
+        (void) gethostbyname_r(name, he, &data);
+      ], [
+        AC_DEFINE(HAVE_GETHOSTBYNAME_R_3_ARG)
+        AC_MSG_RESULT(yes)
+      ], [
+        AC_MSG_RESULT(no)
+      ])
+    ])
+  ])], [
+  AC_CHECK_FUNC(gethostbyname, AC_DEFINE(HAVE_GETHOSTBYNAME))
+])
+
+AC_SUBST(HAVE_GETHOSTBYNAME_R_6_ARG)
+AC_SUBST(HAVE_GETHOSTBYNAME_R_5_ARG)
+AC_SUBST(HAVE_GETHOSTBYNAME_R_3_ARG)
+AC_SUBST(HAVE_GETHOSTBYNAME_R)
+AC_SUBST(HAVE_GETHOSTBYNAME)
+
+# Can we do threads?
+
+THREADS_SUPPORTED="# "
+AC_CHECK_LIB(pthread, sigwait, [
+  AC_CHECK_LIB(pthread, pthread_sigmask, [
+    THREADS_SUPPORTED=
+  ])])
+AC_SUBST(THREADS_SUPPORTED)  
+
+AC_CHECK_FUNCS(strerror_r)
+
+AC_CHECK_FUNC(strtok_r, [
+  AC_DEFINE(HAVE_STRTOK_R)
+  ac_found_strtok_r=yes
+  ], [
+  HAVE_STRTOK_R="# "
+  ])
+AC_SUBST(HAVE_STRTOK_R)
+
+# Some systems which have nanosleep don't have the header.
+
+AC_MSG_CHECKING(if nanosleep is declared)
+AC_EGREP_HEADER(nanosleep, time.h, [
+  AC_DEFINE(HAVE_NANOSLEEP_HEADER)
+  AC_MSG_RESULT(yes)
+  ], [
+  AC_MSG_RESULT(no)
+  ])
+
+# See if string.h requires __EXTENSIONS__ to declare
+# strtok_r.
+
+if test "$ac_found_strtok_r" = "yes"; then
+  AC_MSG_CHECKING(if strtok_r declaration requires -D__EXTENSIONS__)
+  AC_EGREP_HEADER(strtok_r, string.h, [
+    AC_MSG_RESULT(no)
+    ], [
+    ac_save_cppflags="$CPPFLAGS"
+    CPPFLAGS="$ac_save_cppflags -D__EXTENSIONS__"
+    AC_EGREP_HEADER(strtok_r, string.h, [
+      ac_save_cppflags=
+      AC_MSG_RESULT(yes)
+    ], [
+      CPPFLAGS="$ac_save_cppflags"
+      AC_MSG_RESULT(still can't find it)
+    ])
+  ])
+fi
+
+AC_DEFINE(HAVE_CONFIG_H)
+
+if test "$cross_compiling" = "yes" && test -z "$ac_cc_sizeof_char"; then
+  echo "configure: error: no value for size of char when cross-compiling" 1>&2
+  exit 1
+else
+  AC_CHECK_SIZEOF(char, $ac_cc_sizeof_char)
+fi
+
+if test "$cross_compiling" = "yes" && test -z "$ac_cc_sizeof_short"; then
+  echo "configure: error: no value for size of short when cross-compiling" 1>&2
+  exit 1
+else
+  AC_CHECK_SIZEOF(short, $ac_cc_sizeof_short)
+fi
+
+if test "$cross_compiling" = "yes" && test -z "$ac_cc_sizeof_int"; then
+  echo "configure: error: no value for size of int when cross-compiling" 1>&2
+  exit 1
+else
+  AC_CHECK_SIZEOF(int, $ac_cc_sizeof_int)
+fi
+
+if test "$cross_compiling" = "yes" && test -z "$ac_cc_sizeof_long"; then
+  echo "configure: error: no value for size of long when cross-compiling" 1>&2
+  exit 1
+else
+  AC_CHECK_SIZEOF(long, $ac_cc_sizeof_long)
+fi
+
+if test "$cross_compiling" = "yes" && test -z "$ac_cc_sizeof_long_long"; then
+  echo "configure: error: no value for size of long long when cross-compiling" 1>&2
+  exit 1
+else
+  AC_CHECK_SIZEOF(long long, $ac_cc_sizeof_long_long)
+fi
+
+if test "$cross_compiling" = "yes" && test -z "$ac_cc_sizeof_float"; then
+  echo "configure: error: no value for size of float when cross-compiling" 1>&2
+  exit 1
+else
+  AC_CHECK_SIZEOF(float, $ac_cc_sizeof_float)
+fi
+
+if test "$cross_compiling" = "yes" && test -z "$ac_cc_sizeof_double"; then
+  echo "configure: error: no value for size of double when cross-compiling" 1>&2
+  exit 1
+else
+  AC_CHECK_SIZEOF(double, $ac_cc_sizeof_double)
+fi
+
+# Anything other than "no" means enable it.
+
+ENABLE_SHARED=
+AC_ARG_ENABLE(shared, [
+  --enable-shared	use shared libraries], [
+  if test "$enableval" = "no"; then
+    ENABLE_SHARED="# "
+  elif test "$ac_no_shared_libs" = "yes"; then
+    echo "Shared library compilation currently unavailable on this platform."
+    ENABLE_SHARED="# "
+  fi
+], [    
+  ENABLE_SHARED="# "
+])
+AC_SUBST(ENABLE_SHARED)
+
+# Extensions. Default is to enable.
+
+ENABLE_MIT=
+AC_ARG_ENABLE(MIT-extensions, [
+  --enable-MIT-extensions	compile MIT extensions], [
+  if test "$enableval" = "no"; then
+    ENABLE_MIT="# "
+  fi
+])
+AC_SUBST(ENABLE_MIT)
+
+ENABLE_MITRE=
+AC_ARG_ENABLE(MITRE-extensions, [
+  --enable-MITRE-extensions	compile MITRE extensions], [
+  if test "$enableval" = "no"; then
+    ENABLE_MITRE="# "
+  fi
+])
+AC_SUBST(ENABLE_MITRE)
+
+# Find "touch".
+
+TOUCH=
+AC_PATH_PROG(TOUCH, touch, [], $PATH:/bin:/usr/bin)
+AC_SUBST(TOUCH)
+
+# Checking values for AR.
+
+if test -z "$AR"; then
+  RANLIB=
+  ARPROG=
+  AC_PATH_PROG(ARPROG, ar)
+  # See if AR can take s.
+  /bin/rm -f conftest.o conftest.a
+  $TOUCH conftest.o
+  AC_MSG_CHECKING(if ar takes s)
+  ac_ar_check=no
+  ac_ar_check=`$ARPROG crs conftest.a conftest.o 2>&1 > /dev/null && echo yes`
+  if test "$ac_ar_check" = "yes"; then
+    AR="$ARPROG crsv"
+    AC_MSG_RESULT(yes)
+  else
+    AR="$ARPROG crv"
+    AC_MSG_RESULT(no)
+    AC_PATH_PROG(RANLIB, ranlib)
+  fi
+  /bin/rm -f conftest.o conftest.a
+fi
+
+if test -z "$RANLIB"; then
+  RANLIB="$TOUCH"
+fi
+
+AC_SUBST(AR)
+AC_SUBST(RANLIB)
+
+if test "$cross_compiling" = "yes" && test -z "$ac_cc_c_bigendian"; then
+  echo "configure: error: no value for endianness when cross-compiling" 1>&2
+  exit 1
+else
+  AC_C_BIGENDIAN
+fi
+
+# What we really want to know here is whether 
+# the system will allow you access to the memory 
+# in a float as the appropriate IEEE 754 byte values.
+# See src/libGalaxy/util/compat/win32/xdr_float.c.
+
+HAVE_IEEEFP=1
+AC_DEFINE(HAVE_IEEEFP)
+
+# Try to find a couple of #defines which are used in sock.c
+
+AC_MSG_CHECKING(where to find FIONREAD)
+AC_EGREP_CPP(yes, [
+#include <sys/ioctl.h>
+#ifdef FIONREAD
+yes
+#endif], [
+  AC_DEFINE(NEED_SYS_IOCTL)
+  AC_MSG_RESULT(sys/ioctl.h)
+  ], [
+    AC_EGREP_CPP(yes, [
+      #include <sys/filio.h>
+      #ifdef FIONREAD
+      yes
+      #endif], [
+        AC_DEFINE(NEED_SYS_FILIO)
+        AC_MSG_RESULT(sys/filio.h)], [
+        AC_MSG_RESULT(not found)
+    ])
+  ])
+
+AC_MSG_CHECKING(where to find SIOCGIFCONF)
+AC_EGREP_CPP(yes, [
+#include <sys/ioctl.h>
+#ifdef SIOCGIFCONF
+yes
+#endif], [
+  AC_DEFINE(NEED_SYS_IOCTL)
+  AC_MSG_RESULT(sys/ioctl.h)
+  ], [
+    AC_EGREP_CPP(yes, [
+      #include <sys/sockio.h>
+      #ifdef SIOCGIFCONF
+      yes
+      #endif], [
+        AC_DEFINE(NEED_SYS_SOCKIO)
+        AC_MSG_RESULT(sys/sockio.h)], [
+        AC_MSG_RESULT(not found)
+    ])
+  ])
+
+AC_SUBST(NEED_SYS_IOCTL)
+AC_SUBST(NEED_SYS_FILIO)
+AC_SUBST(NEED_SYS_SOCKIO)
+
+# Stole this from the autoconf mailing list.
+# Turns out that the length of sockaddr differs
+# between BSD and SysV.
+
+ac_cv_struct_sa_len=
+AC_MSG_CHECKING(for sa_len in struct sockaddr)
+AC_TRY_COMPILE([#include <sys/types.h>
+#include <sys/socket.h>], [struct sockaddr s; s.sa_len;], [
+AC_MSG_RESULT(yes)
+AC_DEFINE(HAVE_SA_LEN)
+], [
+AC_MSG_RESULT(no)
+])
+
+# Try to find xterm now. Start with the X lib path.
+
+XTERM=
+AC_ARG_WITH(xterm, [
+  --with-xterm=PATH	full path for oddly-located xterm executable], [
+  if test -n "$withval"; then
+    XTERM="$withval"
+  fi
+], [
+  AC_PATH_X
+  ac_likely_xterm_bin=`echo $x_libraries|sed -e 's/lib/bin/'`
+  AC_PATH_PROG(XTERM, xterm, ,$ac_likely_xterm_bin)
+])
+
+AC_SUBST(XTERM)
+
+# Try to find Python, Java and Allegro now.
+
+JDK_HOME= 
+AC_ARG_WITH(jdk, [
+  --with-jdk=PATH		path for value of JDK_HOME], [
+  if test -n "$withval"; then
+    JDK_HOME="$withval"
+  fi
+])
+AC_SUBST(JDK_HOME)
+
+ALLEGROBIN=
+AC_ARG_WITH(allegro, [
+  --with-allegro=PATH		path for Allegro CL executable], [
+  if test -n "$withval"; then
+    ALLEGROBIN="$withval"
+  fi
+])
+AC_SUBST(ALLEGROBIN)
+
+PYTHONBIN=
+AC_ARG_WITH(python, [
+  --with-python=PATH		path for Python executable], [
+  if test -n "$withval"; then
+    PYTHONBIN="$withval"
+  fi
+])
+AC_SUBST(PYTHONBIN)
+
+PYINCLUDE=
+AC_ARG_WITH(pycppflags, [
+  --with-pycppflags=CPPFLAGS	C preprocessor flags for Python C wrappers], [
+  if test -n "$withval"; then
+    if test "$ac_no_py_dynamic_loading" = "yes"; then
+      echo "Python library bindings currently unavailable on this platform."
+    else
+      PYINCLUDE="$withval"
+    fi
+  fi
+])
+AC_SUBST(PYINCLUDE)
+
+# And now, the program analysis tools.
+
+INSUREPP=
+ENABLEENSUREPP="# "
+AC_ARG_WITH(insure, [
+  --with-insure=INSURE		absolute path of Insure++ executable], [
+  if test -n "$withval"; then
+    INSUREPP="$withval"
+    ENABLEENSUREPP=
+  fi
+], [
+  AC_PATH_PROG(INSUREPP, insure, [not found])
+])
+# We say "not found" just for the printout.
+if test "$INSUREPP" = "not found"; then
+  INSUREPP=insure
+fi
+AC_SUBST(INSUREPP)
+AC_SUBST(ENABLEENSUREPP)
+
+PURIFY=
+ENABLEPURIFY="# "
+AC_ARG_WITH(purify, [
+  --with-purify=PURIFY		absolute path of Purify executable], [
+  if test -n "$withval"; then
+    PURIFY="$withval"
+    ENABLEPURIFY=
+  fi
+], [
+  AC_PATH_PROG(PURIFY, purify, [not found])
+])
+# We say "not found" just for the printout.
+if test "$PURIFY" = "not found"; then
+  PURIFY=purify
+fi
+AC_SUBST(PURIFY)
+AC_SUBST(ENABLEPURIFY)
+
+# This argument is here exclusively for the configure 
+# wrapper. Nothing is done with it in here.
+
+AC_ARG_WITH(cached-args, [
+  --with-cached-args		Retrieve cached args, don't store (default is vice versa)])
+
+# See if gcc takes -fpermissive. New with 2.95.1
+# This will only be a config.make substitution, of course.
+
+ac_cv_fpermissive=no
+AC_MSG_CHECKING(if $CC takes -fpermissive)
+ac_save_cc="$CC"
+CC="$CC -fpermissive"
+AC_TRY_COMPILE([],[int main() { exit(0); }],
+[ac_cv_fpermissive=yes
+], [
+HAVE_FPERMISSIVE="# "
+])
+CC="$ac_save_cc"
+AC_MSG_RESULT($ac_cv_fpermissive)
+AC_SUBST(HAVE_FPERMISSIVE)
+
+# SAM 2/11/02: I had originally been setting HAVE_GNU_LD
+# here, in order to determine if I could use -rpath 
+# for run-time linking, but I seem to have dropped the Solaris 
+# case (-R) on the floor. So I think I'll just end up setting
+# XLINKER_RTFLAG directly.
+
+# So the test involves attempting the link using AC_TRY_LINK.
+# If the LDFLAGS with -rpath or -R are OK, then we should 
+# set it.
+
+ac_save_ldflags="$LDFLAGS"
+ac_cv_rtlibflag=
+LDFLAGS="$ac_save_ldflags -Xlinker -rpath -Xlinker /usr/lib"
+AC_MSG_CHECKING(if $CC run-time lib flag is -rpath)
+AC_TRY_LINK([],[],[
+AC_MSG_RESULT(yes)
+ac_cv_rtlibflag="-rpath"
+], [
+AC_MSG_RESULT(no)
+# Not successful. Try something else.
+if test "$host_os" = "solaris"; then
+  LDFLAGS="$ac_save_ldflags -Xlinker -R -Xlinker /usr/lib"
+  AC_MSG_CHECKING(if $CC run-time lib flag is -R)
+  AC_TRY_LINK([],[],[
+  AC_MSG_RESULT(yes)
+  ac_cv_rtlibflag="-R"
+  ], [
+  AC_MSG_RESULT(no)
+  ])
+fi
+])
+XLINKER_RTFLAG="$ac_cv_rtlibflag"
+LDFLAGS="$ac_save_ldflags"
+AC_SUBST(XLINKER_RTFLAG)
+
+# See if gcc is configured to take -MG. This doesn't work on 
+# Mach. There's no way to test this except to exec and grep. Grrr.
+# Don't use grep -s or other flags, not portable.
+
+AC_MSG_CHECKING(if $CC recognizes -MG)
+$TOUCH conftest.c
+ac_mg_result=yes
+( $CC -E -MG conftest.c 2>&1 | grep "unrecognized option \`-MG'" 2>&1 > /dev/null ) && ac_mg_result=no
+/bin/rm -f conftest.c
+if test "$ac_mg_result" = "yes"; then
+  AC_MSG_RESULT(yes)
+  DEPENDFLAGS="-MM -MG"
+else
+  AC_MSG_RESULT(no)
+  DEPENDFLAGS="-MM"
+fi
+AC_SUBST(DEPENDFLAGS)
+
+ac_final_output=
+AC_ARG_WITH(config-output,
+[--with(out)-config-output      Generate config.make],
+[if test "$withval" = yes
+then ac_final_output="config.make:config.make.in"
+fi
+], [
+ac_final_output="config.make:config.make.in"
+])
+
+# At this point, we're going to substitute CFLAGS, but I 
+# don't want CFLAGS to have -g in it (we have "make debug"
+# for that). Also remove all optimizations.
+
+dnl must change m4 quote character because needed in sed.
+
+changequote(<<, >>)dnl
+CFLAGS=`echo "$CFLAGS" | sed 's/-g//' | sed 's/-O[0-9]\{0,1\}//g'`
+changequote([, ])dnl
+
+AC_OUTPUT($ac_final_output)

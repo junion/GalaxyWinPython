@@ -1,0 +1,237 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+            
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+            
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+  <title>Controlling Hub Server and Session Properties from the Server</title>
+             <!--
+  This file (c) Copyright 1998 - 2000 The MITRE Corporation
+  
+  This file is part of the Galaxy Communicator system. It is licensed
+  under the conditions described in the file LICENSE in the root 
+  directory of the Galaxy Communicator system.
+-->
+</head>
+  <body style="font-family: Helvetica;" text="#000000" bgcolor="#ffffff"
+ link="#0000ff">
+      
+<center>   
+<h1> Galaxy Communicator Documentation:<br>
+   <br>
+   Controlling Hub Server and Session Properties from the Server</h1>
+  </center>
+ 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="session.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="special_mainloop.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+       
+<hr width="100%">   
+<p>The Hub maintains state information for all its sessions and service providers.
+ This information can be updated in the Hub, but it can also be updated by
+ the server. </p>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Server_properties"></a>Server properties</h2>
+   The Hub keeps track of a set of <a
+ href="../reference/pgm.html#PROPERTIES:">properties</a> for each service
+ provider. These properties are not necessarily known by the servers themselves,
+ but the Hub can use them locally to help select the appropriate service
+provider  given the current session and token states. It is possible for
+the server  to modify the properties the Hub associates with it.   
+<p>Gal_Frame&nbsp;<a name="GalIO_ServerProperties"></a><b><big>GalIO_ServerProperties</big></b>(GalIO_ServerStruct 
+ *<i>server</i>) <br>
+  Returns the frame constituting the server properties as the server currently
+ knows them locally. Not thread-safe; use only in <br>
+  <a href="../reference/adding.html#_GalSS_init_server">_GalSS_init_server</a>. 
+ </p>
+   
+<p>void&nbsp;<a name="GalIO_AddServiceType"></a><b><big>GalIO_AddServiceType</big></b>(GalIO_ServerStruct 
+ *<i>server</i>, const char *<i>stype</i>) <br>
+  Use in <a href="../reference/adding.html#_GalSS_init_server">_GalSS_init_server</a> 
+ to add a <a href="../reference/pgm.html#Service_types">service type</a> to
+the default type (which is identical to the <a
+ href="../reference/adding.html#Basics">server name</a>). </p>
+   
+<p>Gal_Frame&nbsp;<a name="GalSS_EnvGetServerProperties"></a><b><big>GalSS_EnvGetServerProperties</big></b>(GalSS_Environment 
+ *<i>env</i>, char **<i>keys</i>) <br>
+  Fetches the properties from the Hub which the Hub has associated with the
+ current server. <i>keys</i> is a NULL-terminated array of strings. The return
+ value contains a key-value pair for each key in <i>keys</i> that the Hub
+has a value for; the name of the returned frame is not interesting. This
+function ultimately calls the Builtin server function <a
+ href="../../servers/builtin.html#get_properties">get_properties</a>. </p>
+   
+<p>void&nbsp;<a name="GalSS_EnvSetServerProperties"></a><b><big>GalSS_EnvSetServerProperties</big></b>(GalSS_Environment 
+ *<i>env</i>, Gal_Frame <i>properties</i>) <br>
+  Updates the properties the Hub associates with the current server with
+the  key-value pairs in <i>properties</i>. The name of <i>properties</i>
+is ignored  by the Hub. The local server properties are also updated; see
+GalIO_ServerModifyProperties.  This function ultimately calls the Builtin
+server function <a href="../../servers/builtin.html#modify_properties">modify_properties</a>. 
+ </p>
+   
+<p>void&nbsp;<a name="GalSS_EnvDeleteServerProperties"></a><b><big>GalSS_EnvDeleteServerProperties</big></b>(GalSS_Environment 
+ *<i>env</i>, char **<i>keys</i>) <br>
+  Deletes the properties in <i>keys</i> from the properties the Hub associates
+ with the current server. <i>keys</i> is a NULL-terminated array of strings.
+ The local server properties are also updated; see GalIO_ServerModifyProperties.
+ This function ultimately calls the Builtin server function <a
+ href="../../servers/builtin.html#modify_properties">modify_properties</a>. 
+ </p>
+   
+<p>void&nbsp;<a name="GalSS_EnvModifyServerProperties"></a><b><big>GalSS_EnvModifyServerProperties</big></b>(GalSS_Environment 
+ *<i>env</i>, Gal_Frame <i>properties_to_set</i>, char **<i>properties_to_delete</i>) 
+ <br>
+  A combination of GalSS_EnvDeleteServerProperties and GalSS_EnvSetServerProperties.
+ The properties in <i>properties_to_delete</i> are deleted before the properties
+ in <i>properties_to_set</i> are added. This function ultimately calls the
+ Builtin server function <a
+ href="../../servers/builtin.html#modify_properties">modify_properties</a>. 
+ </p>
+   
+<p>void&nbsp;<a name="GalIO_ServerModifyProperties"></a><b><big>GalIO_ServerModifyProperties</big></b>(GalIO_ServerStruct 
+ *<i>server</i>, Gal_Frame <i>new_properties</i>, char **<i>delete_properties</i>) 
+ <br>
+  Modifies the server properties locally. The name of the <i>new_properties</i>
+ frame is ignored. The properties in <i>delete_properties</i> are deleted
+before the properties in <i>new_properties</i> are added. <i>delete_properties</i>
+ is a NULL-terminated array of <br>
+  strings. This function is called by GalSS_EnvModifyServerProperties, etc. 
+ </p>
+   
+<p> </p>
+   
+<hr width="100%">   
+<h2> <a name="Session_properties"></a>Session properties</h2>
+   The Hub also keeps track of a set of properties for each session. Some 
+of these <a href="../reference/pgm.html#Session_keys">properties are preset,</a>
+ such as those associated with logging. However, the programmer can also
+control  them from the server.   
+<p>Gal_Frame&nbsp;<a name="GalSS_EnvGetSessionProperties"></a><b><big>GalSS_EnvGetSessionProperties</big></b>(GalSS_Environment 
+ *<i>env</i>, char **<i>keys</i>) <br>
+  Fetches the properties from the Hub which the Hub has associated with the
+ current session. <i>keys</i> is a NULL-terminated array of strings. The
+return  value contains a key-value pair for each key in <i>keys</i> that
+the Hub has a value for; the name of the returned frame is not interesting.
+This function ultimately calls the Builtin server function <a
+ href="../../servers/builtin.html#get_properties">get_properties</a>. </p>
+   
+<p>void&nbsp;<a name="GalSS_EnvSetSessionProperties"></a><b><big>GalSS_EnvSetSessionProperties</big></b>(GalSS_Environment 
+ *<i>env</i>, Gal_Frame <i>properties</i>) <br>
+  Updates the properties the Hub associates with the current session with 
+the key-value pairs in <i>properties</i>. The name of <i>properties</i> is 
+ignored by the Hub. This function ultimately calls the Builtin server function 
+<a href="../../servers/builtin.html#modify_properties">modify_properties</a>. 
+ </p>
+   
+<p>void&nbsp;<a name="GalSS_EnvDeleteSessionProperties"></a><b><big>GalSS_EnvDeleteSessionProperties</big></b>(GalSS_Environment 
+ *<i>env</i>, char **<i>keys</i>) <br>
+  Deletes the properties in <i>keys</i> from the properties the Hub associates
+ with the current session. <i>keys</i> is a NULL-terminated array of strings.
+ This function ultimately calls the Builtin server function <a
+ href="../../servers/builtin.html#modify_properties">modify_properties</a>. 
+ </p>
+   
+<p>void&nbsp;<a name="GalSS_EnvModifySessionProperties"></a><b><big>GalSS_EnvModifySessionProperties</big></b>(GalSS_Environment 
+ *<i>env</i>, Gal_Frame <i>properties_to_set</i>, char **<i>properties_to_delete</i>) 
+ <br>
+  A combination of GalSS_EnvDeleteSessionProperties and GalSS_EnvSetSessionProperties.
+ The properties in <i>properties_to_delete</i> are deleted before the properties
+ in <i>properties_to_set</i> are added. This function ultimately calls the
+ Builtin server function <a
+ href="../../servers/builtin.html#modify_properties">modify_properties</a>. 
+ </p>
+   
+<p>void&nbsp;<a name="GalSS_EnvSetSession"></a><b><big>GalSS_EnvSetSession</big></b>(GalSS_Environment 
+ *<i>env</i>, const char *<i>session_name</i>, int <i>lock_info</i>) <br>
+  Changes the session ID for the current environment and sends a Hub message
+ which guarantees that the session will exist. This function calls the Builtin
+ function <a href="../../servers/builtin.html#set_session">set_session</a>. 
+ The lock information should be a logical OR of the following flags: <br>
+  &nbsp;   
+<table border="1" cols="2" width="100%" nosave="">
+   <tbody>
+      <tr>
+   <td><b>flag</b></td>
+    <td><b>description</b></td>
+   </tr>
+    <tr>
+   <td><tt>GAL_SERVER_READS_ONLY_FROM_SESSION</tt></td>
+    <td>the Hub will not send any messages for any sessions other than this
+ one to this server</td>
+   </tr>
+    <tr>
+   <td><tt>GAL_SESSION_WRITES_ONLY_TO_SERVER</tt>&nbsp;</td>
+    <td>the Hub will ensure that any messages in this session which might 
+be sent to this server will be</td>
+   </tr>
+    <tr>
+   <td><tt>GAL_SERVER_WRITES_ONLY_TO_SESSION</tt></td>
+    <td>the Hub will assume that any message received from this server is 
+assigned to this session</td>
+   </tr>
+    <tr>
+   <td><tt>GAL_PERMANENT_LOCK</tt></td>
+    <td>the Hub will not free these locks except in response to another call
+ to <a href="../../servers/builtin.html#set_session">Builtin.set_session</a>.</td>
+   </tr>
+         
+  </tbody>  
+</table>
+    </p>
+   
+<p>If <i>lock_info</i> is not -1, this function frees all previous locks;
+ otherwise, it inherits the locks from the previous session, if possible. 
+</p>
+   
+<p> </p>
+   
+<hr>
+<center> 
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+    <tbody>
+      <tr>
+        <td valign="middle" align="left" width="10%"><a
+ href="session.html"><img src="../../arrow_left.gif" alt="" width="30"
+ height="30">
+      </a></td>
+        <td valign="middle" align="center">          <a
+ href="../../../LICENSE">License</a> / <a href="../index.html">Documentation
+home</a> / <a href="../index.html#Getting_help">Help and feedback</a>   
+    </td>
+        <td valign="middle" align="right" width="10%"><a
+ href="special_mainloop.html"><img src="../../arrow_right.gif" alt=""
+ width="30" height="30">
+      </a></td>
+      </tr>
+      
+  </tbody>  
+</table>
+  Last updated June 21, 2002</center>
+    <br>
+  <br>
+ <br>
+</body>
+</html>
